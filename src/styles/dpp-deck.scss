@@ -1,0 +1,176 @@
+/*
+ * transpareo-time-machine - open-source DPP renderer
+ * Copyright (C) 2026 Transpareo AG
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ *
+ * The dpp-deck host carries both the outer overflow
+ * clip AND the inner stacking context, what used to
+ * be `:host { overflow-x: clip }` plus a separate
+ * `.card-deck` wrapper, merged into one element now
+ * that we're light-DOM. The live card is its first
+ * child (`.card`); shadow stand-ins are appended as
+ * siblings.
+ */
+
+dpp-deck {
+  /* flow-root keeps the live card's `margin-top: 24px`
+   * inside this box. Without it the margin collapses up
+   * to the parent and the active card ends up 24px
+   * higher than the past shadows (which use
+   * `inset: 24px 0 0`), breaking the deck alignment. */
+  display: flow-root;
+  position: relative;
+  width: 100%;
+  max-width: 830px;
+  margin: 0 auto;
+  isolation: isolate;
+
+  /* No overflow clip here, the past/future shadow
+   * cards translate ±140px from centre and need to spill
+   * past this 830px box. The .stage parent clips at the
+   * viewport edge so a horizontal scrollbar doesn't
+   * appear on narrow viewports. */
+
+  /* Claim horizontal pans for version navigation. With
+   * `touch-action: pan-y` the browser will only handle
+   * vertical scrolling within the deck; horizontal
+   * gestures (including the iOS / Chrome edge-swipe back
+   * navigation) get routed to our touchmove handler
+   * instead. `overscroll-behavior-x: contain` is a
+   * belt-and-braces for the cases where the deck itself
+   * is the scroll container, it stops a horizontal
+   * overscroll from chaining out to history.back(). */
+  touch-action: pan-y;
+  overscroll-behavior-x: contain;
+}
+
+dpp-deck > .card {
+  position: relative;
+  z-index: 10;
+  display: block;
+  transform-origin: top center;
+  transform:
+    translate(var(--card-x, 0), var(--card-y, 0))
+    scale(var(--card-scale, 1));
+  opacity: var(--card-opacity, 1);
+  filter: blur(var(--card-blur, 0));
+
+  /* Non-overshooting curve on the live card. The spring
+   * (cubic-bezier(0.34, 1.56, ...)) intentionally
+   * overshoots, fine for the cosmetic shadow stack but
+   * jarring on the active content where the user reads
+   * the transition land. Filter runs ~50% longer than
+   * transform so the blur trails the settle: the last
+   * sub-pixel correction of the transform happens while
+   * the blur is still > 0, hiding the 1px text shimmy. */
+  transition:
+    transform var(--dur-medium, 240ms) var(--ease-decelerate, cubic-bezier(0,0,0.2,1)),
+    opacity var(--dur-medium, 240ms) var(--ease-standard, ease),
+    filter 480ms var(--ease-standard, ease);
+}
+
+dpp-deck.deck-driven > .card {
+  transition: none;
+}
+
+.card-shadow {
+  position: absolute;
+  inset: 24px 0 0 0;
+  border-radius: 10px;
+  background: var(--background-color, #fff);
+
+  /* No border, the active card carries the only outline
+   * so it stands out from the stack. Shadow cards ride on
+   * opacity + blur + scale alone. Tints kept low so dark
+   * themes don't accumulate into a neon glow. */
+  box-shadow:
+    0 1px 0 color-mix(
+      in oklab, var(--font-color, #222) 4%, transparent),
+    0 16px 36px color-mix(
+      in oklab, var(--font-color, #222) 7%, transparent),
+    0 4px 10px color-mix(
+      in oklab, var(--font-color, #222) 4%, transparent);
+  pointer-events: none;
+  transform:
+    translate(var(--shadow-x), var(--shadow-y, 0))
+    scale(var(--shadow-scale));
+  opacity: var(--shadow-opacity);
+  filter: blur(var(--shadow-blur));
+  z-index: var(--shadow-z);
+  transition:
+    transform 200ms var(--ease-spring, cubic-bezier(.2,.9,.3,1)),
+    opacity 200ms var(--ease-standard, ease),
+    filter 200ms var(--ease-standard, ease);
+}
+
+dpp-deck.deck-driven .card-shadow {
+  transition: none;
+}
+
+.card-shadow--past { transform-origin: left top; }
+.card-shadow--fwd { transform-origin: right top; }
+
+// Reveal stagger, fade in from invisible, with each
+// shadow's `--enter-delay` set in TS based on its depth.
+// Newer / closer shadows pop in first.
+dpp-deck[data-revealing] .card-shadow {
+  animation: dpp-deck-shadow-in 220ms ease-out backwards;
+  animation-delay: var(--enter-delay, 0ms);
+}
+
+@keyframes dpp-deck-shadow-in {
+  from { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  dpp-deck[data-revealing] .card-shadow { animation: none; }
+}
+
+// ─── Mobile presentation ───────────────────────────
+// The shadow-stack fan is dropped. The live .card sits
+// still, when the user swipes, an overlay clone is
+// mounted on top and translates with the gesture, while
+// the underlying .card re-renders with the target
+// version's content.
+@media (max-width: 830px) {
+  dpp-deck.mobile .card-shadow {
+    display: none;
+  }
+
+  // Live card stays put on mobile. Override the shared
+  // rule that reads --card-x / scale / etc.
+  dpp-deck.mobile > .card {
+    transform: none;
+    opacity: 1;
+  }
+
+  // Overlay clone, full-bleed snapshot of the OLD live
+  // card pinned on top during a mobile swipe. Translates
+  // via --overlay-x (set by JS each frame during drag),
+  // then a Web Animations API tween carries it the rest
+  // of the way off-screen on commit (or back to centre
+  // on cancel). Heavy directional drop shadow so the
+  // trailing edge reads as casting onto the underlying
+  // (target-version) card.
+  dpp-deck.mobile .card-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 20;
+    pointer-events: none;
+    transform: translateX(var(--overlay-x, 0));
+    box-shadow:
+      -16px 0 32px color-mix(
+        in oklab, var(--font-color, #222) 18%, transparent),
+      16px 0 32px color-mix(
+        in oklab, var(--font-color, #222) 18%, transparent);
+  }
+
+  // The cloned .card inside the overlay must not pick up
+  // the desktop deck's slot transform, the OVERLAY is
+  // what moves, the inner .card stays at 0.
+  dpp-deck.mobile .card-overlay > .card {
+    transform: none;
+    opacity: 1;
+    margin: 0;
+  }
+}

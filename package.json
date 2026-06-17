@@ -1,0 +1,93 @@
+{
+  "name": "transpareo-time-machine",
+  "version": "1.0.0",
+  "description": "Open-source Digital Product Passport renderer: a self-contained SPA that consumes signed DPP snapshots + EPCIS events and renders the public passport page for a publisher.",
+  "license": "GPL-3.0-or-later",
+  "author": "Transpareo AG",
+  "homepage": "https://github.com/transpareo/transpareo-time-machine",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/transpareo/transpareo-time-machine.git"
+  },
+  "bugs": {
+    "url": "https://github.com/transpareo/transpareo-time-machine/issues"
+  },
+  "keywords": [
+    "dpp",
+    "digital-product-passport",
+    "epcis",
+    "esprr",
+    "renderer",
+    "spa"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "type": "module",
+  "main": "./dist/transpareo-time-machine.js",
+  "module": "./dist/transpareo-time-machine.js",
+  "types": "./types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "import": "./dist/transpareo-time-machine.js",
+      "default": "./dist/transpareo-time-machine.js"
+    },
+    "./style.css": "./dist/transpareo-time-machine.css",
+    "./dpp-verifier": {
+      "types": "./types/dpp-verifier.d.ts",
+      "import": "./dist/dpp-verifier.js",
+      "default": "./dist/dpp-verifier.js"
+    },
+    "./embed": {
+      "types": "./types/embed.d.ts",
+      "import": "./dist-embed/embed.js",
+      "default": "./dist-embed/embed.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "dist-embed",
+    "types",
+    "CHANGELOG.md",
+    "THIRD-PARTY-LICENSES.md"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "dev:nordic": "SEED=nordic-wear-tshirt vite",
+    "dev:volturra": "SEED=volturra-pulse-2000 vite",
+    "build": "vite build",
+    "build:embed": "vite build --config vite.embed.config.ts",
+    "build:all": "npm run build && npm run build:embed",
+    "prepack": "npm run build:all",
+    "preview": "vite preview",
+    "check": "tsc --noEmit -p tsconfig.app.json && tsc -p tsconfig.node.json && tsc -p tsconfig.tests.json",
+    "check:fixtures": "tsx scripts/seed/validate.ts",
+    "check:bundle-size": "tsx scripts/check-bundle-size.ts",
+    "check:reproducible": "bash scripts/check-reproducible.sh",
+    "emit:sri": "tsx scripts/emit-sri.ts",
+    "a11y": "playwright test",
+    "serve:embed": "tsx scripts/serve-embed.ts",
+    "lint": "eslint .",
+    "seed": "./scripts/seed.sh",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.11.3",
+    "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.60.0",
+    "@types/node": "^24.12.2",
+    "eslint": "^10.4.0",
+    "happy-dom": "^20.10.2",
+    "sass": "^1.99.0",
+    "tsx": "^4.21.0",
+    "typescript": "~6.0.2",
+    "typescript-eslint": "^8.59.4",
+    "vite": "^8.0.10",
+    "vitest": "^4.1.6",
+    "yaml": "^2.9.0",
+    "zod": "^4.4.3"
+  }
+}

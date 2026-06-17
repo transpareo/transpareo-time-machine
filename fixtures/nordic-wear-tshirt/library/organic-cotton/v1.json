@@ -1,0 +1,143 @@
+{
+  "id": "component/organic-cotton",
+  "version": 1,
+  "name": {
+    "en": "Organic Cotton",
+    "de": "Bio-Baumwolle",
+    "fr": "Coton biologique"
+  },
+  "properties": [
+    {
+      "key": "alternativeNames",
+      "label": {
+        "en": "Alternative names",
+        "de": "Alternative Bezeichnungen",
+        "fr": "Autres noms"
+      },
+      "value": {
+        "type": "list",
+        "items": [
+          { "text": { "en": "Gossypium", "de": "Gossypium", "fr": "Gossypium" } },
+          { "text": { "en": "Bio cotton", "de": "Bio-Baumwolle", "fr": "Coton bio" } },
+          { "text": { "en": "GOTS cotton", "de": "GOTS-Baumwolle", "fr": "Coton GOTS" } }
+        ]
+      }
+    },
+    {
+      "key": "origin",
+      "label": {
+        "en": "Origin",
+        "de": "Herkunft",
+        "fr": "Origine"
+      },
+      "value": {
+        "type": "text",
+        "value": {
+          "en": "Alentejo, Portugal",
+          "de": "Alentejo, Portugal",
+          "fr": "Alentejo, Portugal"
+        }
+      }
+    },
+    {
+      "key": "function",
+      "label": {
+        "en": "Function",
+        "de": "Funktion",
+        "fr": "Fonction"
+      },
+      "value": {
+        "type": "text",
+        "value": {
+          "en": "Primary fibre for the garment body. Carries colour, comfort, breathability.",
+          "de": "Hauptfaser des Kleidungsstücks. Träger von Farbe, Tragekomfort und Atmungsaktivität.",
+          "fr": "Fibre principale du vêtement. Porte la couleur, le confort et la respirabilité."
+        }
+      }
+    },
+    {
+      "key": "carbonFootprint",
+      "label": {
+        "en": "Carbon footprint",
+        "de": "CO2-Fußabdruck",
+        "fr": "Empreinte carbone"
+      },
+      "value": {
+        "type": "decimal",
+        "value": 6.2,
+        "unit": "kg CO2e/kg"
+      }
+    },
+    {
+      "key": "characteristics",
+      "label": {
+        "en": "Characteristics",
+        "de": "Eigenschaften",
+        "fr": "Caractéristiques"
+      },
+      "value": {
+        "type": "list",
+        "items": [
+          {
+            "text": {
+              "en": "Renewable plant fibre",
+              "de": "Erneuerbare Pflanzenfaser",
+              "fr": "Fibre végétale renouvelable"
+            },
+            "rating": "veryGood"
+          },
+          {
+            "text": {
+              "en": "Rainfed cultivation, no synthetic pesticides",
+              "de": "Regenbewässerter Anbau, keine synthetischen Pestizide",
+              "fr": "Culture pluviale, sans pesticides de synthèse"
+            },
+            "rating": "veryGood"
+          },
+          {
+            "text": {
+              "en": "Fair-trade certified supply chain",
+              "de": "Fair-Trade-zertifizierte Lieferkette",
+              "fr": "Chaîne d'approvisionnement certifiée commerce équitable"
+            },
+            "rating": "good"
+          },
+          {
+            "text": {
+              "en": "Industrially compostable once separated from synthetic trim",
+              "de": "Industriell kompostierbar, sobald synthetische Beigaben entfernt sind",
+              "fr": "Compostable industriellement une fois séparé des garnitures synthétiques"
+            },
+            "rating": "good"
+          },
+          {
+            "text": {
+              "en": "Higher water demand than recycled fibres",
+              "de": "Höherer Wasserbedarf als bei Recyclingfasern",
+              "fr": "Besoin en eau plus élevé que les fibres recyclées"
+            },
+            "rating": "neutral"
+          }
+        ]
+      }
+    }
+  ],
+  "references": [
+    {
+      "label": {
+        "en": "Material datasheet",
+        "de": "Materialdatenblatt",
+        "fr": "Fiche matière"
+      },
+      "href": "https://components.transpareo.example/organic-cotton"
+    },
+    {
+      "label": {
+        "en": "GOTS standard",
+        "de": "GOTS-Standard",
+        "fr": "Standard GOTS"
+      },
+      "href": "https://global-standard.org/the-standard"
+    }
+  ]
+}

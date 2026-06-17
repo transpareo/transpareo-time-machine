@@ -1,0 +1,114 @@
+{
+  "id": "component/natural-indigo",
+  "version": 1,
+  "name": {
+    "en": "Natural Indigo Dye",
+    "de": "Natürliches Indigo",
+    "fr": "Teinture indigo naturelle"
+  },
+  "properties": [
+    {
+      "key": "alternativeNames",
+      "label": {
+        "en": "Alternative names",
+        "de": "Alternative Bezeichnungen",
+        "fr": "Autres noms"
+      },
+      "value": {
+        "type": "list",
+        "items": [
+          { "text": { "en": "Plant-based indigo", "de": "Pflanzliches Indigo", "fr": "Indigo végétal" } },
+          { "text": { "en": "Indigofera tinctoria", "de": "Indigofera tinctoria", "fr": "Indigofera tinctoria" } },
+          { "text": { "en": "True indigo", "de": "Echtes Indigo", "fr": "Indigo véritable" } }
+        ]
+      }
+    },
+    {
+      "key": "origin",
+      "label": {
+        "en": "Origin",
+        "de": "Herkunft",
+        "fr": "Origine"
+      },
+      "value": {
+        "type": "text",
+        "value": {
+          "en": "Tamil Nadu, India",
+          "de": "Tamil Nadu, Indien",
+          "fr": "Tamil Nadu, Inde"
+        }
+      }
+    },
+    {
+      "key": "function",
+      "label": {
+        "en": "Function",
+        "de": "Funktion",
+        "fr": "Fonction"
+      },
+      "value": {
+        "type": "text",
+        "value": {
+          "en": "Provides the garment's deep blue colour through a vat-dye process.",
+          "de": "Sorgt für die tiefblaue Farbe des Kleidungsstücks im Küpenfärbeverfahren.",
+          "fr": "Confère au vêtement sa couleur bleu profond par un procédé de teinture en cuve."
+        }
+      }
+    },
+    {
+      "key": "characteristics",
+      "label": {
+        "en": "Characteristics",
+        "de": "Eigenschaften",
+        "fr": "Caractéristiques"
+      },
+      "value": {
+        "type": "list",
+        "items": [
+          {
+            "text": {
+              "en": "Plant-derived, renewable colourant",
+              "de": "Pflanzlicher, erneuerbarer Farbstoff",
+              "fr": "Colorant végétal renouvelable"
+            },
+            "rating": "veryGood"
+          },
+          {
+            "text": {
+              "en": "Lower toxicity than synthetic indigo",
+              "de": "Geringere Toxizität als synthetisches Indigo",
+              "fr": "Toxicité plus faible que l'indigo synthétique"
+            },
+            "rating": "good"
+          },
+          {
+            "text": {
+              "en": "Mordants used in fixing may be alkaline",
+              "de": "Beim Fixieren eingesetzte Beizen können alkalisch sein",
+              "fr": "Les mordants utilisés à la fixation peuvent être alcalins"
+            },
+            "rating": "neutral"
+          },
+          {
+            "text": {
+              "en": "Higher water use than reactive dyes",
+              "de": "Höherer Wasserverbrauch als Reaktivfarbstoffe",
+              "fr": "Consommation d'eau plus élevée que les colorants réactifs"
+            },
+            "rating": "neutral"
+          }
+        ]
+      }
+    }
+  ],
+  "references": [
+    {
+      "label": {
+        "en": "Material datasheet",
+        "de": "Materialdatenblatt",
+        "fr": "Fiche matière"
+      },
+      "href": "https://components.transpareo.example/natural-indigo"
+    }
+  ]
+}

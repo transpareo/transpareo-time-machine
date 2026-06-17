@@ -1,0 +1,75 @@
+/*
+ * transpareo-time-machine - open-source DPP renderer
+ * Copyright (C) 2026 Transpareo AG
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ *
+ * <dpp-lightbox>, fullscreen image viewer that mounts
+ * itself to document.body when opened. Reuses the gallery
+ * pagination markup; its own selectors re-skin the strip
+ * for the dark backdrop (white outline + white-fill on
+ * the current dot).
+ *
+ * Padded safe zones (top / sides / bottom) keep the
+ * image clear of the close X (top-right) and the
+ * navigation strip (bottom-centre), they can never
+ * collide with the image.
+ */
+
+dpp-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: none;
+  background: rgba(0, 0, 0, 1);
+  padding: 80px 40px 70px;
+  box-sizing: border-box;
+
+  &.open { display: block; }
+
+  img.gallery-image {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    display: block;
+    margin: 0 auto;
+    user-select: none;
+    -webkit-user-drag: none;
+  }
+
+  .close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 25px;
+    height: 25px;
+    color: #fff;
+    cursor: pointer;
+    z-index: 1001;
+    background: none;
+    border: none;
+
+    &:hover {
+      background: color-mix(in oklab, #000 60%, transparent);
+    }
+
+    .icon {
+      width: 20px;
+      height: 20px;
+    }
+  }
+
+  .nav-wrap {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  /* Re-theme the shared pagination strip
+   * (pagination.scss) for the dark backdrop. Two CSS
+   * vars do all the work. */
+  .navigation {
+    --nav-fg: #777;
+    --nav-bg: #000;
+  }
+}

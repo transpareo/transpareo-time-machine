@@ -1,0 +1,395 @@
+/*
+ * transpareo-time-machine - open-source DPP renderer
+ * Copyright (C) 2026 Transpareo AG
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ *
+ * Verification proof modal. Host element is its own
+ * overlay (chrome via `bindModalChrome` + `buildModal`);
+ * the inner `.proof-summary` / `.proof-section` /
+ * `.proof-grid` / `.proof-table` / `.proof-foot` blocks
+ * are the body content this stylesheet decorates.
+ */
+
+@use 'dpp';
+
+.proof-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  padding: 14px 22px;
+  border-bottom: 1px solid color-mix(
+    in oklab, var(--font-color) 12%, transparent);
+
+  &.verified {
+    background: color-mix(
+      in oklab, var(--color-verified, #16a34a) 14%, transparent);
+
+    // Match the verification chip, same darker shade
+    // for status text, same 14% tint for background, so
+    // the modal reads as a continuation of the badge
+    // the user clicked to open it. The "*-text"
+    // variants are for places where readability against
+    // a dark surface matters; on a 14% green tint the
+    // darker shade has more contrast.
+    .proof-status { color: var(--color-verified, #16a34a); }
+  }
+
+  &.failed {
+    background: color-mix(
+      in oklab, var(--color-verify-fail, #dc2626) 14%, transparent);
+
+    .proof-status { color: var(--color-verify-fail, #dc2626); }
+  }
+}
+
+.proof-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  @include dpp.sm-bold;
+}
+
+.proof-meta {
+  color: var(--color-muted, #777);
+  @include dpp.xs;
+}
+
+.proof-section {
+  padding: 14px 22px;
+  border-bottom: 1px solid color-mix(
+    in oklab, var(--font-color) 12%, transparent);
+
+  h3 {
+    margin: 0 0 10px;
+    @include dpp.eyebrow;
+    font-weight: 800;
+    color: var(--color-muted, #777);
+  }
+}
+
+.proof-grid {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  gap: 6px 16px;
+  margin: 0;
+
+  dt {
+    color: var(--color-muted, #777);
+    @include dpp.sm;
+  }
+
+  dd {
+    margin: 0;
+    @include dpp.sm;
+    overflow-wrap: anywhere;
+  }
+
+  a {
+    color: var(--action-color, #5B8DEF);
+    text-decoration: none;
+    &:hover { text-decoration: underline; }
+  }
+}
+
+code {
+  font-family: var(--font-mono);
+  @include dpp.sm;
+  background: color-mix(
+    in oklab, var(--font-color) 7%, transparent);
+  padding: 2px 6px 1px;
+  border-radius: 4px;
+}
+
+.proof-value {
+  word-break: break-all;
+  line-height: 1.5;
+  display: inline-block;
+}
+
+.proof-note {
+  margin: 0 0 10px;
+  @include dpp.sm;
+  color: var(--color-muted, #777);
+}
+
+// ─── Per-snapshot proof chain ─────────────────────
+// One .proof-authority row per signature group: orb +
+// name + a strip of key-link chips. The "checked
+// against N signing keys" summary sits above the rows
+// (.proof-keys-summary) and the orbs are scoped to one
+// per authority to keep the page from filling with
+// checkmarks.
+.proof-keys-summary {
+  margin: 0 0 10px;
+  @include dpp.sm;
+  color: var(--color-muted, #777);
+}
+
+.proof-authority {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 0 0 8px;
+  @include dpp.sm-bold;
+
+  &:last-child { margin-bottom: 0; }
+}
+
+.proof-authority-name {
+  color: var(--font-color);
+}
+
+.proof-key-chips {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+// Each key chip is a small circular link sized to match
+// the verdict orb. The key glyph sits centred; the
+// chip's outline carries the per-key status colour so a
+// single failing key reads at a glance without painting
+// the whole row red.
+.proof-key-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 100%;
+  border: 1px solid currentColor;
+  background: transparent;
+  color: var(--color-muted, #777);
+  text-decoration: none;
+  flex-shrink: 0;
+
+  .icon {
+    width: 12px;
+    height: 12px;
+    margin: 0;
+  }
+
+  // Only failing keys get the red fill, so a clean
+  // proof chain reads as a row of outlined chips and a
+  // failure jumps out without painting the whole strip.
+  &.status-verified { color: var(--color-verified, #16a34a); }
+  &.status-pending  { color: var(--color-muted, #777); }
+  &.status-unreachable,
+  &.status-invalid {
+    color: var(--background-color, #fff);
+    background: var(--color-verify-fail, #dc2626);
+    border-color: var(--color-verify-fail, #dc2626);
+  }
+
+  &:hover { filter: brightness(0.92); }
+}
+
+// ─── Versions disclosure ──────────────────────────
+// Native <details> wrapping the per-version hash list.
+// Chevron uses the CSS-triangle pattern from dpp.scss;
+// rotates 180° when the disclosure is open.
+.proof-disclosure {
+  summary { list-style: none; }
+  summary::-webkit-details-marker { display: none; }
+  summary::marker { content: ''; }
+
+  &[open] .proof-disclosure-summary .chevron {
+    transform: rotate(180deg);
+  }
+}
+
+.proof-disclosure-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.proof-disclosure-label {
+  font-family: var(--font-sans);
+  @include dpp.eyebrow;
+  font-weight: 800;
+  color: var(--color-muted, #777);
+}
+
+.proof-disclosure-subtitle {
+  margin: 8px 0 12px;
+  @include dpp.sm;
+  color: var(--font-color);
+}
+
+.proof-verify-all {
+  margin: 8px 0 12px;
+  background: transparent;
+  border: 1px solid color-mix(
+    in oklab, var(--action-color) 40%, transparent);
+  color: var(--action-color);
+  border-radius: var(--radius-sm);
+  padding: 4px 12px;
+  @include dpp.xs-semibold;
+  cursor: pointer;
+  transition:
+    background-color var(--dur-fast) var(--ease-standard),
+    border-color var(--dur-fast) var(--ease-standard);
+
+  &:hover:not(:disabled) {
+    background: color-mix(
+      in oklab, var(--action-color) 10%, transparent);
+    border-color: var(--action-color);
+  }
+
+  &:disabled { opacity: 0.4; cursor: default; }
+}
+
+.proof-versions-wrap {
+  margin-top: 14px;
+}
+
+.proof-versions-caption {
+  margin: 0 0 6px;
+  @include dpp.eyebrow;
+  font-weight: 800;
+  color: var(--color-muted, #777);
+}
+
+.proof-versions-list {
+  width: 100%;
+  border-collapse: collapse;
+  @include dpp.xs;
+  margin: 0;
+
+  th, td {
+    padding: 6px 10px;
+    text-align: left;
+    vertical-align: middle;
+    border-bottom: 1px solid color-mix(
+      in oklab, var(--font-color) 8%, transparent);
+  }
+
+  th {
+    @include dpp.sm;
+    color: var(--color-muted, #888);
+  }
+
+  tr:last-child td { border-bottom: 0; }
+
+  td:first-child {
+    font-variant-numeric: tabular-nums;
+    width: 1%;
+    white-space: nowrap;
+  }
+
+  code { font-family: var(--font-mono); }
+
+  .col-authority {
+    text-align: center;
+    width: 1%;
+    white-space: nowrap;
+
+    .orb { display: inline-flex; }
+  }
+
+  th.col-authority { @include dpp.xs-semibold; }
+}
+
+.proof-versions-note {
+  margin: 10px 0 0;
+  @include dpp.xs;
+  color: var(--color-muted, #777);
+  line-height: 1.5;
+}
+
+.proof-version-link {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  font-weight: 700;
+  color: var(--action-color);
+  cursor: pointer;
+
+  &:hover { text-decoration: underline; }
+
+  // Plain-text variant for versions no timeline event
+  // carries: there is nowhere to navigate, so the label
+  // renders as a span without link affordances.
+  &.is-static {
+    color: inherit;
+    cursor: default;
+
+    &:hover { text-decoration: none; }
+  }
+}
+
+// Download affordance, two shapes for two surfaces:
+//   .proof-download-current sits in the summary block
+//   under the headline status as a small text button
+//   ("Download v{N}") with a leading download glyph.
+//   .proof-download-row sits inline next to each row's
+//   version-name link as an icon-only button so the
+//   table doesn't grow a fifth column.
+.proof-download {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: var(--action-color);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+
+  .icon {
+    width: 1em;
+    height: 1em;
+    margin: 0;
+  }
+
+  &:hover,
+  &:focus-visible {
+    text-decoration: underline;
+    outline: none;
+  }
+}
+
+.proof-download-current {
+  flex: 0 0 auto;
+  align-self: center;
+  @include dpp.sm;
+  font-weight: 600;
+}
+
+.proof-download-row {
+  margin-inline-start: 6px;
+
+  // Compress the glyph slightly so the row baseline
+  // doesn't shift; the link text sets the row height.
+  .icon { width: 14px; height: 14px; }
+  opacity: 0.65;
+
+  &:hover,
+  &:focus-visible {
+    opacity: 1;
+    text-decoration: none;
+  }
+}
+
+.proof-version-pending { color: var(--color-muted); }
+
+// Reuse the .orb element from dpp-verification-chip.
+// The orb's background is `color-mix(currentColor 18%,
+// transparent)` so it tints itself from whatever text
+// colour the parent sets, these two classes provide
+// the colour. .orb .icon { margin: 0 } cancels the
+// global `.icon { margin-right: 5px }` rule so the
+// glyph sits centred inside the circle (same fix the
+// chip already carries for its own orb).
+.orb-verified { color: var(--color-verified, #16a34a); }
+.orb-failed { color: var(--color-verify-fail, #dc2626); }
+.orb-pending { color: var(--color-muted, #777); }
+.orb .icon { margin: 0; }

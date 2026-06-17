@@ -1,0 +1,308 @@
+/*
+ * transpareo-time-machine - open-source DPP renderer
+ * Copyright (C) 2026 Transpareo AG
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ *
+ * Token contract: every visible colour is derived from
+ * theme CSS variables (--font-color, --background-color,
+ * --action-color, --footer-text-color) with neutral
+ * defaults baked in as fallbacks. Borders and shadows
+ * are derived via color-mix from the font colour so the
+ * page adapts to any theme without DPP-specific overrides.
+ */
+
+/* The body and heading typeface is supplied by the
+ * publisher's branding stylesheet, which sets
+ * --font-family and ships the matching @font-face. The
+ * SPA loads no webfont of its own and makes no external
+ * font request, so it stays self-contained. With no
+ * branding present (standalone use or the verifier
+ * surface), the system sans stack below applies. */
+
+:root {
+  color-scheme: light dark;
+
+  /* type, body and heading sizes derive from the publisher
+   * theme tokens (--font-family, --font-size, --h1-size,
+   * --h2-size, --h3-size) when present, falling back to
+   * the SPA defaults otherwise. */
+  --font-sans: var(--font-family, 'Plus Jakarta Sans',
+    -apple-system, BlinkMacSystemFont, 'Inter',
+    'Helvetica Neue', sans-serif);
+  --font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --font-xs: 12px;
+  --font-sm: 14px;
+  --font-base: var(--font-size, 16px);
+  --font-lg: 18px;
+  --font-xl: 22px;
+  --font-h3: var(--h3-size, 22px);
+  --font-h2: var(--h2-size, 28px);
+  --font-h1: var(--h1-size, 40px);
+
+  /* space */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* radius */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 20px;
+
+  /* Theme tokens (--font-color, --background-color,
+   * --action-color, etc.) come from /branding.css,
+   * `<link>`'d from index.html. We don't set them here
+   * so the host can ship its own theme without a SPA
+   * re-deploy. The fallback inside each var(--x, fallback)
+   * keeps the page legible if branding.css fails to
+   * load. */
+
+  /* derived (DPP-page-style) */
+  --color-text: var(--font-color);
+
+  /* Muted secondary text on the content surface.
+   * Intentionally NOT reading --footer-text-color any
+   * more, so publisher tweaks to the footer text don't
+   * cascade into hero/modal/timeline muted copy. If a
+   * publisher needs a dedicated knob for content-surface
+   * muted text, add a --muted-color token and override
+   * here. */
+  --color-muted: color-mix(
+    in oklab, var(--font-color) 60%, var(--background-color));
+  --color-card: var(--background-color);
+  --color-page: var(--body-background);
+  --color-accent: var(--action-color);
+  --color-border: color-mix(
+    in oklab, var(--font-color) 14%, transparent);
+  --shadow-soft: 0 2px 14px color-mix(
+    in oklab, var(--font-color) 7%, transparent);
+
+  /* Per-event-type colours, used on timeline dots,
+   * connectors, the `.event-tag` pill, and the event
+   * modal header. Publishers override via the style
+   * editor. --timeline-event-text is the pill's text
+   * colour, legible against any of the per-state
+   * backgrounds. */
+  --timeline-event-published: #3b82f6;
+  --timeline-event-use: #16a34a;
+  --timeline-event-repair: #ea580c;
+  --timeline-event-refurbished: #8b5cf6;
+  --timeline-event-collected: #0ea5e9;
+  --timeline-event-recycled: #059669;
+  --timeline-event-text: #ffffff;
+
+  /* verification */
+  --color-verified: #16a34a;
+  --color-verify-fail: #dc2626;
+
+  /* Lighter text variants used for status pills /
+   * "verified" / "failed" labels, readable on both
+   * light and dark themes. */
+  --color-verified-text: #4ade80;
+  --color-verify-fail-text: #f87171;
+
+  /* motion */
+  --dur-instant: 80ms;
+  --dur-fast: 200ms;
+  --dur-medium: 400ms;
+  --dur-slow: 700ms;
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-decelerate: cubic-bezier(0, 0, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* h1..h4 inherit the body family; weight + style come
+ * from the publisher theme (--h{n}-weight, --h{n}-style)
+ * with the SPA's heavy-italic display weight as the
+ * fallback. */
+h1, h2, h3, h4 {
+  font-family: var(--font-sans);
+  line-height: 130%;
+}
+
+h1 {
+  font-size: var(--font-h1);
+  font-weight: var(--h1-weight, 800);
+  font-style: var(--h1-style, italic);
+}
+
+h2 {
+  font-size: var(--font-h2);
+  font-weight: var(--h2-weight, 800);
+  font-style: var(--h2-style, italic);
+}
+
+h3 {
+  font-size: var(--font-h3);
+  font-weight: var(--h3-weight, 800);
+  font-style: var(--h3-style, italic);
+}
+
+h4 {
+  font-weight: 800;
+  font-style: italic;
+}
+
+a {
+  color: var(--link-color, var(--action-color, #255DBA));
+}
+
+/* SVG sprite icons. Components render <svg class="icon
+ * icon-X"> elements that reference an injected sprite by
+ * bare `#id` (see src/icons.ts; the decorative content
+ * sprite comes from the element's icons-src attribute).
+ * The svg sizes to 1em × 1em and inherits the parent
+ * text colour, so any `.icon { font-size: 14px }` rule
+ * still drives the visible glyph size. */
+svg.icon {
+  width: 1em;
+  height: 1em;
+  fill: currentColor;
+  display: inline-block;
+  vertical-align: -0.125em;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  /* Reserve the scrollbar track even when nothing
+   * scrolls, so opening a modal (which sets `no-scroll`
+   * on body) doesn't widen the content by the
+   * scrollbar's width and jump the layout. Mobile
+   * browsers don't paint a scrollbar gutter, so this is
+   * a no-op for them. */
+  scrollbar-gutter: stable;
+
+  /* Theme-tinted page scrollbar. The thumb sits on
+   * `--body-background`, so it derives from
+   * `--footer-text-color` (the muted-text-on-body
+   * token tuned by the publisher for visibility against
+   * that surface) rather than `--font-color` (content
+   * card text, which collapses on a dark body). Firefox
+   * honours `scrollbar-*`; Chromium/Safari pick up the
+   * `::-webkit-scrollbar` rules below. */
+  scrollbar-width: thin;
+  scrollbar-color:
+    color-mix(in oklab, var(--footer-text-color, #888) 70%, transparent)
+    transparent;
+}
+
+html::-webkit-scrollbar {
+  width: 6px;
+}
+
+html::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+html::-webkit-scrollbar-thumb {
+  background: color-mix(
+    in oklab, var(--footer-text-color, #888) 70%, transparent);
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background-clip: padding-box;
+}
+
+html::-webkit-scrollbar-thumb:hover {
+  background: var(--footer-text-color, #888);
+}
+
+html::-webkit-scrollbar-button {
+  display: none;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--color-page);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: var(--font-base);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+button:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Body scroll lock used by modals + lightbox. Defined
+ * globally because shadow DOM scoping prevents a
+ * component-level rule from reaching document.body. */
+body.no-scroll {
+  overflow: hidden;
+}
+
+/* Boot-time spinner. Host pages embed
+ * `<transpareo-time-machine src="…">
+ *    <div class="ttm-boot" aria-label="Loading"></div>
+ *  </transpareo-time-machine>`
+ *
+ * The inner <div> is light-DOM fallback content,
+ * visible before the custom element upgrades (HTML
+ * parsed, branding/static CSS parsed, JS still
+ * downloading) AND after upgrade during the manifest
+ * fetch (the SPA renders a <slot> in its shadow root
+ * for the loading state, so the same element shows
+ * through). Once ready, the SPA mounts and the slot
+ * goes away, the spinner disappears in one step.
+ *
+ * Lives in app.css (and therefore the static
+ * transpareo-time-machine.css emitted by the lib
+ * build) so it ships with the prod CDN bundle. For
+ * the dev demo (`npm run dev`), the same rule is
+ * mirrored inline in index.html so it loads before
+ * the Vite-injected styles. */
+.ttm-boot {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.ttm-boot::before {
+  content: '';
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 4px solid color-mix(
+    in oklab, var(--font-color, #222) 20%, transparent);
+  border-top-color: color-mix(
+    in oklab, var(--font-color, #222) 80%, transparent);
+  animation: ttm-boot-spin 0.9s linear infinite;
+}
+
+@keyframes ttm-boot-spin {
+  to { transform: rotate(360deg); }
+}

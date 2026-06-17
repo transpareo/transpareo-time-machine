@@ -1,0 +1,57 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-embed
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# playwright screenshots, root-level debug captures
+# and the MCP trace dir. Scoped to those paths so
+# fixture branding icons under fixtures/<id>/branding/
+# are still tracked. `test-results/` + `playwright-
+# report/` are emitted by `npm run a11y` (Playwright's
+# default output dirs).
+/*.png
+.playwright-mcp/
+/test-results/
+/playwright-report/
+
+# Seeded artefacts (`npm run seed`). Every dev
+# re-runs the seed after pulling a fixture change;
+# the JSON, image bytes, and per-publisher branding
+# CSS don't belong in version control. The YAML
+# sources do (in /fixtures/).
+/public/fixtures/
+/public/*/dpp/
+/public/*/branding.css
+/public/*/branding/
+/public/*/icon-map.json
+
+# Session-local planning artifacts (drafts, session
+# handoffs, todos). These live in `.todo/` per the
+# project convention and are intentionally not
+# version-controlled. `.claude/` holds per-machine
+# agent settings; ignored here so contributors don't
+# depend on a global ignore.
+/.todo/
+/.claude/
+

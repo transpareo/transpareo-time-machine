@@ -1,0 +1,189 @@
+/*
+ * transpareo-time-machine - open-source DPP renderer
+ * Copyright (C) 2026 Transpareo AG
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ *
+ * Library modal. Top: snapshot-frozen lead (percent +
+ * rating). Below: live library payload fetched from the
+ * public bucket on open, with a loading / unavailable
+ * state when the fetch is in flight or fails. The host
+ * element's overlay chrome is in modal.scss.
+ */
+
+@use 'dpp';
+
+// Lead block at the top of the library modal body:
+// stack of share + rating rows. Margins between rows
+// stay tight; the trailing margin gaps the block off
+// the property list below.
+.dpp-library-lead {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 18px;
+}
+
+// "<label>: <value>" presentation row. Shared by the
+// hero (product rating), the library modal lead (share
+// + component rating), and any future row that wants
+// the same compact key/value look. Surrounding margins
+// are set by the host block's own SCSS.
+.dpp-rating-row {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.dpp-rating-label {
+  font-weight: 700;
+}
+
+// Value is plain inline content: the icon inherits the
+// project-wide svg.icon baseline offset and the global
+// `.icon { margin-right: 5px }` rule so the icon-to-text
+// gap matches the composition row links exactly.
+.dpp-rating-value {
+  font-weight: 600;
+}
+
+.dpp-library-panel {
+  margin-top: 4px;
+  padding-top: 14px;
+  border-top: 1px solid color-mix(
+    in oklab, var(--font-color) 10%, transparent);
+
+  &.loading .dpp-library-loading {
+    @include dpp.sm;
+    color: var(--color-muted);
+    padding: 6px 0;
+  }
+}
+
+// Stacked label / value layout. Label sits above the
+// value as a bold heading; a hairline divider between
+// rows keeps the modal scannable when the payload has
+// many properties.
+.dpp-library-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 0;
+  border-bottom: 1px solid color-mix(
+    in oklab, var(--font-color) 8%, transparent);
+
+  &:first-of-type {
+    padding-top: 4px;
+  }
+
+  &:last-of-type {
+    border-bottom: 0;
+  }
+}
+
+.dpp-library-row-label {
+  @include dpp.regular;
+  font-weight: 700;
+  color: var(--color-text);
+  letter-spacing: -0.005em;
+}
+
+.dpp-library-row-value {
+  color: var(--color-text);
+  line-height: 1.5;
+}
+
+.dpp-library-references {
+  padding: 14px 0 4px;
+  border-top: 1px solid color-mix(
+    in oklab, var(--font-color) 8%, transparent);
+
+  .dpp-library-row-label {
+    margin-bottom: 6px;
+  }
+}
+
+.dpp-library-reference-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dpp-library-reference {
+  color: var(--link-color, var(--color-text));
+  text-decoration: none;
+
+  &:hover,
+  &:focus-visible {
+    text-decoration: underline;
+  }
+}
+
+// ─── Rated list value ────────────────────────────────
+// When a list-typed property's items carry ratings, the
+// row's value is a bulleted UL with one smiley + label
+// per item.
+.dpp-library-rated-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dpp-library-rated-item {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+
+  // Baseline alignment puts the smiley a touch above the
+  // text's optical centre. Nudge it 2px down so it sits
+  // visually centred against the first line of the item.
+  > svg {
+    flex-shrink: 0;
+    transform: translateY(2px);
+  }
+}
+
+// ─── Smiley colour palette ───────────────────────────
+// Five-step palette driven by the publisher's branding
+// stylesheet: each `--rating-*` token is set on :root
+// in branding.css when the publisher has opted into
+// ratings. The fallbacks collapse to a traffic-light
+// triple (red / orange / green): "very bad" and "bad"
+// share red, "neutral" is orange, "good" and "very
+// good" share green. A publisher that wants a richer
+// 5-tier gradient overrides any subset of the tokens.
+// The icon helper applies `.icon-smiley-<name>` on the
+// host svg; scoping the colour to that selector keeps
+// surrounding text in its own colour.
+.icon-smiley-very-bad  { color: var(--rating-very-bad, #AB2430); }
+.icon-smiley-bad       { color: var(--rating-bad, #AB2430); }
+.icon-smiley-neutral   { color: var(--rating-neutral, #D4872A); }
+.icon-smiley-good      { color: var(--rating-good, #0A8340); }
+.icon-smiley-very-good { color: var(--rating-very-good, #0A8340); }
+
+// Fixed rem-based size keeps every smiley identical
+// regardless of the surrounding font size (modal lead,
+// composition row, hero rating row, rated list items).
+// `vertical-align: -0.125em` is the project-wide icon
+// baseline offset (see svg.icon in dpp.scss), so the
+// glyph sits next to text the same way every other icon
+// in the SPA does. The 1px padding below mirrors the
+// sprite glyph's own top inset, which lets the rounded
+// face render flush inside the box without browsers
+// clipping its bottom edge against the line baseline.
+svg.icon-smiley-very-bad,
+svg.icon-smiley-bad,
+svg.icon-smiley-neutral,
+svg.icon-smiley-good,
+svg.icon-smiley-very-good {
+  width: 1rem;
+  height: 1rem;
+  vertical-align: -0.125em;
+  overflow: visible;
+}
+

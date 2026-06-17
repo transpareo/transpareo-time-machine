@@ -1,0 +1,127 @@
+# Release workflow: triggers on every pushed tag, builds
+# the lib + embed bundles, emits the SRI / SHA-256
+# integrity manifest, and attaches every publishable
+# artefact to the corresponding GitHub release.
+#
+# What gets published per tag:
+#
+#   - dist/transpareo-time-machine.js + .css + every
+#     locale chunk (the lib build).
+#   - dist-embed/embed.js + its locale chunks (the embed
+#     build, what hosts load via a single <script>).
+#   - integrity.json - the SRI manifest with sha384 +
+#     sha512 + sha256-hex for every publishable file.
+#     Embedders pin via the sha384 entry; downstreams
+#     verifying reproducibility compare the sha256-hex.
+#   - build-environment.txt - the Node version,
+#     package-lock.json hash, and the runner image
+#     identifier the build ran under. Together these
+#     pin the build environment so a downstream rebuilder
+#     can reproduce the bytes locally.
+#
+# Reproducible-build property: the workflow runs the
+# CI's reproducibility gate before publishing, so a tag
+# can only ship if its bundles are byte-identical across
+# two builds of the same commit.
+# The publish-npm job pushes the same commit's package to
+# npm with provenance. It authenticates via the NPM_TOKEN
+# repository secret, which must be a GRANULAR automation
+# token with publish rights and the 2FA requirement bypassed
+# for automation (interactive web-login/OTP flows do not
+# work from CI).
+name: release
+
+on:
+  push:
+    tags: ['v*']
+
+# Actions are pinned to full commit SHAs (tags are mutable
+# and a re-pointed tag would run unreviewed code with this
+# workflow's permissions). Dependabot keeps the pins fresh;
+# the trailing comment names the tag each SHA was taken from.
+jobs:
+  release:
+    name: build + publish release artefacts
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run check
+      - run: npm test
+      - run: npm run build
+      - run: npm run build:embed
+      - run: npm run emit:sri
+      - run: npm run check:bundle-size
+      - run: npm run check:reproducible
+      # WCAG 2.2 AA gate. Runs only on the release path
+      # because the seed step downloads fixture images
+      # from upstream CDNs at runtime; a CDN flake would
+      # otherwise spuriously block every PR. A release
+      # is rare and human-supervised, so the trade-off
+      # of "depends on Unsplash" is acceptable here.
+      - run: npx playwright install --with-deps chromium
+      - run: npm run seed
+      - run: npm run a11y
+      - name: record build environment
+        run: |
+          {
+            echo "node: $(node -v)"
+            echo "runner: ${{ runner.os }} / ${{ runner.arch }}"
+            echo "image: ${ImageOS:-unknown}"
+            echo "package-lock-sha256: $(sha256sum package-lock.json | awk '{print $1}')"
+          } > dist/build-environment.txt
+          cp dist/build-environment.txt dist-embed/build-environment.txt
+      - name: publish github release
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
+        with:
+          generate_release_notes: true
+          files: |
+            dist/transpareo-time-machine.js
+            dist/transpareo-time-machine.css
+            dist/dpp-verifier.js
+            dist/locales/*.js
+            dist/integrity.json
+            dist/build-environment.txt
+            dist-embed/*.js
+            dist-embed/integrity.json
+            dist-embed/build-environment.txt
+            LICENSE
+            THIRD-PARTY-LICENSES.md
+
+  publish-npm:
+    name: publish to npm
+    needs: release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+      # npm provenance attestation signs the package against
+      # this workflow run via OIDC.
+      id-token: write
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          registry-url: 'https://registry.npmjs.org'
+      - run: npm ci
+      - name: check tag matches package.json version
+        run: |
+          pkg="v$(node -p "require('./package.json').version")"
+          if [ "$pkg" != "$GITHUB_REF_NAME" ]; then
+            echo "tag $GITHUB_REF_NAME != package.json $pkg" >&2
+            exit 1
+          fi
+
+      # prepack runs build:all, so the tarball is built here
+      # from the same commit the release job verified.
+      - run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

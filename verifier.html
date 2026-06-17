@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!--
+      Dev shell for the standalone <dpp-verifier> widget.
+      Reachable at http://localhost:5173/verifier.html under
+      `npm run dev`; loads /src/dpp-verifier.ts and verifies
+      a preset or pasted passport page / manifest URL in the
+      browser. Not shipped in the npm package; see the "Dev
+      pages" section of the README.
+    -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!--
+      Baseline Content-Security-Policy; see index.html for
+      the rationale and per-deployment adjustments. The
+      verifier fetches whatever URL is pasted in, hence
+      connect-src https:.
+    -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self';
+        script-src 'self';
+        style-src 'self' 'unsafe-inline' https:;
+        font-src 'self' https: data:;
+        img-src 'self' https: data: blob:;
+        connect-src 'self' https: ws: wss:;
+        object-src 'none';
+        base-uri 'self';
+        form-action 'self'"
+    />
+    <title>DPP Verifier (dev)</title>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        max-width: 720px;
+        margin: 40px auto;
+        padding: 0 20px;
+      }
+      h1 { font-size: 1.4rem; }
+      p.lede { color: #555; }
+    </style>
+  </head>
+  <body>
+    <h1>Verify a Digital Product Passport</h1>
+    <p class="lede">
+      Paste a passport page link (what a QR code carries)
+      or a published manifest URL below. The verifier
+      fetches the manifest, fetches the current snapshot,
+      and checks every signature in your browser.
+    </p>
+
+    <dpp-verifier
+      src="/__SEED_ID__/dpp/__SEED_CODE__/manifest.json">
+    </dpp-verifier>
+
+    <script type="module" src="/src/dpp-verifier.ts"></script>
+  </body>
+</html>

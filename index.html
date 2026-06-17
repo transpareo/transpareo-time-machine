@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!--
+      Dev shell for `npm run dev`: Vite serves it at
+      http://localhost:5173/. Loads /src/main.ts (the lib
+      delivery) and renders the full
+      <transpareo-time-machine> against a seeded demo
+      manifest. Not shipped in the npm package; see the
+      "Dev pages" section of the README.
+    -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!--
+      Baseline Content-Security-Policy, defense-in-depth for
+      the renderer's remote-content inputs (publisher icon
+      sprite, branding stylesheet, DPP artefacts): scripts run
+      only from this origin, so inline handlers and
+      javascript: URLs stay dead even if markup injection is
+      found somewhere. Adjust per deployment: tighten the
+      https: sources to your CDN host(s). `ws:`/`wss:` only
+      serve Vite's dev HMR socket; drop them in production.
+    -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self';
+        script-src 'self';
+        style-src 'self' 'unsafe-inline' https:;
+        font-src 'self' https: data:;
+        img-src 'self' https: data: blob:;
+        connect-src 'self' https: ws: wss:;
+        object-src 'none';
+        base-uri 'self';
+        form-action 'self'"
+    />
+    <title>Transpareo Time Machine (dev)</title>
+    <meta
+      name="description"
+      content="Digital Product Passport renderer. Open-source SPA that fetches a published manifest and renders the page from signed snapshots."
+    />
+    <!--
+      Theme tokens (CSS custom properties, colours,
+      logo URL, etc.) ship in the issuer's branding
+      stylesheet, written by the host as a per-issuer
+      <link> in this <head>. In dev the seed pipeline
+      writes one to /public/<id>/branding.css and a
+      per-DPP shell would link the right one; the link
+      below targets the seed picked by `npm run dev`
+      (default nordic-wear) or `npm run dev:<seed>`.
+    -->
+    <link rel="stylesheet" href="/__SEED_ID__/branding.css" />
+
+    <!--
+      No favicon <link> needed: the browser auto-probes
+      /favicon.ico at the site root, served from public/.
+    -->
+
+    <!--
+      Boot spinner. Mirrors the .ttm-boot rule shipped in
+      transpareo-time-machine.css (see src/styles/app.css)
+      so the spinner is styled before Vite's runtime
+      style-injection runs. The prod CDN flow ships the
+      same rule via the static stylesheet linked ahead of
+      the JS bundle; embedders following the docs don't
+      need this inline copy.
+    -->
+    <style>
+      .ttm-boot {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        pointer-events: none;
+      }
+      .ttm-boot::before {
+        content: '';
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        border: 4px solid color-mix(
+          in oklab, var(--font-color, #222) 20%, transparent);
+        border-top-color: color-mix(
+          in oklab, var(--font-color, #222) 80%, transparent);
+        animation: ttm-boot-spin 0.9s linear infinite;
+      }
+      @keyframes ttm-boot-spin {
+        to { transform: rotate(360deg); }
+      }
+    </style>
+  </head>
+  <body>
+    <!--
+      Production embed: the host page renders one of
+      these per DPP, with `src` pointing at a signed
+      manifest on the CDN. Forks and CNAME publishers set
+      whatever URL scheme they like; the renderer makes
+      no assumption about the bucket layout.
+    -->
+    <transpareo-time-machine
+      src="/__SEED_ID__/dpp/__SEED_CODE__/manifest.json"
+      icon-map-src="/__SEED_ID__/icon-map.json"
+      footer-copyright="© 2026 Demo"
+      footer-links='[{"label":"Imprint","url":"/imprint"},{"label":"Privacy","url":"/privacy"}]'>
+      <!-- Light-DOM fallback. Visible before the custom
+           element upgrades, then routed through the
+           shadow root's <slot> during manifest fetch so
+           the spinner stays put across both phases. -->
+      <div class="ttm-boot" aria-label="Loading"></div>
+    </transpareo-time-machine>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

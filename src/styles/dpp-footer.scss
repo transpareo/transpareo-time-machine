@@ -1,0 +1,225 @@
+/*
+ * transpareo-time-machine - open-source DPP renderer
+ * Copyright (C) 2026 Transpareo AG
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+@use 'dpp';
+
+dpp-footer { display: block; width: 100%; }
+
+// With no copyright/links and a single available locale the
+// footer renders nothing (see dpp-footer.ts), which would
+// leave the content card flush against the bottom of the
+// scroll area. Stand in for the breathing room the footer
+// would have occupied, sized to the card's top frame and
+// dropped on the edge-to-edge mobile layout (no frame to
+// mirror there).
+dpp-footer:empty {
+  height: var(--frame-width, 24px);
+
+  @media (max-width: 830px) {
+    height: 0;
+  }
+}
+
+.footer {
+  width: 100%;
+  max-width: 830px;
+  margin: 0 auto;
+  padding: 14px 25px 16px;
+  @include dpp.sm;
+  color: var(--color-muted, #888);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+
+  a {
+    color: var(--footer-link-color, var(--action-color));
+    text-decoration: none;
+
+    &:hover { text-decoration: underline; }
+  }
+}
+
+.footer-left {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2, 8px);
+}
+
+.sep {
+  color: color-mix(in oklab, var(--color-muted, #888) 50%, transparent);
+}
+
+.locale-wrap {
+  position: relative;
+}
+
+.locale-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: color-mix(in oklab, var(--font-color) 4%, transparent);
+  color: var(--footer-link-color, var(--action-color));
+  font: inherit;
+  letter-spacing: 0.04em;
+
+  // The button lives in the footer (on `--body-
+  // background`), so its outline blends the body bg
+  // with the footer's muted text colour rather than
+  // picking up the content-surface `--color-border`
+  // (which would be invisible against a dark body).
+  border: 1px solid color-mix(
+    in oklab,
+    var(--body-background, #000) 50%,
+    var(--footer-text-color, #777));
+  border-radius: 4px;
+  cursor: pointer;
+
+  // The hovered + keyboard-focused state share one
+  // visual, and the global `button:focus-visible {
+  // outline }` from app.css is suppressed so the
+  // tinted background is the only indicator. Tint
+  // comes from `--footer-link-color` so the hover
+  // visually reinforces "this is the linky thing"
+  // rather than a generic font-color wash.
+  &:hover,
+  &:focus-visible {
+    background: color-mix(
+      in oklab,
+      var(--footer-link-color, var(--action-color)) 22%,
+      transparent);
+    outline: none;
+  }
+}
+
+.locale-menu {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  inset-inline-end: 0;
+  min-width: 160px;
+  margin: 0;
+  padding: 4px;
+  background: var(--background-color, #fff);
+
+  // The dropdown floats above the footer (which sits on
+  // `--body-background`), so its outline blends the body
+  // bg with the footer's muted text colour rather than
+  // picking up the content-surface border.
+  border: 1px solid color-mix(
+    in oklab,
+    var(--body-background, #000) 50%,
+    var(--footer-text-color, #777));
+  border-radius: 8px;
+  box-shadow: 0 6px 20px color-mix(
+    in oklab, var(--font-color, #222) 14%, transparent);
+  z-index: 40;
+
+  // Tall locale lists (the EU set is 24+, full list is
+  // 32) blow past viewport height. Flex column lets the
+  // filter input stay pinned while the list scrolls.
+  display: flex;
+  flex-direction: column;
+  max-height: min(60vh, 380px);
+  overflow: hidden;
+}
+
+.locale-filter {
+  margin-bottom: 4px;
+  padding: 6px 10px;
+  background: transparent;
+  color: var(--color-text, #222);
+  border: 1px solid var(--color-border, #ddd);
+  border-radius: 4px;
+  font: inherit;
+
+  &::placeholder {
+    color: var(--color-muted, #888);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--action-color);
+    outline-offset: 1px;
+  }
+}
+
+// Empty-state row shown when the active filter excludes
+// every locale. Toggled via the `hidden` attribute by
+// dpp-footer.ts; styled grey + italic to read as
+// secondary copy rather than a regular menu entry.
+.locale-empty {
+  padding: 8px 10px;
+  @include dpp.sm;
+  font-style: italic;
+  color: var(--color-muted);
+}
+
+.locale-list {
+  flex: 1;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow-y: auto;
+
+  // Thin theme-aware scrollbar matching the modal body.
+  scrollbar-width: thin;
+  scrollbar-color:
+    color-mix(in oklab, var(--font-color) 24%, transparent)
+    transparent;
+
+  &::-webkit-scrollbar { width: 6px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb {
+    background: color-mix(in oklab, var(--font-color) 22%, transparent);
+    border-radius: 6px;
+    border: 1px solid transparent;
+    background-clip: padding-box;
+
+    &:hover {
+      background: color-mix(in oklab, var(--font-color) 38%, transparent);
+    }
+  }
+
+  li { margin: 0; }
+
+  button {
+    display: block;
+    width: 100%;
+    padding: 6px 10px;
+    background: transparent;
+    border: 0;
+    border-radius: 4px;
+    text-align: start;
+    font: inherit;
+    color: var(--color-text, #222);
+    cursor: pointer;
+    white-space: nowrap;
+
+    // Hover and keyboard focus share the same tinted
+    // background. The global `button:focus-visible {
+    // outline }` from app.css would draw a partly-
+    // clipped ring against the menu's overflow:hidden,
+    // so suppress it, the background change is the
+    // visible indicator.
+    &:hover,
+    &:focus-visible {
+      background: color-mix(
+        in oklab, var(--font-color, #222) 8%, transparent);
+      outline: none;
+    }
+
+    &.active {
+      // The dropdown sits on `--background-color` (the
+      // content surface), so the active row picks up
+      // the CONTENT's link colour rather than the
+      // footer's. Falls back to action-color.
+      color: var(--link-color, var(--action-color, #2563eb));
+      font-weight: 600;
+    }
+  }
+}

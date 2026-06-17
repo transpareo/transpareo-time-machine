@@ -1,0 +1,32 @@
+/*
+ * transpareo-time-machine - open-source DPP renderer
+ * Copyright (C) 2026 Transpareo AG
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ *
+ * Hero overrides on top of the shared dpp.scss class
+ * hierarchy. Just the historical-view tag.
+ */
+
+@use 'dpp';
+
+.dpp-historical-tag {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: color-mix(
+    in oklab, var(--color-muted, #777) 18%, transparent);
+  color: var(--color-muted, #777);
+  @include dpp.eyebrow;
+  font-weight: 600;
+  margin-bottom: 14px;
+}
+
+// Slot for the product rating row in the hero. The row
+// markup itself (label + smiley + value) is shared with
+// the library modal, see .dpp-rating-row in
+// dpp-library-modal.scss. The slot stays empty (and
+// collapses to a no-op) when the snapshot's product
+// carries no rating.
+.dpp-product-rating-slot:not(:empty) {
+  margin: 6px 0 14px;
+}

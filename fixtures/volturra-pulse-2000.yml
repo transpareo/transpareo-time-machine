@@ -1,0 +1,996 @@
+schema_version: 1
+id: volturra-pulse-2000
+code: demo-2026-b001
+status: in_use
+published_at: 2024-03-01T09:00:00Z
+verified: true
+regulation: battery
+issuer:
+  name: Volturra Energia
+  did: did:web:volturra.example
+platform:
+  name: Transpareo
+  did: did:web:transpareo.example
+available_locales:
+  - en
+  - de
+  - fr
+branding:
+  css:
+    file: fixtures/volturra-pulse-2000/branding/branding.css
+  logo:
+    width: 185
+    file: fixtures/volturra-pulse-2000/branding/logo.svg
+  favicon:
+    file: fixtures/volturra-pulse-2000/branding/favicon.ico
+images:
+  hero:
+    thumbnail: https://images.unsplash.com/photo-1732030373864-d37573915751?w=800&q=80&fm=jpg&fit=crop&auto=format
+    large: https://images.unsplash.com/photo-1732030373864-d37573915751?w=1600&q=85&fm=jpg&fit=crop&auto=format
+product:
+  name:
+    en: Volturra Pulse 2000
+    de: Volturra Pulse 2000
+    fr: Volturra Pulse 2000
+  brand: Volturra
+  description:
+    en: Portable 2 kWh LFP power station with a 1500 W AC inverter, 600 W solar input, and a 6-port output array. Designed for off-grid, RV, and emergency backup use; CE-marked and EU Battery Regulation compliant. Modular replaceable cells and a published dismantling manual support a >90% recyclability target.
+    de: Tragbare 2-kWh-LFP-Stromspeicherstation mit 1500-W-Wechselrichter, 600-W-Solareingang und sechs Ausgängen. Konzipiert für netzunabhängigen Einsatz, Wohnmobile und Notstromversorgung; CE-zertifiziert und konform mit der EU-Batterieverordnung. Modular tauschbare Zellen und ein veröffentlichtes Demontagehandbuch unterstützen ein Recyclingziel von über 90 %.
+    fr: Station d'énergie portable LFP de 2 kWh avec onduleur 1500 W, entrée solaire 600 W et six ports de sortie. Conçue pour l'usage hors réseau, les camping-cars et le secours d'urgence ; certifiée CE et conforme au règlement européen sur les batteries. Cellules modulaires remplaçables et manuel de démontage publié soutiennent un objectif de recyclabilité supérieur à 90 %.
+  category:
+    en: Portable Power Stations
+    de: Tragbare Stromspeicher
+    fr: Stations d'énergie portables
+  gtin: "4012345992001"
+  weight: 22
+  weight_unit: kg
+  compositions:
+    - key: material
+      title:
+        en: Material composition
+        de: Materialzusammensetzung
+        fr: Composition des matériaux
+      icon: sliders
+      entries:
+        - name:
+            en: LFP Cathode Active Material
+            de: LFP-Kathodenaktivmaterial
+            fr: Matériau actif cathodique LFP
+          percent: 25
+          color: "#6B8E23"
+          country_code: DE
+          library_ref: component/lfp-cathode-active/v1.json
+        - name:
+            en: Synthetic Graphite Anode
+            de: Synthetische Graphitanode
+            fr: Anode en graphite synthétique
+          percent: 15
+          color: "#36454F"
+          country_code: NO
+          library_ref: component/graphite-anode/v1.json
+        - name:
+            en: Steel Cell Casings
+            de: Stahlzellengehäuse
+            fr: Boîtiers de cellule en acier
+          percent: 14
+          color: "#71797E"
+          country_code: SE
+          library_ref: component/steel-casings/v1.json
+        - name:
+            en: Aluminium (Current Collector & Housing)
+            de: Aluminium (Stromkollektor & Gehäuse)
+            fr: Aluminium (collecteur de courant et boîtier)
+          percent: 12
+          color: "#C0C0C0"
+          country_code: NO
+          library_ref: component/aluminum-collector/v1.json
+        - name:
+            en: Copper Current Collector
+            de: Kupfer-Stromkollektor
+            fr: Collecteur de courant en cuivre
+          percent: 8
+          color: "#B87333"
+          country_code: PL
+          library_ref: component/copper-collector/v1.json
+        - name:
+            en: Lithium Hexafluorophosphate Electrolyte
+            de: Lithiumhexafluorophosphat-Elektrolyt
+            fr: Électrolyte hexafluorophosphate de lithium
+          percent: 8
+          color: "#87CEEB"
+          country_code: BE
+          library_ref: component/lipf6-electrolyte/v1.json
+        - name:
+            en: Polymer Separator & BMS Housing
+            de: Polymerseparator & BMS-Gehäuse
+            fr: Séparateur polymère & boîtier BMS
+          percent: 8
+          color: "#E5E4E2"
+          country_code: AT
+          library_ref: component/polymer-separator/v1.json
+        - name:
+            en: BMS Electronics Board
+            de: BMS-Elektronikplatine
+            fr: Carte électronique BMS
+          percent: 5
+          color: "#228B22"
+          country_code: NL
+          library_ref: component/bms-board/v1.json
+        - name:
+            en: AC Inverter Components
+            de: Wechselrichter-Komponenten
+            fr: Composants de l'onduleur CA
+          percent: 3
+          color: "#4682B4"
+          country_code: IT
+          library_ref: component/ac-inverter/v1.json
+        - name:
+            en: Wiring & Connectors
+            de: Verkabelung & Steckverbinder
+            fr: Câblage & connecteurs
+          percent: 2
+          color: "#FF6347"
+          country_code: DE
+          library_ref: component/wiring-connectors/v1.json
+    - key: hazardous
+      title:
+        en: Hazardous substances
+        de: Gefahrstoffe
+        fr: Substances dangereuses
+      icon: attention
+      entries:
+        - name:
+            en: Lithium hexafluorophosphate (LiPF6)
+            de: Lithiumhexafluorophosphat (LiPF6)
+            fr: Hexafluorophosphate de lithium (LiPF6)
+          percent: 3
+          color: "#DC2626"
+        - name:
+            en: Ethylene carbonate (EC)
+            de: Ethylencarbonat (EC)
+            fr: Carbonate d'éthylène (EC)
+          percent: 3.5
+          color: "#F59E0B"
+        - name:
+            en: Dimethyl carbonate (DMC)
+            de: Dimethylcarbonat (DMC)
+            fr: Carbonate de diméthyle (DMC)
+          percent: 3.5
+          color: "#EAB308"
+        - name:
+            en: Lead (Pb) in solder
+            de: Blei (Pb) im Lot
+            fr: Plomb (Pb) dans la soudure
+          percent: 0.004
+          color: "#475569"
+        - name:
+            en: Mercury (Hg)
+            de: Quecksilber (Hg)
+            fr: Mercure (Hg)
+          percent: 0
+          color: "#94A3B8"
+        - name:
+            en: Cadmium (Cd)
+            de: Cadmium (Cd)
+            fr: Cadmium (Cd)
+          percent: 0
+          color: "#CBD5E1"
+    - key: carbon-footprint
+      title:
+        en: Carbon footprint
+        de: CO2-Fußabdruck
+        fr: Empreinte carbone
+      icon: leaf
+      unit: kg CO2e/kWh
+      entries:
+        - name:
+            en: Raw materials extraction
+            de: Rohstoffgewinnung
+            fr: Extraction des matières premières
+          percent: 23
+          color: "#92400E"
+        - name:
+            en: Cell and pack production
+            de: Zell- und Pack-Produktion
+            fr: Production cellules et pack
+          percent: 35
+          color: "#B45309"
+        - name:
+            en: Distribution
+            de: Distribution
+            fr: Distribution
+          percent: 8
+          color: "#0EA5E9"
+        - name:
+            en: Use phase (10-yr charging losses)
+            de: Nutzungsphase (10 Jahre Ladeverluste)
+            fr: Phase d'usage (pertes de charge sur 10 ans)
+          percent: 4
+          color: "#64748B"
+        - name:
+            en: End of life (offset by recovered materials)
+            de: Lebensende (Gutschrift durch zurückgewonnene Materialien)
+            fr: Fin de vie (compensé par les matériaux récupérés)
+          percent: 1
+          color: "#059669"
+  metrics:
+    - key: model
+      label:
+        en: Battery model
+        de: Batteriemodell
+        fr: Modèle de batterie
+      value: VOL-PULSE-2000-EU
+      icon: tag
+    - key: category
+      label:
+        en: Battery category
+        de: Batteriekategorie
+        fr: Catégorie de batterie
+      value:
+        en: Portable (industrial-grade)
+        de: Tragbar (industrietauglich)
+        fr: Portable (qualité industrielle)
+      icon: tag
+    - key: chemistry
+      label:
+        en: Cell chemistry
+        de: Zellchemie
+        fr: Chimie de cellule
+      value:
+        en: LFP (Lithium Iron Phosphate)
+        de: LFP (Lithium-Eisen-Phosphat)
+        fr: LFP (Phosphate de fer lithié)
+      icon: droplet
+    - key: cell_type
+      label:
+        en: Cell type
+        de: Zelltyp
+        fr: Type de cellule
+      value:
+        en: Prismatic, 8 cells in a 4-pack modular array
+        de: Prismatisch, 8 Zellen in modularer 4er-Pack-Anordnung
+        fr: Prismatiques, 8 cellules en module 4-pack
+      icon: tag
+    - key: capacity_wh
+      label:
+        en: Rated energy
+        de: Nennenergie
+        fr: Énergie nominale
+      value: 2048
+      unit: Wh
+      icon: flash
+    - key: capacity_ah
+      label:
+        en: Rated capacity
+        de: Nennkapazität
+        fr: Capacité nominale
+      value: 64 Ah
+      icon: flash
+    - key: voltage_nominal
+      label:
+        en: Nominal voltage
+        de: Nennspannung
+        fr: Tension nominale
+      value: 32 V DC
+      icon: flash
+    - key: voltage_max
+      label:
+        en: Max charging voltage
+        de: Max. Ladespannung
+        fr: Tension de charge max.
+      value: 36.5
+      unit: V DC
+      icon: flash
+    - key: power_ac
+      label:
+        en: AC output power
+        de: AC-Ausgangsleistung
+        fr: Puissance de sortie CA
+      value: 1500 W (3000 W surge)
+      icon: flash
+    - key: efficiency
+      label:
+        en: Round-trip efficiency
+        de: Round-Trip-Wirkungsgrad
+        fr: Rendement aller-retour
+      value: 93%
+      icon: stats
+    - key: cycle_life
+      label:
+        en: Cycle life (to 80% SoH)
+        de: Zyklenlebensdauer (bis 80 % SoH)
+        fr: Durée de vie en cycles (jusqu'à 80 % SoH)
+      value: 3000 cycles @ 80% DoD
+      icon: history
+    - key: state_of_health
+      label:
+        en: State of health (current)
+        de: Gesundheitszustand (aktuell)
+        fr: État de santé (actuel)
+      value:
+        en: 96.4% (fleet median, 2026-04-20 audit, n=120)
+        de: 96,4 % (Flotten-Median, Audit vom 2026-04-20, n=120)
+        fr: 96,4 % (médiane de la flotte, audit du 20-04-2026, n=120)
+      icon: stats
+    - key: cycle_count
+      label:
+        en: Cycle count (typical, 18-month use)
+        de: Zyklenzählerstand (typisch, 18 Monate Nutzung)
+        fr: Nombre de cycles (typique, 18 mois d'usage)
+      value: ~520 cycles
+      icon: history
+    - key: calendar_life
+      label:
+        en: Expected calendar life
+        de: Erwartete kalendarische Lebensdauer
+        fr: Durée de vie calendaire estimée
+      value:
+        en: 10 years (typical use)
+        de: 10 Jahre (typische Nutzung)
+        fr: 10 ans (usage typique)
+      icon: clock
+    - key: internal_resistance
+      label:
+        en: Internal resistance
+        de: Innenwiderstand
+        fr: Résistance interne
+      value: 18 mΩ (initial)
+      icon: stats
+    - key: self_discharge
+      label:
+        en: Self-discharge
+        de: Selbstentladung
+        fr: Auto-décharge
+      value:
+        en: <2% per month at 25°C
+        de: <2 % pro Monat bei 25 °C
+        fr: <2 % par mois à 25 °C
+      icon: stats
+    - key: temperature
+      label:
+        en: Operating temperature
+        de: Betriebstemperatur
+        fr: Température de fonctionnement
+      value:
+        en: −10°C to 45°C (charge); −20°C to 60°C (discharge)
+        de: −10 °C bis 45 °C (Laden); −20 °C bis 60 °C (Entladen)
+        fr: −10 °C à 45 °C (charge) ; −20 °C à 60 °C (décharge)
+      icon: thermometer
+    - key: ip_rating
+      label:
+        en: Ingress protection
+        de: Schutzart
+        fr: Indice de protection
+      value: IP54
+      icon: shield
+    - key: carbon_footprint
+      label:
+        en: Carbon footprint (total cradle-to-gate)
+        de: CO2-Fußabdruck (Cradle-to-Gate gesamt)
+        fr: Empreinte carbone (cradle-to-gate totale)
+      value: 71 kg CO2e/kWh
+      icon: leaf
+    - key: cf_class
+      label:
+        en: CF performance class
+        de: CO2-Leistungsklasse
+        fr: Classe de performance CF
+      value:
+        en: CFClassB (EU 2025/162)
+        de: CFClassB (EU 2025/162)
+        fr: CFClassB (UE 2025/162)
+      icon: leaf
+    - key: lithium_kg
+      label:
+        en: Lithium content
+        de: Lithiumgehalt
+        fr: Teneur en lithium
+      value: 0.62 kg
+      icon: droplet
+    - key: recycled_lithium
+      label:
+        en: Recycled lithium content
+        de: Recycelter Lithiumanteil
+        fr: Contenu en lithium recyclé
+      value:
+        en: 12% total (9% pre-consumer, 3% post-consumer; target 16% by 2031)
+        de: 12 % gesamt (9 % vor Verbrauch, 3 % nach Verbrauch; Ziel 16 % bis 2031)
+        fr: 12 % au total (9 % pré-consommation, 3 % post-consommation ; objectif 16 % d'ici 2031)
+      icon: recycle
+    - key: recycled_aluminum
+      label:
+        en: Recycled aluminium share
+        de: Recycelter Aluminiumanteil
+        fr: Part d'aluminium recyclé
+      value:
+        en: 75% total (75% post-consumer, 0% pre-consumer; Norwegian hydropower smelter)
+        de: 75 % gesamt (75 % nach Verbrauch, 0 % vor Verbrauch; norwegische Wasserkraft-Hütte)
+        fr: 75 % au total (75 % post-consommation, 0 % pré-consommation ; fonderie norvégienne à l'hydroélectricité)
+      icon: recycle
+    - key: facility
+      label:
+        en: Manufacturing facility
+        de: Produktionsstätte
+        fr: Site de fabrication
+      value: Volturra Plant 2, Sesto San Giovanni
+      icon: building
+    - key: made_on
+      label:
+        en: Date of manufacture
+        de: Herstellungsdatum
+        fr: Date de fabrication
+      value:
+        en: February 2024
+        de: Februar 2024
+        fr: Février 2024
+      icon: calendar
+    - key: batch
+      label:
+        en: Batch number
+        de: Chargennummer
+        fr: Numéro de lot
+      value: BATCH-VOL-2024-Q1-014
+      icon: tag
+    - key: serial
+      label:
+        en: Unit serial
+        de: Seriennummer
+        fr: Numéro de série
+      value: PULSE2000-2024-001
+      icon: key
+    - key: origin
+      label:
+        en: Country of origin
+        de: Herkunftsland
+        fr: Pays d'origine
+      value:
+        en: Italy
+        de: Italien
+        fr: Italie
+      icon: globe
+    - key: bms_firmware
+      label:
+        en: BMS firmware version
+        de: BMS-Firmware-Version
+        fr: Version firmware BMS
+      value: v1.4.2
+      icon: cog
+  lists:
+    - key: certifications
+      label:
+        en: Compliance certifications
+        de: Zertifizierungen
+        fr: Certifications
+      values:
+        - CE (EU Battery Regulation 2023/1542)
+        - UN 38.3 (lithium battery transport)
+        - IEC 62133-2 (cell safety)
+        - IEC 62619 (industrial battery safety)
+        - EN 62133-2 (portable cell safety)
+        - EN 50604-1 (light EV traction)
+        - RoHS 2 (Directive 2011/65/EU)
+        - REACH SVHC declaration
+        - WEEE registered (DE 12345678)
+      icon: certificate
+    - key: safety_features
+      label:
+        en: BMS safety features
+        de: BMS-Schutzfunktionen
+        fr: Sécurités BMS
+      values:
+        - en: Overcurrent protection
+          de: Überstromschutz
+          fr: Protection contre les surintensités
+        - en: Overcharge cutoff
+          de: Überladeschutz
+          fr: Coupure de surcharge
+        - en: Undervoltage cutoff
+          de: Tiefentladeschutz
+          fr: Coupure sous-tension
+        - en: Overtemperature shutdown
+          de: Übertemperaturabschaltung
+          fr: Arrêt en cas de surchauffe
+        - en: Short-circuit protection
+          de: Kurzschlussschutz
+          fr: Protection contre les courts-circuits
+        - en: Cell-balancing (passive, 75 mA)
+          de: Zellausgleich (passiv, 75 mA)
+          fr: Équilibrage cellules (passif, 75 mA)
+        - en: Reverse-polarity protection
+          de: Verpolungsschutz
+          fr: Protection contre l'inversion de polarité
+      icon: shield
+    - key: outputs
+      label:
+        en: Output ports
+        de: Ausgänge
+        fr: Ports de sortie
+      values:
+        - 2 × Schuko AC 230 V (1500 W combined)
+        - 2 × USB-C PD (100 W each)
+        - 2 × USB-A QC 3.0 (18 W each)
+        - 1 × XT60 (12 V / 30 A)
+        - 1 × Cigarette socket (12 V / 10 A)
+      icon: flash
+    - key: inputs
+      label:
+        en: Input ports
+        de: Eingänge
+        fr: Ports d'entrée
+      values:
+        - en: AC 230 V mains (700 W max)
+          de: AC 230 V Netz (max. 700 W)
+          fr: Secteur CA 230 V (max. 700 W)
+        - en: MC4 solar (12-50 V, 600 W max)
+          de: MC4 Solar (12-50 V, max. 600 W)
+          fr: Solaire MC4 (12-50 V, max. 600 W)
+        - en: 12 V car (8 A max)
+          de: 12 V Auto (max. 8 A)
+          fr: Voiture 12 V (max. 8 A)
+        - en: USB-C PD bidirectional (100 W)
+          de: USB-C PD bidirektional (100 W)
+          fr: USB-C PD bidirectionnel (100 W)
+      icon: flash
+    - key: accessories
+      label:
+        en: Compatible accessories
+        de: Kompatibles Zubehör
+        fr: Accessoires compatibles
+      values:
+        - en: Pulse 2000 expansion battery (+2 kWh)
+          de: Pulse 2000 Erweiterungsbatterie (+2 kWh)
+          fr: Batterie d'extension Pulse 2000 (+2 kWh)
+        - en: Volturra 200 W solar panel
+          de: Volturra 200-W-Solarpanel
+          fr: Panneau solaire Volturra 200 W
+        - en: Volturra 12 V car charging cable
+          de: Volturra 12-V-KFZ-Ladekabel
+          fr: Câble de charge auto 12 V Volturra
+  accordions:
+    - key: dismantling
+      label:
+        en: Dismantling instructions
+        de: Demontageanleitung
+        fr: Instructions de démontage
+      icon: wrench
+      body:
+        en: "Authorized service only. (1) Discharge to ≤10% SoC and disconnect all loads. (2) Remove the eight T20 Torx screws on the rear panel. (3) Disconnect the BMS-to-cell harness at the orange high-voltage connector, wait 60 s for the bleeder resistor to discharge the bus capacitors. (4) Lift the modular 4-cell array out by the integrated handles; cells slot individually into recyclable trays. Full disassembly manual: volturra.example/dismantling."
+        de: "Nur durch autorisierten Service. (1) Auf ≤10 % SoC entladen und alle Lasten trennen. (2) Acht T20-Torx-Schrauben an der Rückwand entfernen. (3) BMS-zu-Zelle-Kabelbaum am orangefarbenen Hochspannungsstecker trennen, 60 s warten, bis der Bleeder-Widerstand die Buskondensatoren entladen hat. (4) Modulares 4-Zellen-Pack an den integrierten Griffen anheben; Zellen lassen sich einzeln in recycelbare Trays einlegen. Vollständige Demontageanleitung: volturra.example/dismantling."
+        fr: "Service autorisé uniquement. (1) Décharger à ≤10 % SoC et déconnecter toutes les charges. (2) Retirer les huit vis Torx T20 du panneau arrière. (3) Débrancher le faisceau BMS-cellule au connecteur haute tension orange, attendre 60 s la décharge des condensateurs par la résistance de purge. (4) Soulever le pack modulaire de 4 cellules par les poignées intégrées ; les cellules s'insèrent individuellement dans des plateaux recyclables. Manuel de démontage complet : volturra.example/dismantling."
+    - key: recycling
+      label:
+        en: End-of-life & recycling
+        de: Entsorgung & Recycling
+        fr: Fin de vie & recyclage
+      icon: recycle
+      body:
+        en: Do NOT dispose of this battery with household waste. Volturra is registered with EUCOBAT and provides free collection across the EU via volturra.example/recycle. Each unit's cells, BMS, inverter, and casing are processed through separate streams targeting a 90% material recovery rate (cobalt-free chemistry exceeds the EU 2031 lithium-recovery target of 80%).
+        de: Diese Batterie NICHT im Hausmüll entsorgen. Volturra ist bei EUCOBAT registriert und bietet EU-weit kostenlose Rücknahme über volturra.example/recycle. Zellen, BMS, Wechselrichter und Gehäuse jeder Einheit werden in getrennten Stoffströmen verarbeitet mit dem Ziel einer Materialrückgewinnung von 90 % (cobaltfreie Chemie übertrifft das EU-2031-Ziel von 80 % Lithium-Rückgewinnung).
+        fr: NE PAS jeter cette batterie avec les déchets ménagers. Volturra est enregistré auprès d'EUCOBAT et propose une collecte gratuite dans toute l'UE via volturra.example/recycle. Les cellules, le BMS, l'onduleur et le boîtier de chaque unité sont traités dans des flux séparés visant un taux de récupération matière de 90 % (la chimie sans cobalt dépasse l'objectif UE 2031 de 80 % pour le lithium).
+    - key: warranty
+      label:
+        en: Warranty
+        de: Garantie
+        fr: Garantie
+      icon: certificate
+      body:
+        en: 5-year limited warranty covering manufacturing defects and capacity retention ≥70% at year 5 under typical use (1 cycle/day, 25°C ambient). Excludes damage from drops, water beyond IP54, and unauthorized firmware modifications.
+        de: 5 Jahre begrenzte Garantie auf Herstellungsfehler und einen Kapazitätserhalt von ≥70 % nach 5 Jahren bei typischer Nutzung (1 Zyklus/Tag, 25 °C Umgebung). Ausgenommen sind Schäden durch Stürze, Wasser über IP54 hinaus und nicht autorisierte Firmware-Modifikationen.
+        fr: Garantie limitée 5 ans couvrant les défauts de fabrication et la rétention de capacité ≥70 % à l'année 5 sous usage typique (1 cycle/jour, 25 °C ambiant). Exclut les dommages dus aux chutes, à l'eau au-delà d'IP54 et aux modifications firmware non autorisées.
+    - key: safety
+      label:
+        en: Safety guidance
+        de: Sicherheitshinweise
+        fr: Consignes de sécurité
+      icon: shield
+      body:
+        en: LFP chemistry is thermally stable and does not undergo runaway under normal conditions. In the event of physical damage, isolate the unit outdoors away from combustibles and contact Volturra support, do NOT submerge in water. For fire suppression, use a Class D extinguisher or copious sand/dry earth.
+        de: LFP-Chemie ist thermisch stabil und neigt unter normalen Bedingungen nicht zum Durchgehen. Bei physischer Beschädigung das Gerät im Freien fern von brennbaren Materialien isolieren und den Volturra-Support kontaktieren, NICHT in Wasser tauchen. Zur Brandbekämpfung Klasse-D-Löscher oder reichlich Sand/trockene Erde verwenden.
+        fr: La chimie LFP est thermiquement stable et ne subit pas d'emballement dans des conditions normales. En cas de dommage physique, isoler l'appareil à l'extérieur, loin de tout combustible, et contacter le support Volturra, NE PAS immerger dans l'eau. Pour l'extinction, utiliser un extincteur de classe D ou abondamment du sable/terre sèche.
+    - key: due_diligence
+      label:
+        en: Critical raw materials due diligence
+        de: Sorgfaltspflicht für kritische Rohstoffe
+        fr: Diligence raisonnable matières premières
+      icon: key
+      body:
+        en: Volturra's supply-chain due-diligence policy (volturra.example/due-diligence) covers cobalt, lithium, natural graphite, nickel, tin, tantalum, tungsten, and gold per Annex X of Regulation 2023/1542. Independent third-party audits are filed annually with the Italian competent authority (MASE). Conflict-affected and high-risk areas are excluded from the approved-supplier list.
+        de: Volturras Lieferketten-Sorgfaltspflicht (volturra.example/due-diligence) deckt Cobalt, Lithium, Naturgraphit, Nickel, Zinn, Tantal, Wolfram und Gold gemäß Anhang X der Verordnung 2023/1542 ab. Unabhängige Drittprüfungen werden jährlich bei der italienischen zuständigen Behörde (MASE) eingereicht. Konfliktbetroffene und Hochrisikogebiete sind aus der Liste zugelassener Lieferanten ausgeschlossen.
+        fr: La politique de diligence raisonnable de Volturra (volturra.example/due-diligence) couvre le cobalt, le lithium, le graphite naturel, le nickel, l'étain, le tantale, le tungstène et l'or selon l'Annexe X du règlement 2023/1542. Des audits indépendants tiers sont déposés annuellement auprès de l'autorité italienne compétente (MASE). Les zones de conflit et à haut risque sont exclues de la liste des fournisseurs approuvés.
+    - key: negative_events
+      label:
+        en: Negative-event log
+        de: Negative Ereignisse
+        fr: Journal des événements négatifs
+      icon: shield
+      body:
+        en: "No negative events recorded. Through the 2026-04-20 audit, the v4-firmware fleet (n=120) has logged zero entries across the eight categories the regulation tracks: accident, physical damage, thermal event, electrical fault, water ingress, overcharge, deep discharge, short-circuit. The BMS continues to monitor and report each category in real-time; any future incident is appended to this log with a severity rating and an occurrence timestamp."
+        de: "Keine Negativereignisse erfasst. Bis zum Audit vom 2026-04-20 hat die v4-Firmware-Flotte (n=120) keine Einträge in den acht von der Verordnung erfassten Kategorien protokolliert: Unfall, physische Beschädigung, thermisches Ereignis, elektrischer Fehler, Wassereintritt, Überladung, Tiefentladung, Kurzschluss. Das BMS überwacht und meldet jede Kategorie weiterhin in Echtzeit; jeder zukünftige Vorfall wird hier mit einer Schweregradeinstufung und Zeitstempel angehängt."
+        fr: "Aucun événement négatif enregistré. Jusqu'à l'audit du 20-04-2026, la flotte sous firmware v4 (n=120) n'a journalisé aucune entrée dans les huit catégories suivies par le règlement : accident, dommage physique, événement thermique, défaut électrique, infiltration d'eau, surcharge, décharge profonde, court-circuit. Le BMS continue de surveiller et de signaler chaque catégorie en temps réel ; tout incident futur est ajouté ici avec un niveau de gravité et un horodatage."
+  manufacturer:
+    name: Volturra Energia S.p.A.
+    street: Via Galvani 17
+    city: 20121 Milano
+    country: Italy
+snapshots:
+  - version: 1
+    published_at: 2024-03-01T09:00:00Z
+    status: draft
+    images: []
+    description:
+      en: Initial publication, factory-test build of the Pulse 2000 platform. Not yet placed on the EU market; spec sheet and conformity dossier finalised.
+      de: Erstveröffentlichung, Werksprüfmuster der Pulse-2000-Plattform. Noch nicht auf dem EU-Markt; Datenblatt und Konformitätsdossier finalisiert.
+      fr: Publication initiale, version d'usine de la plateforme Pulse 2000. Non encore mise sur le marché européen ; fiche technique et dossier de conformité finalisés.
+    composition:
+      - name: LFP Cathode Active Material
+        percent: 25
+        color: "#6B8E23"
+        country_code: DE
+      - name: Synthetic Graphite Anode
+        percent: 15
+        color: "#36454F"
+        country_code: NO
+      - name: Steel Cell Casings
+        percent: 14
+        color: "#71797E"
+        country_code: SE
+      - name: Aluminium (Current Collector & Housing)
+        percent: 12
+        color: "#C0C0C0"
+        country_code: NO
+      - name: Copper Current Collector
+        percent: 8
+        color: "#B87333"
+        country_code: PL
+      - name: Lithium Hexafluorophosphate Electrolyte
+        percent: 8
+        color: "#87CEEB"
+        country_code: BE
+      - name: Polymer Separator & BMS Housing
+        percent: 8
+        color: "#E5E4E2"
+        country_code: AT
+      - name: BMS Electronics Board
+        percent: 5
+        color: "#228B22"
+        country_code: NL
+      - name: AC Inverter Components
+        percent: 3
+        color: "#4682B4"
+        country_code: IT
+      - name: Wiring & Connectors
+        percent: 2
+        color: "#FF6347"
+        country_code: DE
+  - version: 2
+    published_at: 2024-06-15T08:00:00Z
+    status: placed_on_market
+    images:
+      - hero
+    description:
+      en: First production batch released to EU distribution partners. CE marking affixed; UN 38.3 transport tests passed.
+      de: Erste Produktionscharge an EU-Vertriebspartner ausgeliefert. CE-Kennzeichnung angebracht; UN-38.3-Transportprüfungen bestanden.
+      fr: Premier lot de production livré aux partenaires de distribution UE. Marquage CE apposé ; tests de transport UN 38.3 réussis.
+    composition:
+      - name: LFP Cathode Active Material
+        percent: 25
+        color: "#6B8E23"
+        country_code: DE
+      - name: Synthetic Graphite Anode
+        percent: 15
+        color: "#36454F"
+        country_code: NO
+      - name: Steel Cell Casings
+        percent: 14
+        color: "#71797E"
+        country_code: SE
+      - name: Aluminium (Current Collector & Housing)
+        percent: 12
+        color: "#C0C0C0"
+        country_code: NO
+      - name: Copper Current Collector
+        percent: 8
+        color: "#B87333"
+        country_code: PL
+      - name: Lithium Hexafluorophosphate Electrolyte
+        percent: 8
+        color: "#87CEEB"
+        country_code: BE
+      - name: Polymer Separator & BMS Housing
+        percent: 8
+        color: "#E5E4E2"
+        country_code: AT
+      - name: BMS Electronics Board
+        percent: 5
+        color: "#228B22"
+        country_code: NL
+      - name: AC Inverter Components
+        percent: 3
+        color: "#4682B4"
+        country_code: IT
+      - name: Wiring & Connectors
+        percent: 2
+        color: "#FF6347"
+        country_code: DE
+  - version: 3
+    published_at: 2024-09-22T13:30:00Z
+    status: in_use
+    images:
+      - hero
+    description:
+      en: First customer activation recorded. Initial commissioning telemetry uploaded; SoH 100%, full rated capacity available.
+      de: Erste Kundenaktivierung erfasst. Inbetriebnahme-Telemetrie hochgeladen; SoH 100 %, volle Nennkapazität verfügbar.
+      fr: Première activation client enregistrée. Télémétrie de mise en service téléchargée ; SoH 100 %, pleine capacité nominale disponible.
+    composition:
+      - name: LFP Cathode Active Material
+        percent: 25
+        color: "#6B8E23"
+        country_code: DE
+      - name: Synthetic Graphite Anode
+        percent: 15
+        color: "#36454F"
+        country_code: NO
+      - name: Steel Cell Casings
+        percent: 14
+        color: "#71797E"
+        country_code: SE
+      - name: Aluminium (Current Collector & Housing)
+        percent: 12
+        color: "#C0C0C0"
+        country_code: NO
+      - name: Copper Current Collector
+        percent: 8
+        color: "#B87333"
+        country_code: PL
+      - name: Lithium Hexafluorophosphate Electrolyte
+        percent: 8
+        color: "#87CEEB"
+        country_code: BE
+      - name: Polymer Separator & BMS Housing
+        percent: 8
+        color: "#E5E4E2"
+        country_code: AT
+      - name: BMS Electronics Board
+        percent: 5
+        color: "#228B22"
+        country_code: NL
+      - name: AC Inverter Components
+        percent: 3
+        color: "#4682B4"
+        country_code: IT
+      - name: Wiring & Connectors
+        percent: 2
+        color: "#FF6347"
+        country_code: DE
+  - version: 4
+    published_at: 2025-08-15T10:15:00Z
+    status: in_use
+    images:
+      - hero
+    description:
+      en: BMS firmware updated to v1.4.2, improved coulomb-counting calibration narrows reported SoH error from ±2.5% to ±0.8%. Cycle and capacity figures unchanged; no hardware modification.
+      de: BMS-Firmware auf v1.4.2 aktualisiert, verbesserte Coulomb-Zähler-Kalibrierung reduziert den angegebenen SoH-Fehler von ±2,5 % auf ±0,8 %. Zyklen- und Kapazitätswerte unverändert; keine Hardware-Änderung.
+      fr: Firmware BMS mis à jour vers v1.4.2, l'amélioration du calibrage du comptage coulombique réduit l'erreur SoH déclarée de ±2,5 % à ±0,8 %. Chiffres de cycles et de capacité inchangés ; aucune modification matérielle.
+    composition:
+      - name: LFP Cathode Active Material
+        percent: 25
+        color: "#6B8E23"
+        country_code: DE
+      - name: Synthetic Graphite Anode
+        percent: 15
+        color: "#36454F"
+        country_code: NO
+      - name: Steel Cell Casings
+        percent: 14
+        color: "#71797E"
+        country_code: SE
+      - name: Aluminium (Current Collector & Housing)
+        percent: 12
+        color: "#C0C0C0"
+        country_code: NO
+      - name: Copper Current Collector
+        percent: 8
+        color: "#B87333"
+        country_code: PL
+      - name: Lithium Hexafluorophosphate Electrolyte
+        percent: 8
+        color: "#87CEEB"
+        country_code: BE
+      - name: Polymer Separator & BMS Housing
+        percent: 8
+        color: "#E5E4E2"
+        country_code: AT
+      - name: BMS Electronics Board
+        percent: 5
+        color: "#228B22"
+        country_code: NL
+      - name: AC Inverter Components
+        percent: 3
+        color: "#4682B4"
+        country_code: IT
+      - name: Wiring & Connectors
+        percent: 2
+        color: "#FF6347"
+        country_code: DE
+events:
+  - id: evt-1
+    event_type: published
+    occurred_at: 2024-03-01T09:00:00Z
+    actor_label: Lorenzo Bianchi
+    description:
+      en: Initial Digital Product Passport published for the Pulse 2000 platform.
+      de: Erster digitaler Produktpass für die Pulse-2000-Plattform veröffentlicht.
+      fr: Premier passeport numérique de produit publié pour la plateforme Pulse 2000.
+    version: 1
+  - id: evt-1a
+    event_type: inspection
+    occurred_at: 2024-03-18T11:00:00Z
+    actor_label: TÜV Italia (electrical safety)
+    description:
+      en: IEC 62133-2 cell-safety test report issued; all 50 sample cells passed thermal-runaway, crush, and overcharge protocols.
+      de: IEC-62133-2-Zellsicherheitsprüfbericht ausgestellt; alle 50 Probenzellen bestanden Thermal-Runaway-, Quetsch- und Überladeprotokolle.
+      fr: Rapport de sécurité cellulaire IEC 62133-2 délivré ; les 50 cellules échantillons ont réussi les protocoles de runaway thermique, d'écrasement et de surcharge.
+  - id: evt-1b
+    event_type: inspection
+    occurred_at: 2024-04-02T09:30:00Z
+    actor_label: Bureau Veritas (transport)
+    description:
+      en: UN 38.3 transport-safety test certificate issued; battery cleared for air, sea, road, and rail freight under UN3480 / UN3481.
+      de: UN-38.3-Transportsicherheits-Prüfzertifikat ausgestellt; Batterie freigegeben für Luft-, See-, Straßen- und Schienenfracht gemäß UN3480 / UN3481.
+      fr: Certificat de sécurité de transport UN 38.3 délivré ; batterie autorisée pour le transport aérien, maritime, routier et ferroviaire sous UN3480 / UN3481.
+  - id: evt-2
+    event_type: lifecycle_transition
+    occurred_at: 2024-06-15T08:00:00Z
+    actor_label: Lorenzo Bianchi
+    status_from: draft
+    status_to: placed_on_market
+    description:
+      en: First production batch (BATCH-VOL-2024-Q1-014) released to EU distribution partners with full CE marking and conformity dossier.
+      de: Erste Produktionscharge (BATCH-VOL-2024-Q1-014) an EU-Vertriebspartner ausgeliefert mit vollständiger CE-Kennzeichnung und Konformitätsdossier.
+      fr: Premier lot de production (BATCH-VOL-2024-Q1-014) livré aux partenaires de distribution UE avec marquage CE complet et dossier de conformité.
+    version: 2
+  - id: evt-2a
+    event_type: registered_with_eu
+    occurred_at: 2024-06-20T10:00:00Z
+    actor_label: EU Battery Passport Registry
+    description:
+      en: Battery model VOL-PULSE-2000-EU registered in the EU Battery Passport central registry under Article 77; passport did issued.
+      de: Batteriemodell VOL-PULSE-2000-EU im EU-Batteriepass-Zentralregister gemäß Artikel 77 registriert; Passkennung vergeben.
+      fr: Modèle de batterie VOL-PULSE-2000-EU enregistré dans le registre central du passeport batterie UE selon l'Article 77 ; identifiant de passeport délivré.
+  - id: evt-2b
+    event_type: inspection
+    occurred_at: 2024-07-03T14:00:00Z
+    actor_label: EUCOBAT (collection network)
+    description:
+      en: Producer-responsibility registration confirmed for the EU; pre-paid take-back routing activated for all 27 member states.
+      de: Herstellerverantwortungs-Registrierung für die EU bestätigt; vorausbezahlte Rücknahme-Routen für alle 27 Mitgliedstaaten aktiviert.
+      fr: Inscription au régime de responsabilité du producteur confirmée pour l'UE ; routage de reprise prépayée activé pour les 27 États membres.
+  - id: evt-3
+    event_type: lifecycle_transition
+    occurred_at: 2024-09-22T13:30:00Z
+    actor_label: Volturra backend
+    status_from: placed_on_market
+    status_to: in_use
+    description:
+      en: First customer activation recorded; commissioning telemetry transmitted by the BMS to the Volturra cloud.
+      de: Erste Kundenaktivierung erfasst; Inbetriebnahme-Telemetrie vom BMS an die Volturra-Cloud übertragen.
+      fr: Première activation client enregistrée ; télémétrie de mise en service transmise par le BMS au cloud Volturra.
+    version: 3
+  - id: evt-3a
+    event_type: inspection
+    occurred_at: 2025-03-15T10:00:00Z
+    actor_label: Volturra Quality Assurance
+    description:
+      en: 6-month state-of-health audit on a representative unit population (n=120); median SoH 99.1%, no outliers exceeding cell-balancing thresholds.
+      de: 6-monatige State-of-Health-Prüfung an einer repräsentativen Geräteauswahl (n=120); Median SoH 99,1 %, keine Ausreißer über den Zellausgleichs-Grenzwerten.
+      fr: Audit d'état de santé à 6 mois sur un échantillon représentatif d'unités (n=120) ; SoH médian 99,1 %, aucun outlier au-delà des seuils d'équilibrage des cellules.
+  - id: evt-3b
+    event_type: inspection
+    occurred_at: 2025-05-08T09:00:00Z
+    actor_label: ECOCHEM Lab (carbon footprint)
+    description:
+      en: Annual third-party verification of the cradle- to-gate carbon footprint declaration; measured 71 kg CO2e/kWh, within 2% of the declared value. Performance class B confirmed.
+      de: Jährliche unabhängige Überprüfung der Cradle-to-Gate-CO2-Fußabdruck-Deklaration; gemessen 71 kg CO2e/kWh, innerhalb von 2 % des deklarierten Wertes. Leistungsklasse B bestätigt.
+      fr: Vérification annuelle indépendante de la déclaration d'empreinte carbone cradle-to-gate ; 71 kg CO2e/kWh mesurés, dans la marge de 2 % de la valeur déclarée. Classe de performance B confirmée.
+  - id: evt-4
+    event_type: repair
+    occurred_at: 2025-08-15T10:15:00Z
+    actor_label: Volturra Service Centre Milano
+    description:
+      en: BMS firmware update v1.3.7 to v1.4.2 deployed over the air; coulomb-counting calibration improved. No hardware modification, no impact on declared specifications.
+      de: BMS-Firmware-Update v1.3.7 to v1.4.2 over the air ausgerollt; Coulomb-Zählerkalibrierung verbessert. Keine Hardware-Änderung, keine Auswirkung auf die deklarierten Spezifikationen.
+      fr: Mise à jour du firmware BMS v1.3.7 to v1.4.2 déployée par voie aérienne ; calibrage du comptage coulombique amélioré. Aucune modification matérielle, aucun impact sur les spécifications déclarées.
+    version: 4
+  - id: evt-4a
+    event_type: inspection
+    occurred_at: 2026-02-28T11:00:00Z
+    actor_label: TÜV SÜD (annual EU compliance)
+    description:
+      en: Annual EU Battery Regulation compliance review passed; declared values for capacity, cycle life, carbon footprint, and recycled content verified against production records and field telemetry.
+      de: Jährliche Konformitätsprüfung gemäß EU-Batterieverordnung bestanden; deklarierte Werte für Kapazität, Zyklenlebensdauer, CO2-Fußabdruck und Recyclinganteil mit Produktionsnachweisen und Feldtelemetrie abgeglichen.
+      fr: Examen annuel de conformité au règlement UE sur les batteries réussi ; valeurs déclarées pour la capacité, la durée de vie en cycles, l'empreinte carbone et le contenu recyclé vérifiées par rapport aux registres de production et à la télémétrie de terrain.
+  - id: evt-4b
+    event_type: inspection
+    occurred_at: 2026-04-20T15:00:00Z
+    actor_label: Volturra Quality Assurance
+    description:
+      en: 18-month state-of-health checkpoint; median SoH across the v4-firmware fleet 96.4%, well within the 5-year warranty floor of 70%.
+      de: 18-Monats-Zustandsprüfung; medianer SoH der v4-Firmware-Flotte bei 96,4 %, deutlich über der 5-Jahres-Garantieuntergrenze von 70 %.
+      fr: Point d'état de santé à 18 mois ; SoH médian de la flotte sous firmware v4 à 96,4 %, bien au-dessus du seuil de garantie 5 ans de 70 %.
+epcis:
+  - dpp_event_id: evt-1
+    event_id: urn:uuid:9b2a4d3e-5f6a-4f4b-9c2b-b01000000001
+    event_time: 2024-03-01T09:00:00Z
+    event_time_zone_offset: +01:00
+    record_time: 2024-03-01T09:00:18Z
+    action: ADD
+    biz_step: cbv:BizStep-commissioning
+    disposition: cbv:Disp-active
+    epc_list:
+      - https://dpp.volturra.example/01/4012345992001/21/PULSE2000-2024-001
+    read_point:
+      id: https://id.gs1.org/414/7350199912345
+    biz_location:
+      id: https://id.gs1.org/414/7350199912345
+  - dpp_event_id: evt-2
+    event_id: urn:uuid:9b2a4d3e-5f6a-4f4b-9c2b-b01000000002
+    event_time: 2024-06-15T08:00:00Z
+    event_time_zone_offset: +02:00
+    record_time: 2024-06-15T08:00:42Z
+    action: OBSERVE
+    biz_step: cbv:BizStep-shipping
+    disposition: cbv:Disp-in_transit
+    epc_list:
+      - https://dpp.volturra.example/01/4012345992001/21/PULSE2000-2024-001
+    read_point:
+      id: https://id.gs1.org/414/7350199912345
+    biz_location:
+      id: https://id.gs1.org/414/7350199912345
+  - dpp_event_id: evt-2a
+    event_id: urn:uuid:9b2a4d3e-5f6a-4f4b-9c2b-b01000000003
+    event_time: 2024-06-20T10:00:00Z
+    event_time_zone_offset: +02:00
+    record_time: 2024-06-20T10:00:11Z
+    action: ADD
+    biz_step: cbv:BizStep-other
+    disposition: cbv:Disp-active
+    epc_list:
+      - https://dpp.volturra.example/01/4012345992001/21/PULSE2000-2024-001
+    read_point:
+      id: https://id.gs1.org/414/7350199912345
+    biz_location:
+      id: https://id.gs1.org/414/7350199912345
+    extensions:
+      transpareo:registry: eu-battery-passport
+  - dpp_event_id: evt-3
+    event_id: urn:uuid:9b2a4d3e-5f6a-4f4b-9c2b-b01000000004
+    event_time: 2024-09-22T13:30:00Z
+    event_time_zone_offset: +02:00
+    record_time: 2024-09-22T13:30:09Z
+    action: OBSERVE
+    biz_step: cbv:BizStep-installing
+    disposition: cbv:Disp-active
+    epc_list:
+      - https://dpp.volturra.example/01/4012345992001/21/PULSE2000-2024-001
+    read_point:
+      id: https://id.gs1.org/414/7350199912345
+    biz_location:
+      id: https://id.gs1.org/414/7350199912345
+  - dpp_event_id: evt-4
+    event_id: urn:uuid:9b2a4d3e-5f6a-4f4b-9c2b-b01000000005
+    event_time: 2025-08-15T10:15:00Z
+    event_time_zone_offset: +02:00
+    record_time: 2025-08-15T10:15:33Z
+    action: OBSERVE
+    biz_step: cbv:BizStep-repairing
+    disposition: cbv:Disp-active
+    epc_list:
+      - https://dpp.volturra.example/01/4012345992001/21/PULSE2000-2024-001
+    read_point:
+      id: https://id.gs1.org/414/7350199912345
+    biz_location:
+      id: https://id.gs1.org/414/7350199912345
+    extensions:
+      transpareo:scope: firmware-update
+      transpareo:firmware_from: v1.3.7
+      transpareo:firmware_to: v1.4.2

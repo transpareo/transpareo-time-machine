@@ -1,0 +1,35 @@
+:root {
+  --action-color: #255DBA;
+  --background-color: #FFFFFF;
+  --body-background: #E2E1E0;
+  --button-color-bottom: #255DBA;
+  --button-color-text: #FFFFFF;
+  --button-color-top: #3585D8;
+  --color-highlight: #255DBA;
+  --color-highlight-text: #FFFFFF;
+  --content-max-width: 830px;
+  --content-radius: 10px;
+  --font-color: #3D3C3B;
+  --font-size: 16px;
+  --footer-link-color: #255DBA;
+  --footer-text-color: #828180;
+  --frame-width: 10px;
+  --h1-size: 200%;
+  --h1-style: normal;
+  --h1-weight: 700;
+  --h2-size: 150%;
+  --h2-style: normal;
+  --h2-weight: 700;
+  --h3-size: 125%;
+  --h3-style: normal;
+  --h3-weight: 600;
+  --link-color: #255DBA;
+  --logo-height: 27px;
+  --logo-url: url('/fixtures/nordic-wear-tshirt/branding/logo.svg');
+  --logo-width: 173px;
+  --rating-very-bad: #AB2430;
+  --rating-bad: #AB2430;
+  --rating-neutral: #D4872A;
+  --rating-good: #0A8340;
+  --rating-very-good: #0A8340;
+}

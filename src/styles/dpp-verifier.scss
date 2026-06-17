@@ -1,0 +1,255 @@
+/*
+ * transpareo-time-machine - open-source DPP renderer
+ * Copyright (C) 2026 Transpareo AG
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ *
+ * <dpp-verifier> standalone widget. Self-contained
+ * styles (the element owns its shadow root) so the
+ * widget can drop into any host page without
+ * inheriting / leaking styles. Reads the same theme
+ * tokens (--font-color, --action-color, etc.) the SPA
+ * uses, falling back to neutral defaults when the
+ * host page doesn't define them.
+ */
+
+@use 'dpp';
+
+:host {
+  display: block;
+  font-family: var(--font-sans, system-ui, sans-serif);
+  color: var(--font-color, #1a1a1a);
+}
+
+.verifier {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 640px;
+}
+
+.verifier-form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.verifier-label {
+  @include dpp.sm-bold;
+  color: var(--color-muted, #555);
+}
+
+.verifier-row {
+  display: flex;
+  gap: 8px;
+}
+
+.verifier-input {
+  flex: 1;
+  padding: 8px 10px;
+  border: 1px solid color-mix(
+    in oklab, var(--font-color, #1a1a1a) 25%, transparent);
+  border-radius: var(--radius-sm, 4px);
+  background: var(--background-color, #fff);
+  color: inherit;
+  font-family: var(--font-mono, monospace);
+  @include dpp.sm;
+  min-width: 0;
+
+  &:focus {
+    outline: 2px solid var(--action-color, #5B8DEF);
+    outline-offset: 1px;
+  }
+}
+
+.verifier-submit {
+  padding: 8px 18px;
+  border: 0;
+  border-radius: var(--radius-sm, 4px);
+  background: var(--action-color, #5B8DEF);
+  color: var(--button-color-text, #fff);
+  @include dpp.sm-bold;
+  cursor: pointer;
+
+  &:hover { filter: brightness(1.05); }
+  &:active { filter: brightness(0.95); }
+}
+
+.verifier-status {
+  margin: 0;
+  @include dpp.sm;
+  color: var(--color-muted, #555);
+}
+
+.verifier-error {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm, 4px);
+  background: color-mix(
+    in oklab, var(--color-verify-fail, #dc2626) 12%, transparent);
+  color: var(--color-verify-fail, #dc2626);
+  @include dpp.sm;
+}
+
+// ─── Result card ─────────────────────────────────
+
+.verifier-card {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid color-mix(
+    in oklab, var(--font-color, #1a1a1a) 10%, transparent);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--background-color, #fff);
+
+  &.verdict-authentic .verifier-banner {
+    background: color-mix(
+      in oklab, var(--color-verified, #16a34a) 14%, transparent);
+    .verifier-verdict { color: var(--color-verified, #16a34a); }
+  }
+
+  &.verdict-unauthenticated .verifier-banner {
+    background: color-mix(
+      in oklab, var(--color-verify-fail, #dc2626) 14%, transparent);
+    .verifier-verdict { color: var(--color-verify-fail, #dc2626); }
+  }
+}
+
+.verifier-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 18px;
+  border-bottom: 1px solid color-mix(
+    in oklab, var(--font-color, #1a1a1a) 12%, transparent);
+}
+
+.verifier-verdict {
+  @include dpp.sm-bold;
+  flex: 1;
+}
+
+.verifier-version {
+  @include dpp.xs;
+  color: var(--color-muted, #555);
+}
+
+.verifier-meta {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 6px 16px;
+  margin: 0;
+  padding: 14px 18px;
+  border-bottom: 1px solid color-mix(
+    in oklab, var(--font-color, #1a1a1a) 8%, transparent);
+  @include dpp.sm;
+
+  dt {
+    color: var(--color-muted, #555);
+  }
+
+  dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+}
+
+// ─── Proof chain block ──────────────────────────
+
+.verifier-chain {
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.verifier-section-title {
+  margin: 0;
+  @include dpp.eyebrow;
+  font-weight: 800;
+  color: var(--color-muted, #555);
+}
+
+.verifier-authority {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.verifier-authority-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  @include dpp.sm-bold;
+}
+
+.verifier-authority-label { color: var(--font-color, #1a1a1a); }
+
+.verifier-entries {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-left: 26px;
+}
+
+.verifier-entry {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 8px 12px;
+  @include dpp.sm;
+
+  .orb { grid-row: 1; }
+
+  .verifier-entry-vm {
+    grid-row: 1;
+    overflow-wrap: anywhere;
+    font-family: var(--font-mono, monospace);
+    background: color-mix(
+      in oklab, var(--font-color, #1a1a1a) 7%, transparent);
+    padding: 2px 6px 1px;
+    border-radius: 4px;
+    @include dpp.xs;
+  }
+
+  .verifier-entry-status {
+    grid-row: 1;
+    color: var(--color-muted, #555);
+    @include dpp.xs;
+    white-space: nowrap;
+  }
+
+  .verifier-entry-reason {
+    grid-column: 2 / -1;
+    grid-row: 2;
+    color: var(--color-verify-fail, #dc2626);
+    @include dpp.xs;
+  }
+}
+
+// ─── Orbs ───────────────────────────────────────
+// Reused chip-style orb. Colour token comes from the
+// orb-* class; size and centring are set here.
+
+.orb {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: color-mix(
+    in oklab, currentColor 18%, transparent);
+  color: var(--color-muted, #555);
+
+  .icon {
+    margin: 0;
+    width: 12px;
+    height: 12px;
+  }
+}
+
+.orb-verified { color: var(--color-verified, #16a34a); }
+.orb-failed { color: var(--color-verify-fail, #dc2626); }
+.orb-pending { color: var(--color-muted, #555); }

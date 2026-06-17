@@ -1,0 +1,44 @@
+name: Feature request
+description: A new capability or a refinement to an existing one.
+labels: [feature]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Per CONTRIBUTING.md: please file the issue
+        before opening a PR for anything non-trivial,
+        so we can agree on direction first.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What's the user-facing problem?
+      description: |
+        Describe the situation a visitor, publisher,
+        or contributor is in today. Skip "I would like
+        X"; start with "today, when I X, Y happens".
+    validations:
+      required: true
+  - type: textarea
+    id: proposed
+    attributes:
+      label: Proposed shape (optional)
+      description: |
+        Rough sketch of the API, UI, or workflow change
+        you have in mind. A maintainer may push back on
+        the shape but having one to react to is faster
+        than starting from blank.
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: |
+        Other approaches you weighed. Helps reviewers
+        understand why you landed on the proposed one.
+  - type: textarea
+    id: scope
+    attributes:
+      label: Where in the codebase do you expect this to land?
+      description: |
+        File paths or module names if you have a guess.
+        Maintainers may correct, but the guess focuses
+        the discussion.

@@ -1,0 +1,369 @@
+/*
+ * transpareo-time-machine - open-source DPP renderer
+ * Copyright (C) 2026 Transpareo AG
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ *
+ * Event-details modal. Two-stack body: the renderer's
+ * own DppEvent fields at the top, EPCIS ObjectEvent
+ * fields + raw JSON-LD nested below when this event was
+ * projected to the public events file.
+ */
+
+@use 'dpp';
+
+.event-modal-section {
+  padding: 18px 22px;
+  border-bottom: 1px solid color-mix(
+    in oklab, var(--font-color) 10%, transparent);
+
+  &:last-child { border-bottom: 0; }
+}
+
+.event-modal-date {
+  @include dpp.sm;
+  color: var(--color-text);
+}
+
+.event-modal-grid {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  column-gap: 18px;
+  row-gap: 8px;
+  margin: 0;
+
+  // Baseline-align the smaller dt against the larger dd
+  // so the label doesn't sit visually higher than its
+  // value.
+  align-items: baseline;
+
+  dt {
+    @include dpp.sm;
+    color: var(--color-muted);
+  }
+
+  dd {
+    margin: 0;
+    @include dpp.sm;
+    color: var(--color-text);
+  }
+}
+
+// Per-version property delta. Same two-column grid as the
+// event grid: the kind (Added / Modified / Removed) is the
+// label, the comma-joined property names the value.
+.change-set-grid {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  column-gap: 18px;
+  row-gap: 8px;
+  margin: 0;
+  align-items: baseline;
+}
+
+.change-set-kind {
+  @include dpp.sm;
+  font-weight: 600;
+  color: var(--color-muted);
+}
+
+.change-set-names {
+  margin: 0;
+  @include dpp.sm;
+  color: var(--color-text);
+}
+
+.event-modal-status {
+  display: inline-flex;
+  align-items: center;
+
+  // Let narrow viewports break the row into stacked
+  // items (from / arrow / to) rather than letting the
+  // labels themselves wrap mid-word.
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.event-modal-status-from,
+.event-modal-status-to {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.event-modal-status-arrow {
+  display: inline-flex;
+  align-items: center;
+  color: var(--color-muted);
+  opacity: 0.55;
+
+  // The global `.icon { margin-right: 5px }` rule from
+  // dpp.scss would push the arrow glyph 5px to the
+  // left of its wrapper, making it sit closer to the
+  // from-status word than the to-status word. Zero
+  // out the margin so the parent's flex gap (6px on
+  // each side) is the only horizontal spacing.
+  .icon { margin: 0; }
+}
+
+.event-modal-subtitle {
+  margin: 0 0 8px;
+  font-family: var(--font-sans);
+  @include dpp.eyebrow;
+  color: var(--color-muted);
+}
+
+.event-modal-description {
+  margin: 0;
+  @include dpp.regular;
+  line-height: 1.5;
+  color: var(--color-text);
+}
+
+// ─── Technical-details disclosure ─────────────────
+// Native <details> wrapping the EPCIS data. Chevron
+// uses the same CSS-triangle pattern as the
+// dpp-accordion, rotates 180° on [open].
+.event-modal-disclosure {
+  // Strip the default disclosure triangle so our
+  // chevron is the only marker.
+  summary { list-style: none; }
+  summary::-webkit-details-marker { display: none; }
+  summary::marker { content: ''; }
+}
+
+.event-modal-disclosure-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+  user-select: none;
+  font-family: var(--font-sans);
+}
+
+.event-modal-disclosure-label {
+  @include dpp.eyebrow;
+  color: var(--color-muted);
+}
+
+.event-modal-disclosure[open] .event-modal-disclosure-summary
+  .chevron {
+  transform: rotate(180deg);
+}
+
+// The grey card holding the EPCIS field grid + raw
+// JSON. Sits inside the disclosure so it's only
+// rendered when expanded.
+.epcis-card {
+  margin-top: 12px;
+  padding: 14px 16px;
+  background: color-mix(
+    in oklab, var(--font-color) 4%, transparent);
+  border-radius: var(--radius-sm);
+}
+
+.epcis-grid {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  column-gap: 18px;
+  row-gap: 10px;
+  margin: 0 0 16px;
+
+  dt {
+    @include dpp.sm;
+    color: var(--color-muted);
+    align-self: baseline;
+  }
+
+  dd {
+    margin: 0;
+    @include dpp.sm;
+    word-break: break-word;
+
+    code {
+      font-family: var(--font-mono);
+      @include dpp.xs;
+      color: var(--color-text);
+    }
+  }
+}
+
+.epcis-cbv,
+.epcis-location {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.epcis-cbv-label,
+.epcis-gln {
+  font-weight: 600;
+}
+
+.epcis-cbv-curie {
+  @include dpp.xs;
+  color: var(--color-muted);
+}
+
+.epcis-gln {
+  font-variant-numeric: tabular-nums;
+}
+
+.epcis-epc-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.epcis-epc-list li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.epcis-epc-short {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.epcis-raw {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+// Heading row: title on the left, copy button pushed
+// to the right edge.
+.epcis-raw-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+// Copy + Download sit side-by-side in the head row,
+// so the two actions read as a small toolbar instead
+// of competing for the same anchor point.
+.epcis-raw-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+// Download mirrors .epcis-copy's shape (same publisher-
+// button gradient + border) but stays text-secondary
+// at rest because Copy is the more frequent action on
+// the same row; the download glyph carries the
+// affordance signal.
+.epcis-download {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  @include dpp.eyebrow;
+  color: var(--action-color);
+  background: transparent;
+  border: 1px solid color-mix(
+    in oklab, var(--action-color) 40%, transparent);
+  border-radius: var(--radius-sm);
+  padding: 4px 10px;
+  cursor: pointer;
+  transition: background 160ms ease, color 160ms ease;
+
+  .icon { width: 1em; height: 1em; margin: 0; }
+
+  &:hover,
+  &:focus-visible {
+    background: color-mix(
+      in oklab, var(--action-color) 10%, transparent);
+    outline: none;
+  }
+}
+
+.epcis-raw-title {
+  margin: 0;
+  font-family: var(--font-sans);
+  @include dpp.eyebrow;
+  color: var(--color-muted);
+}
+
+.epcis-copy {
+  // Publisher-themed primary button, the only surface in
+  // the SPA that consumes --button-color-*. Other
+  // buttons live inside the timeline frame and have
+  // their own scrubber-friendly styling. Local aliases
+  // keep the rule readable: each var either picks up
+  // the issuer's token or falls back to the pre-theme
+  // transparent + action-color look.
+  --btn-bg-top: var(--button-color-top, transparent);
+  --btn-bg-bottom: var(--button-color-bottom, transparent);
+  --btn-text: var(--button-color-text, var(--action-color));
+  --btn-border: var(--button-color-bottom, color-mix(
+    in oklab, var(--action-color) 40%, transparent));
+
+  @include dpp.eyebrow;
+  color: var(--btn-text);
+  background: linear-gradient(
+    to bottom, var(--btn-bg-top), var(--btn-bg-bottom));
+  border: 1px solid var(--btn-border);
+  border-radius: var(--radius-sm);
+  padding: 4px 10px;
+  cursor: pointer;
+  transition: background 160ms ease, color 160ms ease,
+    border-color 160ms ease;
+
+  &:hover {
+    background: linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--btn-bg-top), #fff 15%),
+      color-mix(in srgb, var(--btn-bg-bottom), #fff 15%));
+    border-color: color-mix(in srgb, var(--btn-border), #fff 15%);
+  }
+
+  &.copied {
+    color: var(--color-verified-text, #4ade80);
+    border-color: color-mix(
+      in oklab, var(--color-verified, #16a34a) 40%, transparent);
+    background: transparent;
+  }
+}
+
+.epcis-json {
+  margin: 0;
+  padding: 14px 16px;
+  background: color-mix(in oklab, var(--font-color) 8%, transparent);
+  border: 1px solid color-mix(
+    in oklab, var(--font-color) 10%, transparent);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  @include dpp.xs;
+  line-height: 1.5;
+  color: var(--color-text);
+  overflow-x: auto;
+  white-space: pre;
+  max-height: 360px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color:
+    color-mix(in oklab, var(--font-color) 24%, transparent)
+    transparent;
+
+  &::-webkit-scrollbar { width: 6px; height: 6px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-button { display: none; }
+  &::-webkit-scrollbar-corner { background: transparent; }
+
+  &::-webkit-scrollbar-thumb {
+    background: color-mix(
+      in oklab, var(--font-color) 22%, transparent);
+    border-radius: 6px;
+    border: 1px solid transparent;
+    background-clip: padding-box;
+
+    &:hover {
+      background: color-mix(
+        in oklab, var(--font-color) 38%, transparent);
+    }
+  }
+}

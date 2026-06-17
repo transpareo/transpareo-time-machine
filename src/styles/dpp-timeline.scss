@@ -1,0 +1,963 @@
+/*
+ * transpareo-time-machine - open-source DPP renderer
+ * Copyright (C) 2026 Transpareo AG
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ *
+ * Timeline strip. State `hidden` shows just the
+ * "Show DPP history" toggle link inside the trough;
+ * `expanded` brings in the year labels, ticks, dot
+ * strip, and the closing toggle link. State drives
+ * what's rendered via the [data-state] attribute on
+ * the host element.
+ */
+
+@use 'dpp';
+
+dpp-timeline {
+  display: block;
+  width: 100%;
+  text-align: center;
+}
+
+// ─── Reveal button (visible only in `hidden`) ──────
+// Centred above the live card, styled like the
+// locale picker in the footer.
+
+// Link-style toggle: small uppercase text in the
+// trough, no background or border. In the open
+// timeline it sits flush with the lower boundary so it
+// reads as a quiet "Hide DPP history" footnote.
+.versions-toggle {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin: 4px auto 0;
+  padding: 4px 8px;
+  background: transparent;
+  border: 0;
+
+  // Link-styled toggle, picks up --footer-link-color
+  // since it reads as a footer/secondary control even
+  // though it sits above the timeline trough.
+  color: var(--footer-link-color, var(--action-color));
+  font: inherit;
+  @include dpp.eyebrow;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 160ms ease;
+
+  // Trim the line-box to the visible cap-to-baseline
+  // band so flex's `align-items: center` centres the
+  // icon against the text's *visible* extent rather
+  // than the font's full em (which varies per font).
+  // Without this, Inter / Plus Jakarta Sans / SF / etc.
+  // each leave a different amount of ascender space
+  // above caps and the icon appears low.
+  text-box-trim: trim-both;
+  text-box-edge: cap alphabetic;
+
+  &:hover { text-decoration: underline; }
+
+  // Default state shows the history-clock icon; the
+  // cancel/X icon is swapped in by the [data-state]
+  // rules below.
+  .versions-hide-icon { display: none; }
+
+  .chevron.up { transform: rotate(180deg); }
+}
+
+.versions-show-icon,
+.versions-hide-icon {
+  @include dpp.sm;
+}
+
+// Swap the toggle's icon between hidden ("Show DPP
+// history" = history icon) and non-hidden ("Hide DPP
+// history" = sprite's X). Same swap applies in expanded
+// and full states since both are closing actions.
+dpp-timeline[data-state='expanded'] .versions-toggle,
+dpp-timeline[data-state='full'] .versions-toggle {
+  // Close action sits on the trough, so it reads from
+  // the timeline label palette (matching the year
+  // labels) rather than the footer text colour.
+  color: var(--timeline-label-color, var(--footer-text-color, #777));
+  .versions-show-icon { display: none; }
+  .versions-hide-icon { display: inline-block; }
+}
+
+// In the hidden state the trough stays visible but
+// only the link survives, labels / ticks / strip
+// fade out so the link reads as the only handle. The
+// trough switches to flex centring so the link's top
+// and bottom margins are visually equal.
+dpp-timeline[data-state='hidden'] {
+  .tick-labels,
+  .ticks,
+  .strip {
+    opacity: 0;
+    pointer-events: none;
+    max-height: 0;
+    overflow: hidden;
+  }
+
+  // Only collapse-hide in the hidden state, leaving
+  // .tick-labels' overflow visible elsewhere lets the
+  // sticky labels pin to the scroll-pane edge.
+  .tick-labels { overflow: hidden; }
+  .timeline { padding: 4px 0; }
+  .versions-toggle { margin: 0 auto; }
+}
+
+.tick-labels, .strip {
+  transition:
+    max-height 280ms ease,
+    opacity 200ms ease;
+}
+
+.strip { overflow: hidden; }
+
+// In hidden state the only thing above the card is the
+// reveal button, so shed the card's default 24px top
+// margin, match the footer's 14px breathing room. On
+// narrow screens the card goes edge-to-edge and IS the
+// page surface, so any gap would expose body-bg
+// between the trough and the card. Drop the breathing
+// room there and let the card sit flush.
+dpp-timeline[data-state='hidden'] ~ dpp-deck .card {
+  margin-top: 14px;
+
+  @media (max-width: 830px) {
+    margin-top: 0;
+  }
+}
+
+// Full state keeps the trough visible at the top with
+// the cards area extending it downward inside the same
+// .timeline container. Hide the in-strip details panel
+// and the secondary "Hide events" link, .versions-
+// toggle (the X-button) is the only close affordance,
+// taking the user directly to hidden in one click.
+dpp-timeline[data-state='full'] {
+  .event-details,
+  .full-close-link {
+    display: none;
+  }
+}
+
+// The timeline is pre-stretched so the strip routinely
+// extends beyond the viewport. .scroll-pane handles the
+// horizontal scroll in both expanded and full states,
+// while the close link / toggle link below stay pinned
+// to the viewport. Scrollbars are hidden, the
+// horizontal extent is implied by the strip's content
+// and the user scrolls via wheel / touch / drag.
+.scroll-pane {
+  position: relative;
+  scrollbar-width: none;
+}
+
+.scroll-pane::-webkit-scrollbar {
+  display: none;
+}
+
+dpp-timeline:not([data-state='hidden']) .scroll-pane {
+  overflow-x: auto;
+
+  /* Explicit visible on the cross-axis so tick lines
+     and other absolute children are free to extend
+     above the trough, without this, setting overflow-x
+     would also constrain overflow-y. */
+  overflow-y: visible;
+}
+
+// Grab cursor advertises the drag-to-pan affordance to a
+// desktop mouse whenever the trough overflows, turning to
+// `grabbing` for the duration of a drag. A trackpad user
+// pans natively and a touch user swipes; the cursor only
+// shows for a mouse hovering scrollable content.
+dpp-timeline[data-scrollable] .scroll-pane {
+  cursor: grab;
+}
+
+dpp-timeline[data-grabbing] .scroll-pane {
+  cursor: grabbing;
+}
+
+dpp-timeline:not([data-state='full']) {
+  .full-area,
+  .full-close-link {
+    display: none;
+  }
+}
+
+// ─── Outer container ────────────────────────────────
+
+.timeline {
+  position: relative;
+  width: 100%;
+  padding: 8px 0 4px;
+  --trough-bg: var(--timeline-background, #{color-mix(
+    in oklab, var(--body-background) 92%, var(--font-color) 8%)});
+  background: var(--trough-bg);
+  border-top: 1px solid color-mix(
+    in oklab, var(--font-color) 14%, transparent);
+  border-bottom: 1px solid color-mix(
+    in oklab, var(--font-color) 14%, transparent);
+
+  /* Inset trough, heavier top edge, lighter bottom. */
+  box-shadow:
+    inset 0 12px 20px -10px color-mix(
+      in oklab, var(--font-color) 28%, transparent),
+    inset 0 -8px 14px -8px color-mix(
+      in oklab, var(--font-color) 16%, transparent);
+  user-select: none;
+}
+
+// Edge fades indicating more content off-screen. The
+// pseudo-elements are pinned to the trough's left and
+// right edges (not the scroll-pane's), so they stay put
+// as the user scrolls. Visibility is driven by data-
+// attrs that the dpp-timeline element sets in response
+// to scroll events.
+.timeline::before,
+.timeline::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 32px;
+  pointer-events: none;
+  z-index: 5;
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+
+// The right-edge fade is always shown so the trough
+// reads as continuously fading to the page background
+// even at the very end of the scroll range, the
+// open-full button blends into the gradient instead
+// of standing on a hard edge.
+.timeline::after {
+  opacity: 1;
+}
+
+@media (max-width: 600px) {
+  .timeline::before,
+  .timeline::after {
+    width: 20px;
+  }
+  .open-full-btn {
+    right: 28px;
+  }
+}
+
+.timeline::before {
+  left: 0;
+  background: linear-gradient(
+    to right, var(--trough-bg), transparent);
+}
+
+.timeline::after {
+  right: 0;
+  background: linear-gradient(
+    to left, var(--trough-bg), transparent);
+}
+
+dpp-timeline[data-fade-left] .timeline::before { opacity: 1; }
+
+// ─── Year-label row (top) ───────────────────────────
+
+.tick-labels {
+  position: relative;
+  top: -5px;
+  width: 100%;
+  height: 16px;
+  pointer-events: none;
+
+  /* Slots flow inline-left-to-right, no wrapping,
+     their widths together cover the year-tick span. */
+  white-space: nowrap;
+  font-size: 0;
+
+  /* dpp-timeline cascades text-align:center, which
+     would shift the slot row by (parent − content)/2. */
+  text-align: start;
+}
+
+// Each year label lives inside a slot the width of
+// its year span. The slot is absolute-positioned at
+// the year's tick; the label inside is `sticky`, so
+// the browser pins it to the viewport-left while the
+// slot is in view and lets it slide off as the next
+// year's slot scrolls in. Falls back to JS only if
+// the 100px-lookahead behaviour ever needs more
+// nuance than CSS sticky provides.
+.tick-label-spacer,
+.tick-label-slot {
+  display: inline-block;
+  height: 16px;
+  font-size: 0;
+  vertical-align: top;
+}
+
+.tick-label-slot {
+  /* dpp-timeline cascades text-align:center; override
+     so the inline-block label sits at the slot's left
+     edge (where its sticky range starts). */
+  text-align: start;
+}
+
+.tick-label {
+  position: sticky;
+  left: 12px;
+  display: inline-block;
+
+  /* Breathing room from the tick line at the slot's
+     start, also adds to the visible offset when the
+     label is pinned to the viewport edge. */
+  margin-left: 6px;
+  @include dpp.sm-bold;
+  font-style: italic;
+  color: var(--timeline-label-color, color-mix(
+    in oklab, var(--font-color) 55%, transparent));
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+
+  /* Render above the .timeline edge fades so the year
+     numbers stay legible at the corners. */
+  z-index: 6;
+}
+
+// ─── Tick lines (year/month markers) ────────────────
+// Each line runs from the strip's centre line all the
+// way UP to the top of the viewport, so the label
+// reads as anchored to the screen edge. Achieved by
+// rooting the tick host at top: -100vh with overflow
+// visible, the line's actual rendered span is
+// (100vh + label-row + half-strip) but only the part
+// that falls inside the viewport is visible.
+
+.ticks {
+  position: absolute;
+  top: -100vh;
+  left: 0;
+  right: 0;
+
+  /* Reach down to the strip's centre line so the tick
+     just touches the timeline without crossing into
+     the dot row. 16px label-row + 11px half-strip = 27px.
+   */
+  height: calc(100vh + 16px + 11px);
+  overflow: visible;
+  pointer-events: none;
+}
+
+.tick {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--timeline-line-color, color-mix(
+    in oklab, var(--font-color) 22%, transparent));
+}
+
+// ─── Strip (centre line + dots) ─────────────────────
+
+.strip {
+  position: relative;
+  width: 100%;
+  height: 22px;
+  cursor: pointer;
+}
+
+// Two parallel diagonals on the strip line indicating
+// a compressed time-gap. The trough background bar
+// erases the strip-line behind the marks so they read
+// as a clean break in the timeline.
+.gap-mark {
+  position: absolute;
+  top: 50%;
+  height: 14px;
+  margin-top: -7px;
+  pointer-events: none;
+  background: color-mix(
+    in oklab, var(--body-background) 92%, var(--font-color) 8%);
+}
+
+.gap-mark::before,
+.gap-mark::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: color-mix(
+    in oklab, var(--font-color) 55%, transparent);
+  transform: skewX(-22deg);
+}
+
+.gap-mark::before { left: 36%; }
+.gap-mark::after { left: 56%; }
+
+.strip-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  margin-top: -0.5px;
+  background: var(--timeline-line-color, color-mix(
+    in oklab, var(--font-color) 24%, transparent));
+  pointer-events: none;
+  transition:
+    height 160ms ease,
+    margin-top 160ms ease,
+    background-color 160ms ease;
+}
+
+// Brighten + thicken the centre line on strip hover so
+// the scrub band reads as a clear hit target. Publishers
+// that set --timeline-line-color get a darker hover by
+// blending it with the font colour.
+.strip:hover .strip-line {
+  height: 2px;
+  margin-top: -1px;
+  background: color-mix(
+    in oklab, var(--timeline-line-color,
+      color-mix(in oklab, var(--font-color) 24%, transparent))
+    60%, var(--font-color));
+}
+
+.events {
+  position: absolute;
+  inset: 0;
+}
+
+// Touch-friendly dots: 24×24 transparent button for the
+// hit area; visible 14px dot drawn via ::before.
+.event {
+  position: absolute;
+  top: 50%;
+  width: 24px;
+  height: 24px;
+  margin-left: -12px;
+  margin-top: -12px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  z-index: 1;
+
+  // Hovered/active dot lifts above neighbours so dense
+  // clusters pick out cleanly.
+  &.active { z-index: 2; }
+  &.hovered,
+  &:hover { z-index: 3; }
+
+  &:focus-visible {
+    outline: 2px solid var(--action-color);
+    outline-offset: 1px;
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 14px;
+    height: 14px;
+    margin-top: -7px;
+    margin-left: -7px;
+    background: var(--event-color);
+    border-radius: 50%;
+
+    /* Non-active dots dim down so the active and
+       hovered ones read as the primary anchors. */
+    opacity: 0.55;
+    transition: opacity 160ms ease;
+  }
+
+  // Active / hovered marker: a 2px ring in the event
+  // colour with a 2px trough-bg gap between dot and
+  // ring, so the ring reads as floating around the dot.
+  &.active::before,
+  &.hovered::before,
+  &:hover::before {
+    opacity: 1;
+    box-shadow:
+      0 0 0 2px var(--trough-bg),
+      0 0 0 4px var(--event-color);
+  }
+}
+
+// Reveal animation, newest dot pops in first, oldest
+// last. Each dot has its own `--enter-delay` set in TS
+// based on its index (right-to-left stagger).
+dpp-timeline[data-revealing] .event {
+  animation: dpp-event-in 220ms ease-out backwards;
+  animation-delay: var(--enter-delay, 0ms);
+}
+
+@keyframes dpp-event-in {
+  from { opacity: 0; transform: translateY(-4px) scale(0.6); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  dpp-timeline[data-revealing] .event { animation: none; }
+}
+
+// One-shot expanding ring on activation.
+.active-pulse {
+  position: absolute;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  margin-left: -7px;
+  margin-top: -7px;
+  border-radius: 50%;
+  border: 2px solid var(--event-color, currentColor);
+  pointer-events: none;
+  transform-origin: center;
+  animation: dot-pulse 600ms ease-out forwards;
+}
+
+@keyframes dot-pulse {
+  from { transform: scale(0.6); opacity: 0.7; }
+  to { transform: scale(2.6); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .active-pulse { animation: none; opacity: 0; }
+}
+
+// ─── Prev/next nav arrows ─────────────────────────
+
+// Big chevrons flanking the event-details area. Click
+// to jump to the previous / next event; arrow keys do
+// the same. Hidden in hidden / full states, only the
+// expanded state surfaces them. Centred vertically
+// against the fixed-height details card.
+.nav-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  margin-top: 12px;
+
+  /* Round 32x32 button, same border + background
+     tokens as the open-full button to keep them in the
+     same visual family while the rect-vs-circle
+     distinction tells the user "directional nav" vs
+     "mode toggle". */
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: 50%;
+  background: var(--trough-bg);
+  border: 1px solid color-mix(
+    in oklab,
+    var(--timeline-card-text, var(--font-color)) 18%,
+    transparent);
+  cursor: pointer;
+  color: color-mix(
+    in oklab,
+    var(--timeline-card-text, var(--font-color)) 70%,
+    transparent);
+  transition:
+    color 160ms ease,
+    background-color 160ms ease,
+    border-color 160ms ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  /* Above the edge fades so the arrows stay crisp on
+     top of the gradient. */
+  z-index: 25;
+
+  &:hover:not(:disabled) {
+    background: color-mix(
+      in oklab,
+      var(--trough-bg) 80%,
+      var(--timeline-card-text, var(--font-color)) 20%);
+    color: var(--timeline-card-text, var(--font-color));
+  }
+
+  &:disabled {
+    opacity: 0.35;
+    cursor: default;
+    pointer-events: none;
+  }
+
+  svg {
+    width: 14px;
+    height: 14px;
+    display: block;
+
+    // Default svg fill is solid black; without this the
+    // chevron stays black regardless of the button's
+    // `color` token (the global svg.icon rule that does
+    // this for class="icon" elements doesn't apply here
+    // because these are unclassed nav-arrow SVGs).
+    fill: currentColor;
+  }
+}
+
+.nav-arrow-prev {
+  left: 8px;
+
+  /* chevron-down points down by default; rotate so it
+     points left for prev. */
+  svg { transform: rotate(90deg); }
+}
+
+.nav-arrow-next {
+  right: 8px;
+  svg { transform: rotate(-90deg); }
+}
+
+// Hide arrows in hidden state (the toggle link is the
+// only handle then) and in full state (cards take over
+// the navigation surface).
+dpp-timeline[data-state='hidden'] .nav-arrow,
+dpp-timeline[data-state='full'] .nav-arrow {
+  display: none;
+}
+
+// ─── Open-full button ─────────────────────────────
+
+// Small rounded square pinned to the right edge of the
+// trough, vertically centred on the strip-line. Click
+// jumps to the full events overview. Hidden in the
+// hidden state (no timeline yet) and in full state
+// (we're already there).
+.open-full-btn {
+  position: absolute;
+  top: calc(8px + 16px + 11px); /* strip centre y */
+  transform: translateY(-50%);
+  right: 8px;
+  width: 32px;
+  height: 28px;
+  padding: 0;
+
+  /* Opaque so dots passing behind it don't bleed
+     through. Sits above the strip via z-index. */
+  background: var(--trough-bg);
+  border: 1px solid color-mix(
+    in oklab,
+    var(--timeline-card-text, var(--font-color)) 18%,
+    transparent);
+  border-radius: 6px;
+  cursor: pointer;
+  color: color-mix(
+    in oklab,
+    var(--timeline-card-text, var(--font-color)) 70%,
+    transparent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+  transition: background-color 160ms ease, color 160ms ease;
+
+  &:hover {
+    background: color-mix(
+      in oklab,
+      var(--trough-bg) 80%,
+      var(--timeline-card-text, var(--font-color)) 20%);
+    color: var(--timeline-card-text, var(--font-color));
+  }
+
+  .icon {
+    margin: 0;
+    @include dpp.sm;
+    line-height: 1;
+  }
+}
+
+dpp-timeline[data-state='hidden'] .open-full-btn {
+  display: none;
+}
+
+// Swap the button's icon between expanded (resize-full
+// = open) and full (cancel = close) without changing
+// the button itself.
+.open-full-btn .close-full-icon { display: none; }
+dpp-timeline[data-state='full'] .open-full-btn {
+  .open-full-icon { display: none; }
+  .close-full-icon { display: inline-block; }
+}
+
+// ─── Generic event-card surface ────────────────────
+// Shared visual base for the expanded-state details
+// card and the full-state panel cards. Each variant
+// adds its own border, gap, sizing, and behaviour on
+// top of this surface.
+.event-card {
+  border-radius: 8px;
+  background: var(--timeline-card-background, color-mix(
+    in oklab, var(--background-color) 85%, transparent));
+  background-clip: padding-box;
+  box-shadow:
+    inset 0 0 0 1px color-mix(
+      in oklab, var(--font-color) 10%, transparent),
+    0 1px 2px color-mix(in oklab, var(--font-color) 10%, transparent),
+    0 4px 12px color-mix(in oklab, var(--font-color) 8%, transparent);
+  cursor: pointer;
+  padding: 11px 13px;
+}
+
+// ─── Event details panel (expanded state) ─────────
+
+// The panel is centred horizontally inside the trough.
+// `min(830px, 100% - 80px)` constrains it to the live
+// card's width on wide viewports while reserving 40px
+// each side on narrow viewports so the prev/next nav
+// arrows always have room.
+.event-details {
+  /* 96px side-clear so each prev/next arrow (32px wide
+     at 8px from the trough edge) gets the same 8px gap
+     on its right as it has on its left, symmetric
+     framing of the button between the trough edge and
+     the card border. */
+  width: min(830px, calc(100% - 96px));
+  margin: 0 auto;
+
+  /* 20px bottom padding matches the breathing room
+     full-state leaves below the lowest card row before
+     the .versions-toggle. */
+  padding: 8px 0 20px;
+  text-align: start;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.event-details-card {
+  position: relative;
+  margin-top: 10px;
+
+  // No solid border: the inherited `.event-card` inset
+  // 1px box-shadow already paints the outline; stacking
+  // both reads as a 2px frame.
+  display: grid;
+  gap: 4px;
+
+  /* Fixed-height container so the trough doesn't jump
+     when the user hovers between events with different
+     description lengths. The description line-clamps
+     within this height. */
+  height: 120px;
+  grid-template-rows: auto 1fr auto;
+
+  // Narrow viewports lose horizontal room, so the
+  // description wraps more aggressively. Grow the card
+  // by one description line (~18px at sm/1.3) so a
+  // typical event still reads as a single glance.
+  @media (max-width: 480px) {
+    height: 138px;
+  }
+}
+
+// "i" pip in the top-right corner, a subtle hint that
+// the card opens the full event modal on click. Sits
+// above the card content; the click itself is handled
+// by the card wrapper so the pip is decorative. The
+// double-class selector outruns the `.orb { position:
+// relative }` rule that loads later in the bundle.
+.orb.event-details-info {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  color: color-mix(in oklab, var(--timeline-card-text, var(--font-color)) 55%, transparent);
+  pointer-events: none;
+
+  // svg.icon sizes 1em × 1em, so font-size drives the
+  // visible glyph. Shrink it well below the orb's 20px
+  // diameter so the "i" reads as a tiny mark inside a
+  // generous tinted ring, not a chunky letter.
+  font-size: 10px;
+}
+
+.event-details-head {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.event-details-date {
+  @include dpp.xs;
+  color: color-mix(in oklab, var(--timeline-card-text, var(--font-color)) 60%, transparent);
+}
+
+.event-details-desc {
+  margin: 0;
+  line-height: 1.3;
+  color: var(--timeline-card-text, var(--font-color));
+  align-self: start;
+
+  /* Clamp to the available space inside the fixed-
+     height card; longer text gets an ellipsis. */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+
+  // Pair with the taller card height on narrow
+  // viewports so the third line actually shows.
+  @media (max-width: 480px) {
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+  }
+}
+
+.event-details-actor {
+  margin: 0;
+  @include dpp.xs;
+  color: color-mix(in oklab, var(--timeline-card-text, var(--font-color)) 60%, transparent);
+}
+
+// In hidden state the details panel collapses with
+// the strip so the toggle link stays vertically
+// centred in the trough.
+dpp-timeline[data-state='hidden'] .event-details {
+  opacity: 0;
+  max-height: 0;
+  padding: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+// ─── Full-state layout (cards area inside .timeline) ─
+
+// The .full-area is rendered as a sibling of .strip
+// inside .timeline, so it inherits the trough's
+// background and inset shadow, no separator line, no
+// alternate background. .full-area is flush against
+// the strip's bottom; the connector SVG inside has
+// overflow:visible so connector tips at y=-11 cross up
+// into the strip and land on the dot centres above.
+.full-area {
+  width: 100%;
+}
+
+.card-stage {
+  position: relative;
+  margin: 0 auto;
+}
+
+// Closing link mirrors the .versions-toggle styling so
+// the bottom of the trough always reads the same way.
+.full-close-link {
+  display: block;
+  margin: 4px auto 0;
+  padding: 2px 8px;
+  background: transparent;
+  border: 0;
+  color: var(--timeline-label-color, var(--action-color));
+  font: inherit;
+  @include dpp.eyebrow;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 160ms ease;
+
+  &:hover { text-decoration: underline; }
+}
+
+.connector-svg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.connector-svg path {
+  fill: none;
+  stroke: var(--timeline-line-color, color-mix(
+    in oklab, var(--font-color) 30%, transparent));
+  stroke-width: 1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: stroke 160ms ease, stroke-width 160ms ease;
+}
+
+.connector-svg path.active,
+.connector-svg path.hovered {
+  stroke: var(--event-color);
+  stroke-width: 2;
+}
+
+.stage-dot-hit {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:focus:not(:focus-visible) { outline: none; }
+}
+
+.panel-card {
+  position: absolute;
+  overflow: hidden;
+  text-align: start;
+
+  // 2px transparent border at rest so the border-box
+  // stays at the same dimensions when it lights up on
+  // hover / focus, no 1px reflow. The visible "border"
+  // at rest comes from .event-card's inset box-shadow;
+  // hover replaces the transparent border with the
+  // event colour.
+  border: 2px solid transparent;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font: inherit;
+  color: var(--timeline-card-text, var(--font-color));
+  transition: border-color 160ms ease;
+
+  &:hover,
+  &.focused { border-color: var(--event-color); }
+}
+
+.panel-card-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.panel-card-date {
+  @include dpp.xs;
+  color: color-mix(
+    in oklab, var(--timeline-card-text, var(--font-color)) 60%,
+    transparent);
+}
+
+.panel-card-desc {
+  margin: 4px 0 0;
+  @include dpp.sm;
+  line-height: 1.45;
+  color: var(--timeline-card-text, var(--font-color));
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.panel-card-actor {
+  margin: 4px 0 0;
+  @include dpp.xs;
+  color: color-mix(
+    in oklab, var(--timeline-card-text, var(--font-color)) 60%,
+    transparent);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

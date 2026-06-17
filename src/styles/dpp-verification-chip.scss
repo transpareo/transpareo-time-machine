@@ -1,0 +1,176 @@
+/*
+ * transpareo-time-machine - open-source DPP renderer
+ * Copyright (C) 2026 Transpareo AG
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ *
+ * Verification chip, small pill that surfaces the
+ * active version's verification state (pending /
+ * verified / failed). Three icons live inside the orb
+ * and only the one matching `.state-*` is shown; the
+ * label and ripple animation pick up the state-specific
+ * colours via `--chip-fg` / `--chip-bg`.
+ */
+
+@use 'dpp';
+
+.chip {
+  --chip-fg: var(--color-muted);
+
+  // Mix against the content surface, not transparent, so
+  // the chip stays a discrete pill when it sits on a
+  // coloured chrome surface (brandbar, footer) instead
+  // of letting the parent colour bleed through the 86%
+  // remainder.
+  --chip-bg: color-mix(
+    in oklab, var(--color-muted) 12%,
+    var(--background-color, #fff));
+
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 11px 4px 7px;
+  border-radius: 999px;
+
+  // 1px outline in the chip's state colour. Each state
+  // already binds `--chip-fg` to the corresponding
+  // accent (action / verified / verify-fail / muted),
+  // so the border tracks the chip's meaning without a
+  // per-state rule.
+  border: 1px solid var(--chip-fg);
+  @include dpp.xs-semibold;
+  letter-spacing: 0.01em;
+  color: var(--chip-fg);
+  background: var(--chip-bg);
+  cursor: default;
+  transition:
+    background-color var(--dur-medium) var(--ease-standard),
+    color var(--dur-medium) var(--ease-standard),
+    border-color var(--dur-medium) var(--ease-standard),
+    box-shadow var(--dur-fast) var(--ease-standard);
+}
+
+.chip.clickable {
+  cursor: pointer;
+
+  &:hover {
+    box-shadow:
+      0 0 0 2px color-mix(in oklab, currentColor 20%, transparent);
+  }
+}
+
+.chip.state-verifying {
+  --chip-fg: var(--action-color);
+  --chip-bg: color-mix(
+    in oklab, var(--action-color) 10%,
+    var(--background-color, #fff));
+}
+
+.chip.state-verified {
+  --chip-fg: var(--color-verified);
+  --chip-bg: color-mix(
+    in oklab, var(--color-verified) 14%,
+    var(--background-color, #fff));
+}
+
+.chip.state-failed {
+  --chip-fg: var(--color-verify-fail);
+  --chip-bg: color-mix(
+    in oklab, var(--color-verify-fail) 14%,
+    var(--background-color, #fff));
+}
+
+.orb {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: color-mix(in oklab, currentColor 18%, transparent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+.orb-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chip .orb-icon .icon {
+  width: 14px;
+  height: 14px;
+  display: none;
+
+  // Override the global `.icon { margin-right: 5px }`
+  // from dpp.scss, the chip's orb centres its icon
+  // via flex, and the trailing margin throws the icon
+  // 2.5px off-centre to the left.
+  margin: 0;
+}
+
+.chip.state-verifying .spinner,
+.chip.state-verified .check,
+.chip.state-failed .x {
+  display: inline-block;
+}
+
+.spinner {
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.check {
+  animation: check-draw var(--dur-medium) var(--ease-spring) backwards;
+}
+
+@keyframes check-draw {
+  from {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.18);
+    opacity: 1;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Ripple ring on transition into verified */
+.state-verified .ripple {
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  opacity: 0.6;
+  animation: ripple var(--dur-slow) var(--ease-decelerate)
+    forwards;
+}
+
+@keyframes ripple {
+  from {
+    transform: scale(0.6);
+    opacity: 0.7;
+  }
+  to {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+
+.label-text {
+  line-height: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner, .check, .ripple {
+    animation: none !important;
+  }
+}

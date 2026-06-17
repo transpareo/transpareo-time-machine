@@ -1,0 +1,13 @@
+# Keeps the SHA-pinned GitHub Actions in the workflows
+# fresh (Dependabot updates the pin and its version
+# comment together) and surfaces devDependency updates.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly

@@ -1,0 +1,148 @@
+/*
+ * transpareo-time-machine - open-source DPP renderer
+ * Copyright (C) 2026 Transpareo AG
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ *
+ * Bundle entry. The outer shadow root loads this file
+ * once; @use chains pull every inner component's
+ * stylesheet into the same bundle so light-DOM children
+ * get styled by cascade. Add a `@use` line below for each
+ * inner component (alphabetised within its group).
+ */
+
+@use 'dpp';
+@use 'modal';
+@use 'dpp-modal';
+@use 'pagination';
+@use 'dpp-brandbar';
+@use 'dpp-composition-donut';
+@use 'dpp-deck';
+@use 'dpp-footer';
+@use 'dpp-gallery';
+@use 'dpp-hero';
+@use 'dpp-lightbox';
+@use 'dpp-properties';
+@use 'dpp-timeline';
+@use 'dpp-verification-chip';
+@use 'dpp-verification-modal';
+@use 'dpp-event-modal';
+@use 'dpp-library-modal';
+@use 'dpp-auth-modal';
+
+:host {
+  display: block;
+  font-family: var(--font-sans);
+  @include dpp.regular;
+  line-height: 1.55;
+  color: var(--font-color, #222);
+  background: var(--body-background, #f5f5f5);
+}
+
+.stage {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+
+  /* Clip horizontally at the viewport edge so the deck's
+   * past/future shadow stack (±140px from centre at full
+   * depth) doesn't push a horizontal scrollbar. Vertical
+   * scrolling stays free. */
+  overflow-x: clip;
+}
+
+.card {
+  width: 100%;
+  max-width: var(--content-max-width, 830px);
+
+  /* Top margin = issuer frame-width (the gap between the
+   * viewport top edge and the content card on wide
+   * viewports). Falls back to the SPA's pre-theme 24px so
+   * the layout doesn't collapse if no issuer CSS loads.
+   * Horizontal margins stay auto so the card centres; the
+   * timeline + footer (siblings, not children of .card)
+   * keep their natural full-width behaviour. */
+  margin: var(--frame-width, 24px) auto 0;
+  background: var(--background-color, #fff);
+  border-radius: var(--content-radius, 10px);
+
+  /* Outline matches the brandbar's `.stuck` divider so
+   * the page reads as one surface when scrolled. Same
+   * 14% font-color tint, 1px width. */
+  border: 1px solid color-mix(
+    in oklab, var(--font-color, #222) 14%, transparent);
+
+  /* Theme-aware drop shadow. `--font-color` is the
+   * inverse of `--background-color` by convention, so
+   * the shadow tints toward whatever colour reads as
+   * "dark" against the theme, black-ish on light bg,
+   * subtle halo on dark. Kept low so dark themes don't
+   * read as neon-glow. */
+  box-shadow:
+    0 18px 40px color-mix(
+      in oklab, var(--font-color, #222) 6%, transparent),
+    0 4px 12px color-mix(
+      in oklab, var(--font-color, #222) 3%, transparent);
+
+  /* Clip the brandbar's surface (and any future flush
+   * child) to the card's rounded corners. `clip` rather
+   * than `hidden` so the sticky brandbar still anchors
+   * to the viewport scroll, not a card-local scrollport. */
+  overflow: clip;
+
+  @media (max-width: 830px) {
+    max-width: none;
+    margin: 0;
+    border-radius: 0;
+  }
+}
+
+.card-content {
+  padding: 0 25px 16px;
+}
+
+/* Live-card transit blur during scrub, saturate
+ * desaturates and `--card-blur` carries the live
+ * card's blur signal from the deck. */
+.stage.scrubbing .card {
+  filter: saturate(0.9) blur(var(--card-blur, 0));
+}
+
+/* Pre-mount surface, shown while the host fetches the
+ * manifest + snapshot + EPCIS bundle. Loading/idle
+ * states render a <slot>, so the host-page's
+ * light-DOM boot spinner (the same element that was
+ * already visible before this custom element upgraded)
+ * shows through. Sized to fill the viewport so the
+ * shell takes vertical space even when the host page
+ * hasn't yet sized the element. */
+.boot-shell {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.boot-shell-error {
+  color: var(--font-color, #222);
+  text-align: center;
+  opacity: 0.75;
+}
+
+.boot-shell-retired {
+  flex-direction: column;
+  text-align: center;
+  color: var(--font-color, #222);
+
+  .boot-shell-heading {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem;
+  }
+
+  .boot-shell-detail {
+    opacity: 0.75;
+    margin: 0;
+  }
+}

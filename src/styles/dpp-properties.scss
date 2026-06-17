@@ -1,0 +1,110 @@
+/*
+ * transpareo-time-machine - open-source DPP renderer
+ * Copyright (C) 2026 Transpareo AG
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ *
+ * <dpp-properties>, the flat label:value list driven by
+ * snapshot.properties and the per-user rows the
+ * privateProperties.url endpoint returns. Sits between
+ * the .dpp-metrics grid and the badge lists; visually
+ * close to a definition-list table so it reads as
+ * "additional structured data" rather than "more
+ * tiles". The private rows render under their own
+ * heading beneath the public list.
+ */
+
+.dpp-properties {
+  margin: 24px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.dpp-property-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 16px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--color-border);
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.dpp-property-label {
+  color: var(--color-text);
+  font-size: var(--font-sm);
+}
+
+.dpp-property-value {
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
+  text-align: end;
+  white-space: nowrap;
+}
+
+.dpp-properties-heading {
+  margin: 20px 0 4px;
+  font-size: var(--font-sm);
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.dpp-properties-affordance {
+  align-self: flex-start;
+  margin-top: 12px;
+  padding: 8px 14px;
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-accent);
+  font: inherit;
+  cursor: pointer;
+
+  &:hover,
+  &:focus-visible {
+    background: color-mix(
+      in oklab, var(--color-accent) 8%, transparent);
+    outline: none;
+  }
+}
+
+.dpp-properties-error {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+  padding: 10px 12px;
+  background: color-mix(
+    in oklab, var(--color-warning, #d97706) 8%, transparent);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text);
+  font-size: var(--font-sm);
+
+  .dpp-properties-error-text {
+    flex: 1 1 auto;
+  }
+
+  .dpp-properties-retry {
+    flex: 0 0 auto;
+    padding: 6px 12px;
+    background: transparent;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    color: var(--color-accent);
+    font: inherit;
+    cursor: pointer;
+
+    &:hover,
+    &:focus-visible {
+      background: color-mix(
+        in oklab, var(--color-accent) 8%, transparent);
+      outline: none;
+    }
+  }
+}

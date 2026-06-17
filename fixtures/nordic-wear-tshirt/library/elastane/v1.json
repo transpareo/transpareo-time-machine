@@ -1,0 +1,130 @@
+{
+  "id": "component/elastane",
+  "version": 1,
+  "name": {
+    "en": "Elastane",
+    "de": "Elasthan",
+    "fr": "Élasthanne"
+  },
+  "properties": [
+    {
+      "key": "alternativeNames",
+      "label": {
+        "en": "Alternative names",
+        "de": "Alternative Bezeichnungen",
+        "fr": "Autres noms"
+      },
+      "value": {
+        "type": "list",
+        "items": [
+          { "text": { "en": "Spandex", "de": "Spandex", "fr": "Spandex" } },
+          { "text": { "en": "Lycra", "de": "Lycra", "fr": "Lycra" } },
+          { "text": { "en": "Polyurethane elastomer", "de": "Polyurethan-Elastomer", "fr": "Élastomère de polyuréthane" } }
+        ]
+      }
+    },
+    {
+      "key": "origin",
+      "label": {
+        "en": "Origin",
+        "de": "Herkunft",
+        "fr": "Origine"
+      },
+      "value": {
+        "type": "text",
+        "value": {
+          "en": "Lombardy, Italy",
+          "de": "Lombardei, Italien",
+          "fr": "Lombardie, Italie"
+        }
+      }
+    },
+    {
+      "key": "function",
+      "label": {
+        "en": "Function",
+        "de": "Funktion",
+        "fr": "Fonction"
+      },
+      "value": {
+        "type": "text",
+        "value": {
+          "en": "Adds stretch and shape recovery to the cotton blend; keeps the neckline and sleeves from sagging.",
+          "de": "Verleiht dem Baumwollgemisch Dehnung und Formstabilität; verhindert das Ausleiern von Halsausschnitt und Ärmeln.",
+          "fr": "Apporte élasticité et tenue au mélange de coton; empêche l'encolure et les manches de se détendre."
+        }
+      }
+    },
+    {
+      "key": "characteristics",
+      "label": {
+        "en": "Characteristics",
+        "de": "Eigenschaften",
+        "fr": "Caractéristiques"
+      },
+      "value": {
+        "type": "list",
+        "items": [
+          {
+            "text": {
+              "en": "Petroleum-derived synthetic polymer",
+              "de": "Synthetisches Polymer auf Erdölbasis",
+              "fr": "Polymère synthétique issu du pétrole"
+            },
+            "rating": "bad"
+          },
+          {
+            "text": {
+              "en": "Not biodegradable",
+              "de": "Nicht biologisch abbaubar",
+              "fr": "Non biodégradable"
+            },
+            "rating": "veryBad"
+          },
+          {
+            "text": {
+              "en": "Sheds microfibres in laundry",
+              "de": "Gibt beim Waschen Mikrofasern ab",
+              "fr": "Libère des microfibres au lavage"
+            },
+            "rating": "bad"
+          },
+          {
+            "text": {
+              "en": "Limits compostability of the garment",
+              "de": "Verhindert die Kompostierung des Kleidungsstücks",
+              "fr": "Empêche le compostage du vêtement"
+            },
+            "rating": "bad"
+          },
+          {
+            "text": {
+              "en": "Recyclable through textile-to-textile programs",
+              "de": "Über Textil-zu-Textil-Recycling verwertbar",
+              "fr": "Recyclable via les filières textile à textile"
+            },
+            "rating": "good"
+          }
+        ]
+      }
+    }
+  ],
+  "references": [
+    {
+      "label": {
+        "en": "Material datasheet",
+        "de": "Materialdatenblatt",
+        "fr": "Fiche matière"
+      },
+      "href": "https://components.transpareo.example/elastane"
+    },
+    {
+      "label": {
+        "en": "ECHA substance profile",
+        "de": "ECHA-Stoffprofil",
+        "fr": "Profil ECHA de la substance"
+      },
+      "href": "https://echa.europa.eu/substance-information/-/substanceinfo/100.020.123"
+    }
+  ]
+}

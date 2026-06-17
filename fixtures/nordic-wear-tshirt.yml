@@ -1,0 +1,669 @@
+schema_version: 1
+id: nordic-wear-tshirt
+code: demo-2026-t001
+status: in_use
+published_at: 2024-01-15T10:00:00Z
+verified: true
+regulation: textile
+issuer:
+  name: Nordic Wear
+  did: did:web:nordic-wear.example
+platform:
+  name: Transpareo
+  did: did:web:transpareo.example
+available_locales:
+  - en
+  - de
+  - fr
+branding:
+  css:
+    file: fixtures/nordic-wear-tshirt/branding/branding.css
+  logo:
+    file: fixtures/nordic-wear-tshirt/branding/logo.svg
+    width: 173
+  favicon:
+    file: fixtures/nordic-wear-tshirt/branding/favicon.ico
+images:
+  lifestyle-a:
+    thumbnail: https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&q=80&fm=jpg&fit=crop&auto=format
+    large: https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=1600&q=85&fm=jpg&fit=crop&auto=format
+  lifestyle-b:
+    thumbnail: https://images.unsplash.com/photo-1581655353564-df123a1eb820?w=800&q=80&fm=jpg&fit=crop&auto=format
+    large: https://images.unsplash.com/photo-1581655353564-df123a1eb820?w=1600&q=85&fm=jpg&fit=crop&auto=format
+  detail:
+    thumbnail: https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=800&q=80&fm=jpg&fit=crop&auto=format
+    large: https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=1600&q=85&fm=jpg&fit=crop&auto=format
+product:
+  name:
+    en: Essential Crew Neck T-Shirt
+    de: Essential Rundhals-T-Shirt
+    fr: T-shirt essentiel à col rond
+  brand: Nordic Wear
+  description:
+    en: Classic crew neck t-shirt made from 95% organic cotton and 5% elastane. Naturally dyed with plant-based indigo for a rich, lasting blue. Fair trade certified and produced in a zero-waste facility.
+    de: Klassisches Rundhals-T-Shirt aus 95 % Bio-Baumwolle und 5 % Elasthan. Natürlich gefärbt mit pflanzlichem Indigo für ein tiefes, beständiges Blau. Fair-Trade-zertifiziert und in einer abfallfreien Manufaktur gefertigt.
+    fr: T-shirt classique à col rond en 95 % de coton biologique et 5 % d'élasthanne. Teint naturellement à l'indigo végétal pour un bleu profond et durable. Certifié commerce équitable et fabriqué dans un atelier sans déchets.
+  category:
+    en: T-Shirts
+    de: T-Shirts
+    fr: T-shirts
+  gtin: "4012345678901"
+  weight: 180
+  weight_unit: g
+  rating: good
+  compositions:
+    - key: material
+      title:
+        en: Material composition
+        de: Materialzusammensetzung
+        fr: Composition des matériaux
+      icon: sliders
+      entries:
+        - name:
+            en: Organic Cotton
+            de: Bio-Baumwolle
+            fr: Coton biologique
+          percent: 92
+          color: "#4DA3FF"
+          country_code: PT
+          library_ref: component/organic-cotton/v1.json
+          rating: veryGood
+        - name:
+            en: Elastane
+            de: Elasthan
+            fr: Élasthanne
+          percent: 5
+          color: "#FFC857"
+          country_code: IT
+          library_ref: component/elastane/v1.json
+          rating: bad
+        - name:
+            en: Natural Indigo Dye
+            de: Natürliches Indigo
+            fr: Teinture indigo naturelle
+          percent: 2
+          color: "#A07A4C"
+          country_code: IN
+          library_ref: component/natural-indigo/v1.json
+          rating: good
+        - name:
+            en: Sewing Thread
+            de: Nähgarn
+            fr: Fil à coudre
+          percent: 1
+          color: "#9F8C76"
+          country_code: TR
+          library_ref: component/sewing-thread/v1.json
+          rating: neutral
+  metrics:
+    - key: article
+      label:
+        en: Article number
+        de: Artikelnummer
+        fr: Numéro d'article
+      value: NW-CN-2024-001
+      icon: tag
+    - key: reach
+      label:
+        en: REACH compliance
+        de: REACH-Konformität
+        fr: Conformité REACH
+      value:
+        en: Compliant
+        de: Konform
+        fr: Conforme
+      icon: shield
+    - key: colour
+      label:
+        en: Colour
+        de: Farbe
+        fr: Couleur
+      value:
+        en: Indigo Blue
+        de: Indigoblau
+        fr: Bleu indigo
+      icon: droplet
+    - key: facility
+      label:
+        en: Facility
+        de: Manufaktur
+        fr: Site de production
+      value: Atelier Norte, Porto
+      icon: home
+    - key: made_on
+      label:
+        en: Manufactured on
+        de: Hergestellt am
+        fr: Date de fabrication
+      value:
+        en: March 2024
+        de: März 2024
+        fr: Mars 2024
+      icon: clock
+    - key: batch
+      label:
+        en: Batch number
+        de: Chargennummer
+        fr: Numéro de lot
+      value: BATCH-NW-2024-Q1-008
+      icon: tag
+    - key: carbon
+      label:
+        en: Carbon footprint
+        de: CO2-Fußabdruck
+        fr: Empreinte carbone
+      value: 4.2 kg CO2e
+      icon: leaf
+    - key: water
+      label:
+        en: Water footprint
+        de: Wasserverbrauch
+        fr: Empreinte hydrique
+      value: 2,500 L
+      icon: droplet
+    - key: recycled
+      label:
+        en: Recycled content
+        de: Recyclinganteil
+        fr: Contenu recyclé
+      value:
+        en: "0% (Q3 2026 batch: 30% recycled cotton)"
+        de: "0 % (Charge Q3 2026: 30 % recycelte Baumwolle)"
+        fr: "0 % (lot T3 2026 : 30 % de coton recyclé)"
+      icon: recycle
+    - key: lifespan
+      label:
+        en: Expected lifespan
+        de: Erwartete Nutzungsdauer
+        fr: Durée de vie estimée
+      value:
+        en: 3 to 5 years with proper care
+        de: 3 bis 5 Jahre bei sachgemäßer Pflege
+        fr: 3 à 5 ans avec un entretien approprié
+      icon: clock
+    - key: origin
+      label:
+        en: Country of origin
+        de: Herkunftsland
+        fr: Pays d'origine
+      value:
+        en: Portugal
+        de: Portugal
+        fr: Portugal
+      icon: globe
+  lists:
+    - key: functions
+      label:
+        en: Intended use
+        de: Verwendungszweck
+        fr: Usage prévu
+      values:
+        - en: Daily wear
+          de: Alltagskleidung
+          fr: Tenue quotidienne
+        - en: Casual
+          de: Casual
+          fr: Décontracté
+        - en: Layering
+          de: Zum Kombinieren
+          fr: Superposition
+      icon: star
+    - key: sizes
+      label:
+        en: Available sizes
+        de: Verfügbare Größen
+        fr: Tailles disponibles
+      values:
+        - XS
+        - S
+        - M
+        - L
+        - XL
+        - XXL
+      icon: sliders
+    - key: certifications
+      label:
+        en: Certifications
+        de: Zertifizierungen
+        fr: Certifications
+      values:
+        - GOTS Organic
+        - OEKO-TEX Standard 100
+        - Fair Trade
+      icon: certificate
+  accordions:
+    - key: care
+      label:
+        en: Care instructions
+        de: Pflegehinweise
+        fr: Instructions d'entretien
+      icon: leaf
+      body:
+        en: Wash at 30 C; line dry; iron at low heat.
+        de: Bei 30 °C waschen; an der Luft trocknen; bei niedriger Temperatur bügeln.
+        fr: Laver à 30 °C ; sécher à l'air libre ; repasser à basse température.
+    - key: disposal
+      label:
+        en: Disposal & recycling
+        de: Entsorgung & Recycling
+        fr: Élimination et recyclage
+      icon: recycle
+      body:
+        en: At end of life, separate the cotton body (home-compostable in industrial composting) from any sewn-in care label. Drop off at a textile collection point or send back to Nordic Wear via the prepaid return label.
+        de: Am Ende der Nutzungsdauer den Baumwollkorpus (in industriellen Kompostieranlagen kompostierbar) von eingenähten Pflegeetiketten trennen. An einer Textilsammelstelle abgeben oder mit dem vorfrankierten Rücksendeetikett an Nordic Wear zurückschicken.
+        fr: En fin de vie, séparer le corps en coton (compostable en compostage industriel) de toute étiquette d'entretien cousue. Déposer dans un point de collecte textile ou renvoyer à Nordic Wear via l'étiquette de retour prépayée.
+    - key: repair
+      label:
+        en: Repair guidance
+        de: Reparaturhinweise
+        fr: Conseils de réparation
+      icon: wrench
+      body:
+        en: Reinforce loose seams with a matching cotton thread (Tex 24). Replace neckline binding every 2-3 years if it loses elasticity.
+        de: Lose Nähte mit passendem Baumwollgarn (Tex 24) verstärken. Die Halsausschnitt-Einfassung alle 2-3 Jahre erneuern, wenn sie an Elastizität verliert.
+        fr: Renforcer les coutures qui se défont avec un fil de coton assorti (Tex 24). Remplacer la bordure de l'encolure tous les 2 à 3 ans si elle perd son élasticité.
+  manufacturer:
+    name: Nordic Wear Lda.
+    street: Rua das Flores 42
+    city: 4050-228 Porto
+    country: Portugal
+snapshots:
+  - version: 1
+    published_at: 2024-01-15T10:00:00Z
+    status: draft
+    images: []
+    description:
+      en: Classic crew neck t-shirt made from 95% organic cotton and 5% elastane. Sample run, not yet on market.
+      de: Klassisches Rundhals-T-Shirt aus 95 % Bio-Baumwolle und 5 % Elasthan. Musterproduktion, noch nicht im Handel.
+      fr: T-shirt classique à col rond en 95 % de coton biologique et 5 % d'élasthanne. Série d'échantillonnage, pas encore commercialisé.
+    composition:
+      - name: Organic Cotton
+        percent: 95
+        color: "#4DA3FF"
+        country_code: PT
+      - name: Elastane
+        percent: 5
+        color: "#FFC857"
+        country_code: IT
+  - version: 2
+    published_at: 2024-05-15T14:00:00Z
+    status: placed_on_market
+    images:
+      - lifestyle-a
+      - lifestyle-b
+      - detail
+    description:
+      en: Classic crew neck t-shirt made from 95% organic cotton and 5% elastane. Naturally dyed with plant-based indigo.
+      de: Klassisches Rundhals-T-Shirt aus 95 % Bio-Baumwolle und 5 % Elasthan. Natürlich gefärbt mit pflanzlichem Indigo.
+      fr: T-shirt classique à col rond en 95 % de coton biologique et 5 % d'élasthanne. Teint naturellement à l'indigo végétal.
+    composition:
+      - name: Organic Cotton
+        percent: 92
+        color: "#4DA3FF"
+        country_code: PT
+      - name: Elastane
+        percent: 5
+        color: "#FFC857"
+        country_code: IT
+      - name: Natural Indigo Dye
+        percent: 2
+        color: "#A07A4C"
+        country_code: IN
+      - name: Sewing Thread
+        percent: 1
+        color: "#9F8C76"
+        country_code: TR
+  - version: 3
+    published_at: 2024-10-01T09:00:00Z
+    status: in_use
+    images:
+      - lifestyle-a
+      - lifestyle-b
+      - detail
+    description:
+      en: Classic crew neck t-shirt - now on customers. Composition unchanged from launch batch.
+      de: Klassisches Rundhals-T-Shirt - jetzt bei den Kunden im Einsatz. Zusammensetzung gegenüber der Markteinführungscharge unverändert.
+      fr: T-shirt classique à col rond - désormais porté par les clients. Composition inchangée par rapport au lot de lancement.
+    composition:
+      - name: Organic Cotton
+        percent: 92
+        color: "#4DA3FF"
+        country_code: PT
+      - name: Elastane
+        percent: 5
+        color: "#FFC857"
+        country_code: IT
+      - name: Natural Indigo Dye
+        percent: 2
+        color: "#A07A4C"
+        country_code: IN
+      - name: Sewing Thread
+        percent: 1
+        color: "#9F8C76"
+        country_code: TR
+  - version: 4
+    published_at: 2025-04-18T16:30:00Z
+    status: suspended
+    images:
+      - lifestyle-a
+      - lifestyle-b
+      - detail
+    description:
+      en: Voluntary recall of batch BATCH-NW-2024-Q1-008 after a fabric weave defect was identified during routine QA testing.
+      de: Freiwilliger Rückruf der Charge BATCH-NW-2024-Q1-008, nachdem bei einer routinemäßigen QS-Prüfung ein Webfehler festgestellt wurde.
+      fr: Rappel volontaire du lot BATCH-NW-2024-Q1-008 après la détection d'un défaut de tissage lors d'un contrôle qualité de routine.
+    composition:
+      - name: Organic Cotton
+        percent: 92
+        color: "#4DA3FF"
+        country_code: PT
+      - name: Elastane
+        percent: 5
+        color: "#FFC857"
+        country_code: IT
+      - name: Natural Indigo Dye
+        percent: 2
+        color: "#A07A4C"
+        country_code: IN
+      - name: Sewing Thread
+        percent: 1
+        color: "#9F8C76"
+        country_code: TR
+  - version: 5
+    published_at: 2025-09-12T11:00:00Z
+    status: in_use
+    images:
+      - lifestyle-b
+      - detail
+    description:
+      en: Recall lifted. Indigo dye concentration reduced and weave QA tightened to prevent the prior defect from recurring.
+      de: Rückruf aufgehoben. Indigo-Farbstoffkonzentration reduziert und QS für die Webung verschärft, um ein Wiederauftreten des vorherigen Fehlers zu verhindern.
+      fr: Rappel levé. Concentration de teinture indigo réduite et contrôle qualité du tissage renforcé pour éviter la réapparition du défaut précédent.
+    composition:
+      - name: Organic Cotton
+        percent: 93
+        color: "#4DA3FF"
+        country_code: PT
+      - name: Elastane
+        percent: 5
+        color: "#FFC857"
+        country_code: IT
+      - name: Natural Indigo Dye
+        percent: 1.5
+        color: "#A07A4C"
+        country_code: IN
+      - name: Sewing Thread
+        percent: 0.5
+        color: "#9F8C76"
+        country_code: TR
+  - version: 6
+    published_at: 2026-04-05T13:45:00Z
+    status: in_use
+    images:
+      - lifestyle-a
+      - lifestyle-b
+      - detail
+    description:
+      en: Annual EU compliance inspection passed. Documentation up to date.
+      de: Jährliche EU-Konformitätsprüfung bestanden. Dokumentation auf aktuellem Stand.
+      fr: Inspection annuelle de conformité UE réussie. Documentation à jour.
+    composition:
+      - name: Organic Cotton
+        percent: 93
+        color: "#4DA3FF"
+        country_code: PT
+      - name: Elastane
+        percent: 5
+        color: "#FFC857"
+        country_code: IT
+      - name: Natural Indigo Dye
+        percent: 1.5
+        color: "#A07A4C"
+        country_code: IN
+      - name: Sewing Thread
+        percent: 0.5
+        color: "#9F8C76"
+        country_code: TR
+events:
+  - id: evt-1
+    event_type: published
+    occurred_at: 2024-01-15T10:00:00Z
+    actor_label: Anna Schmidt
+    description:
+      en: Initial Digital Product Passport published.
+      de: Erster digitaler Produktpass veröffentlicht.
+      fr: Premier passeport numérique de produit publié.
+    version: 1
+  - id: evt-2
+    event_type: lifecycle_transition
+    occurred_at: 2024-05-15T14:00:00Z
+    actor_label: Anna Schmidt
+    status_from: draft
+    status_to: placed_on_market
+    description:
+      en: First batch released to retail partners across the EU.
+      de: Erste Charge an Handelspartner in der gesamten EU ausgeliefert.
+      fr: Premier lot livré aux partenaires de vente au détail dans toute l'UE.
+    version: 2
+  - id: evt-2a
+    event_type: inspection
+    occurred_at: 2024-07-20T11:00:00Z
+    actor_label: EcoCert (greenhouse-gas inventory)
+    description:
+      en: Independent greenhouse-gas inventory audit completed; emissions per garment within the declared range.
+      de: Unabhängige Treibhausgas-Bilanzprüfung abgeschlossen; Emissionen pro Kleidungsstück innerhalb des deklarierten Bereichs.
+      fr: Audit indépendant de l'inventaire des gaz à effet de serre achevé ; les émissions par article restent dans la plage déclarée.
+  - id: evt-3
+    event_type: lifecycle_transition
+    occurred_at: 2024-10-01T09:00:00Z
+    actor_label: Nordic Wear backend
+    status_from: placed_on_market
+    status_to: in_use
+    description:
+      en: First customer activation recorded.
+      de: Erste Kundenaktivierung erfasst.
+      fr: Première activation client enregistrée.
+    version: 3
+  - id: evt-3a
+    event_type: inspection
+    occurred_at: 2024-11-05T10:30:00Z
+    actor_label: TÜV SÜD (textile compliance)
+    description:
+      en: Annual textile labelling audit passed; care instructions and country-of-origin claims verified against production records.
+      de: Jährliche Textilkennzeichnungsprüfung bestanden; Pflegehinweise und Herkunftsangaben mit den Produktionsnachweisen abgeglichen.
+      fr: Audit annuel d'étiquetage textile réussi ; instructions d'entretien et déclarations d'origine vérifiées par rapport aux registres de production.
+  - id: evt-4
+    event_type: inspection
+    occurred_at: 2025-01-15T11:30:00Z
+    actor_label: OEKO-TEX certifying body
+    description:
+      en: OEKO-TEX Standard 100 audit passed; no harmful substances detected.
+      de: OEKO-TEX-Standard-100-Audit bestanden; keine Schadstoffe nachgewiesen.
+      fr: Audit OEKO-TEX Standard 100 réussi ; aucune substance nocive détectée.
+  - id: evt-5
+    event_type: inspection
+    occurred_at: 2025-02-22T08:00:00Z
+    actor_label: BAuA market surveillance
+    description:
+      en: Independent market-surveillance check passed. Sample composition matches the declared DPP within tolerance.
+      de: Unabhängige Marktüberwachung bestanden. Probenzusammensetzung stimmt im Rahmen der Toleranz mit dem deklarierten DPP überein.
+      fr: Contrôle indépendant de surveillance du marché réussi. La composition de l'échantillon correspond au DPP déclaré, dans les tolérances admises.
+  - id: evt-6
+    event_type: recalled
+    occurred_at: 2025-04-18T16:30:00Z
+    actor_label: Markus Weber
+    status_from: in_use
+    status_to: suspended
+    description:
+      en: Voluntary recall of batch BATCH-NW-2024-Q1-008 after a fabric weave defect was identified during routine QA testing.
+      de: Freiwilliger Rückruf der Charge BATCH-NW-2024-Q1-008, nachdem bei einer routinemäßigen QS-Prüfung ein Webfehler festgestellt wurde.
+      fr: Rappel volontaire du lot BATCH-NW-2024-Q1-008 après la détection d'un défaut de tissage lors d'un contrôle qualité de routine.
+    version: 4
+  - id: evt-7
+    event_type: inspection
+    occurred_at: 2025-06-05T15:20:00Z
+    actor_label: Nordic Wear Quality Assurance
+    description:
+      en: "Corrective action completed for the suspended batch: manufacturing process recalibrated and supplier qualification re-confirmed."
+      de: "Korrekturmaßnahme für die gesperrte Charge abgeschlossen: Fertigungsprozess neu kalibriert und Lieferantenqualifikation erneut bestätigt."
+      fr: "Action corrective achevée pour le lot suspendu : processus de fabrication recalibré et qualification du fournisseur reconfirmée."
+  - id: evt-7a
+    event_type: repair
+    occurred_at: 2025-06-09T10:00:00Z
+    actor_label: Repair Workshop Hamburg
+    description:
+      en: "Loom #4 reweaved per corrective protocol; tension confirmed within tolerance."
+      de: Webstuhl Nr. 4 gemäß Korrekturprotokoll neu aufgezogen; Spannung im Toleranzbereich.
+      fr: Métier n°4 retissé selon le protocole correctif ; tension dans la tolérance.
+  - id: evt-7b
+    event_type: inspection
+    occurred_at: 2025-06-12T09:30:00Z
+    actor_label: OEKO-TEX certifying body
+    description:
+      en: Spot re-inspection of corrected batch; sample set passed all OEKO-TEX 100 criteria.
+      de: Stichprobenkontrolle der korrigierten Charge; Probenset erfüllt alle OEKO-TEX 100 Kriterien.
+      fr: Contrôle par sondage du lot corrigé ; échantillons conformes à OEKO-TEX 100.
+  - id: evt-7c
+    event_type: lifecycle_transition
+    occurred_at: 2025-06-15T16:00:00Z
+    actor_label: Anna Schmidt
+    status_from: suspended
+    status_to: in_use
+    description:
+      en: Limited resumption of distribution for the corrected batch only; full lift pending wider audit.
+      de: Teilweise Wiederaufnahme des Vertriebs nur für die korrigierte Charge; vollständige Aufhebung nach erweitertem Audit.
+      fr: Reprise limitée de la distribution pour le lot corrigé uniquement ; levée complète après audit élargi.
+  - id: evt-8
+    event_type: lifecycle_transition
+    occurred_at: 2025-09-12T11:00:00Z
+    actor_label: Markus Weber
+    status_from: suspended
+    status_to: in_use
+    description:
+      en: Recall lifted after corrective batch issued and replacement units delivered.
+      de: Rückruf aufgehoben, nachdem eine korrigierte Charge produziert und Ersatzstücke ausgeliefert wurden.
+      fr: Rappel levé après émission d'un lot corrigé et livraison des unités de remplacement.
+    version: 5
+  - id: evt-8a
+    event_type: inspection
+    occurred_at: 2025-11-28T13:00:00Z
+    actor_label: GOTS certification body
+    description:
+      en: Annual GOTS organic-certification renewal inspection passed; cotton chain-of-custody records audited and confirmed.
+      de: Jährliche GOTS-Bio-Zertifizierungsprüfung bestanden; Lieferkettendokumentation für Baumwolle geprüft und bestätigt.
+      fr: Inspection annuelle de renouvellement de la certification biologique GOTS réussie ; chaîne de traçabilité du coton vérifiée et confirmée.
+  - id: evt-8b
+    event_type: inspection
+    occurred_at: 2026-02-10T09:00:00Z
+    actor_label: BAuA market surveillance
+    description:
+      en: Follow-up market-surveillance check passed; no deviations from the declared composition.
+      de: Nachgelagerte Marktüberwachung bestanden; keine Abweichungen von der deklarierten Zusammensetzung festgestellt.
+      fr: Contrôle de suivi de surveillance du marché réussi ; aucune déviation par rapport à la composition déclarée.
+  - id: evt-9
+    event_type: inspection
+    occurred_at: 2026-04-05T13:45:00Z
+    actor_label: TUEV Rheinland (textile compliance)
+    description:
+      en: Annual EU compliance inspection passed; documentation up to date.
+      de: Jährliche EU-Konformitätsprüfung bestanden; Dokumentation auf aktuellem Stand.
+      fr: Inspection annuelle de conformité UE réussie ; documentation à jour.
+    version: 6
+epcis:
+  - dpp_event_id: evt-1
+    event_id: urn:uuid:7e1f5e3a-4c3a-4f4a-9b1a-a01000000001
+    event_time: 2024-01-15T10:00:00Z
+    event_time_zone_offset: +00:00
+    record_time: 2024-01-15T10:00:14Z
+    action: ADD
+    biz_step: cbv:BizStep-commissioning
+    disposition: cbv:Disp-active
+    epc_list:
+      - https://dpp.nordic-wear.example/01/4012345678901/10/BATCH-NW-2024-Q1-008
+    read_point:
+      id: https://id.gs1.org/414/7350123456789
+    biz_location:
+      id: https://id.gs1.org/414/7350123456789
+  - dpp_event_id: evt-2
+    event_id: urn:uuid:7e1f5e3a-4c3a-4f4a-9b1a-a01000000002
+    event_time: 2024-05-15T14:00:00Z
+    event_time_zone_offset: +02:00
+    record_time: 2024-05-15T14:01:02Z
+    action: OBSERVE
+    biz_step: cbv:BizStep-commissioning
+    disposition: cbv:Disp-active
+    epc_list:
+      - https://dpp.nordic-wear.example/01/4012345678901/10/BATCH-NW-2024-Q1-008
+    read_point:
+      id: https://id.gs1.org/414/7350123456789
+    biz_location:
+      id: https://id.gs1.org/414/7350123456789
+  - dpp_event_id: evt-3
+    event_id: urn:uuid:7e1f5e3a-4c3a-4f4a-9b1a-a01000000003
+    event_time: 2024-10-01T09:00:00Z
+    event_time_zone_offset: +02:00
+    record_time: 2024-10-01T09:00:07Z
+    action: OBSERVE
+    biz_step: cbv:BizStep-installing
+    disposition: cbv:Disp-active
+    epc_list:
+      - https://dpp.nordic-wear.example/01/4012345678901/10/BATCH-NW-2024-Q1-008
+    read_point:
+      id: https://id.gs1.org/414/7350123456789
+    biz_location:
+      id: https://id.gs1.org/414/7350123456789
+  - dpp_event_id: evt-6
+    event_id: urn:uuid:7e1f5e3a-4c3a-4f4a-9b1a-a01000000006
+    event_time: 2025-04-18T16:30:00Z
+    event_time_zone_offset: +02:00
+    record_time: 2025-04-18T16:31:23Z
+    action: OBSERVE
+    disposition: cbv:Disp-recalled
+    epc_list:
+      - https://dpp.nordic-wear.example/01/4012345678901/10/BATCH-NW-2024-Q1-008
+    read_point:
+      id: https://id.gs1.org/414/7350123456789
+    biz_location:
+      id: https://id.gs1.org/414/7350123456789
+  - dpp_event_id: evt-7a
+    event_id: urn:uuid:7e1f5e3a-4c3a-4f4a-9b1a-a01000000007
+    event_time: 2025-06-09T10:00:00Z
+    event_time_zone_offset: +02:00
+    record_time: 2025-06-09T10:14:51Z
+    action: OBSERVE
+    biz_step: cbv:BizStep-repairing
+    disposition: cbv:Disp-in_progress
+    epc_list:
+      - https://dpp.nordic-wear.example/01/4012345678901/10/BATCH-NW-2024-Q1-008
+    read_point:
+      id: https://id.gs1.org/414/4012345678901
+    biz_location:
+      id: https://id.gs1.org/414/4012345678901
+    extensions:
+      transpareo:scope: reweave
+  - dpp_event_id: evt-7c
+    event_id: urn:uuid:7e1f5e3a-4c3a-4f4a-9b1a-a01000000008
+    event_time: 2025-06-15T16:00:00Z
+    event_time_zone_offset: +02:00
+    record_time: 2025-06-15T16:00:33Z
+    action: OBSERVE
+    disposition: cbv:Disp-active
+    epc_list:
+      - https://dpp.nordic-wear.example/01/4012345678901/10/BATCH-NW-2024-Q1-008
+    read_point:
+      id: https://id.gs1.org/414/7350123456789
+    biz_location:
+      id: https://id.gs1.org/414/7350123456789
+  - dpp_event_id: evt-8
+    event_id: urn:uuid:7e1f5e3a-4c3a-4f4a-9b1a-a01000000009
+    event_time: 2025-09-12T11:00:00Z
+    event_time_zone_offset: +02:00
+    record_time: 2025-09-12T11:00:18Z
+    action: OBSERVE
+    disposition: cbv:Disp-active
+    epc_list:
+      - https://dpp.nordic-wear.example/01/4012345678901/10/BATCH-NW-2024-Q1-008
+    read_point:
+      id: https://id.gs1.org/414/7350123456789
+    biz_location:
+      id: https://id.gs1.org/414/7350123456789

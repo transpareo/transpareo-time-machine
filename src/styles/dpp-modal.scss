@@ -1,0 +1,27 @@
+/*
+ * transpareo-time-machine - open-source DPP renderer
+ * Copyright (C) 2026 Transpareo AG
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ *
+ * <dpp-modal>, the generic modal host backing
+ * tm.openModal(...). Only owns the overlay backdrop;
+ * the dialog inside reuses the shared .modal-* chrome
+ * from modal.scss like every other modal in the bundle.
+ */
+
+.dpp-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: color-mix(in oklab, #000 60%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+
+  // Matches the proof / event / library modals so an
+  // integration-opened modal stacks above any other
+  // modal in the bundle. Stays inside the existing
+  // 4500-band convention; do not pick a higher value
+  // without auditing the global stacking order.
+  z-index: 4500;
+}

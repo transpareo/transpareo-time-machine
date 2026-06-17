@@ -1,0 +1,54 @@
+/*
+ * transpareo-time-machine - open-source DPP renderer
+ * Copyright (C) 2026 Transpareo AG
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ *
+ * Composition donut overrides on top of the shared
+ * dpp.scss class hierarchy. Sets SVG fill behaviour
+ * and the substance-link cursor.
+ */
+
+// Segment palette: a lightness ramp off the publisher accent
+// so a snapshot that omits per-substance colours still
+// paints distinct, on-theme segments. The donut cycles
+// --dpp-donut-1..6 by entry index.
+.dpp-donut {
+  --dpp-donut-1: var(--action-color, #255DBA);
+  --dpp-donut-2: color-mix(
+    in oklab, var(--action-color, #255DBA) 80%, var(--background-color, #fff)
+  );
+  --dpp-donut-3: color-mix(
+    in oklab, var(--action-color, #255DBA) 63%, var(--background-color, #fff)
+  );
+  --dpp-donut-4: color-mix(
+    in oklab, var(--action-color, #255DBA) 47%, var(--background-color, #fff)
+  );
+  --dpp-donut-5: color-mix(
+    in oklab, var(--action-color, #255DBA) 33%, var(--background-color, #fff)
+  );
+  --dpp-donut-6: color-mix(
+    in oklab, var(--action-color, #255DBA) 21%, var(--background-color, #fff)
+  );
+}
+
+.dpp-donut .dpp-donut-svg {
+  width: 100%;
+  height: 100%;
+}
+
+.dpp-donut-bg {
+  fill: none;
+  stroke: color-mix(
+    in oklab,
+    var(--color-muted, #777) 18%,
+    transparent
+  );
+  stroke-width: 22;
+}
+
+.dpp-donut-segment {
+  fill: none;
+  stroke-width: 22;
+  stroke-linecap: butt;
+}
+

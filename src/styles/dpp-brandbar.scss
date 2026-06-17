@@ -1,0 +1,77 @@
+/*
+ * transpareo-time-machine - open-source DPP renderer
+ * Copyright (C) 2026 Transpareo AG
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+/* `display: contents` removes the host box from layout
+ * so the sentinel + sticky brandbar render as direct
+ * children of the parent (.card). Without this, the
+ * sticky element's containing block would be the host
+ *, which has the same height as the brandbar, and
+ * sticky would never engage. */
+dpp-brandbar {
+  display: contents;
+}
+
+.brandbar-sentinel {
+  height: 0;
+  margin: 0;
+}
+
+.brandbar {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 25px;
+  width: 100%;
+  min-height: 72px;
+  background: var(--header-color, transparent);
+  border-bottom: 1px solid transparent;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease;
+
+  &.stuck {
+    background: var(--header-color, color-mix(
+      in oklab, var(--background-color, #fff) 92%, transparent));
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-bottom-color: color-mix(
+      in oklab, var(--font-color, #222) 14%, transparent);
+  }
+}
+
+.brand-logo {
+  display: block;
+  width: var(--logo-width, 139px);
+  height: var(--logo-height, 27px);
+  background-image: var(--logo-url);
+  background-repeat: no-repeat;
+  background-position: left center;
+  background-size: contain;
+}
+
+// Host opted into a tinted logo via --logo-color: swap
+// background-image for a mask so the SVG silhouette
+// gets recoloured to that value. The `logo-tinted`
+// class is added by dpp-brandbar.ts only when
+// --logo-color is actually set, so the untinted path
+// keeps the original SVG colours.
+dpp-brandbar.logo-tinted .brand-logo {
+  background-image: none;
+  background-color: var(--logo-color);
+  -webkit-mask-image: var(--logo-url);
+  mask-image: var(--logo-url);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: left center;
+  mask-position: left center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+
+.spacer { flex: 1; }

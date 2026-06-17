@@ -1,0 +1,62 @@
+name: Bug report
+description: A behaviour that diverges from what the docs or types describe.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for filing. Security issues do NOT go here;
+        see [SECURITY.md](../../SECURITY.md) for the
+        private reporting channel.
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: package.json `version`, or the commit hash if testing off `master`.
+      placeholder: "1.0.0 or git sha"
+    validations:
+      required: true
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Where does it happen?
+      options:
+        - The <transpareo-time-machine> custom element
+        - The <dpp-verifier> custom element
+        - The seed pipeline (`npm run seed`)
+        - The dev server (`npm run dev`)
+        - The library build (`npm run build`)
+        - Other / not sure
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+      description: One or two sentences.
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: What happened instead?
+      description: Include any console output, screenshots, or HAR captures.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: How can a maintainer reproduce it?
+      description: |
+        Ideal: a manifest URL we can paste into the
+        embedded element. Acceptable: a fixture YAML
+        snippet and the steps you ran. Best-effort:
+        a description with enough detail to make a
+        guess.
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: Browser / Node version
+      placeholder: "Chrome 126 / Firefox 130 / Node 22.5"

@@ -1,0 +1,201 @@
+/*
+ * transpareo-time-machine - open-source DPP renderer
+ * Copyright (C) 2026 Transpareo AG
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ *
+ * One source of truth for modal chrome. The dialog
+ * structure is built by `buildModal()` in
+ * src/reactive/modal.ts; every host element styled here
+ * shares the same overlay, border, header, body, and
+ * close button. Per-modal differences are limited to:
+ *
+ *   - `--modal-max-width` (the dialog's max-width), set
+ *     on the host below.
+ *   - the BODY content classes (.event-modal-grid,
+ *     .proof-grid, .lead/.row, etc.), each defined in
+ *     the modal's own stylesheet.
+ *
+ * No per-modal stylesheet should redefine the host,
+ * `.modal`, `.modal-header`, `.modal-title`, `.modal-
+ * close`, or `.modal-body`, change this file instead.
+ */
+
+@use 'dpp';
+
+// ─── Host overlay ─────────────────────────────────
+:where(
+  dpp-verification-modal,
+  dpp-event-modal,
+  dpp-library-modal
+) {
+  position: fixed;
+  inset: 0;
+  z-index: 4500;
+  display: none;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 5vh 16px 16px;
+
+  // Always-dark overlay so it actually dims the page on
+  // both themes. Mixing with `var(--font-color)` would
+  // brighten dark themes (font-color is light there).
+  background: color-mix(in oklab, black 60%, transparent);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+
+  &.open { display: flex; }
+}
+
+// Per-modal max-width tokens. The .modal box reads
+// --modal-max-width below.
+dpp-event-modal        { --modal-max-width: 720px; }
+dpp-verification-modal { --modal-max-width: 640px; }
+dpp-library-modal      { --modal-max-width: 560px; }
+
+// ─── Dialog box ───────────────────────────────────
+.modal {
+  width: 100%;
+  max-width: var(--modal-max-width, 640px);
+  background: var(--background-color);
+  border: 1px solid color-mix(
+    in oklab, var(--font-color) 14%, transparent);
+  border-radius: var(--radius-md);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+
+  // Scroll inside the modal body, not at the host
+  // overlay, otherwise the page's scrollbar gutter
+  // stays visible alongside the host's own scrollbar
+  // and reads as two stacked scrollbars.
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 22px;
+  background: var(--background-color);
+  color: var(--font-color);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.modal-title {
+  flex: 1;
+  margin: 0;
+  @include dpp.lg-bold;
+  font-style: italic;
+  letter-spacing: -0.01em;
+}
+
+.modal-close {
+  color: inherit;
+  opacity: 0.85;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+
+  // Nudge 2px right so the X glyph's optical right
+  // edge, which sits ~2px in from the SVG element
+  // edge in the sprite, lines up with the right
+  // column of body content below. transform keeps the
+  // shift visual only; layout flow (title width, flex
+  // gap) is unchanged.
+  transform: translateX(2px);
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+
+  &:hover { opacity: 1; }
+
+  // Button matches its icon so the glyph's right edge
+  // sits on the header's right padding line, exactly
+  // mirroring the title's left edge against the same
+  // padding on the other side. Override the global
+  // `.icon { margin-right: 5px }` from dpp.scss so the
+  // glyph fills the button without a right-bias.
+  .icon {
+    width: 22px;
+    height: 22px;
+    margin: 0;
+  }
+}
+
+.modal-body {
+  padding: 18px 22px 22px;
+  color: var(--color-text);
+  overflow-y: auto;
+  min-height: 0;
+
+  // Slim, theme-aware scrollbar. Firefox honours the
+  // `scrollbar-*` properties; Chromium/Safari read the
+  // `::-webkit-scrollbar` rules below.
+  scrollbar-width: thin;
+  scrollbar-color:
+    color-mix(in oklab, var(--font-color) 24%, transparent)
+    transparent;
+
+  &::-webkit-scrollbar { width: 6px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+
+  // Suppress the legacy up/down arrow buttons Chromium
+  // paints at the track ends, they don't render at the
+  // thin width and leave stray chevrons in the gutter.
+  &::-webkit-scrollbar-button { display: none; }
+  &::-webkit-scrollbar-corner { background: transparent; }
+
+  &::-webkit-scrollbar-thumb {
+    background: color-mix(
+      in oklab, var(--font-color) 22%, transparent);
+    border-radius: 6px;
+
+    // 1px transparent border keeps the thumb as a slim
+    // pill inside the gutter without crowding the edges.
+    border: 1px solid transparent;
+    background-clip: padding-box;
+
+    &:hover {
+      background: color-mix(
+        in oklab, var(--font-color) 38%, transparent);
+    }
+  }
+}
+
+// Section-based modal bodies opt out of the default
+// body padding, each section provides its own 22px
+// horizontal padding, matching the header's. The
+// component modal keeps the default body padding
+// because its content (.lead / .row) sits directly
+// in the body without a section wrapper.
+:where(dpp-event-modal, dpp-verification-modal) .modal-body {
+  padding: 0;
+}
+
+// ─── Small-screen fullscreen ───────────────────────
+// On narrow viewports modals fill the whole screen
+// rather than floating as cards.
+@media (max-width: 830px) {
+  :where(
+    dpp-verification-modal,
+    dpp-event-modal,
+    dpp-library-modal
+  ).open {
+    padding: 0;
+    align-items: stretch;
+    justify-content: stretch;
+
+    .modal {
+      max-width: none;
+      max-height: 100vh;
+      width: 100vw;
+      height: 100vh;
+      border-radius: 0;
+    }
+  }
+}

@@ -1,0 +1,105 @@
+/*
+ * transpareo-time-machine - open-source DPP renderer
+ * Copyright (C) 2026 Transpareo AG
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ *
+ * Pagination strip, single source of truth for the
+ * `< 1 2 … N >` navigation used by both the in-page
+ * gallery and the lightbox. Theming via two CSS vars:
+ *
+ *   --nav-fg , outline + text colour, also the
+ *               background of the current/hover button
+ *   --nav-bg , background of inactive buttons + text
+ *               colour of the current/hover state
+ *
+ * Defaults match the gallery's action-on-light scheme;
+ * the lightbox overrides both vars to white-on-black.
+ */
+
+@use 'dpp';
+
+.navigation {
+  --nav-fg: var(--action-color, #255DBA);
+  --nav-bg: var(--background-color, #fff);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  margin: 5px 0 0;
+}
+
+.navigation span {
+  width: 25px;
+  height: 25px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+// Each btn is a 25px-square circle with a 1px ring.
+// `border-box` brings the border inside the 25px, so the
+// content area is 23px tall; a matching `line-height`
+// auto-centres digits vertically in the visible circle
+// for system + Inter fonts alike.
+.navigation .btn {
+  @include dpp.sm-bold;
+  color: var(--nav-fg);
+  border: 1px solid var(--nav-fg);
+  border-radius: 100%;
+  box-sizing: border-box;
+  line-height: 23px;
+  cursor: pointer;
+  background: transparent;
+  padding: 0;
+
+  &:not(.inactive):hover,
+  &.current {
+    background: var(--nav-fg);
+    color: var(--nav-bg);
+  }
+
+  &.current {
+    cursor: default;
+  }
+}
+
+
+// Prev/next chevrons: rotate the shared chevron-down
+// sprite glyph to point left and right respectively.
+// Tuning the icon size + a tiny inline padding keeps the
+// stroke optically centred inside the 25px circle.
+// Prev/next opt into flex centring so the chevron sits
+// dead-centre in the 25px circle. The inline approach
+// the numbered buttons use can't centre an svg cleanly:
+// the global `.icon { margin-right: 5px }` pulls it left
+// and inline vertical-align doesn't pixel-match the box.
+.navigation .prev,
+.navigation .next {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.navigation .prev .icon,
+.navigation .next .icon {
+  width: 17px;
+  height: 17px;
+  margin: 0;
+  stroke: currentColor;
+  fill: none;
+  vertical-align: baseline;
+}
+
+.navigation .prev .icon { transform: rotate(90deg); }
+.navigation .next .icon { transform: rotate(-90deg); }
+
+.navigation .ellipsis {
+  padding: 0 1px;
+  color: var(--nav-fg);
+}
+
+.navigation .inactive {
+  opacity: 0.35;
+  cursor: default;
+}

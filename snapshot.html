@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!--
+      Dev shell for SINGLE-SNAPSHOT mode: `src` points at one
+      signed snapshot instead of a manifest. The renderer
+      shows that frozen version with no timeline, history, or
+      EPCIS events (a lone snapshot has no version list), and
+      verifies the snapshot's own proof. Reachable at
+      http://localhost:5173/snapshot.html under `npm run dev`.
+      Not shipped in the npm package; see the "Dev pages"
+      section of the README.
+    -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!--
+      Baseline Content-Security-Policy; see index.html for
+      the rationale and per-deployment adjustments.
+    -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self';
+        script-src 'self';
+        style-src 'self' 'unsafe-inline' https:;
+        font-src 'self' https: data:;
+        img-src 'self' https: data: blob:;
+        connect-src 'self' https: ws: wss:;
+        object-src 'none';
+        base-uri 'self';
+        form-action 'self'"
+    />
+    <title>Transpareo Time Machine (single snapshot, dev)</title>
+
+    <link rel="stylesheet" href="/nordic-wear-tshirt/branding.css" />
+
+    <!--
+      No favicon <link> needed: the browser auto-probes
+      /favicon.ico at the site root, served from public/.
+    -->
+
+    <style>
+      .ttm-boot {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        pointer-events: none;
+      }
+      .ttm-boot::before {
+        content: '';
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        border: 4px solid color-mix(
+          in oklab, var(--font-color, #222) 20%, transparent);
+        border-top-color: color-mix(
+          in oklab, var(--font-color, #222) 80%, transparent);
+        animation: ttm-boot-spin 0.9s linear infinite;
+      }
+      @keyframes ttm-boot-spin {
+        to { transform: rotate(360deg); }
+      }
+    </style>
+  </head>
+  <body>
+    <!--
+      `src` is a single snapshot URL (one version), not a
+      manifest. A real host points it at a published snapshot.
+    -->
+    <transpareo-time-machine
+      src="/nordic-wear-tshirt/dpp/demo-2026-t001/v/6.json"
+      footer-copyright="© 2026 Demo">
+      <div class="ttm-boot" aria-label="Loading"></div>
+    </transpareo-time-machine>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

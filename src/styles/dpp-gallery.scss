@@ -1,0 +1,60 @@
+/*
+ * transpareo-time-machine - open-source DPP renderer
+ * Copyright (C) 2026 Transpareo AG
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ *
+ * Styles for `<dpp-gallery>`: the hero image carousel
+ * on a passport card. Full-width 1:1 image with the
+ * project's accent border; pagination strip handled by
+ * pagination.scss (single source of truth), only the
+ * top-padding nudge below the image lives here.
+ */
+
+dpp-gallery {
+  display: block;
+  width: 100%;
+}
+
+.gallery .images {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  list-style: none;
+}
+
+.gallery .images li {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  overflow: hidden;
+  background: color-mix(
+    in oklab, var(--font-color, #3D3C3B) 8%, transparent);
+
+  /* `outline + outline-offset: -1px` instead of a real
+     border: outlines are painted on top of content
+     (above the inner <img>), so the rim stays visible
+     even when the image fills the box. They also don't
+     participate in the box-model flow, sidestepping the
+     subpixel-rounding case where a real border's right
+     edge could fall off the integer grid. Modern engines
+     (Chrome / Safari / Firefox) follow border-radius
+     for outlines. */
+  outline: 1px solid var(--action-color, #255DBA);
+  outline-offset: -1px;
+  border-radius: 6px;
+}
+
+.gallery .images img,
+.gallery .gallery-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  cursor: zoom-in;
+}
+
+.gallery .navigation {
+  padding-top: 10px;
+}

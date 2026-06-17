@@ -1,0 +1,100 @@
+/*
+ * transpareo-time-machine - open-source DPP renderer
+ * Copyright (C) 2026 Transpareo AG
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ *
+ * <dpp-auth-modal>, the X-Auth-Fields form modal that
+ * opens when the visitor clicks the "Sign in for
+ * additional product data" affordance under
+ * <dpp-properties>. Reuses the shared `.modal-*`
+ * chrome from modal.scss; this stylesheet only adds
+ * the form-field layout that the chrome doesn't cover.
+ */
+
+.dpp-auth-modal-overlay {
+  // Overlay backdrop matches the other modal overlays
+  // in the bundle (proof, event, library). The actual
+  // .modal box inside it uses the shared chrome rules.
+  position: fixed;
+  inset: 0;
+  background: color-mix(in oklab, #000 60%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 1000;
+}
+
+.dpp-auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.dpp-auth-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  input {
+    padding: 8px 10px;
+    font: inherit;
+    color: var(--color-text);
+    background: var(--color-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+
+    &:focus-visible {
+      outline: 2px solid var(--color-accent);
+      outline-offset: 0;
+      border-color: var(--color-accent);
+    }
+  }
+}
+
+.dpp-auth-field-label {
+  font-size: var(--font-sm);
+  color: var(--color-text);
+}
+
+.dpp-auth-field-hint {
+  font-size: var(--font-xs);
+  color: var(--color-muted);
+}
+
+.dpp-auth-error {
+  margin: 0 0 4px;
+  padding: 8px 10px;
+  background: color-mix(
+    in oklab, var(--color-verify-fail) 14%, transparent);
+  color: var(--color-text);
+  border: 1px solid color-mix(
+    in oklab, var(--color-verify-fail) 40%, transparent);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-sm);
+}
+
+.dpp-auth-submit {
+  align-self: flex-end;
+  padding: 8px 18px;
+  background: var(--button-color-top, var(--color-accent));
+  background: linear-gradient(
+    180deg,
+    var(--button-color-top, var(--color-accent)),
+    var(--button-color-bottom, var(--color-accent)));
+  color: var(--button-color-text, #fff);
+  border: 0;
+  border-radius: var(--radius-sm);
+  font: inherit;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.dpp-auth-status {
+  margin: 0;
+  color: var(--color-muted);
+}

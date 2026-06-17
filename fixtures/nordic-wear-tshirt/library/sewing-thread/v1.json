@@ -1,0 +1,113 @@
+{
+  "id": "component/sewing-thread",
+  "version": 1,
+  "name": {
+    "en": "Sewing Thread",
+    "de": "Nähgarn",
+    "fr": "Fil à coudre"
+  },
+  "properties": [
+    {
+      "key": "alternativeNames",
+      "label": {
+        "en": "Alternative names",
+        "de": "Alternative Bezeichnungen",
+        "fr": "Autres noms"
+      },
+      "value": {
+        "type": "list",
+        "items": [
+          { "text": { "en": "Core-spun thread", "de": "Core-Spun-Garn", "fr": "Fil à âme" } },
+          { "text": { "en": "Cotton-wrapped polyester", "de": "Polyestergarn mit Baumwollumspinnung", "fr": "Polyester gainé de coton" } }
+        ]
+      }
+    },
+    {
+      "key": "origin",
+      "label": {
+        "en": "Origin",
+        "de": "Herkunft",
+        "fr": "Origine"
+      },
+      "value": {
+        "type": "text",
+        "value": {
+          "en": "Bursa, Türkiye",
+          "de": "Bursa, Türkei",
+          "fr": "Bursa, Türkiye"
+        }
+      }
+    },
+    {
+      "key": "function",
+      "label": {
+        "en": "Function",
+        "de": "Funktion",
+        "fr": "Fonction"
+      },
+      "value": {
+        "type": "text",
+        "value": {
+          "en": "Joins panels at every seam; carries the structural load of the garment.",
+          "de": "Verbindet die Stoffteile an jeder Naht; trägt die strukturelle Belastung des Kleidungsstücks.",
+          "fr": "Assemble les panneaux à chaque couture; supporte la charge structurelle du vêtement."
+        }
+      }
+    },
+    {
+      "key": "characteristics",
+      "label": {
+        "en": "Characteristics",
+        "de": "Eigenschaften",
+        "fr": "Caractéristiques"
+      },
+      "value": {
+        "type": "list",
+        "items": [
+          {
+            "text": {
+              "en": "Polyester core for tensile strength",
+              "de": "Polyester-Kern für Zugfestigkeit",
+              "fr": "Âme en polyester pour la résistance à la traction"
+            },
+            "rating": "bad"
+          },
+          {
+            "text": {
+              "en": "Cotton wrap blends visually with the fabric",
+              "de": "Baumwollumspinnung passt sich optisch dem Gewebe an",
+              "fr": "Gainage en coton se fond visuellement avec le tissu"
+            },
+            "rating": "neutral"
+          },
+          {
+            "text": {
+              "en": "Outlasts the garment, complicates end-of-life sorting",
+              "de": "Hält länger als das Kleidungsstück, erschwert die Sortierung am Lebensende",
+              "fr": "Dure plus longtemps que le vêtement, complique le tri en fin de vie"
+            },
+            "rating": "neutral"
+          },
+          {
+            "text": {
+              "en": "OEKO-TEX certified for skin contact",
+              "de": "OEKO-TEX-zertifiziert für Hautkontakt",
+              "fr": "Certifié OEKO-TEX pour le contact avec la peau"
+            },
+            "rating": "good"
+          }
+        ]
+      }
+    }
+  ],
+  "references": [
+    {
+      "label": {
+        "en": "Material datasheet",
+        "de": "Materialdatenblatt",
+        "fr": "Fiche matière"
+      },
+      "href": "https://components.transpareo.example/sewing-thread"
+    }
+  ]
+}
