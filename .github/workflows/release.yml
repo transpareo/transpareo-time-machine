@@ -3,21 +3,37 @@
 # integrity manifest, and attaches every publishable
 # artefact to the corresponding GitHub release.
 #
-# What gets published per tag:
+# What gets published per tag, as two directory-preserving
+# gzipped tarballs. GitHub release assets are a flat
+# namespace, so loose files sharing a basename across the
+# two builds (every locale chunk, dpp-verifier.js,
+# integrity.json, build-environment.txt) would collide on
+# upload; the lib build alone also carries dpp-verifier.js
+# at both its root and under locales/. Tarballs keep the
+# tree intact so each path stays distinct.
 #
-#   - dist/transpareo-time-machine.js + .css + every
-#     locale chunk (the lib build).
-#   - dist-embed/embed.js + its locale chunks (the embed
-#     build, what hosts load via a single <script>).
+#   - transpareo-time-machine-dist.tar.gz - the lib build
+#     (transpareo-time-machine.{js,css}, dpp-verifier.js,
+#     locales/<lc>.js).
+#   - transpareo-time-machine-dist-embed.tar.gz - the embed
+#     build (embed.js + locale chunks, what hosts load via
+#     a single <script>).
+#
+# Each tarball carries, alongside its bundles:
+#
 #   - integrity.json - the SRI manifest with sha384 +
-#     sha512 + sha256-hex for every publishable file.
-#     Embedders pin via the sha384 entry; downstreams
-#     verifying reproducibility compare the sha256-hex.
+#     sha512 + sha256-hex for every file in that build,
+#     keyed by its path within the tarball. Embedders pin
+#     via the sha384 entry; downstreams verifying
+#     reproducibility extract and compare the sha256-hex.
 #   - build-environment.txt - the Node version,
 #     package-lock.json hash, and the runner image
 #     identifier the build ran under. Together these
 #     pin the build environment so a downstream rebuilder
 #     can reproduce the bytes locally.
+#
+# The tarballs are byte-reproducible: sorted entries, fixed
+# mtime/owner, and a zeroed gzip timestamp.
 #
 # Reproducible-build property: the workflow runs the
 # CI's reproducibility gate before publishing, so a tag
@@ -77,20 +93,21 @@ jobs:
             echo "package-lock-sha256: $(sha256sum package-lock.json | awk '{print $1}')"
           } > dist/build-environment.txt
           cp dist/build-environment.txt dist-embed/build-environment.txt
+      - name: stage release assets
+        run: |
+          tar --sort=name --mtime=1970-01-01T00:00:00Z \
+              --owner=0 --group=0 --numeric-owner \
+              -czf transpareo-time-machine-dist.tar.gz -C dist .
+          tar --sort=name --mtime=1970-01-01T00:00:00Z \
+              --owner=0 --group=0 --numeric-owner \
+              -czf transpareo-time-machine-dist-embed.tar.gz -C dist-embed .
       - name: publish github release
         uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
         with:
           generate_release_notes: true
           files: |
-            dist/transpareo-time-machine.js
-            dist/transpareo-time-machine.css
-            dist/dpp-verifier.js
-            dist/locales/*.js
-            dist/integrity.json
-            dist/build-environment.txt
-            dist-embed/*.js
-            dist-embed/integrity.json
-            dist-embed/build-environment.txt
+            transpareo-time-machine-dist.tar.gz
+            transpareo-time-machine-dist-embed.tar.gz
             LICENSE
             THIRD-PARTY-LICENSES.md
 
