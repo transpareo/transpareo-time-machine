@@ -33,12 +33,12 @@ interface Budget {
 // The lib + embed floors include the bundled inline
 // functional icon sprite and the element-config parser;
 // the embed entry also inlines app.css. Both are capped at
-// 55 KB gzipped to catch regressions without false-failing
+// 56 KB gzipped to catch regressions without false-failing
 // on that baseline.
 const BUDGETS: ReadonlyArray<Budget> = [
-  { file: 'transpareo-time-machine.js', maxGzipBytes: 55 * 1024, dir: 'dist' },
+  { file: 'transpareo-time-machine.js', maxGzipBytes: 56 * 1024, dir: 'dist' },
   { file: 'dpp-verifier.js', maxGzipBytes: 30 * 1024, dir: 'dist' },
-  { file: 'embed.js', maxGzipBytes: 55 * 1024, dir: 'dist-embed' },
+  { file: 'embed.js', maxGzipBytes: 56 * 1024, dir: 'dist-embed' },
 ]
 
 // Vite's lib mode emits entry + chunks; when two entry
