@@ -64,35 +64,27 @@ dpp-footer:empty {
   gap: 6px;
   padding: 4px 10px;
   background: color-mix(in oklab, var(--font-color) 4%, transparent);
-  color: var(--footer-link-color, var(--action-color));
+  color: var(--footer-text-color, #777);
   font: inherit;
   letter-spacing: 0.04em;
 
-  // The button lives in the footer (on `--body-
-  // background`), so its outline blends the body bg
-  // with the footer's muted text colour rather than
-  // picking up the content-surface `--color-border`
-  // (which would be invisible against a dark body).
+  // The border carries the affordance: the footer text
+  // colour (matching the label) at 0.6 alpha at rest,
+  // rising to full opacity on hover / keyboard focus.
   border: 1px solid color-mix(
     in oklab,
-    var(--body-background, #000) 50%,
-    var(--footer-text-color, #777));
+    var(--footer-text-color, #777) 60%,
+    transparent);
   border-radius: 4px;
   cursor: pointer;
 
-  // The hovered + keyboard-focused state share one
-  // visual, and the global `button:focus-visible {
-  // outline }` from app.css is suppressed so the
-  // tinted background is the only indicator. Tint
-  // comes from `--footer-link-color` so the hover
-  // visually reinforces "this is the linky thing"
-  // rather than a generic font-color wash.
+  // Hover and keyboard focus share one visual: the border
+  // goes opaque, no background tint. The global
+  // `button:focus-visible { outline }` from app.css is
+  // suppressed so the border is the sole indicator.
   &:hover,
   &:focus-visible {
-    background: color-mix(
-      in oklab,
-      var(--footer-link-color, var(--action-color)) 22%,
-      transparent);
+    border-color: var(--footer-text-color, #777);
     outline: none;
   }
 }
