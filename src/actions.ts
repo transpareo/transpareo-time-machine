@@ -583,7 +583,6 @@ export function animateDragTo(target: number, durationMs: number): void {
 // kicks to -visualShift then eases to 0, the deck
 // "shuffles" the slot delta even on a far click.
 export function navByEventId(id: string | null): void {
-  cancelReleaseAnim()
   hoveredEventId.set(null)
 
   const list = sortedEvents()
@@ -597,10 +596,19 @@ export function navByEventId(id: string | null): void {
 
   const currentIdx = focusIndex()
   if (targetIdx === currentIdx) {
+    // No slot change (re-selecting the current version, a
+    // boundary prev/next, or back/forward onto the focused
+    // event). Sync focus, then ease any in-flight release
+    // tween home rather than cancelling it: a bare cancel
+    // freezes the live card at a partial blur/opacity.
     focusedEventId.set(id)
+    if (dragActive.peek() || dragProgress.peek() !== 0) {
+      animateDragTo(0, RELEASE_ANIM_MS)
+    }
     return
   }
 
+  cancelReleaseAnim()
   const steps = targetIdx - currentIdx
   const dirSign = steps > 0 ? 1 : -1
   const absSteps = Math.abs(steps)
