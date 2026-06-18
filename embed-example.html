@@ -151,6 +151,7 @@
       global). `src` is the DPP data source: a manifest URL,
       or a single snapshot URL. Optional config attributes:
         icons-src               content icon sprite URL
+        icon-map-src            row key to icon symbol map
         revoked-roots-src       revocation endpoint ('' disables)
         show-verification-mark  'false' hides the verification chip
         pinned-platform-key     platform Ed25519 multikey set
@@ -163,6 +164,8 @@
     -->
     <transpareo-time-machine
       src="/nordic-wear-tshirt/dpp/demo-2026-t001/manifest.json"
+      icons-src="/icons.svg"
+      icon-map-src="/nordic-wear-tshirt/icon-map.json"
       footer-copyright="© 2026 Embed host"
       footer-links='[{"label":"Imprint","url":"#imprint"},{"label":"Privacy","url":"#privacy"}]'>
       <!-- Light-DOM fallback, shown before the element
