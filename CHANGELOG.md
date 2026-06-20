@@ -10,10 +10,12 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-06-20
+
 ### Changed
 
-- Proof verification migrated to the standard W3C
-  **eddsa-jcs-2022** Data Integrity cryptosuite, replacing
+- **BREAKING:** proof verification migrated to the standard
+  W3C **eddsa-jcs-2022** Data Integrity cryptosuite, replacing
   the reduced `eddsa-jcs-sha256` profile. Each proof is now
   signed independently over `SHA-256(JCS(proofConfig)) ||
   SHA-256(JCS(document))` (proof config first), so any
@@ -21,9 +23,17 @@ and this project adheres to
   "Verified" verdict counts authorities by resolved key
   rather than by shared signature. Lockstep with the
   publisher backend: a renderer on this version rejects
-  snapshots still signed with the old profile, so the
-  backend must emit eddsa-jcs-2022 proofs together with this
-  release.
-- `SnapshotProof.type`, `cryptosuite`, `created`, and
-  `proofPurpose` are now required (the suite signs them, so
-  every entry carries them).
+  snapshots still signed with the old profile, so the backend
+  must emit eddsa-jcs-2022 proofs together with this release.
+- **BREAKING:** `SnapshotProof.type`, `cryptosuite`,
+  `created`, and `proofPurpose` are now required (the suite
+  signs them, so every entry carries them).
+
+### Fixed
+
+- The page stays legible when a publisher's `branding.css` is
+  absent: neutral theme-token defaults live in a low-priority
+  cascade layer that a host's `branding.css` still overrides.
+- Full-state timeline connector lines no longer cross; the
+  near-strip rails are ordered by span so a longer run sits
+  above the shorter runs it spans.
