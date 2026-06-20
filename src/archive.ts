@@ -108,18 +108,18 @@ export interface Organization {
 
 // A signed JSON-LD snapshot blob. The serializer is
 // minimal on purpose, the trust payload is identity +
-// version + the embedded eddsa-jcs-sha256 proofs. Rendered
+// version + the embedded eddsa-jcs-2022 proofs. Rendered
 // product data lives in the SPA's own data layer.
 //
-// `proof` is a JSON-LD proof set. The snapshot carries
-// two Ed25519 signature values, one issued by the
-// issuer authority and one by the platform authority,
-// each replicated across multiple entries with different
-// `verificationMethod` URLs (HTTPS host, HTTPS CDN,
-// did:web) so a verifier can resolve the key by whichever
-// URL it can reach. A snapshot counts as authentic when
-// at least one issuer entry AND at least one platform
-// entry verifies (2-of-2 across the authority pair).
+// `proof` is a JSON-LD proof set of independent Data
+// Integrity proofs. The snapshot is signed by two
+// authorities, the issuer and the platform; each signs
+// several entries with different `verificationMethod` URLs
+// (HTTPS host, HTTPS CDN, did:web) that resolve to its one
+// key, so a verifier can reach the key by whichever URL it
+// can. A snapshot counts as authentic when at least one
+// issuer entry AND at least one platform entry verifies
+// (2-of-2 across the authority pair).
 export interface SignedSnapshot {
   readonly '@context'?:
     | string

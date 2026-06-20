@@ -435,37 +435,29 @@ export interface DppSnapshot {
   // legacy snapshots, and versions that changed no property.
   readonly changedProperties?: ChangeSet
 
-  // Multi-authority eddsa-jcs-sha256 proof set. Three
-  // entries point at the issuer's verificationMethod
-  // URLs and share one Ed25519 signature; two point at
-  // platform URLs and share another. A snapshot is
-  // authentic when at least one entry from each
-  // authority verifies (the default "any-issuer-and-
-  // any-platform" rule enforced in src/crypto/verify.ts).
+  // Multi-authority eddsa-jcs-2022 proof set. Three entries
+  // point at the issuer's verificationMethod URLs, two at
+  // platform URLs; each entry is an independent Data
+  // Integrity proof. A snapshot is authentic when entries
+  // verifying under at least two distinct keys are present
+  // (the default "any-issuer-and-any-platform" rule in
+  // src/crypto/verify.ts).
   readonly proof: ReadonlyArray<SnapshotProof>
 }
 
-// One proof entry. Only `verificationMethod` + `proofValue`
-// are required: the proof set repeats a single signature
-// across several locations of the same key, and every
-// entry after the first omits the proof metadata (`type`,
-// `cryptosuite`, `created`, `proofPurpose`) because the
-// reduced profile does not sign the proof options. The
-// verifier reads only the method + value per entry.
-//
-// The signing scheme is `eddsa-jcs-sha256`: Ed25519 over a
-// single SHA-256 of the JCS-canonical body. It is a
-// deliberately non-standard profile, NOT the W3C
-// eddsa-jcs-2022 suite (which binds a per-proof config
-// hash). `cryptosuite` is the backend-supplied wire label
-// and is typed `string` because the renderer never
-// branches on it (it is display-only); the publisher
-// backend owns the exact label value.
+// One W3C eddsa-jcs-2022 Data Integrity proof. Every field
+// is part of the signed proof configuration, so all are
+// required and present on every entry (unlike the older
+// reduced profile, where the aliases of one authority
+// shared a single signature and dropped the metadata).
+// `cryptosuite` is the wire label, typed loosely as
+// `string` because the verifier hashes whatever value is
+// present rather than branching on it.
 export interface SnapshotProof {
-  readonly type?: 'DataIntegrityProof'
-  readonly cryptosuite?: string
-  readonly created?: string
-  readonly proofPurpose?: 'assertionMethod'
+  readonly type: 'DataIntegrityProof'
+  readonly cryptosuite: string
+  readonly created: string
+  readonly proofPurpose: 'assertionMethod'
   readonly verificationMethod: string
   readonly proofValue: string
 }

@@ -11,22 +11,20 @@
  *      are not checked in. Every dev who runs the seed
  *      gets fresh keys.
  *
- *   2. For each snapshot in the fixture: SHA-256 of the
- *      JCS-canonicalized snapshot body (i.e. the
- *      snapshot stripped of its `proof` field) is the
- *      signing input; sign with each authority's key
- *      once. The result is two raw 64-byte signatures.
+ *   2. For each snapshot, build a 5-entry W3C
+ *      eddsa-jcs-2022 proof set: three entries point at
+ *      issuer verificationMethod URLs, two at platform
+ *      URLs. Each entry is signed independently over
+ *      hashData = SHA-256(JCS(proofConfig)) ||
+ *      SHA-256(JCS(snapshot minus proof)), where the
+ *      proofConfig carries that entry's verificationMethod
+ *      and the snapshot's @context (see
+ *      src/crypto/eddsa-jcs). The three issuer entries
+ *      resolve to the issuer key and the two platform
+ *      entries to the platform key, the two distinct keys
+ *      the renderer's 2-of-2 verdict expects.
  *
- *   3. Wrap the signatures in a 5-entry proof set:
- *      three entries point at three different issuer
- *      verificationMethod URLs and share the issuer
- *      signature value; two point at platform URLs and
- *      share the platform signature value. The five
- *      entries verify against two distinct public keys,
- *      which is the structural shape the renderer's
- *      2-of-2 aggregate verdict expects.
- *
- *   4. Emit a Multikey resolution doc per authority
+ *   3. Emit a Multikey resolution doc per authority
  *      under `public/<id>/dpp/<code>/keys/`. The
  *      proof entries' verificationMethod URLs all
  *      resolve back to one of those two documents at
@@ -48,10 +46,13 @@ import { join } from 'node:path';
 
 import { canonicalize } from '../../src/crypto/jcs.ts';
 import { encodeMultibaseBase58 } from '../../src/crypto/multibase.ts';
+import {
+  proofConfig, unsecuredDocument, EDDSA_JCS_2022,
+} from '../../src/crypto/eddsa-jcs.ts';
 
 export interface ProofEntry {
   readonly type: 'DataIntegrityProof';
-  readonly cryptosuite: 'eddsa-jcs-sha256';
+  readonly cryptosuite: 'eddsa-jcs-2022';
   readonly created: string;
   readonly proofPurpose: 'assertionMethod';
   readonly verificationMethod: string;
@@ -63,7 +64,7 @@ export interface ProofEntry {
 // order mirrors a ProofEntry minus the alias multiplicity.
 export interface ManifestProof {
   readonly type: 'DataIntegrityProof';
-  readonly cryptosuite: 'eddsa-jcs-sha256';
+  readonly cryptosuite: 'eddsa-jcs-2022';
   readonly created: string;
   readonly verificationMethod: string;
   readonly proofPurpose: 'assertionMethod';
@@ -102,42 +103,72 @@ export async function buildSnapshotSigner(
 
   return {
     signSnapshot(snapshot: Record<string, unknown>): ProofEntry[] {
-      // Sign the JCS hash of the snapshot body without
-      // its proof field. Per-authority signature is
-      // reused across that authority's alias entries.
-      const { proof: _proof, ...body } = snapshot;
-      const hash = sha256(canonicalize(body));
-      const issuerSig = signEd25519(issuer.privateKey, hash);
-      const platformSig = signEd25519(platform.privateKey, hash);
-
+      // One eddsa-jcs-2022 signature per alias: each binds
+      // its own verificationMethod through the proof config,
+      // so the three issuer aliases and two platform aliases
+      // all carry distinct signatures over a shared document
+      // hash.
+      const documentHash = sha256(canonicalize(unsecuredDocument(snapshot)));
+      const context = snapshot['@context'];
       const proofs: ProofEntry[] = [];
       for (const url of issuerUrls) {
-        proofs.push(buildProofEntry(url, issuerSig, createdAt));
+        proofs.push(
+          signProofEntry(url, issuer.privateKey, documentHash, context),
+        );
       }
       for (const url of platformUrls) {
-        proofs.push(buildProofEntry(url, platformSig, createdAt));
+        proofs.push(
+          signProofEntry(url, platform.privateKey, documentHash, context),
+        );
       }
       return proofs;
     },
 
     signManifest(manifest: Record<string, unknown>): ManifestProof {
-      // Sign the JCS hash of the manifest body without its
-      // signature (or proof) field, with the platform key
-      // only. This authenticates the version list itself;
-      // verificationMethod is the first platform alias.
-      const { proof: _proof, signature: _sig, ...body } = manifest;
-      const hash = sha256(canonicalize(body));
-      const platformSig = signEd25519(platform.privateKey, hash);
-      return {
+      // The manifest's single platform signature, same
+      // eddsa-jcs-2022 construction. This authenticates the
+      // version list itself; verificationMethod is the first
+      // platform alias.
+      const documentHash = sha256(canonicalize(unsecuredDocument(manifest)));
+      const context = manifest['@context'];
+      const options: Omit<ManifestProof, 'proofValue'> = {
         type: 'DataIntegrityProof',
-        cryptosuite: 'eddsa-jcs-sha256',
+        cryptosuite: EDDSA_JCS_2022,
         created: createdAt,
         verificationMethod: platformUrls[0],
         proofPurpose: 'assertionMethod',
-        proofValue: encodeMultibaseBase58(platformSig),
+      };
+      const proofConfigHash = sha256(canonicalize(proofConfig(options, context)));
+      const hashData = concatBytes(proofConfigHash, documentHash);
+      return {
+        ...options,
+        proofValue: encodeMultibaseBase58(
+          signEd25519(platform.privateKey, hashData),
+        ),
       };
     },
   };
+
+  function signProofEntry(
+    verificationMethod: string,
+    privateKey: AuthorityKey['privateKey'],
+    documentHash: Uint8Array,
+    context: unknown,
+  ): ProofEntry {
+    const options: Omit<ProofEntry, 'proofValue'> = {
+      type: 'DataIntegrityProof',
+      cryptosuite: EDDSA_JCS_2022,
+      created: createdAt,
+      proofPurpose: 'assertionMethod',
+      verificationMethod,
+    };
+    const proofConfigHash = sha256(canonicalize(proofConfig(options, context)));
+    const hashData = concatBytes(proofConfigHash, documentHash);
+    return {
+      ...options,
+      proofValue: encodeMultibaseBase58(signEd25519(privateKey, hashData)),
+    };
+  }
 }
 
 function generateAuthorityKey(authorityId: string): AuthorityKey {
@@ -207,21 +238,6 @@ function multikeyDoc(key: AuthorityKey): Record<string, string> {
     type: 'Multikey',
     controller: key.authorityId,
     publicKeyMultibase: key.publicKeyMultibase,
-  };
-}
-
-function buildProofEntry(
-  verificationMethod: string,
-  signatureBytes: Uint8Array,
-  createdAt: string,
-): ProofEntry {
-  return {
-    type: 'DataIntegrityProof',
-    cryptosuite: 'eddsa-jcs-sha256',
-    created: createdAt,
-    proofPurpose: 'assertionMethod',
-    verificationMethod,
-    proofValue: encodeMultibaseBase58(signatureBytes),
   };
 }
 

@@ -462,24 +462,26 @@ function buildChainBadge(chain: { status: string }): HTMLElement {
   return span
 }
 
-// Group entries by signature value (entries sharing a
-// proofValue come from the same authority's key) and
-// label the group from the verificationMethod URL of
-// any entry in it. The seeder writes keys/issuer.json
-// and keys/platform.json paths, which is what we
-// pattern-match on; entries that don't match either
-// pattern fall through to a generic label.
+// Group entries by resolved key (an authority's aliases
+// all resolve to the same key) and label the group from
+// the verificationMethod URL of any entry in it. The
+// seeder writes keys/issuer.json and keys/platform.json
+// paths, which is what we pattern-match on; entries that
+// don't match either pattern fall through to a generic
+// label. Entries that didn't resolve fall back to their
+// own verificationMethod as the group key.
 function groupByAuthority(
   entries: ReadonlyArray<ProofEntryResult>,
 ): AuthorityGroup[] {
-  const bySig = new Map<string, ProofEntryResult[]>()
+  const byKey = new Map<string, ProofEntryResult[]>()
   for (const e of entries) {
-    const bucket = bySig.get(e.proofValue) ?? []
+    const key = e.keyMultibase ?? e.verificationMethod
+    const bucket = byKey.get(key) ?? []
     bucket.push(e)
-    bySig.set(e.proofValue, bucket)
+    byKey.set(key, bucket)
   }
   const groups: AuthorityGroup[] = []
-  for (const bucket of bySig.values()) {
+  for (const bucket of byKey.values()) {
     const kind = kindForGroup(bucket)
     const name = kind === 'issuer'
       ? activeIssuer().name

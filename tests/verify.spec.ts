@@ -3,19 +3,24 @@
  * Copyright (C) 2026 Transpareo AG
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
- * End-to-end coverage for src/crypto/verify.ts using
- * real Ed25519 keys (WebCrypto, available in Node 22+)
- * and a stubbed fetch that returns Multikey resolution
- * docs. The aggregate-verdict rule (default = any-issuer
- * AND any-platform, strict = all entries) is the
- * meaning of the "Verified by Transpareo" chip; these
- * tests pin it down.
+ * End-to-end coverage for src/crypto/verify.ts using real
+ * Ed25519 keys (WebCrypto, available in Node 22+) and a
+ * stubbed fetch that returns Multikey resolution docs.
  *
- * The verifier holds a module-level keyCache, so each
- * test resets modules and re-imports `verifySnapshot`
- * to get a fresh cache. Otherwise a 404 in test N would
- * poison the lookup in test N+1 (or vice versa: a stale
- * key would mask a real fetch problem).
+ * This is the signer-to-verifier round-trip: the test signs
+ * with the W3C eddsa-jcs-2022 construction from
+ * src/crypto/eddsa-jcs (the same pieces the seed signer and
+ * the verifier use), so it pins the aggregate-verdict rule
+ * (default = any-issuer AND any-platform, strict = all
+ * entries), which is the meaning of the "Verified by
+ * Transpareo" chip. Interop with the published W3C vector is
+ * pinned separately in eddsa-jcs.spec.ts.
+ *
+ * The verifier holds a module-level keyCache, so each test
+ * resets modules and re-imports `verifySnapshot` to get a
+ * fresh cache. Otherwise a 404 in test N would poison the
+ * lookup in test N+1 (or vice versa: a stale key would mask
+ * a real fetch problem).
  */
 
 import {
@@ -23,6 +28,9 @@ import {
 } from 'vitest';
 import { canonicalize } from '../src/crypto/jcs';
 import { encodeMultibaseBase58 } from '../src/crypto/multibase';
+import {
+  proofConfig, unsecuredDocument, joinHashes,
+} from '../src/crypto/eddsa-jcs';
 import type {
   ProofEntryResult,
   VerificationResult,
@@ -53,34 +61,50 @@ async function makeAuthority(): Promise<Authority> {
   };
 }
 
-async function hashBody(body: unknown): Promise<Uint8Array> {
-  const bytes = new TextEncoder().encode(canonicalize(body));
+async function sha256Jcs(value: unknown): Promise<Uint8Array> {
+  const bytes = new TextEncoder().encode(canonicalize(value));
   return new Uint8Array(await crypto.subtle.digest('SHA-256', bytes));
 }
 
 // Same ArrayBufferLike-vs-ArrayBuffer workaround the
 // verifier uses (see src/crypto/verify.ts:asBuffer): the
-// runtime values are plain ArrayBuffer-backed, but
-// recent TS lib types narrow Uint8Array to a generic
-// ArrayBufferLike that the BufferSource union rejects.
+// runtime values are plain ArrayBuffer-backed, but recent
+// TS lib types narrow Uint8Array to a generic ArrayBufferLike
+// that the BufferSource union rejects.
 function asBuffer(u: Uint8Array): ArrayBuffer {
   const out = new ArrayBuffer(u.byteLength);
   new Uint8Array(out).set(u);
   return out;
 }
 
-async function signHash(
-  privateKey: CryptoKey, hash: Uint8Array,
+async function signHashData(
+  privateKey: CryptoKey, hashData: Uint8Array,
 ): Promise<Uint8Array> {
   const sig = await crypto.subtle.sign(
-    { name: 'Ed25519' }, privateKey, asBuffer(hash),
+    { name: 'Ed25519' }, privateKey, asBuffer(hashData),
   );
   return new Uint8Array(sig);
 }
 
-// Three issuer aliases, two platform aliases -- mirrors
-// the seed-side shape so the verifier's authority-
-// grouping logic runs against a realistic proof set.
+// Produce a proofValue the eddsa-jcs-2022 way: sign
+// SHA-256(JCS(proofConfig)) || SHA-256(JCS(document)), the
+// proof config carrying the document's @context.
+async function signProof(
+  privateKey: CryptoKey,
+  document: Record<string, unknown>,
+  options: Record<string, unknown>,
+): Promise<string> {
+  const documentHash = await sha256Jcs(unsecuredDocument(document));
+  const proofConfigHash = await sha256Jcs(
+    proofConfig(options, document['@context']),
+  );
+  const hashData = joinHashes(proofConfigHash, documentHash);
+  return encodeMultibaseBase58(await signHashData(privateKey, hashData));
+}
+
+// Three issuer aliases, two platform aliases -- mirrors the
+// seed-side shape so the verifier's authority-grouping logic
+// runs against a realistic proof set.
 const ISSUER_URLS = [
   'https://issuer.test/keys/issuer.json',
   'https://issuer.test/keys/issuer.json#did-web',
@@ -94,7 +118,7 @@ const PLATFORM_URLS = [
 
 interface ProofEntry {
   type: 'DataIntegrityProof';
-  cryptosuite: 'eddsa-jcs-sha256';
+  cryptosuite: 'eddsa-jcs-2022';
   created: string;
   proofPurpose: 'assertionMethod';
   verificationMethod: string;
@@ -107,12 +131,32 @@ interface SignedSnapshot {
   proof: ProofEntry[];
 }
 
+function proofOptions(verificationMethod: string): Omit<ProofEntry, 'proofValue'> {
+  return {
+    type: 'DataIntegrityProof',
+    cryptosuite: 'eddsa-jcs-2022',
+    created: '2026-01-01T00:00:00Z',
+    proofPurpose: 'assertionMethod',
+    verificationMethod,
+  };
+}
+
+// One independently-signed entry. Each binds its own
+// verificationMethod through the proof config, so aliases of
+// the same key still carry distinct signatures.
+async function buildEntry(
+  privateKey: CryptoKey,
+  body: Record<string, unknown>,
+  verificationMethod: string,
+): Promise<ProofEntry> {
+  const options = proofOptions(verificationMethod);
+  return { ...options, proofValue: await signProof(privateKey, body, options) };
+}
+
 interface Setup {
   snapshot: SignedSnapshot;
   issuer: Authority;
   platform: Authority;
-  issuerProofValue: string;
-  platformProofValue: string;
 }
 
 async function buildSignedSnapshot(): Promise<Setup> {
@@ -122,42 +166,20 @@ async function buildSignedSnapshot(): Promise<Setup> {
     version: 1,
     publishedAt: '2026-01-01T00:00:00Z',
   };
-  const hash = await hashBody(body);
-  const issuerSig = await signHash(issuer.privateKey, hash);
-  const platformSig = await signHash(platform.privateKey, hash);
-  const issuerProofValue = encodeMultibaseBase58(issuerSig);
-  const platformProofValue = encodeMultibaseBase58(platformSig);
-
-  const buildEntry = (
-    url: string, proofValue: string,
-  ): ProofEntry => ({
-    type: 'DataIntegrityProof',
-    cryptosuite: 'eddsa-jcs-sha256',
-    created: '2026-01-01T00:00:00Z',
-    proofPurpose: 'assertionMethod',
-    verificationMethod: url,
-    proofValue,
-  });
-
-  return {
-    snapshot: {
-      ...body,
-      proof: [
-        ...ISSUER_URLS.map((u) => buildEntry(u, issuerProofValue)),
-        ...PLATFORM_URLS.map((u) => buildEntry(u, platformProofValue)),
-      ],
-    },
-    issuer,
-    platform,
-    issuerProofValue,
-    platformProofValue,
-  };
+  const proof: ProofEntry[] = [];
+  for (const url of ISSUER_URLS) {
+    proof.push(await buildEntry(issuer.privateKey, body, url));
+  }
+  for (const url of PLATFORM_URLS) {
+    proof.push(await buildEntry(platform.privateKey, body, url));
+  }
+  return { snapshot: { ...body, proof }, issuer, platform };
 }
 
-// Stubbed fetch resolving every issuer/platform URL to
-// the right key. Tests can prune entries to simulate
-// unreachable hosts, swap multikeys to simulate
-// resolution-doc tampering, etc.
+// Stubbed fetch resolving every issuer/platform URL to the
+// right key. Tests can prune entries to simulate unreachable
+// hosts, swap multikeys to simulate resolution-doc
+// tampering, etc.
 function stubResolverFetch(map: Map<string, string>): void {
   vi.stubGlobal('fetch', async (input: string | URL): Promise<Response> => {
     const url = typeof input === 'string' ? input : input.toString();
@@ -234,22 +256,17 @@ describe('verifySnapshot: did:web resolution', () => {
   it('resolves a did:web method via its did.json by fragment', async () => {
     const setup = await buildSignedSnapshot();
     const didMethod = 'did:web:issuer.test#key-1';
-    const entry = (
-      url: string, proofValue: string,
-    ): ProofEntry => ({
-      type: 'DataIntegrityProof',
-      cryptosuite: 'eddsa-jcs-sha256',
-      created: '2026-01-01T00:00:00Z',
-      proofPurpose: 'assertionMethod',
-      verificationMethod: url,
-      proofValue,
-    });
-    const snapshot: SignedSnapshot = {
+    const body = {
       version: setup.snapshot.version,
       publishedAt: setup.snapshot.publishedAt,
+    };
+    const snapshot: SignedSnapshot = {
+      ...body,
       proof: [
-        entry(didMethod, setup.issuerProofValue),
-        ...PLATFORM_URLS.map((u) => entry(u, setup.platformProofValue)),
+        await buildEntry(setup.issuer.privateKey, body, didMethod),
+        ...await Promise.all(
+          PLATFORM_URLS.map((u) => buildEntry(setup.platform.privateKey, body, u)),
+        ),
       ],
     };
 
@@ -296,15 +313,6 @@ describe('verifySnapshot: did:web resolution', () => {
 });
 
 describe('verifySnapshot: verificationMethod scheme restriction', () => {
-  const entry = (url: string, proofValue: string): ProofEntry => ({
-    type: 'DataIntegrityProof',
-    cryptosuite: 'eddsa-jcs-sha256',
-    created: '2026-01-01T00:00:00Z',
-    proofPurpose: 'assertionMethod',
-    verificationMethod: url,
-    proofValue,
-  });
-
   // The resolver map deliberately KNOWS the forbidden URL
   // and would hand back the correct key, so a 'verified'
   // entry would prove the URL was fetched. 'unreachable'
@@ -313,12 +321,17 @@ describe('verifySnapshot: verificationMethod scheme restriction', () => {
     badUrl: string,
   ): Promise<ProofEntryResult | undefined> {
     const setup = await buildSignedSnapshot();
-    const snapshot: SignedSnapshot = {
+    const body = {
       version: setup.snapshot.version,
       publishedAt: setup.snapshot.publishedAt,
+    };
+    const snapshot: SignedSnapshot = {
+      ...body,
       proof: [
-        entry(badUrl, setup.issuerProofValue),
-        ...PLATFORM_URLS.map((u) => entry(u, setup.platformProofValue)),
+        await buildEntry(setup.issuer.privateKey, body, badUrl),
+        ...await Promise.all(
+          PLATFORM_URLS.map((u) => buildEntry(setup.platform.privateKey, body, u)),
+        ),
       ],
     };
     const map = fullResolverMap(setup);
@@ -390,10 +403,10 @@ describe('verifySnapshot: tampering', () => {
   it('marks an entry invalid when its signature is mutated', async () => {
     const setup = await buildSignedSnapshot();
 
-    // Mutate one issuer entry's proofValue by swapping
-    // the last base58 char. Other entries still share
-    // the original signature so the authority count is
-    // unchanged.
+    // Mutate one issuer entry's proofValue by swapping the
+    // last base58 char. The other issuer aliases keep their
+    // own valid signatures, so the issuer key still verifies
+    // and the authority count is unchanged.
     const targetIndex = 0;
     const original = setup.snapshot.proof[targetIndex].proofValue;
     const swapped = original.slice(0, -1)
@@ -406,8 +419,8 @@ describe('verifySnapshot: tampering', () => {
     const result = await run(setup, fullResolverMap(setup));
     expect(result.entries[targetIndex].status).toBe('invalid');
 
-    // The other four entries still verify; both
-    // authorities still represented.
+    // The other four entries still verify; both authorities
+    // still represented.
     expect(result.verdict).toBe('authentic');
     expect(result.verifiedAuthorityCount).toBe(2);
     expect(result.verifiedEntryCount).toBe(4);
@@ -417,7 +430,7 @@ describe('verifySnapshot: tampering', () => {
     const setup = await buildSignedSnapshot();
 
     // Re-sign nothing; just flip the body. Every entry's
-    // signature now verifies against a stale hash.
+    // signature now covers a stale document hash.
     (setup.snapshot as { publishedAt: string }).publishedAt =
       '2026-12-31T23:59:59Z';
     const result = await run(setup, fullResolverMap(setup));
@@ -598,8 +611,8 @@ describe('verifySnapshot: pinned platform key', () => {
       pinnedPlatformKeys: [setup.platform.publicKeyMultibase],
     });
 
-    // The two platform entries should be pinned; the
-    // three issuer entries should not be.
+    // The two platform entries should be pinned; the three
+    // issuer entries should not be.
     const pinned = result.entries.filter((e) => e.pinned);
     expect(pinned.length).toBe(2);
     expect(pinned.every(
@@ -610,17 +623,15 @@ describe('verifySnapshot: pinned platform key', () => {
   });
 
   it('does not flag pinned when the entry failed to verify', async () => {
-    // The defense in verify.ts:268-273: pinning is only
-    // meaningful when the signature actually verified --
-    // otherwise an attacker who controls the URL the
-    // verifier fetches could trivially flag any entry as
+    // Pinning is only meaningful when the signature actually
+    // verified -- otherwise an attacker who controls the URL
+    // the verifier fetches could trivially flag any entry as
     // pinned by returning the pinned multikey.
     const setup = await buildSignedSnapshot();
 
-    // Tamper one platform entry's signature so it
-    // verifies as invalid, but the resolver still
-    // returns the genuine platform multikey (which
-    // matches the pin).
+    // Tamper one platform entry's signature so it verifies as
+    // invalid, but the resolver still returns the genuine
+    // platform multikey (which matches the pin).
     const target = setup.snapshot.proof.length - 1;
     const original = setup.snapshot.proof[target].proofValue;
     setup.snapshot.proof[target] = {
@@ -681,8 +692,8 @@ describe('verifySnapshot: pinned issuer key', () => {
       ),
     )).toBe(true);
 
-    // The platform pin and the issuer pin tag disjoint
-    // entry sets.
+    // The platform pin and the issuer pin tag disjoint entry
+    // sets.
     expect(issuerPinned.some((e) => e.pinned)).toBe(false);
   });
 
@@ -711,37 +722,46 @@ describe('verifySnapshot: pinned issuer key', () => {
   });
 });
 
-describe('verifySnapshot: authority grouping by signature', () => {
-  // The renderer groups verified entries by proofValue,
-  // not by URL pattern, so authority count is robust to
-  // host renames. With all 5 entries verifying, the
-  // group set is exactly the two distinct signature
-  // values.
-  it('groups by proofValue, not by verificationMethod URL', async () => {
+describe('verifySnapshot: authority grouping by key', () => {
+  // Each entry is signed independently now (five distinct
+  // proofValues), but the three issuer aliases resolve to one
+  // key and the two platform aliases to another, so the
+  // verdict counts exactly two authorities, robust to host
+  // renames.
+  it('counts authorities by resolved key, not signature value', async () => {
     const setup = await buildSignedSnapshot();
     const result = await run(setup, fullResolverMap(setup));
-    const verifiedSigs = new Set(
+
+    const sigs = new Set(result.entries.map((e) => e.proofValue));
+    expect(sigs.size).toBe(5);
+
+    const keys = new Set(
       result.entries
         .filter((e) => e.status === 'verified')
-        .map((e) => e.proofValue),
+        .map((e) => e.keyMultibase),
     );
-    expect(verifiedSigs.size).toBe(2);
-    expect(verifiedSigs.has(setup.issuerProofValue)).toBe(true);
-    expect(verifiedSigs.has(setup.platformProofValue)).toBe(true);
+    expect(keys.size).toBe(2);
+    expect(keys.has(setup.issuer.publicKeyMultibase)).toBe(true);
+    expect(keys.has(setup.platform.publicKeyMultibase)).toBe(true);
+    expect(result.verifiedAuthorityCount).toBe(2);
   });
 });
 
 describe('verifyManifestSignature', () => {
   const PLATFORM_KEY_URL = 'https://platform.test/keys/platform.json';
 
-  const buildSignature = (proofValue: string) => ({
-    type: 'DataIntegrityProof',
-    cryptosuite: 'eddsa-jcs-sha256',
-    created: '2026-01-01T00:00:00Z',
-    verificationMethod: PLATFORM_KEY_URL,
-    proofPurpose: 'assertionMethod',
-    proofValue,
-  });
+  async function buildSignature(
+    privateKey: CryptoKey, body: Record<string, unknown>,
+  ) {
+    const options = {
+      type: 'DataIntegrityProof',
+      cryptosuite: 'eddsa-jcs-2022',
+      created: '2026-01-01T00:00:00Z',
+      verificationMethod: PLATFORM_KEY_URL,
+      proofPurpose: 'assertionMethod',
+    };
+    return { ...options, proofValue: await signProof(privateKey, body, options) };
+  }
 
   async function freshManifestVerifier(): Promise<
     typeof import('../src/crypto/verify').verifyManifestSignature
@@ -761,10 +781,9 @@ describe('verifyManifestSignature', () => {
         { number: 2, url: 'v/2.json', hashValue: 'bb' },
       ],
     };
-    const sig = await signHash(platform.privateKey, await hashBody(body));
     const manifest = {
       ...body,
-      signature: buildSignature(encodeMultibaseBase58(sig)),
+      signature: await buildSignature(platform.privateKey, body),
     };
     stubResolverFetch(new Map([[PLATFORM_KEY_URL, platform.publicKeyMultibase]]));
     const verifyManifestSignature = await freshManifestVerifier();
@@ -777,14 +796,14 @@ describe('verifyManifestSignature', () => {
     const body = {
       '@type': 'DppManifest', code: 'abc-123', currentVersion: 2,
     };
-    const sig = await signHash(platform.privateKey, await hashBody(body));
+    const signature = await buildSignature(platform.privateKey, body);
     const manifest = {
       ...body,
 
       // Flip currentVersion AFTER signing: the version list no
       // longer matches the signed bytes.
       currentVersion: 3,
-      signature: buildSignature(encodeMultibaseBase58(sig)),
+      signature,
     };
     stubResolverFetch(new Map([[PLATFORM_KEY_URL, platform.publicKeyMultibase]]));
     const verifyManifestSignature = await freshManifestVerifier();
@@ -797,10 +816,9 @@ describe('verifyManifestSignature', () => {
     const platform = await makeAuthority();
     const impostor = await makeAuthority();
     const body = { '@type': 'DppManifest', code: 'abc-123', currentVersion: 1 };
-    const sig = await signHash(platform.privateKey, await hashBody(body));
     const manifest = {
       ...body,
-      signature: buildSignature(encodeMultibaseBase58(sig)),
+      signature: await buildSignature(platform.privateKey, body),
     };
 
     // Resolver returns the impostor's key, not the signer's.
@@ -845,10 +863,9 @@ describe('verifyManifestSignature', () => {
   it('verifies a correctly signed EPCIS events document', async () => {
     const platform = await makeAuthority();
     const body = epcisBody();
-    const sig = await signHash(platform.privateKey, await hashBody(body));
     const doc = {
       ...body,
-      signature: buildSignature(encodeMultibaseBase58(sig)),
+      signature: await buildSignature(platform.privateKey, body),
     };
     stubResolverFetch(new Map([[PLATFORM_KEY_URL, platform.publicKeyMultibase]]));
     const verifyManifestSignature = await freshManifestVerifier();
@@ -859,7 +876,7 @@ describe('verifyManifestSignature', () => {
   it('rejects an EPCIS document whose eventList was tampered', async () => {
     const platform = await makeAuthority();
     const body = epcisBody();
-    const sig = await signHash(platform.privateKey, await hashBody(body));
+    const signature = await buildSignature(platform.privateKey, body);
 
     // Rewrite the event's bizStep AFTER signing: the timeline
     // the consumer would see no longer matches the signed
@@ -871,7 +888,7 @@ describe('verifyManifestSignature', () => {
           { ...body.epcisBody.eventList[0], bizStep: 'cbv:BizStep-shipping' },
         ],
       },
-      signature: buildSignature(encodeMultibaseBase58(sig)),
+      signature,
     };
     stubResolverFetch(new Map([[PLATFORM_KEY_URL, platform.publicKeyMultibase]]));
     const verifyManifestSignature = await freshManifestVerifier();

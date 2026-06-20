@@ -4,52 +4,59 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * In-browser Ed25519 proof verification for the
- * multi-authority DPP snapshot proof set.
+ * multi-authority DPP snapshot proof set, using the W3C
+ * eddsa-jcs-2022 Data Integrity cryptosuite.
  *
- * Per-entry algorithm (eddsa-jcs-sha256, a deliberately
- * non-standard profile, NOT the W3C eddsa-jcs-2022 suite:
- * it signs a single SHA-256 of the JCS body and does not
- * bind a per-proof config hash, so off-the-shelf
- * eddsa-jcs-2022 verifiers will not interoperate):
- *   1. JCS-canonicalize the snapshot with the `proof`
- *      field removed.
- *   2. SHA-256 the canonical bytes -> 32-byte digest.
- *   3. Resolve `proof.verificationMethod` to a public key:
- *      a did:web method maps to its did.json and the key
- *      is selected from the verificationMethod array by
+ * Per-entry algorithm (see ./eddsa-jcs for the shared
+ * construction):
+ *   1. Build the proof configuration: the entry's options
+ *      (type, cryptosuite, created, verificationMethod,
+ *      proofPurpose) minus proofValue, carrying the
+ *      document's `@context`. JCS-canonicalize, SHA-256.
+ *   2. JCS-canonicalize the snapshot with `proof` removed,
+ *      SHA-256.
+ *   3. hashData = proofConfigHash || documentHash.
+ *   4. Resolve `verificationMethod` to a public key: a
+ *      did:web method maps to its did.json and the key is
+ *      selected from the verificationMethod array by
  *      fragment; an http(s) or relative URL is fetched and
  *      its publicKeyMultibase read directly.
- *   4. Decode `proof.proofValue` (multibase z-base-58
- *      "z" prefix + 64-byte raw signature) to bytes.
- *   5. crypto.subtle.verify(Ed25519, pubKey, sig, hash).
+ *   5. Decode `proofValue` (multibase base58 "z" prefix +
+ *      64-byte signature) and crypto.subtle.verify(
+ *      Ed25519, pubKey, sig, hashData).
+ *
+ * Because the proof config binds each entry's own
+ * verificationMethod, every entry carries an independent
+ * signature (unlike the older reduced profile, where the
+ * aliases of one authority shared a single signature).
  *
  * The proof set has five entries today: three issuer
  * aliases (HTTPS host, did:web, HTTPS CDN fallback) and
- * two platform aliases (HTTPS host, did:web), with the
- * three issuer entries sharing one Ed25519 signature
- * and the two platform entries sharing another. The
- * CDN fallback exists so the issuer side stays
- * verifiable after the issuer's own hosts terminate.
+ * two platform aliases (HTTPS host, did:web). The three
+ * issuer aliases resolve to one key, the two platform
+ * aliases to another; the CDN fallback keeps the issuer
+ * side verifiable after the issuer's own hosts terminate.
  *
  * Aggregate rules:
- *   - Default (any-issuer-and-any-Transpareo): a
- *     snapshot is authentic when at least one entry
- *     verifies under each authority's signature group.
- *     Entries that fail to resolve (offline did host,
- *     dead CDN) are tolerated as long as one alias per
- *     authority makes it.
- *   - Strict (all-N): every entry must verify. Opt-in
- *     via { mode: 'strict' } for verifier surfaces
- *     that want to surface the full reachability
- *     picture rather than the two-of-two summary.
+ *   - Default (any-issuer-and-any-Transpareo): a snapshot
+ *     is authentic when entries verifying under at least
+ *     two distinct keys are present (one issuer key, one
+ *     platform key). Aliases that fail to resolve (offline
+ *     did host, dead CDN) are tolerated as long as one per
+ *     authority verifies.
+ *   - Strict (all-N): every entry must verify. Opt-in via
+ *     { mode: 'strict' } for verifier surfaces that want
+ *     the full reachability picture rather than the
+ *     two-of-two summary.
  *
- * The renderer groups by proofValue rather than reading
- * URL patterns, so the math survives renaming of
- * resolution hosts.
+ * Authorities are counted by resolved public key, so the
+ * verdict survives both renaming of resolution hosts and
+ * the per-entry signatures of the standard suite.
  */
 
 import { canonicalize } from './jcs'
 import { decodeMultibaseBase58 } from './multibase'
+import { proofConfig, unsecuredDocument, joinHashes } from './eddsa-jcs'
 import type { ManifestSignature } from '@/archive'
 import { describeError } from '@/errors'
 
@@ -63,10 +70,18 @@ export interface ProofEntryResult {
   readonly index: number
   readonly verificationMethod: string
   readonly status: ProofEntryStatus
-  // The shared signature value, kept on the result so
-  // the UI can group entries by authority without
-  // re-reading the source proof set.
+  // The entry's signature value, kept on the result for
+  // display. Each entry is signed independently now, so it
+  // no longer identifies an authority; grouping is by the
+  // resolved key (`keyMultibase`), or by the
+  // verificationMethod base URL for entries that didn't
+  // resolve.
   readonly proofValue: string
+  // The resolved public key (multibase z58 Multikey) when
+  // the entry verified, absent otherwise. Authorities are
+  // counted by this: distinct verified keys are distinct
+  // authorities.
+  readonly keyMultibase?: string
   // True iff verification succeeded AND the resolved
   // public key matches one of the caller-supplied
   // pinnedPlatformKeys. When the option is unset, this
@@ -90,11 +105,11 @@ export type AggregateVerdict =
 export interface VerificationResult {
   readonly entries: ReadonlyArray<ProofEntryResult>
   readonly verdict: AggregateVerdict
-  // Number of distinct authority signature groups that
-  // have at least one verified entry. The default rule
-  // is authentic <=> this is >= 2 (any issuer entry +
-  // any Transpareo entry); strict mode tightens it to
-  // require every entry to verify.
+  // Number of distinct public keys that at least one
+  // entry verified under. The default rule is authentic
+  // <=> this is >= 2 (one issuer key + one platform key);
+  // strict mode tightens it to require every entry to
+  // verify.
   readonly verifiedAuthorityCount: number
   // Total entries the snapshot carried, vs how many of
   // them verified. Surfaced so the modal can show "5 of
@@ -161,30 +176,30 @@ export async function verifySnapshot(
   }
 
   const documentHash = await hashDocument(snapshot)
+  const context = (snapshot as Record<string, unknown>)['@context']
   const entries = await Promise.all(
     proofs.map((p, i) =>
       verifyEntry(
-        p, i, documentHash,
+        p, i, documentHash, context,
         opts.pinnedPlatformKeys, opts.pinnedIssuerKeys,
       ),
     ),
   )
 
-  // Group verified entries by signature value; each
-  // distinct group is one authority. Entries that share
-  // a proofValue cover the same authority and one
-  // verified entry is enough for that authority's
-  // contribution to the aggregate.
-  const verifiedSigs = new Set<string>()
+  // Count authorities by resolved key: each distinct key a
+  // verified entry resolved under is one authority, and one
+  // verified entry per key is enough for its contribution
+  // to the aggregate.
+  const verifiedKeys = new Set<string>()
   let verifiedEntryCount = 0
   for (const e of entries) {
     if (e.status === 'verified') {
-      verifiedSigs.add(e.proofValue)
+      if (e.keyMultibase) verifiedKeys.add(e.keyMultibase)
       verifiedEntryCount++
     }
   }
 
-  const verifiedAuthorityCount = verifiedSigs.size
+  const verifiedAuthorityCount = verifiedKeys.size
   const totalEntryCount = entries.length
   const verdict: AggregateVerdict = isAuthentic(
     mode, verifiedAuthorityCount, verifiedEntryCount, totalEntryCount,
@@ -214,18 +229,37 @@ function isAuthentic(
   return authorities >= 2
 }
 
+async function sha256Utf8(text: string): Promise<Uint8Array> {
+  const bytes = new TextEncoder().encode(text)
+  return new Uint8Array(await crypto.subtle.digest('SHA-256', bytes))
+}
+
+// SHA-256 of the JCS-canonical unsecured document (the body
+// with its proof / signature removed). Shared by every
+// entry, then combined with each entry's own proof-config
+// hash to form that entry's hashData.
 async function hashDocument(
-  snapshot: ProofCarrier,
+  document: ProofCarrier | Record<string, unknown>,
 ): Promise<Uint8Array> {
-  // Spread strips the proof field from the body; the
-  // remaining fields are JCS-canonicalized to the same
-  // bytes the signer hashed when producing the
-  // signatures.
-  const { proof: _proof, ...rest } = snapshot as Record<string, unknown>
-  const canonical = canonicalize(rest)
-  const bytes = new TextEncoder().encode(canonical)
-  const digest = await crypto.subtle.digest('SHA-256', bytes)
-  return new Uint8Array(digest)
+  return sha256Utf8(
+    canonicalize(unsecuredDocument(document as Record<string, unknown>)),
+  )
+}
+
+// hashData for one entry: proofConfigHash || documentHash.
+// The proof config is the entry minus proofValue, carrying
+// the document's @context, exactly the bytes the signer
+// hashed (see ./eddsa-jcs).
+async function entryHashData(
+  proof: ManifestSignature,
+  documentHash: Uint8Array,
+  context: unknown,
+): Promise<Uint8Array> {
+  const cfg = proofConfig(
+    proof as unknown as Record<string, unknown>, context,
+  )
+  const proofConfigHash = await sha256Utf8(canonicalize(cfg))
+  return joinHashes(proofConfigHash, documentHash)
 }
 
 // Verify a manifest's single platform signature. Unlike a
@@ -248,9 +282,9 @@ export async function verifyManifestSignature(
 ): Promise<ProofEntryResult | null> {
   const sig = manifest.signature as ManifestSignature | undefined
   if (!sig) return null
-  const { signature: _sig, ...body } = manifest
-  const documentHash = await hashDocument(body)
-  return verifyEntry(sig, 0, documentHash, pinnedPlatformKeys)
+  const documentHash = await hashDocument(manifest)
+  const context = manifest['@context']
+  return verifyEntry(sig, 0, documentHash, context, pinnedPlatformKeys)
 }
 
 // Hex form of hashDocument, exposed so the chain
@@ -271,6 +305,7 @@ async function verifyEntry(
   proof: ManifestSignature,
   index: number,
   documentHash: Uint8Array,
+  context: unknown,
   pinnedPlatformKeys: ReadonlyArray<string> | undefined,
   pinnedIssuerKeys?: ReadonlyArray<string>,
 ): Promise<ProofEntryResult> {
@@ -311,9 +346,20 @@ async function verifyEntry(
     }
   }
 
+  let hashData: Uint8Array
+  try {
+    hashData = await entryHashData(proof, documentHash, context)
+  } catch (err) {
+    return {
+      ...base,
+      status: 'invalid',
+      reason: `hashing failed: ${describeError(err)}`,
+    }
+  }
+
   let ok: boolean
   try {
-    ok = await resolved.verify(signature, documentHash)
+    ok = await resolved.verify(signature, hashData)
   } catch (err) {
     return {
       ...base,
@@ -333,7 +379,10 @@ async function verifyEntry(
     .includes(resolved.multibase)
   const issuerPinned = (pinnedIssuerKeys ?? [])
     .includes(resolved.multibase)
-  return { ...base, status: 'verified', pinned, issuerPinned }
+  return {
+    ...base, status: 'verified', keyMultibase: resolved.multibase,
+    pinned, issuerPinned,
+  }
 }
 
 // A key resolution document is either a single Multikey

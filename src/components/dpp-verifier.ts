@@ -385,11 +385,10 @@ interface AuthorityGroup {
 
 // When pins are set: split into "platform" (entries
 // whose resolved key matches a pin) vs "issuer"
-// (everything else). When unpinned: split by signature
-// group (entries sharing a proofValue come from the
-// same authority); the first group is labelled
-// "issuer" and the second "platform" by URL
-// heuristic.
+// (everything else). When unpinned: group by resolved
+// key (an authority's aliases all resolve to one key);
+// the first group is labelled "issuer" and the second
+// "platform" by URL heuristic.
 function groupEntries(
   entries: ReadonlyArray<ProofEntryResult>,
   pins: ReadonlyArray<string> | undefined,
@@ -403,15 +402,18 @@ function groupEntries(
     ].filter((g) => g.entries.length > 0) as AuthorityGroup[]
   }
 
-  // Unpinned: group by signature value.
-  const bySig = new Map<string, ProofEntryResult[]>()
+  // Unpinned: group by resolved key (an authority's
+  // aliases share one key); entries that didn't resolve
+  // fall back to their own verificationMethod.
+  const byAuthority = new Map<string, ProofEntryResult[]>()
   for (const e of entries) {
-    const bucket = bySig.get(e.proofValue) ?? []
+    const key = e.keyMultibase ?? e.verificationMethod
+    const bucket = byAuthority.get(key) ?? []
     bucket.push(e)
-    bySig.set(e.proofValue, bucket)
+    byAuthority.set(key, bucket)
   }
   const groups: AuthorityGroup[] = []
-  for (const bucket of bySig.values()) {
+  for (const bucket of byAuthority.values()) {
     groups.push({ label: labelFromUrls(bucket), entries: bucket })
   }
   groups.sort((a, b) => order(a.label) - order(b.label))
