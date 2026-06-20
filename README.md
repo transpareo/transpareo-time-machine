@@ -881,6 +881,30 @@ then first available locale.
   the YAML sources and `fixtures/<id>/branding/`
   assets are the only tracked inputs.
 
+## Releasing
+
+`npm run release` cuts a release. It bumps the version,
+stamps the `CHANGELOG.md` `[Unreleased]` block into a dated
+section, commits `Release <version>`, tags `v<version>`, and
+pushes. The pushed tag is the release: it triggers
+`.github/workflows/release.yml`, which type-checks, lints,
+tests, builds, runs the a11y pass against a fresh seed, and
+publishes to npm with provenance. The helper runs the
+check / lint / test gates locally first, so a broken release
+never becomes a dangling tag.
+
+```bash
+npm run release -- -m   # minor (0.x.0)
+npm run release -- -M   # major (x.0.0)
+npm run release         # patch (0.0.x), the default
+npm run release -- -n   # dry run: print the steps only
+```
+
+Releases go out from a clean `main`. The git tag and
+`package.json` version must agree (the workflow enforces
+`v<version>` == `package.json`), which is exactly what the
+helper produces. Pick the bump by semver: a consumer-visible
+break, such as a change to the proof cryptosuite, is a major.
 
 ## Contributing
 
