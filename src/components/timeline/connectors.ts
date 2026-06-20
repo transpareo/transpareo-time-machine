@@ -89,10 +89,9 @@ export function buildConnectorLayer(
 
   // Stagger the gap0Y of each non-direct connector so
   // horizontal segments running near the strip don't
-  // stack on the same line. Sort the staggered indices
-  // by the connector's horizontal lane so neighbouring
-  // lanes get neighbouring rails, visually they read as
-  // a small staircase rather than overlap.
+  // stack on the same line, and so a connector's drop to
+  // its dot doesn't cut across a longer run sitting above
+  // it.
   const staggerY = computeRailStagger(list, cw)
 
   for (let i = 0; i < list.length; i++) {
@@ -104,14 +103,16 @@ export function buildConnectorLayer(
   return svg
 }
 
-// Greedy interval colouring: each non-direct connector
-// has a horizontal segment at gap0Y from min(lane, dx)
-// to max(lane, dx). Sort by the left edge, then assign
-// each connector to the LOWEST rail whose previously-
-// assigned right edge is to the left of this segment's
-// left edge. Connectors whose segments don't overlap
-// keep rail 0 (no Y offset); only those that would
-// stack on the same line get bumped.
+// Assign each non-direct connector a rail (a Y offset on
+// its near-strip horizontal run) so overlapping runs don't
+// stack on one line. Each run spans min(lane, dx) to
+// max(lane, dx). Rails are ordered by span: the SHORTER run
+// takes the lower rail (nearer the cards) and a longer run
+// that overlaps it is pushed up a rail. A connector's drop
+// to its dot always rises from its own rail to the strip,
+// so keeping longer runs above the shorter ones they span
+// stops that drop from cutting across them. Non-overlapping
+// runs share rail 0 (no offset).
 function computeRailStagger(
   list: ReadonlyArray<LayoutItem>, cw: number,
 ): number[] {
@@ -121,32 +122,33 @@ function computeRailStagger(
     const lane = findSafeLane(it, list, cw)
     const dx = it.x
     const direct = cx === dx && lane === cx && it.level === 0
-    return {
-      i,
-      lo: Math.min(lane, dx),
-      hi: Math.max(lane, dx),
-      direct,
-    }
+    return { i, lo: Math.min(lane, dx), hi: Math.max(lane, dx), direct }
   })
+
+  // Shortest span first, so a short run claims a low rail
+  // and a longer run overlapping it is bumped upward.
   const sorted = [...segs]
     .filter((s) => !s.direct)
-    .sort((a, b) => a.lo - b.lo)
+    .sort((a, b) => (a.hi - a.lo) - (b.hi - b.lo) || a.lo - b.lo)
 
-  // Two segments must have at least RAIL_MIN_GAP between
-  // them on a rail; otherwise they'd visually merge into
-  // a single longer line. End-to-end touching segments
-  // get bumped to a fresh rail too.
+  // Each run sits one rail above every shorter run it
+  // overlaps (RAIL_MIN_GAP apart, or they'd read as one
+  // line). Processing shortest-first means a run's
+  // overlapping shorter neighbours are already placed, so
+  // its rail is one above the highest of them. This keeps
+  // a longer run, and its drop to the dot, clear of the
+  // shorter runs it spans instead of cutting across them.
   const RAIL_MIN_GAP = 24
-  const railEnds: number[] = []
+  interface Placed { lo: number; hi: number; rail: number }
+  const placed: Placed[] = []
   const out = new Array(list.length).fill(0)
   for (const s of sorted) {
-    let rail = railEnds.findIndex((end) => end + RAIL_MIN_GAP <= s.lo)
-    if (rail === -1) {
-      rail = railEnds.length
-      railEnds.push(s.hi)
-    } else {
-      railEnds[rail] = s.hi
+    let rail = 0
+    for (const p of placed) {
+      const overlap = s.lo <= p.hi + RAIL_MIN_GAP && s.hi + RAIL_MIN_GAP >= p.lo
+      if (overlap) rail = Math.max(rail, p.rail + 1)
     }
+    placed.push({ lo: s.lo, hi: s.hi, rail })
     out[s.i] = rail * RAIL_STEP
   }
   return out
