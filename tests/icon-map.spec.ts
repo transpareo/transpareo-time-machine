@@ -25,8 +25,7 @@ function fakeElement(attrs: Record<string, string>): Element {
 }
 
 // Re-import per test so a loaded map doesn't leak; point the
-// config at a URL so iconMapUrl() never falls back to the
-// dev default.
+// config at a URL so iconMapUrl() resolves to it.
 async function load(src = '/p/icon-map.json'): Promise<IconsModule> {
   vi.resetModules();
   const cfg: ConfigModule = await import('../src/config');

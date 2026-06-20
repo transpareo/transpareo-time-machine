@@ -64,11 +64,10 @@ export interface TimeMachineConfig {
   // values. From the `icon-map-src` attribute. Lets the
   // snapshot ship presentation-free rows: the SPA resolves
   // each row's decorative icon from its key through this
-  // table instead of an inline icon field. In dev it
-  // defaults to the seeded '/icon-map.json'; a production
-  // build has no default, so a host points it at its own
-  // table, served beside the sprite. Without it (and the
-  // sprite) rows render iconless.
+  // table instead of an inline icon field. No default: a
+  // host points it at its own table, served beside the
+  // sprite. Without it (and the sprite) rows render
+  // iconless.
   readonly iconMapUrl?: string
 
   // From `show-verification-mark`. When `false`, the
@@ -159,7 +158,7 @@ export function initConfigFromElement(el: Element): void {
 }
 
 // A pinned-key attribute carries one or more multikeys
-// separated by whitespace. Blank or absent → undefined
+// separated by whitespace. Blank or absent yields undefined
 // (unpinned), never an empty array, so consumers can
 // treat "pins configured" as a single truthy check.
 // Exported for <dpp-verifier>, which reads its own

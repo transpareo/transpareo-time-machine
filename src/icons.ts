@@ -122,13 +122,11 @@ export function iconForProperty(key: string): string | null {
   return contentIconMap()[key] ?? null
 }
 
-// The external icon-map URL: the host override, or the
-// seeded dev map. Null in a production build with no
-// override, mirroring contentSpriteUrl: a fork ships no map
-// and rows stay iconless.
+// The external icon-map URL from the host's `icon-map-src`,
+// or null when unset, mirroring contentSpriteUrl: a fork
+// ships no map and rows stay iconless.
 export function iconMapUrl(): string | null {
-  if (config.iconMapUrl) return config.iconMapUrl
-  return import.meta.env.DEV ? '/icon-map.json' : null
+  return config.iconMapUrl ?? null
 }
 
 // Fetch the external key-to-icon table and publish it to
