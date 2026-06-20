@@ -19,6 +19,24 @@
  * branding present (standalone use or the verifier
  * surface), the system sans stack below applies. */
 
+/* Neutral defaults for the host's theme tokens, kept in
+ * their own cascade layer. A host-authored branding.css
+ * writes plain `:root {}` rules (unlayered), which beat
+ * any layer regardless of link order, so the publisher
+ * theme still wins when present. When branding.css is
+ * absent or fails to load, these defaults keep every
+ * derived colour (borders, shadows, timeline tints,
+ * modal chrome) legible instead of collapsing to
+ * transparent. */
+@layer ttm-theme-defaults {
+  :root {
+    --font-color: #3D3C3B;
+    --background-color: #fff;
+    --body-background: #f8f8f7;
+    --action-color: #255DBA;
+  }
+}
+
 :root {
   color-scheme: light dark;
 
@@ -55,12 +73,11 @@
   --radius-lg: 20px;
 
   /* Theme tokens (--font-color, --background-color,
-   * --action-color, etc.) come from /branding.css,
-   * `<link>`'d from index.html. We don't set them here
-   * so the host can ship its own theme without a SPA
-   * re-deploy. The fallback inside each var(--x, fallback)
-   * keeps the page legible if branding.css fails to
-   * load. */
+   * --action-color, --body-background) come from the
+   * host's /branding.css, `<link>`'d from index.html.
+   * Their neutral defaults live in the ttm-theme-defaults
+   * layer above; the derived tokens below build on the
+   * resolved base values. */
 
   /* derived (DPP-page-style) */
   --color-text: var(--font-color);
