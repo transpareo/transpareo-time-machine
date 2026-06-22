@@ -15,8 +15,11 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import * as host from '../src/host';
 import {
   activeVersionNumber, displayedEvent, focusedEventId, hoveredEventId,
+  verifyResult, versionStates, timelineState,
 } from '../src/state';
 import type { EpcisDocument } from '../src/epcis';
+import type { DppSnapshot } from '../src/types';
+import type { VersionState } from '../src/archive';
 
 function ev(
   id: string, occurredAt: string, versionNumber?: number,
@@ -85,5 +88,41 @@ describe('displayedEvent', () => {
     expect(displayedEvent()?.id).toBe('pub-1');
     hoveredEventId.set('insp-a');
     expect(displayedEvent()?.id).toBe('insp-a');
+  });
+});
+
+function snap(
+  version: number, status: string, signed = false,
+): DppSnapshot {
+  const proof = signed ? [{ proofValue: 'z1' }] : [];
+  return { version, status, proof } as unknown as DppSnapshot;
+}
+
+describe('verifyResult', () => {
+  beforeEach(() => {
+    timelineState.set('hidden');
+    versionStates.set({});
+  });
+
+  it('reports an unsigned draft snapshot as draft, not pending', () => {
+    host.snapshots.set({ 2: snap(2, 'draft') });
+    expect(verifyResult()).toBe('draft');
+  });
+
+  it('does not short-circuit a published snapshot to draft', () => {
+    host.snapshots.set({ 2: snap(2, 'in_use') });
+    expect(verifyResult()).toBe('pending');
+    versionStates.set({ 2: { status: 'verified' } as VersionState });
+    expect(verifyResult()).toBe('verified');
+  });
+
+  // canonicalStatus falls back to 'draft' for an unknown
+  // dppStatus; a signed snapshot must still verify, never read
+  // as a draft just because its status didn't map.
+  it('verifies a signed snapshot even when status reads draft', () => {
+    host.snapshots.set({ 2: snap(2, 'draft', true) });
+    expect(verifyResult()).toBe('pending');
+    versionStates.set({ 2: { status: 'verified' } as VersionState });
+    expect(verifyResult()).toBe('verified');
   });
 });

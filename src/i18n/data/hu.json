@@ -1,6 +1,7 @@
 {
   "verifying": "Ellenőrzés",
   "verificationFailed": "Az ellenőrzés sikertelen",
+  "notPublished": "Még nincs közzétéve",
   "digitalProductPassport": "Digitális termékútlevél",
   "historicalView": "Történeti nézet",
   "cryptoProof.title": "Kriptográfiai bizonyíték",

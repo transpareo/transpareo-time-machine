@@ -199,10 +199,6 @@ export const activeVersionNumber = computed<number>(() => {
   return latestVersion()
 })
 
-export const verifyResult = computed<
-  'pending' | 'verified' | 'failed'
->(() => versionStates()[activeVersionNumber()]?.status ?? 'pending')
-
 // ---- Snapshot resolution + rendered product.
 // activeSnapshot is the single source of truth for the
 // rendered page: each per-version artefact is self-
@@ -274,6 +270,29 @@ export const activeIssuer = computed(
 export const activePlatform = computed(
   () => activeSnapshot().platform,
 )
+
+// The verification verdict for the active version, as the
+// chip reads it. A preview of a not-yet-published passport is
+// a draft AND unsigned (no proof set), so it has nothing to
+// verify: it resolves to 'draft' rather than spinning on
+// 'pending' forever or tripping the proof gate into a
+// misleading 'failed'.
+//
+// Both conditions are required, not just the status: a
+// published snapshot always carries a proof, and
+// canonicalStatus falls back to 'draft' for an absent or
+// unrecognised dppStatus, so a status check alone would hide
+// a real verdict behind "draft" the moment the backend grows
+// a lifecycle token this build doesn't know. Gating on the
+// empty proof set keeps the short-circuit to genuine,
+// unsigned previews.
+export const verifyResult = computed<
+  'pending' | 'verified' | 'failed' | 'draft'
+>(() => {
+  const snap = activeSnapshot()
+  if (snap.status === 'draft' && snap.proof.length === 0) return 'draft'
+  return versionStates()[activeVersionNumber()]?.status ?? 'pending'
+})
 
 // ---- Available locales for the language picker. In
 // manifest mode the publisher declares them; in single-

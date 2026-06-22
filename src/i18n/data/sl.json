@@ -1,6 +1,7 @@
 {
   "verifying": "Preverjanje",
   "verificationFailed": "Preverjanje ni uspelo",
+  "notPublished": "Še ni objavljeno",
   "digitalProductPassport": "Digitalni potni list izdelka",
   "historicalView": "Zgodovinski pogled",
   "cryptoProof.title": "Kriptografski dokaz",

@@ -79,6 +79,16 @@
     var(--background-color, #fff));
 }
 
+// Draft: an unpublished preview with nothing to verify. The
+// quiet muted palette (the chip's own default) keeps it from
+// reading as either a pass or a failure.
+.chip.state-draft {
+  --chip-fg: var(--color-muted);
+  --chip-bg: color-mix(
+    in oklab, var(--color-muted) 12%,
+    var(--background-color, #fff));
+}
+
 .orb {
   position: relative;
   width: 20px;
@@ -112,7 +122,8 @@
 
 .chip.state-verifying .spinner,
 .chip.state-verified .check,
-.chip.state-failed .x {
+.chip.state-failed .x,
+.chip.state-draft .info {
   display: inline-block;
 }
 

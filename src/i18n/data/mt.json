@@ -1,6 +1,7 @@
 {
   "verifying": "Qed jiġi verifikat",
   "verificationFailed": "Il-verifika falliet",
+  "notPublished": "Għadu mhux ippubblikat",
   "digitalProductPassport": "Passaport Diġitali tal-Prodott",
   "historicalView": "Vista storika",
   "cryptoProof.title": "Prova kriptografika",

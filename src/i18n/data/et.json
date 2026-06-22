@@ -1,6 +1,7 @@
 {
   "verifying": "Kinnitamine",
   "verificationFailed": "Kinnitamine ebaõnnestus",
+  "notPublished": "Veel avaldamata",
   "digitalProductPassport": "Digitaalne tootepass",
   "historicalView": "Ajalooline vaade",
   "cryptoProof.title": "Krüptograafiline tõestus",

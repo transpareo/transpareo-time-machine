@@ -168,6 +168,26 @@ describe('classifyWireValue: composition', () => {
     ) as Extract<PropertyValueKind, { type: 'composition' }>;
     expect(k.entries[0].rating).toBe('veryGood');
   });
+
+  it('omits percent when a substance carries no value', () => {
+    const k = classifyWireValue(
+      [{ '@type': 'Substance', name: { en: 'Cell pack' }, rating: 'neutral' }],
+      undefined,
+    ) as Extract<PropertyValueKind, { type: 'composition' }>;
+    expect(k.entries[0]).toEqual({
+      name: { en: 'Cell pack' },
+      rating: 'neutral',
+    });
+    expect('percent' in k.entries[0]).toBe(false);
+  });
+
+  it('keeps percent 0 only when the wire states it', () => {
+    const k = classifyWireValue(
+      [{ '@type': 'Substance', name: { en: 'Trace' }, value: 0 }],
+      undefined,
+    ) as Extract<PropertyValueKind, { type: 'composition' }>;
+    expect(k.entries[0].percent).toBe(0);
+  });
 });
 
 describe('classifyWireValue: malformed', () => {

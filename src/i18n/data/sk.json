@@ -1,6 +1,7 @@
 {
   "verifying": "Overuje sa",
   "verificationFailed": "Overenie zlyhalo",
+  "notPublished": "Zatiaľ nezverejnené",
   "digitalProductPassport": "Digitálny produktový pas",
   "historicalView": "Historický pohľad",
   "cryptoProof.title": "Kryptografický dôkaz",

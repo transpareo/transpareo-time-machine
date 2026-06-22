@@ -1,6 +1,7 @@
 {
   "verifying": "Επαλήθευση",
   "verificationFailed": "Η επαλήθευση απέτυχε",
+  "notPublished": "Δεν έχει δημοσιευτεί ακόμη",
   "digitalProductPassport": "Ψηφιακό διαβατήριο προϊόντος",
   "historicalView": "Ιστορική προβολή",
   "cryptoProof.title": "Κρυπτογραφική απόδειξη",

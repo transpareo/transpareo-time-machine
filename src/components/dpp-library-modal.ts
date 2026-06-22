@@ -129,9 +129,11 @@ function buildBody(
   const frag = document.createDocumentFragment()
   const lead = el('div', 'dpp-library-lead')
   if (entry.rating) lead.append(buildRatingRow(entry.rating))
-  lead.append(
-    buildKvRow(tr('component.share'), `${formatNumber(entry.percent)}%`),
-  )
+  if (entry.percent != null) {
+    lead.append(
+      buildKvRow(tr('component.share'), `${formatNumber(entry.percent)}%`),
+    )
+  }
   frag.appendChild(lead)
 
   // 'unavailable' adds nothing below the lead: a component

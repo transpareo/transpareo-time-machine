@@ -1,6 +1,7 @@
 {
   "verifying": "Verifiserer",
   "verificationFailed": "Verifisering mislyktes",
+  "notPublished": "Ennå ikke publisert",
   "digitalProductPassport": "Digitalt produktpass",
   "historicalView": "Historisk visning",
   "cryptoProof.title": "Kryptografisk bevis",

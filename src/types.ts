@@ -179,7 +179,13 @@ export function canonicalStatus(raw: unknown): LifecycleStatus {
 // 'composition'; this is the per-row data shape.
 export interface CompositionEntry {
   readonly name: SnapshotLocalizedText
-  readonly percent: number
+
+  // Share of the composition, when the snapshot carries one.
+  // Absent on substance breakdowns that list components
+  // without quantities (a draft, or a composition recorded
+  // qualitatively); the renderer then omits all percentages
+  // and the donut rather than printing a misleading "0%".
+  readonly percent?: number
 
   // Segment colour is presentation, not signed data: the
   // wire omits it and the donut assigns a palette colour

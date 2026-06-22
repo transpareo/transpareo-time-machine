@@ -1,6 +1,7 @@
 {
   "verifying": "Doğrulanıyor",
   "verificationFailed": "Doğrulama başarısız",
+  "notPublished": "Henüz yayımlanmadı",
   "digitalProductPassport": "Dijital ürün pasaportu",
   "historicalView": "Geçmiş görünüm",
   "cryptoProof.title": "Kriptografik kanıt",

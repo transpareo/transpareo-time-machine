@@ -1,6 +1,7 @@
 {
   "verifying": "正在验证",
   "verificationFailed": "验证失败",
+  "notPublished": "尚未发布",
   "digitalProductPassport": "数字产品护照",
   "historicalView": "历史视图",
   "cryptoProof.title": "密码学证明",

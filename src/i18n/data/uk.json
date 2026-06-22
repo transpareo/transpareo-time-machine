@@ -1,6 +1,7 @@
 {
   "verifying": "Перевіряється",
   "verificationFailed": "Перевірка не вдалася",
+  "notPublished": "Ще не опубліковано",
   "digitalProductPassport": "Цифровий паспорт продукту",
   "historicalView": "Історичний вигляд",
   "cryptoProof.title": "Криптографічне підтвердження",

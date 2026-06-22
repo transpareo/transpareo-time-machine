@@ -1,6 +1,7 @@
 {
   "verifying": "検証中",
   "verificationFailed": "検証に失敗しました",
+  "notPublished": "未公開",
   "digitalProductPassport": "デジタル製品パスポート",
   "historicalView": "履歴ビュー",
   "cryptoProof.title": "暗号証明",

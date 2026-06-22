@@ -1,6 +1,7 @@
 {
   "verifying": "Удостоверяване",
   "verificationFailed": "Удостоверяването неуспешно",
+  "notPublished": "Все още не е публикуван",
   "digitalProductPassport": "Цифров продуктов паспорт",
   "historicalView": "Исторически изглед",
   "cryptoProof.title": "Криптографско доказателство",

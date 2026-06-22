@@ -18,6 +18,7 @@ const VIEW = {
   pending: { cls: 'verifying', label: 'verifying' as LabelKey },
   verified: { cls: 'verified', label: null },
   failed: { cls: 'failed', label: 'verificationFailed' as LabelKey },
+  draft: { cls: 'draft', label: 'notPublished' as LabelKey },
 } as const
 
 class DppVerificationChip extends LightElement {
@@ -35,6 +36,9 @@ class DppVerificationChip extends LightElement {
             <svg class="icon icon--fn x" aria-hidden="true">
               <use href="#icon-cancel"/>
             </svg>
+            <svg class="icon icon--fn info" aria-hidden="true">
+              <use href="#icon-info"/>
+            </svg>
           </span>
           <span class="ripple" aria-hidden="true"></span>
         </span>
@@ -45,7 +49,13 @@ class DppVerificationChip extends LightElement {
     const btn = this.querySelector('.chip') as HTMLButtonElement
     const lbl = this.querySelector('.label-text')!
 
-    btn.addEventListener('click', () => proofModalOpen.set(true))
+    // A draft is unsigned by design, so there is no proof
+    // chain to open: the chip stays inert (no pointer, no
+    // modal) in that state.
+    btn.addEventListener('click', () => {
+      if (verifyResult() === 'draft') return
+      proofModalOpen.set(true)
+    })
 
     this.effect(() => {
       const r = verifyResult()
@@ -53,7 +63,8 @@ class DppVerificationChip extends LightElement {
       const text = v.label != null
         ? t(i18n.labels, v.label)
         : verifiedLabel()
-      btn.className = `chip clickable state-${v.cls}`
+      const clickable = r === 'draft' ? '' : ' clickable'
+      btn.className = `chip${clickable} state-${v.cls}`
       btn.setAttribute('aria-label', text)
       lbl.textContent = text
     })

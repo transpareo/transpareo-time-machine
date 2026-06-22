@@ -1,6 +1,7 @@
 {
   "verifying": "Memverifikasi",
   "verificationFailed": "Verifikasi gagal",
+  "notPublished": "Belum dipublikasikan",
   "digitalProductPassport": "Paspor produk digital",
   "historicalView": "Tampilan riwayat",
   "cryptoProof.title": "Bukti kriptografis",

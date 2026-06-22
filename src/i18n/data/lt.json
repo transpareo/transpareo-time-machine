@@ -1,6 +1,7 @@
 {
   "verifying": "Tikrinama",
   "verificationFailed": "Patvirtinimas nepavyko",
+  "notPublished": "Dar nepaskelbta",
   "digitalProductPassport": "Skaitmeninis produkto pasas",
   "historicalView": "Istorinis vaizdas",
   "cryptoProof.title": "Kriptografinis įrodymas",

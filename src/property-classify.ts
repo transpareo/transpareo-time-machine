@@ -87,20 +87,30 @@ function scalarOrLongText(
 
 function toCompositionEntry(raw: unknown): CompositionEntry {
   const sub = raw as Record<string, unknown>
-  const rawValue = sub.value
-  const percent = typeof rawValue === 'number'
-    ? rawValue
-    : Number(rawValue) || 0
+  const percent = parsePercent(sub.value)
   const rating = canonicalRating(sub.rating)
   return {
     name: foldLocale(sub.name),
-    percent,
+    ...(percent != null ? { percent } : {}),
     ...(typeof sub.countryCode === 'string'
       ? { countryCode: sub.countryCode } : {}),
     ...(typeof sub.libraryRef === 'string'
       ? { libraryRef: sub.libraryRef } : {}),
     ...(rating ? { rating } : {}),
   }
+}
+
+// A substance's share, or undefined when the wire carries
+// no numeric quantity. Kept distinct from 0 so a qualitative
+// breakdown (names + ratings, no percentages) renders as a
+// plain list instead of a column of "0%".
+function parsePercent(raw: unknown): number | undefined {
+  if (typeof raw === 'number') return Number.isFinite(raw) ? raw : undefined
+  if (typeof raw === 'string' && raw.trim() !== '') {
+    const n = Number(raw)
+    return Number.isFinite(n) ? n : undefined
+  }
+  return undefined
 }
 
 // Classify one wire property value into the renderer's

@@ -1,6 +1,7 @@
 {
   "verifying": "Проверка",
   "verificationFailed": "Проверка не удалась",
+  "notPublished": "Ещё не опубликовано",
   "digitalProductPassport": "Цифровой паспорт продукта",
   "historicalView": "Исторический вид",
   "cryptoProof.title": "Криптографическое доказательство",

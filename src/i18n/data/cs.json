@@ -1,6 +1,7 @@
 {
   "verifying": "Ověřuje se",
   "verificationFailed": "Ověření se nezdařilo",
+  "notPublished": "Zatím nezveřejněno",
   "digitalProductPassport": "Digitální produktový pas",
   "historicalView": "Historický pohled",
   "cryptoProof.title": "Kryptografický důkaz",

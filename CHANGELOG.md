@@ -10,6 +10,19 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Fixed
+
+- A draft preview (an unsigned, not-yet-published snapshot) no
+  longer leaves the verification chip spinning on "Verifying"
+  forever. A draft has nothing to verify, so the chip now
+  reads a quiet "Not yet published" instead of a perpetual
+  spinner or a misleading failure.
+- Material composition rows whose substances carry no
+  percentage no longer render a column of "0%" and an empty
+  donut: with no quantities the breakdown shows the substance
+  names (and ratings) alone, omitting the numbers and the
+  ring.
+
 ## [2.0.0] - 2026-06-20
 
 ### Changed

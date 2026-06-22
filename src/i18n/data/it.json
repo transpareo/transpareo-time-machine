@@ -1,6 +1,7 @@
 {
   "verifying": "Verifica in corso",
   "verificationFailed": "Verifica fallita",
+  "notPublished": "Non ancora pubblicato",
   "digitalProductPassport": "Passaporto digitale del prodotto",
   "historicalView": "Vista storica",
   "cryptoProof.title": "Prova crittografica",

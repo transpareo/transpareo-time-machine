@@ -1,6 +1,7 @@
 {
   "verifying": "검증 중",
   "verificationFailed": "검증 실패",
+  "notPublished": "아직 게시되지 않음",
   "digitalProductPassport": "디지털 제품 여권",
   "historicalView": "이력 보기",
   "cryptoProof.title": "암호학적 증명",

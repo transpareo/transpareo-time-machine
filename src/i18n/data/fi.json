@@ -1,6 +1,7 @@
 {
   "verifying": "Vahvistetaan",
   "verificationFailed": "Vahvistus epäonnistui",
+  "notPublished": "Ei vielä julkaistu",
   "digitalProductPassport": "Digitaalinen tuotepassi",
   "historicalView": "Historiallinen näkymä",
   "cryptoProof.title": "Kryptografinen todiste",

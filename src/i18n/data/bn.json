@@ -1,6 +1,7 @@
 {
   "verifying": "যাচাই করা হচ্ছে",
   "verificationFailed": "যাচাইকরণ ব্যর্থ",
+  "notPublished": "এখনও প্রকাশিত হয়নি",
   "digitalProductPassport": "ডিজিটাল পণ্য পাসপোর্ট",
   "historicalView": "ঐতিহাসিক দৃশ্য",
   "cryptoProof.title": "ক্রিপ্টোগ্রাফিক প্রমাণ",

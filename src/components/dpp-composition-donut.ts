@@ -76,15 +76,25 @@ class DppCompositionDonut extends LightElement {
       return
     }
 
+    // Quantified when at least one substance carries a
+    // share. A purely qualitative breakdown (names + ratings,
+    // no percentages) drops the donut and the per-row numbers
+    // so the card never shows a column of "0%".
+    const quantified = row.value.entries.some((e) => e.percent != null)
+
     this.unit = row.value.unit
-    this.renderShell(row)
-    this.refreshTween(row.value.entries)
-    if (this.segGroup) this.paintSegments()
+    this.renderShell(row, quantified)
+    if (quantified) {
+      this.refreshTween(row.value.entries)
+      if (this.segGroup) this.paintSegments()
+    } else {
+      this.tween.clear()
+    }
   }
 
-  private renderShell(row: Composition): void {
+  private renderShell(row: Composition, quantified: boolean): void {
     const entries = row.value.entries
-    const showDonut = entries.length > 1
+    const showDonut = quantified && entries.length > 1
     const title = tx(row.name, i18n.locale)
 
     this.innerHTML = `
@@ -118,7 +128,7 @@ class DppCompositionDonut extends LightElement {
 
     const table = this.querySelector('.dpp-composition-table')!
     for (const entry of entries) {
-      table.appendChild(buildRow(this.unit, entry))
+      table.appendChild(buildRow(this.unit, entry, quantified))
     }
 
     this.segGroup = showDonut
@@ -134,7 +144,7 @@ class DppCompositionDonut extends LightElement {
     const items = entries.map((c, i) => {
       const key = nameKey(c.name)
       this.colors.set(key, c.color ?? paletteColor(i))
-      return { key, target: c.percent }
+      return { key, target: c.percent ?? 0 }
     })
 
     const moving = this.tween.apply(items, this.firstPaint)
@@ -186,7 +196,7 @@ function donutCenterValue(
   unit: string | undefined,
   entries: ReadonlyArray<CompositionEntry>,
 ): string {
-  const sum = entries.reduce((a, c) => a + c.percent, 0)
+  const sum = entries.reduce((a, c) => a + (c.percent ?? 0), 0)
 
   // Round to one decimal, then localize: a German viewer
   // reads "87,3", matching every other number on the card.
@@ -198,9 +208,11 @@ function donutCenterValue(
 function buildRow(
   unit: string | undefined,
   entry: CompositionEntry,
+  quantified: boolean,
 ): HTMLDivElement {
   const row = el('div', 'dpp-comp-row')
-  row.append(buildNameCell(entry), buildPctCell(unit, entry))
+  row.append(buildNameCell(entry))
+  if (quantified) row.append(buildPctCell(unit, entry))
   return row
 }
 
@@ -253,9 +265,10 @@ function buildPctCell(
   entry: CompositionEntry,
 ): HTMLSpanElement {
   const cell = el('span')
+  const pct = entry.percent ?? 0
   const text = unit
-    ? `${formatNumber(entry.percent)} ${unit}`
-    : `${formatNumber(entry.percent)}%`
+    ? `${formatNumber(pct)} ${unit}`
+    : `${formatNumber(pct)}%`
   cell.appendChild(el('span', 'dpp-comp-pct', text))
   return cell
 }
