@@ -10,6 +10,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.0.1] - 2026-06-23
+
 ### Fixed
 
 - A draft preview (an unsigned, not-yet-published snapshot) no
