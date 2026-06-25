@@ -5,11 +5,12 @@
  *
  * Seed-side proof signer. Per fixture run:
  *
- *   1. Generate two Ed25519 keypairs (issuer
- *      authority and platform authority). Keys are
- *      scoped to one `npm run seed` invocation; they
- *      are not checked in. Every dev who runs the seed
- *      gets fresh keys.
+ *   1. Derive two Ed25519 keypairs (issuer authority
+ *      and platform authority) from fixed seed constants,
+ *      so every seed run and every redeploy emits
+ *      byte-identical signed fixtures (see SEED_NAMESPACE
+ *      for why that matters). The keys are demo-only and
+ *      not checked in.
  *
  *   2. For each snapshot, build a 5-entry W3C
  *      eddsa-jcs-2022 proof set: three entries point at
@@ -40,7 +41,9 @@
  * backend.
  */
 
-import { generateKeyPairSync, sign, createHash } from 'node:crypto';
+import {
+  createPrivateKey, createPublicKey, sign, createHash, type KeyObject,
+} from 'node:crypto';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
@@ -74,10 +77,18 @@ export interface ManifestProof {
 // Ed25519 multikey prefix: 0xed 0x01 + 32-byte raw key.
 const ED25519_MULTIKEY_PREFIX = new Uint8Array([0xed, 0x01]);
 
+// PKCS#8 DER header for an Ed25519 private key (RFC 8410):
+// the fixed ASN.1 prefix, then the 32-byte seed. Lets a
+// deterministic seed become a Node private key without random
+// generation.
+const ED25519_PKCS8_PREFIX = Buffer.from(
+  '302e020100300506032b657004220420', 'hex',
+);
+
 interface AuthorityKey {
   readonly authorityId: string;
   readonly publicKeyMultibase: string;
-  readonly privateKey: ReturnType<typeof generateKeyPairSync>['privateKey'];
+  readonly privateKey: KeyObject;
 }
 
 export interface SnapshotSigner {
@@ -91,8 +102,8 @@ export async function buildSnapshotSigner(
   code: string,
   createdAt: string,
 ): Promise<SnapshotSigner> {
-  const issuer = generateAuthorityKey(`${issuerHandle}:issuer`);
-  const platform = generateAuthorityKey('transpareo:platform');
+  const issuer = deriveAuthorityKey(`${issuerHandle}:issuer`);
+  const platform = deriveAuthorityKey('transpareo:platform');
 
   await writeResolutionDocs(
     publicDir, issuerHandle, code, issuer, platform,
@@ -171,11 +182,26 @@ export async function buildSnapshotSigner(
   }
 }
 
-function generateAuthorityKey(authorityId: string): AuthorityKey {
-  const { publicKey, privateKey } = generateKeyPairSync('ed25519');
-  const jwk = publicKey.export({ format: 'jwk' });
+// Demo authority keys are derived from a fixed seed, not
+// randomly generated, so every seed run and redeploy emits
+// byte-identical signed fixtures. With random keys each build
+// rotated them, and a returning client holding a snapshot in
+// the HTTP cache then verified it against the freshly rotated
+// keys for up to the cache TTL: every signature failed while
+// the internally-consistent chain stayed green. A fixed seed
+// removes the only non-deterministic input (fixture data and
+// timestamps are fixed, Ed25519 signing is deterministic).
+// Demo-only: a published seed is a published private key, so
+// never derive real custody keys this way.
+const SEED_NAMESPACE = 'transpareo-time-machine/demo-authority/v1';
+
+function deriveAuthorityKey(authorityId: string): AuthorityKey {
+  const privateKey = privateKeyFromSeed(
+    sha256(`${SEED_NAMESPACE}:${authorityId}`),
+  );
+  const jwk = createPublicKey(privateKey).export({ format: 'jwk' });
   if (jwk.kty !== 'OKP' || jwk.crv !== 'Ed25519' || typeof jwk.x !== 'string') {
-    throw new Error('node generated a non-Ed25519 key, refusing to continue');
+    throw new Error('derived a non-Ed25519 key, refusing to continue');
   }
   const rawKey = Buffer.from(jwk.x, 'base64url');
   if (rawKey.length !== 32) {
@@ -187,6 +213,18 @@ function generateAuthorityKey(authorityId: string): AuthorityKey {
     publicKeyMultibase: encodeMultibaseBase58(multikey),
     privateKey,
   };
+}
+
+// Wrap a 32-byte seed in the Ed25519 PKCS#8 envelope and let
+// Node build the key. The seed IS the private key; the public
+// half is derived from it, so the same seed always yields the
+// same keypair.
+function privateKeyFromSeed(seed: Uint8Array): KeyObject {
+  if (seed.length !== 32) {
+    throw new Error(`Ed25519 seed was ${seed.length} bytes, want 32`);
+  }
+  const der = Buffer.concat([ED25519_PKCS8_PREFIX, Buffer.from(seed)]);
+  return createPrivateKey({ key: der, format: 'der', type: 'pkcs8' });
 }
 
 function issuerVerificationMethods(
@@ -242,7 +280,7 @@ function multikeyDoc(key: AuthorityKey): Record<string, string> {
 }
 
 function signEd25519(
-  privateKey: ReturnType<typeof generateKeyPairSync>['privateKey'],
+  privateKey: KeyObject,
   message: Uint8Array,
 ): Uint8Array {
   // Node's sign(null, ...) for Ed25519 uses the message

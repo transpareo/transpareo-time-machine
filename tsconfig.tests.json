@@ -13,6 +13,7 @@
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "moduleDetection": "force",
+    "allowImportingTsExtensions": true,
     "paths": {
       "@/*": ["./src/*"]
     }
