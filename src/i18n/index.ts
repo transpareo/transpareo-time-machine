@@ -9,9 +9,11 @@
  * URL. We pick on each load:
  *
  *   1. localStorage value (the user's last manual pick)
- *   2. first match of navigator.languages against the
+ *   2. the host page's `lang` attribute, when it names an
+ *      available locale (set via setHostLocale)
+ *   3. first match of navigator.languages against the
  *      DPP's available locales (browser preference)
- *   3. first available locale (fallback)
+ *   4. first available locale (fallback)
  *
  * Components read the active locale and label bundle
  * via the `i18n` getter object: any reactive effect that
@@ -20,7 +22,9 @@
  * re-renders every consumer.
  */
 import { signal, effect } from '@/reactive/signals'
-import { englishLabels, loadLabels, type Labels } from './labels'
+import {
+  englishLabels, loadLabels, bundledLocales, type Labels,
+} from './labels'
 import * as host from '@/host'
 import { availableLocales } from '@/state'
 
@@ -70,6 +74,33 @@ export function nativeName(code: string): string {
   return NATIVE_NAMES[code] ?? code.toUpperCase()
 }
 
+// Every locale we ship a UI label bundle for, English first
+// so it is the fallback. The verifier resolves its own locale
+// against this (it has no DPP `availableLocales` to draw on,
+// unlike the renderer).
+export const UI_LOCALES: ReadonlyArray<string> = [
+  'en',
+  ...bundledLocales.filter((c) => c !== 'en'),
+]
+
+// Locale the embedding page hands us via the element's `lang`
+// attribute (e.g. `<dpp-verifier lang="de">`). Preferred over
+// the browser auto-detect below, but not over the user's
+// explicit in-widget pick. null until an element sets it.
+//
+// Module-global, like the `locale` signal it feeds: one
+// active locale per page. Two widgets with different `lang`s
+// would share it, last to mount wins. Pages embed a single
+// widget, so this stays a documented assumption, not a bug.
+let hostLocale: string | null = null
+
+export function setHostLocale(
+  code: string | null | undefined,
+): void {
+  const norm = code?.split('-')[0].toLowerCase()
+  hostLocale = norm || null
+}
+
 export function detectLocale(
   available: ReadonlyArray<string> | null | undefined,
 ): string {
@@ -77,7 +108,11 @@ export function detectLocale(
   // entirely; the verifier must still render them, so fall
   // back to English rather than dereferencing undefined.
   if (!available || available.length === 0) return 'en'
-  if (typeof window === 'undefined') return available[0]
+
+  const wantsHost = hostLocale && available.includes(hostLocale)
+  if (typeof window === 'undefined') {
+    return wantsHost ? hostLocale! : available[0]
+  }
 
   // 1. user's prior pick
   try {
@@ -85,7 +120,11 @@ export function detectLocale(
     if (stored && available.includes(stored)) return stored
   } catch { /* localStorage unavailable */ }
 
-  // 2. browser preference (first match against
+  // 2. host page locale (the `lang` attribute) - takes
+  //    precedence over the browser auto-detect below.
+  if (wantsHost) return hostLocale!
+
+  // 3. browser preference (first match against
   //    available; strips region, `de-AT` matches `de`).
   const candidates = navigator.languages?.length
     ? navigator.languages
@@ -95,7 +134,7 @@ export function detectLocale(
     if (available.includes(lang)) return lang
   }
 
-  // 3. fallback
+  // 4. fallback
   return available[0]
 }
 

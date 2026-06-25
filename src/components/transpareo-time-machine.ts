@@ -33,7 +33,7 @@ import {
   activeVersionNumber, isOnCurrent, resetBootState,
 } from '@/state'
 import * as host from '@/host'
-import { i18n } from '@/i18n'
+import { i18n, setHostLocale } from '@/i18n'
 import { t } from '@/i18n/labels'
 import { bootstrapVerify, bootstrapHash } from '@/bootstrap'
 import { ensureEventsVerified, resetVerifyCaches } from '@/actions'
@@ -124,6 +124,11 @@ class TranspareoTimeMachine extends BaseElement {
     // the mounted subtree).
     initConfigFromElement(this)
     this.configured = true
+
+    // The embedding page can pin the locale via `lang`; the
+    // i18n bootstrap then prefers it over the browser
+    // auto-detect once the snapshot's locales are known.
+    setHostLocale(this.getAttribute('lang'))
 
     this.addStyle(css)
 

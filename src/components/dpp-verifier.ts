@@ -67,7 +67,9 @@ import {
 import { readTextResponse } from '@/fetch-json'
 import { looksLikeHtml, discoverManifestUrl } from '@/manifest-discovery'
 import { parseKeySet } from '@/config'
-import { i18n } from '@/i18n'
+import {
+  i18n, locale, setHostLocale, detectLocale, UI_LOCALES,
+} from '@/i18n'
 import { t, type LabelKey } from '@/i18n/labels'
 import type { DppManifest, SignedSnapshot } from '@/archive'
 import css from '@/styles/dpp-verifier.scss?inline'
@@ -96,6 +98,13 @@ class DppVerifier extends BaseElement {
   private resultMount!: HTMLDivElement
 
   protected setup(root: ShadowRoot): void {
+    // Pin the widget's locale from the host page's `lang`. The
+    // verifier has no DPP available-locales to auto-detect from,
+    // so without this it sits on English. Falls back to the
+    // browser preference, then English (UI_LOCALES is en-first).
+    setHostLocale(this.getAttribute('lang'))
+    locale.set(detectLocale(UI_LOCALES))
+
     this.addStyle(css)
 
     const wrap = el('div', 'verifier')
@@ -118,8 +127,9 @@ class DppVerifier extends BaseElement {
     const form = document.createElement('form')
     form.className = 'verifier-form'
 
-    const label = el('label', 'verifier-label', tr('verifier.url'))
+    const label = el('label', 'verifier-label')
     label.htmlFor = 'verifier-input'
+    this.effect(() => { label.textContent = tr('verifier.url') })
     form.appendChild(label)
 
     const row = el('div', 'verifier-row')
@@ -127,12 +137,15 @@ class DppVerifier extends BaseElement {
     this.input.type = 'url'
     this.input.id = 'verifier-input'
     this.input.className = 'verifier-input'
-    this.input.placeholder = tr('verifier.placeholder')
     this.input.required = true
+    this.effect(() => {
+      this.input.placeholder = tr('verifier.placeholder')
+    })
     row.appendChild(this.input)
 
-    const submit = el('button', 'verifier-submit', tr('verifier.verify'))
+    const submit = el('button', 'verifier-submit')
     submit.type = 'submit'
+    this.effect(() => { submit.textContent = tr('verifier.verify') })
     row.appendChild(submit)
 
     form.appendChild(row)

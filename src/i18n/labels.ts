@@ -28,6 +28,12 @@ const loaders = import.meta.glob<{ default: Labels }>(
   './data/*.json',
 )
 
+// Locale codes we ship a bundle for, derived from the
+// globbed filenames (`./data/de.json` -> `de`). The verifier
+// resolves a host-page locale against this set.
+export const bundledLocales: ReadonlyArray<string> =
+  Object.keys(loaders).map((p) => p.replace(/^.*\/|\.json$/g, ''))
+
 const cache = new Map<string, Labels>([['en', enLabels]])
 
 export async function loadLabels(locale: string): Promise<Labels> {

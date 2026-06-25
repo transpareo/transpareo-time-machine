@@ -10,6 +10,17 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Added
+
+- Both `<transpareo-time-machine>` and `<dpp-verifier>` now
+  honor the standard HTML `lang` attribute (e.g. `lang="de"`,
+  region stripped) to pin the UI locale. It outranks the
+  browser preference but not the user's stored pick, and only
+  applies for locales that have a shipped label bundle. The
+  standalone verifier benefits most: with no DPP
+  `availableLocales` to detect from, it previously stayed on
+  English regardless of the embedding page.
+
 ## [2.0.1] - 2026-06-23
 
 ### Fixed

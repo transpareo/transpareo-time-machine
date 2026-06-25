@@ -11,7 +11,7 @@
 
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { t, englishLabels, type Labels } from '../src/i18n/labels';
-import { detectLocale } from '../src/i18n';
+import { detectLocale, setHostLocale } from '../src/i18n';
 
 describe('t', () => {
   it('reads the active catalog first', () => {
@@ -49,6 +49,7 @@ describe('t', () => {
 describe('detectLocale', () => {
   afterEach(() => {
     vi.unstubAllGlobals();
+    setHostLocale(null);
   });
 
   function stubBrowser(
@@ -86,5 +87,29 @@ describe('detectLocale', () => {
   it('falls back to the first available locale', () => {
     stubBrowser(['ja-JP']);
     expect(detectLocale(['de', 'en'])).toBe('de');
+  });
+
+  it('prefers the host lang over the browser preference', () => {
+    stubBrowser(['fr-FR']);
+    setHostLocale('de');
+    expect(detectLocale(['en', 'de', 'fr'])).toBe('de');
+  });
+
+  it('lets a stored pick win over the host lang', () => {
+    stubBrowser(['fr-FR'], 'fr');
+    setHostLocale('de');
+    expect(detectLocale(['en', 'de', 'fr'])).toBe('fr');
+  });
+
+  it('ignores a host lang the data does not offer', () => {
+    stubBrowser(['en-US']);
+    setHostLocale('xx');
+    expect(detectLocale(['en', 'de'])).toBe('en');
+  });
+
+  it('strips the region from the host lang', () => {
+    stubBrowser(['fr-FR']);
+    setHostLocale('de-AT');
+    expect(detectLocale(['en', 'de'])).toBe('de');
   });
 });
