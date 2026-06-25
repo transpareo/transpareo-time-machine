@@ -10,6 +10,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-06-25
+
 ### Added
 
 - Both `<transpareo-time-machine>` and `<dpp-verifier>` now
