@@ -48,11 +48,12 @@ function placeholdersOf(value: string): string[] {
 }
 
 describe('locale catalogs', () => {
-  it('cover all 39 locales', () => {
-    expect(files.length).toBe(39);
+  it('cover all 40 locales', () => {
+    expect(files.length).toBe(40);
     expect(files).toContain('en.json');
     expect(files).toContain('de.json');
     expect(files).toContain('sr.json');
+    expect(files).toContain('vi.json');
   });
 
   it.each(files)('%s matches the en.json key set', (file) => {

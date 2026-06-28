@@ -51,6 +51,10 @@ describe('t', () => {
 });
 
 describe('nativeName', () => {
+  it('renders the picker label in the locale itself', () => {
+    expect(nativeName('vi')).toBe('Tiếng Việt');
+  });
+
   it('falls back to the uppercased code for an unnamed locale', () => {
     expect(nativeName('xx')).toBe('XX');
   });

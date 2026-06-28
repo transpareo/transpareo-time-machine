@@ -838,7 +838,7 @@ Two layers:
 - **SPA UI labels** (chip text, proof modal headings,
   event-type labels, etc.), bundled JSON files
   under `src/i18n/data/`, one per locale, lazy-loaded
-  via Vite. All 39 bundled locales ship.
+  via Vite. All 40 bundled locales ship.
 
 The locale picker reads `availableLocales` from the
 DPP and shows native names from `src/i18n/index.ts`.
@@ -855,7 +855,7 @@ against the set of shipped label bundles instead.
 > plural classes) are documented in
 > `src/i18n/data/README.md`.
 
-> **Direction.** All 39 bundled locales are
+> **Direction.** All 40 bundled locales are
 > left-to-right. The SPA's stylesheets use physical
 > properties (`left`, `right`, `margin-left`, etc.)
 > and the renderer does not switch

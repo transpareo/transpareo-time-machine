@@ -74,6 +74,7 @@ export const NATIVE_NAMES: Record<string, string> = {
   sv: 'Svenska',
   tr: 'Türkçe',
   uk: 'Українська',
+  vi: 'Tiếng Việt',
   zh: '中文',
 }
 

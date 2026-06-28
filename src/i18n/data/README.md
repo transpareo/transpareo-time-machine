@@ -3,7 +3,7 @@
 One JSON file per locale. The keys are stable; values
 are translations. `en.json` is the source of truth,
 keys are added there first, then propagated to the
-other 38 files.
+other 39 files.
 
 `labels.ts` lazy-loads each locale through Vite's
 `import.meta.glob`, so only the active locale's bundle

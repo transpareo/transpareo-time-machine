@@ -10,6 +10,13 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Added
+
+- Vietnamese (`vi`) UI label bundle, bringing the shipped
+  locale count to 40. The picker lists it as "Tiếng Việt"
+  whenever a DPP's `availableLocales` includes `vi`, and the
+  standalone verifier honors `lang="vi"`.
+
 ## [2.1.0] - 2026-06-25
 
 ### Added
