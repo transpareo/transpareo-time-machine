@@ -17,6 +17,11 @@ and this project adheres to
   whenever a DPP's `availableLocales` includes `vi`, and the
   standalone verifier honors `lang="vi"`.
 
+### Fixed
+
+- The language picker now renders native names for `bs`, `is`,
+  `mk`, `sq`, and `sr` instead of an uppercased locale code.
+
 ## [2.1.0] - 2026-06-25
 
 ### Added
