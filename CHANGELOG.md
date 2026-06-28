@@ -10,6 +10,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.2.0] - 2026-06-28
+
 ### Added
 
 - Vietnamese (`vi`) UI label bundle, bringing the shipped

@@ -1,6 +1,6 @@
 {
   "name": "transpareo-time-machine",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "Open-source Digital Product Passport renderer: a self-contained SPA that consumes signed DPP snapshots + EPCIS events and renders the public passport page for a publisher.",
   "license": "GPL-3.0-or-later",
   "author": "Transpareo AG",
