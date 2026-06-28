@@ -30,12 +30,15 @@ import { availableLocales } from '@/state'
 
 const STORAGE_KEY = 'tm.locale'
 
-// Native names cover the EU24 plus common non-EU
-// locales. The picker uses these so the menu renders
-// "Deutsch" while the active locale is still `en`.
+// Native names for every locale we ship a label bundle
+// for, in the locale's own script. The picker uses these
+// so the menu renders "Deutsch" while the active locale
+// is still `en`; nativeName falls back to the uppercased
+// code for anything missing.
 export const NATIVE_NAMES: Record<string, string> = {
   bg: 'Български',
   bn: 'বাংলা',
+  bs: 'Bosanski',
   cs: 'Čeština',
   da: 'Dansk',
   de: 'Deutsch',
@@ -50,11 +53,13 @@ export const NATIVE_NAMES: Record<string, string> = {
   hr: 'Hrvatski',
   hu: 'Magyar',
   id: 'Bahasa Indonesia',
+  is: 'Íslenska',
   it: 'Italiano',
   ja: '日本語',
   ko: '한국어',
   lt: 'Lietuvių',
   lv: 'Latviešu',
+  mk: 'Македонски',
   mt: 'Malti',
   nb: 'Norsk bokmål',
   nl: 'Nederlands',
@@ -64,6 +69,8 @@ export const NATIVE_NAMES: Record<string, string> = {
   ru: 'Русский',
   sk: 'Slovenčina',
   sl: 'Slovenščina',
+  sq: 'Shqip',
+  sr: 'Српски',
   sv: 'Svenska',
   tr: 'Türkçe',
   uk: 'Українська',

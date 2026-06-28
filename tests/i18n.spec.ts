@@ -10,8 +10,12 @@
  */
 
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { t, englishLabels, type Labels } from '../src/i18n/labels';
-import { detectLocale, setHostLocale } from '../src/i18n';
+import {
+  t, englishLabels, bundledLocales, type Labels,
+} from '../src/i18n/labels';
+import {
+  detectLocale, setHostLocale, nativeName, NATIVE_NAMES,
+} from '../src/i18n';
 
 describe('t', () => {
   it('reads the active catalog first', () => {
@@ -43,6 +47,17 @@ describe('t', () => {
       'boot.loadError': 'Fehler: {message}',
     } as unknown as Labels;
     expect(t(labels, 'boot.loadError', {})).toBe('Fehler: {message}');
+  });
+});
+
+describe('nativeName', () => {
+  it('falls back to the uppercased code for an unnamed locale', () => {
+    expect(nativeName('xx')).toBe('XX');
+  });
+
+  it('names every shipped locale bundle', () => {
+    const unnamed = bundledLocales.filter((c) => !NATIVE_NAMES[c]);
+    expect(unnamed).toEqual([]);
   });
 });
 
