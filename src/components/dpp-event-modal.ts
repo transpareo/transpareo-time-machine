@@ -191,7 +191,7 @@ function buildDescriptionSection(evt: DppEvent): HTMLElement {
 }
 
 function buildEpcisSection(ev: EpcisObjectEvent): HTMLElement {
-  // EPCIS is consumer-noise (URIs, CBV CURIEs, GLNs, ISO
+  // EPCIS is consumer-noise (URIs, CBV tokens, GLNs, ISO
   // timestamps). Wrap it in a closed-by-default <details>
   // labelled "Technical details" so the main modal stays
   // simple and only readers who want the machine-readable
@@ -242,11 +242,11 @@ function buildEpcisGrid(ev: EpcisObjectEvent): HTMLElement {
   return dl
 }
 
-function buildCbvCell(curie: string): HTMLElement {
+function buildCbvCell(term: string): HTMLElement {
   const wrap = el('span', 'epcis-cbv')
   wrap.append(
-    el('span', 'epcis-cbv-label', cbvLabel(curie)),
-    el('code', 'epcis-cbv-curie', curie),
+    el('span', 'epcis-cbv-label', cbvLabel(term)),
+    el('code', 'epcis-cbv-token', term),
   )
   return wrap
 }

@@ -23,11 +23,14 @@ import type { ManifestSignature } from '@/archive'
 
 export type EpcisAction = 'OBSERVE' | 'ADD' | 'DELETE'
 
-// CBV 2.0 codes are CURIEs like `cbv:BizStep-repairing`
-// or `cbv:Disp-in_progress`. Stored as opaque strings
-// here; `cbvLabel()` extracts the human-readable name.
-export type CbvBizStep = `cbv:BizStep-${string}`
-export type CbvDisposition = `cbv:Disp-${string}`
+// EPCIS 2.0 emits bizStep and disposition as the bare CBV
+// local term (`shipping`, `in_progress`). A disposition may
+// instead carry a namespaced extension value
+// (`transpareo:Disp-unchanged`) rather than a CBV term. Both
+// pass through as opaque strings; `cbvLabel()` renders the
+// human-readable name.
+export type CbvBizStep = string
+export type CbvDisposition = string
 
 // GLN (Global Location Number) resolved to a GS1 Digital
 // Link URI: `https://id.gs1.org/414/<13-digit GLN>`.
@@ -94,18 +97,16 @@ export function eventTime(occurredAt: string): number {
   return Number.isNaN(t) ? 0 : t
 }
 
-// `cbv:BizStep-repairing` -> `repairing`.
-// `cbv:Disp-in_progress` -> `in progress`.
-// Returns the CBV local term with underscores spaced out,
-// in the vocabulary's own lower-case (no title-casing of a
-// user-facing value); a stylesheet can capitalize it for
-// display. Falls back to the original string when the input
-// doesn't match the CBV CURIE shape.
-export function cbvLabel(curie: string | undefined): string {
-  if (!curie) return ''
-  const m = curie.match(/^cbv:(?:BizStep|Disp|BTT|SDT|ER|Comp)-(.+)$/)
-  if (!m) return curie
-  return m[1].replace(/_/g, ' ')
+// `shipping` -> `shipping`. `in_progress` -> `in progress`.
+// The feed emits the bare CBV local term; this spaces its
+// underscores out and keeps the vocabulary's own lower-case
+// (no title-casing a user-facing value; a stylesheet can
+// capitalize it). A namespaced extension value such as
+// `transpareo:Disp-unchanged` carries no underscores and
+// passes through unchanged.
+export function cbvLabel(term: string | undefined): string {
+  if (!term) return ''
+  return term.replace(/_/g, ' ')
 }
 
 // `https://id.gs1.org/414/5012345100111` -> `5012345100111`.

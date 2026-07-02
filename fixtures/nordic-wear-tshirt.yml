@@ -576,8 +576,8 @@ epcis:
     event_time_zone_offset: +00:00
     record_time: 2024-01-15T10:00:14Z
     action: ADD
-    biz_step: cbv:BizStep-commissioning
-    disposition: cbv:Disp-active
+    biz_step: commissioning
+    disposition: active
     epc_list:
       - https://dpp.nordic-wear.example/01/4012345678901/10/BATCH-NW-2024-Q1-008
     read_point:
@@ -590,8 +590,8 @@ epcis:
     event_time_zone_offset: +02:00
     record_time: 2024-05-15T14:01:02Z
     action: OBSERVE
-    biz_step: cbv:BizStep-commissioning
-    disposition: cbv:Disp-active
+    biz_step: commissioning
+    disposition: active
     epc_list:
       - https://dpp.nordic-wear.example/01/4012345678901/10/BATCH-NW-2024-Q1-008
     read_point:
@@ -604,8 +604,8 @@ epcis:
     event_time_zone_offset: +02:00
     record_time: 2024-10-01T09:00:07Z
     action: OBSERVE
-    biz_step: cbv:BizStep-installing
-    disposition: cbv:Disp-active
+    biz_step: installing
+    disposition: active
     epc_list:
       - https://dpp.nordic-wear.example/01/4012345678901/10/BATCH-NW-2024-Q1-008
     read_point:
@@ -618,7 +618,7 @@ epcis:
     event_time_zone_offset: +02:00
     record_time: 2025-04-18T16:31:23Z
     action: OBSERVE
-    disposition: cbv:Disp-recalled
+    disposition: recalled
     epc_list:
       - https://dpp.nordic-wear.example/01/4012345678901/10/BATCH-NW-2024-Q1-008
     read_point:
@@ -631,8 +631,8 @@ epcis:
     event_time_zone_offset: +02:00
     record_time: 2025-06-09T10:14:51Z
     action: OBSERVE
-    biz_step: cbv:BizStep-repairing
-    disposition: cbv:Disp-in_progress
+    biz_step: repairing
+    disposition: in_progress
     epc_list:
       - https://dpp.nordic-wear.example/01/4012345678901/10/BATCH-NW-2024-Q1-008
     read_point:
@@ -647,7 +647,7 @@ epcis:
     event_time_zone_offset: +02:00
     record_time: 2025-06-15T16:00:33Z
     action: OBSERVE
-    disposition: cbv:Disp-active
+    disposition: active
     epc_list:
       - https://dpp.nordic-wear.example/01/4012345678901/10/BATCH-NW-2024-Q1-008
     read_point:
@@ -660,7 +660,7 @@ epcis:
     event_time_zone_offset: +02:00
     record_time: 2025-09-12T11:00:18Z
     action: OBSERVE
-    disposition: cbv:Disp-active
+    disposition: active
     epc_list:
       - https://dpp.nordic-wear.example/01/4012345678901/10/BATCH-NW-2024-Q1-008
     read_point:

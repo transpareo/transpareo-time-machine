@@ -853,7 +853,7 @@ describe('verifyManifestSignature', () => {
           type: 'ObjectEvent',
           eventID: 'urn:uuid:event-1',
           action: 'OBSERVE',
-          bizStep: 'cbv:BizStep-repairing',
+          bizStep: 'repairing',
           'transpareo:dppEventId': 'evt-1',
         },
       ],
@@ -885,7 +885,7 @@ describe('verifyManifestSignature', () => {
       ...body,
       epcisBody: {
         eventList: [
-          { ...body.epcisBody.eventList[0], bizStep: 'cbv:BizStep-shipping' },
+          { ...body.epcisBody.eventList[0], bizStep: 'shipping' },
         ],
       },
       signature,

@@ -3,7 +3,7 @@
  * Copyright (C) 2026 Transpareo AG
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
- * The EPCIS label extractors: CBV CURIE -> local term,
+ * The EPCIS label extractors: CBV token -> local term,
  * GS1 Digital Link GLN extraction, and the compact EPC
  * label. All regex-driven, so the edge shapes (no match,
  * query strings, trailing segments) are pinned here.
@@ -13,19 +13,17 @@ import { describe, it, expect } from 'vitest';
 import { cbvLabel, glnFromUri, epcShortLabel } from '../src/epcis';
 
 describe('cbvLabel', () => {
-  it('extracts the local term and spaces underscores', () => {
-    expect(cbvLabel('cbv:BizStep-repairing')).toBe('repairing');
-    expect(cbvLabel('cbv:Disp-in_progress')).toBe('in progress');
+  it('renders a bare EPCIS 2.0 local term', () => {
+    expect(cbvLabel('shipping')).toBe('shipping');
+    expect(cbvLabel('in_progress')).toBe('in progress');
   });
 
-  it('handles every CBV prefix family', () => {
-    expect(cbvLabel('cbv:BTT-po')).toBe('po');
-    expect(cbvLabel('cbv:SDT-owning_party')).toBe('owning party');
-    expect(cbvLabel('cbv:ER-incorrect_data')).toBe('incorrect data');
-    expect(cbvLabel('cbv:Comp-x')).toBe('x');
+  it('passes a namespaced disposition extension through', () => {
+    expect(cbvLabel('transpareo:Disp-unchanged'))
+      .toBe('transpareo:Disp-unchanged');
   });
 
-  it('falls through on non-CBV strings and empty input', () => {
+  it('falls through on other strings and empty input', () => {
     expect(cbvLabel('urn:something:else')).toBe('urn:something:else');
     expect(cbvLabel(undefined)).toBe('');
   });

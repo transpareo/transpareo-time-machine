@@ -10,6 +10,13 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Changed
+
+- The EPCIS event-details view renders `bizStep` and
+  `disposition` as the bare CBV local term (`shipping`,
+  `in_progress`) emitted by the events feed, spacing
+  underscores for display.
+
 ## [2.2.0] - 2026-06-28
 
 ### Added
