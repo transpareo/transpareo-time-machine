@@ -765,7 +765,15 @@ function snapshotHashOf(s: SnapshotOut): string {
 function buildEpcis(
   fixture: Fixture, signer: SnapshotSigner,
 ): Record<string, unknown> {
+  // The GS1 EPCIS 2.0 context is the events document's base
+  // vocabulary: it defines ObjectEvent, eventTime, bizStep,
+  // and disposition. bizStep and disposition are typed
+  // `@type: @vocab` with a scoped map from the bare token to
+  // its CBV term (`shipping` -> `cbv:BizStep-shipping`), and
+  // the `cbv:` prefix resolves to the CBV IRI. The openepcis
+  // and transpareo contexts that follow only add extensions.
   const context: string[] = [
+    'https://ref.gs1.org/standards/epcis/2.0.0/epcis-context.jsonld',
     'https://ref.openepcis.io/extensions/common/core/dpp-core-context.jsonld',
   ];
   if (fixture.regulation) {
