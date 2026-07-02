@@ -20,7 +20,7 @@ import { signal } from '@/reactive/signals'
 import { el } from '@/reactive/dom'
 import { bindModalChrome, buildModal } from '@/reactive/modal'
 import { sortedEvents, epcisByEventId, snapshotForVersion } from '@/state'
-import { manifest as manifestSignal } from '@/host'
+import { manifest as manifestSignal, epcisDocument } from '@/host'
 import { i18n, formatShortDate } from '@/i18n'
 import { t, type LabelKey } from '@/i18n/labels'
 import { colorForEventType } from '@/event-colors'
@@ -278,6 +278,26 @@ function buildEpcList(list: ReadonlyArray<string>): HTMLElement {
   return ul
 }
 
+// Wrap the focused event in the loaded events document's own
+// envelope so raw / copy / download yield a valid EPCIS 2.0
+// document, not a bare ObjectEvent (which no EPCIS tool
+// accepts). Purely data-driven: `@context`, `type`,
+// `schemaVersion`, `creationDate` and any other envelope
+// fields are taken verbatim from the served document, so it
+// is correct for any DPP type with no hardcoded envelope.
+// Only this event goes into epcisBody. The document-level
+// signature is dropped: it covers the whole eventList, not a
+// single extracted event.
+function eventDocument(ev: EpcisObjectEvent): Record<string, unknown> {
+  const src = epcisDocument.peek()
+  if (!src) return { ...ev }
+  const {
+    signature: _signature, 'transpareo:signature': _txSignature,
+    epcisBody: _epcisBody, ...envelope
+  } = src
+  return { ...envelope, epcisBody: { eventList: [ev] } }
+}
+
 function buildRawJson(ev: EpcisObjectEvent): HTMLElement {
   const wrap = el('div', 'epcis-raw')
   const head = el('div', 'epcis-raw-head')
@@ -291,12 +311,13 @@ function buildRawJson(ev: EpcisObjectEvent): HTMLElement {
   return wrap
 }
 
-// Download the EPCIS payload as a standalone .json file
-// so an auditor can drop it into a CBV-aware viewer or
-// keep it alongside the snapshot bytes pulled from the
-// verification modal. Filename derives from the active
-// manifest's code + the EPCIS eventID so multi-event
-// downloads stay distinguishable on disk.
+// Download the event as a standalone EPCISDocument (this
+// event wrapped in the served file's envelope) so an auditor
+// can drop it straight into a CBV-aware viewer or keep it
+// alongside the snapshot bytes pulled from the verification
+// modal. Filename derives from the active manifest's code +
+// the EPCIS eventID so multi-event downloads stay
+// distinguishable on disk.
 function buildDownloadButton(ev: EpcisObjectEvent): HTMLButtonElement {
   const btn = el('button', 'epcis-download')
   btn.type = 'button'
@@ -305,7 +326,7 @@ function buildDownloadButton(ev: EpcisObjectEvent): HTMLButtonElement {
   btn.addEventListener('click', () => {
     const code = manifestSignal()?.code ?? 'event'
     const slug = slugForFilename(`${code}-${ev.eventID}`)
-    downloadJson(ev, slug)
+    downloadJson(eventDocument(ev), slug)
   })
   return btn
 }
@@ -315,7 +336,9 @@ function buildCopyButton(ev: EpcisObjectEvent): HTMLButtonElement {
   btn.type = 'button'
   btn.textContent = tr('epcis.copy')
   btn.addEventListener('click', async () => {
-    await navigator.clipboard.writeText(JSON.stringify(ev, null, 2))
+    await navigator.clipboard.writeText(
+      JSON.stringify(eventDocument(ev), null, 2),
+    )
     const original = btn.textContent
     btn.textContent = tr('epcis.copied')
     btn.classList.add('copied')
@@ -329,7 +352,7 @@ function buildCopyButton(ev: EpcisObjectEvent): HTMLButtonElement {
 
 function buildJsonBlock(ev: EpcisObjectEvent): HTMLElement {
   const pre = el('pre', 'epcis-json')
-  pre.textContent = JSON.stringify(ev, null, 2)
+  pre.textContent = JSON.stringify(eventDocument(ev), null, 2)
   return pre
 }
 

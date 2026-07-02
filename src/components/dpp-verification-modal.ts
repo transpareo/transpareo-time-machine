@@ -134,11 +134,13 @@ class DppVerificationModal extends LightElement {
       ))
     }
     // The events sidecar's document-level signature, when the
-    // feed carries one. Absent on older / unsigned feeds, in
-    // which case there is nothing to show.
-    if (epcisDoc?.signature) {
+    // feed carries one. Namespaced `transpareo:signature` on
+    // current feeds; bare `signature` on older ones. Absent on
+    // unsigned feeds, in which case there is nothing to show.
+    const eventsSig = epcisDoc?.['transpareo:signature'] ?? epcisDoc?.signature
+    if (eventsSig) {
       body.append(buildSignatureSection(
-        epcisDoc.signature, 'cryptoProof.eventsSignature', eventsState,
+        eventsSig, 'cryptoProof.eventsSignature', eventsState,
       ))
     }
     body.append(

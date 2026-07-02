@@ -70,18 +70,25 @@ export interface EpcisDocument {
   readonly creationDate: string
   readonly epcisBody: EpcisBody
 
-  // Document-level platform signature over the whole
-  // events file: the JCS canonical body (this object with
-  // `signature` removed), SHA-256, Ed25519-signed by the
-  // Transpareo platform key. Same single-signature scheme
-  // as the manifest, so the SPA verifies it with
+  // Document-level platform signature over the whole events
+  // file: the JCS canonical body (this object with the
+  // signature removed), SHA-256, Ed25519-signed by the
+  // Transpareo platform key. The key is namespaced
+  // (`transpareo:signature`) so the file validates against the
+  // EPCIS 2.0 schema, whose document propertyNames reject a
+  // bare `signature`. Same single-signature scheme as the
+  // manifest, so the SPA verifies it with
   // verifyManifestSignature. The backend also signs each
-  // ObjectEvent individually (a `proof` array per event)
-  // for consumers pulling one event out of the bundle; the
+  // ObjectEvent individually (a `proof` array per event) for
+  // consumers pulling one event out of the bundle; the
   // renderer reads the whole document, so the document-level
   // signature is the relevant check and the per-event proofs
-  // ride along inside the signed body. Absent on older or
-  // unsigned feeds, which the verifier tolerates.
+  // ride along inside the signed body. Absent on unsigned
+  // feeds, which the verifier tolerates.
+  readonly 'transpareo:signature'?: ManifestSignature
+
+  // Older feeds carried the signature under the bare
+  // `signature` key; still read for backward compatibility.
   readonly signature?: ManifestSignature
 }
 

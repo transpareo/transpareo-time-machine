@@ -280,7 +280,12 @@ export async function verifyManifestSignature(
   manifest: Record<string, unknown>,
   pinnedPlatformKeys?: ReadonlyArray<string>,
 ): Promise<ProofEntryResult | null> {
-  const sig = manifest.signature as ManifestSignature | undefined
+  // The manifest carries `signature`; the EPCIS events
+  // document carries `transpareo:signature` (namespaced to
+  // pass EPCIS 2.0 schema validation). Same single-signature
+  // scheme, so accept either key.
+  const sig = (manifest['transpareo:signature']
+    ?? manifest.signature) as ManifestSignature | undefined
   if (!sig) return null
   const documentHash = await hashDocument(manifest)
   const context = manifest['@context']

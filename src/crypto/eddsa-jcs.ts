@@ -36,13 +36,18 @@ export function proofConfig(
 }
 
 // The unsecured document the suite hashes: the body with
-// its integrity wrapper (`proof` for snapshots, `signature`
-// for manifests) removed. `@context` and every other field
-// stay, so the hash covers the full payload.
+// its integrity wrapper removed - `proof` for snapshots,
+// `signature` for manifests, `transpareo:signature` for the
+// EPCIS events document (namespaced so the file validates
+// against the EPCIS 2.0 schema). `@context` and every other
+// field stay, so the hash covers the full payload.
 export function unsecuredDocument(
   document: Record<string, unknown>,
 ): Record<string, unknown> {
-  const { proof: _proof, signature: _signature, ...body } = document
+  const {
+    proof: _proof, signature: _signature,
+    'transpareo:signature': _txSignature, ...body
+  } = document
   return body
 }
 

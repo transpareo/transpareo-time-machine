@@ -10,6 +10,18 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Changed
+
+- The EPCIS events document's platform signature is read from
+  `transpareo:signature`; namespacing the key lets the events
+  file validate against the EPCIS 2.0 schema, whose document
+  `propertyNames` reject a bare `signature`. The old bare
+  `signature` key is still accepted for older feeds.
+- An event's raw view, Copy, and Download emit a full EPCIS
+  2.0 `EPCISDocument` (the event wrapped in the served file's
+  envelope) instead of a bare `ObjectEvent`, so the output
+  drops straight into EPCIS tooling.
+
 ## [2.3.0] - 2026-07-02
 
 ### Changed

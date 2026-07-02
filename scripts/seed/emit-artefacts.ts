@@ -789,15 +789,17 @@ function buildEpcis(
   );
 
   // The body the document signature covers: the whole EPCIS
-  // file minus its (about-to-be-added) `signature`. The
-  // publishing side signs the events sidecar with the same
-  // platform-key single-signature scheme as the manifest, so
-  // the seed reuses signManifest and the SPA verifies it with
-  // verifyManifestSignature. Per-event proofs (a publisher
-  // convenience for single-event pulls) are out of scope: the
-  // renderer reads the whole document and the SPA does not
-  // re-check them, so the fixtures carry the document-level
-  // signature only.
+  // file minus its (about-to-be-added) `transpareo:signature`.
+  // The key is namespaced so the events file still validates
+  // against the EPCIS 2.0 schema, whose document propertyNames
+  // reject a bare `signature`. The publishing side signs the
+  // sidecar with the same platform-key single-signature scheme
+  // as the manifest, so the seed reuses signManifest and the
+  // SPA verifies it with verifyManifestSignature. Per-event
+  // proofs (a publisher convenience for single-event pulls) are
+  // out of scope: the renderer reads the whole document and the
+  // SPA does not re-check them, so the fixtures carry the
+  // document-level signature only.
   const body = {
     '@context': context,
     type: 'EPCISDocument',
@@ -827,7 +829,7 @@ function buildEpcis(
         }),
     },
   };
-  return { ...body, signature: signer.signManifest(body) };
+  return { ...body, 'transpareo:signature': signer.signManifest(body) };
 }
 
 // Build the `transpareo:*` extensions the SPA reads off

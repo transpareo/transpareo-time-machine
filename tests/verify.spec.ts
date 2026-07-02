@@ -865,6 +865,19 @@ describe('verifyManifestSignature', () => {
     const body = epcisBody();
     const doc = {
       ...body,
+      'transpareo:signature': await buildSignature(platform.privateKey, body),
+    };
+    stubResolverFetch(new Map([[PLATFORM_KEY_URL, platform.publicKeyMultibase]]));
+    const verifyManifestSignature = await freshManifestVerifier();
+    const res = await verifyManifestSignature(doc);
+    expect(res?.status).toBe('verified');
+  });
+
+  it('verifies a legacy events document signed under the bare key', async () => {
+    const platform = await makeAuthority();
+    const body = epcisBody();
+    const doc = {
+      ...body,
       signature: await buildSignature(platform.privateKey, body),
     };
     stubResolverFetch(new Map([[PLATFORM_KEY_URL, platform.publicKeyMultibase]]));
@@ -888,7 +901,7 @@ describe('verifyManifestSignature', () => {
           { ...body.epcisBody.eventList[0], bizStep: 'shipping' },
         ],
       },
-      signature,
+      'transpareo:signature': signature,
     };
     stubResolverFetch(new Map([[PLATFORM_KEY_URL, platform.publicKeyMultibase]]));
     const verifyManifestSignature = await freshManifestVerifier();
