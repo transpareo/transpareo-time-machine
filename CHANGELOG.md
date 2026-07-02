@@ -10,6 +10,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.4.0] - 2026-07-02
+
 ### Changed
 
 - The EPCIS events document's platform signature is read from
