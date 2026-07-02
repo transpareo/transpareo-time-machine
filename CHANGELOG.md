@@ -10,6 +10,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.3.0] - 2026-07-02
+
 ### Changed
 
 - The EPCIS event-details view renders `bizStep` and
