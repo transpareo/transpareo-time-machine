@@ -765,24 +765,20 @@ function snapshotHashOf(s: SnapshotOut): string {
 function buildEpcis(
   fixture: Fixture, signer: SnapshotSigner,
 ): Record<string, unknown> {
-  // The GS1 EPCIS 2.0 context is the events document's base
-  // vocabulary: it defines ObjectEvent, eventTime, bizStep,
-  // and disposition. bizStep and disposition are typed
-  // `@type: @vocab` with a scoped map from the bare token to
-  // its CBV term (`shipping` -> `cbv:BizStep-shipping`), and
-  // the `cbv:` prefix resolves to the CBV IRI. The openepcis
-  // and transpareo contexts that follow only add extensions.
+  // An EPCIS events document is grounded only in the EPCIS 2.0
+  // context - which defines ObjectEvent, eventTime, and the
+  // `@type: @vocab` bizStep/disposition terms whose scoped map
+  // turns a bare token like `shipping` into its CBV IRI - plus
+  // the transpareo vocab for the `transpareo:` event
+  // extensions. The DPP-core and regulation contexts describe
+  // product data and belong on the snapshot, not here: EPCIS
+  // marks its terms `@protected`, so a later context that
+  // redefines one makes JSON-LD expansion throw, which silently
+  // empties the eventList in EPCIS translators.
   const context: string[] = [
     'https://ref.gs1.org/standards/epcis/2.0.0/epcis-context.jsonld',
-    'https://ref.openepcis.io/extensions/common/core/dpp-core-context.jsonld',
+    'https://transpareo.com/vocab/transpareo/v1',
   ];
-  if (fixture.regulation) {
-    context.push(
-      `https://ref.openepcis.io/extensions/eu/${fixture.regulation}`
-      + `/${fixture.regulation}-context.jsonld`,
-    );
-  }
-  context.push('https://transpareo.com/vocab/transpareo/v1');
 
   const eventsById = new Map(
     fixture.events.map((e) => [e.id, e]),
