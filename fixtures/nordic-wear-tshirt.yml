@@ -47,7 +47,7 @@ product:
     en: T-Shirts
     de: T-Shirts
     fr: T-shirts
-  gtin: "4012345678901"
+  gtin: "04012345678901"
   weight: 180
   weight_unit: g
   rating: good
@@ -579,11 +579,11 @@ epcis:
     biz_step: commissioning
     disposition: active
     epc_list:
-      - https://dpp.nordic-wear.example/01/4012345678901/10/BATCH-NW-2024-Q1-008
+      - https://dpp.nordic-wear.example/01/04012345678901/10/BATCH-NW-2024-Q1-008
     read_point:
-      id: https://id.gs1.org/414/7350123456789
+      id: https://id.gs1.org/414/7350123456783
     biz_location:
-      id: https://id.gs1.org/414/7350123456789
+      id: https://id.gs1.org/414/7350123456783
   - dpp_event_id: evt-2
     event_id: urn:uuid:7e1f5e3a-4c3a-4f4a-9b1a-a01000000002
     event_time: 2024-05-15T14:00:00Z
@@ -593,11 +593,11 @@ epcis:
     biz_step: commissioning
     disposition: active
     epc_list:
-      - https://dpp.nordic-wear.example/01/4012345678901/10/BATCH-NW-2024-Q1-008
+      - https://dpp.nordic-wear.example/01/04012345678901/10/BATCH-NW-2024-Q1-008
     read_point:
-      id: https://id.gs1.org/414/7350123456789
+      id: https://id.gs1.org/414/7350123456783
     biz_location:
-      id: https://id.gs1.org/414/7350123456789
+      id: https://id.gs1.org/414/7350123456783
   - dpp_event_id: evt-3
     event_id: urn:uuid:7e1f5e3a-4c3a-4f4a-9b1a-a01000000003
     event_time: 2024-10-01T09:00:00Z
@@ -607,11 +607,11 @@ epcis:
     biz_step: installing
     disposition: active
     epc_list:
-      - https://dpp.nordic-wear.example/01/4012345678901/10/BATCH-NW-2024-Q1-008
+      - https://dpp.nordic-wear.example/01/04012345678901/10/BATCH-NW-2024-Q1-008
     read_point:
-      id: https://id.gs1.org/414/7350123456789
+      id: https://id.gs1.org/414/7350123456783
     biz_location:
-      id: https://id.gs1.org/414/7350123456789
+      id: https://id.gs1.org/414/7350123456783
   - dpp_event_id: evt-6
     event_id: urn:uuid:7e1f5e3a-4c3a-4f4a-9b1a-a01000000006
     event_time: 2025-04-18T16:30:00Z
@@ -620,11 +620,11 @@ epcis:
     action: OBSERVE
     disposition: recalled
     epc_list:
-      - https://dpp.nordic-wear.example/01/4012345678901/10/BATCH-NW-2024-Q1-008
+      - https://dpp.nordic-wear.example/01/04012345678901/10/BATCH-NW-2024-Q1-008
     read_point:
-      id: https://id.gs1.org/414/7350123456789
+      id: https://id.gs1.org/414/7350123456783
     biz_location:
-      id: https://id.gs1.org/414/7350123456789
+      id: https://id.gs1.org/414/7350123456783
   - dpp_event_id: evt-7a
     event_id: urn:uuid:7e1f5e3a-4c3a-4f4a-9b1a-a01000000007
     event_time: 2025-06-09T10:00:00Z
@@ -634,7 +634,7 @@ epcis:
     biz_step: repairing
     disposition: in_progress
     epc_list:
-      - https://dpp.nordic-wear.example/01/4012345678901/10/BATCH-NW-2024-Q1-008
+      - https://dpp.nordic-wear.example/01/04012345678901/10/BATCH-NW-2024-Q1-008
     read_point:
       id: https://id.gs1.org/414/4012345678901
     biz_location:
@@ -649,11 +649,11 @@ epcis:
     action: OBSERVE
     disposition: active
     epc_list:
-      - https://dpp.nordic-wear.example/01/4012345678901/10/BATCH-NW-2024-Q1-008
+      - https://dpp.nordic-wear.example/01/04012345678901/10/BATCH-NW-2024-Q1-008
     read_point:
-      id: https://id.gs1.org/414/7350123456789
+      id: https://id.gs1.org/414/7350123456783
     biz_location:
-      id: https://id.gs1.org/414/7350123456789
+      id: https://id.gs1.org/414/7350123456783
   - dpp_event_id: evt-8
     event_id: urn:uuid:7e1f5e3a-4c3a-4f4a-9b1a-a01000000009
     event_time: 2025-09-12T11:00:00Z
@@ -662,8 +662,8 @@ epcis:
     action: OBSERVE
     disposition: active
     epc_list:
-      - https://dpp.nordic-wear.example/01/4012345678901/10/BATCH-NW-2024-Q1-008
+      - https://dpp.nordic-wear.example/01/04012345678901/10/BATCH-NW-2024-Q1-008
     read_point:
-      id: https://id.gs1.org/414/7350123456789
+      id: https://id.gs1.org/414/7350123456783
     biz_location:
-      id: https://id.gs1.org/414/7350123456789
+      id: https://id.gs1.org/414/7350123456783

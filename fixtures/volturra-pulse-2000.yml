@@ -41,7 +41,7 @@ product:
     en: Portable Power Stations
     de: Tragbare Stromspeicher
     fr: Stations d'énergie portables
-  gtin: "4012345992001"
+  gtin: "04012345992007"
   weight: 22
   weight_unit: kg
   compositions:
@@ -927,11 +927,11 @@ epcis:
     biz_step: commissioning
     disposition: active
     epc_list:
-      - https://dpp.volturra.example/01/4012345992001/21/PULSE2000-2024-001
+      - https://dpp.volturra.example/01/04012345992007/21/PULSE2000-2024-001
     read_point:
-      id: https://id.gs1.org/414/7350199912345
+      id: https://id.gs1.org/414/7350199912343
     biz_location:
-      id: https://id.gs1.org/414/7350199912345
+      id: https://id.gs1.org/414/7350199912343
   - dpp_event_id: evt-2
     event_id: urn:uuid:9b2a4d3e-5f6a-4f4b-9c2b-b01000000002
     event_time: 2024-06-15T08:00:00Z
@@ -941,11 +941,11 @@ epcis:
     biz_step: shipping
     disposition: in_transit
     epc_list:
-      - https://dpp.volturra.example/01/4012345992001/21/PULSE2000-2024-001
+      - https://dpp.volturra.example/01/04012345992007/21/PULSE2000-2024-001
     read_point:
-      id: https://id.gs1.org/414/7350199912345
+      id: https://id.gs1.org/414/7350199912343
     biz_location:
-      id: https://id.gs1.org/414/7350199912345
+      id: https://id.gs1.org/414/7350199912343
   - dpp_event_id: evt-2a
     event_id: urn:uuid:9b2a4d3e-5f6a-4f4b-9c2b-b01000000003
     event_time: 2024-06-20T10:00:00Z
@@ -955,11 +955,11 @@ epcis:
     biz_step: other
     disposition: active
     epc_list:
-      - https://dpp.volturra.example/01/4012345992001/21/PULSE2000-2024-001
+      - https://dpp.volturra.example/01/04012345992007/21/PULSE2000-2024-001
     read_point:
-      id: https://id.gs1.org/414/7350199912345
+      id: https://id.gs1.org/414/7350199912343
     biz_location:
-      id: https://id.gs1.org/414/7350199912345
+      id: https://id.gs1.org/414/7350199912343
     extensions:
       transpareo:registry: eu-battery-passport
   - dpp_event_id: evt-3
@@ -971,11 +971,11 @@ epcis:
     biz_step: installing
     disposition: active
     epc_list:
-      - https://dpp.volturra.example/01/4012345992001/21/PULSE2000-2024-001
+      - https://dpp.volturra.example/01/04012345992007/21/PULSE2000-2024-001
     read_point:
-      id: https://id.gs1.org/414/7350199912345
+      id: https://id.gs1.org/414/7350199912343
     biz_location:
-      id: https://id.gs1.org/414/7350199912345
+      id: https://id.gs1.org/414/7350199912343
   - dpp_event_id: evt-4
     event_id: urn:uuid:9b2a4d3e-5f6a-4f4b-9c2b-b01000000005
     event_time: 2025-08-15T10:15:00Z
@@ -985,11 +985,11 @@ epcis:
     biz_step: repairing
     disposition: active
     epc_list:
-      - https://dpp.volturra.example/01/4012345992001/21/PULSE2000-2024-001
+      - https://dpp.volturra.example/01/04012345992007/21/PULSE2000-2024-001
     read_point:
-      id: https://id.gs1.org/414/7350199912345
+      id: https://id.gs1.org/414/7350199912343
     biz_location:
-      id: https://id.gs1.org/414/7350199912345
+      id: https://id.gs1.org/414/7350199912343
     extensions:
       transpareo:scope: firmware-update
       transpareo:firmware_from: v1.3.7
