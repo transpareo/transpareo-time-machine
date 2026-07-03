@@ -765,19 +765,22 @@ function snapshotHashOf(s: SnapshotOut): string {
 function buildEpcis(
   fixture: Fixture, signer: SnapshotSigner,
 ): Record<string, unknown> {
-  // An EPCIS events document is grounded only in the EPCIS 2.0
-  // context - which defines ObjectEvent, eventTime, and the
+  // An EPCIS events document is grounded in the EPCIS 2.0
+  // context (which defines ObjectEvent, eventTime, and the
   // `@type: @vocab` bizStep/disposition terms whose scoped map
-  // turns a bare token like `shipping` into its CBV IRI - plus
-  // the transpareo vocab for the `transpareo:` event
-  // extensions. The DPP-core and regulation contexts describe
-  // product data and belong on the snapshot, not here: EPCIS
-  // marks its terms `@protected`, so a later context that
-  // redefines one makes JSON-LD expansion throw, which silently
-  // empties the eventList in EPCIS translators.
-  const context: string[] = [
+  // turns a bare token like `shipping` into its CBV IRI) plus
+  // an inline prefix for the `transpareo:` event extensions.
+  // The prefix is inline rather than the remote vocab URL so an
+  // EPCIS JSON-to-XML converter can read the namespace and emit
+  // `xmlns:transpareo` per event; from a remote context the
+  // prefix stays unresolved and the conversion drops the
+  // extension fields. The DPP-core and regulation contexts
+  // describe product data and belong on the snapshot: EPCIS
+  // marks its terms `@protected`, so a later context redefining
+  // one makes JSON-LD expansion throw and empties the eventList.
+  const context: Array<string | Record<string, string>> = [
     'https://ref.gs1.org/standards/epcis/2.0.0/epcis-context.jsonld',
-    'https://transpareo.com/vocab/transpareo/v1',
+    { transpareo: 'https://transpareo.com/vocab/transpareo/v1#' },
   ];
 
   const eventsById = new Map(
