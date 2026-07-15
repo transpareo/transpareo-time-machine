@@ -8,9 +8,10 @@
  * enough to justify the extraction.
  *
  * The host element is its own overlay. The helper wires
- * Escape, body-scroll-lock, and overlay click-outside
- * (with mousedown-origin tracking so a text-selection
- * drag from inside the dialog doesn't close on release).
+ * Escape, the platform Back gesture, body-scroll-lock,
+ * overlay click-outside (with mousedown-origin tracking so
+ * a text-selection drag from inside the dialog doesn't
+ * close on release), and a focus trap.
  *
  * Caller passes its own `effect` callback so the helper
  * can register reactive subscriptions and disposers
@@ -49,6 +50,7 @@ export function bindModalChrome(
   bindBodyScrollLock(effect, opts)
   bindClickOutside(host, effect, opts)
   bindFocusTrap(host, effect, opts)
+  bindHistoryBack(effect, opts)
 }
 
 const FOCUSABLE_SELECTOR = [
@@ -159,6 +161,78 @@ function bindClickOutside(
   effect(() => () => {
     host.removeEventListener('mousedown', onDown)
     host.removeEventListener('click', onClick)
+  })
+}
+
+// Marker on the history entry an open modal pushes, so the
+// pushed state is identifiable in devtools and never read
+// as a real navigation.
+const MODAL_HISTORY_STATE = { transpareoTimeMachineModal: true }
+
+function isModalHistoryState(state: unknown): boolean {
+  return !!state
+    && typeof state === 'object'
+    && (state as { transpareoTimeMachineModal?: unknown })
+      .transpareoTimeMachineModal === true
+}
+
+// Back-button / swipe-back dismissal. While the modal is
+// open one extra entry sits on the history stack, so the
+// platform Back gesture pops that entry and closes the
+// modal instead of navigating the host page away. Any other
+// dismissal (Escape, click-outside, the close button) pops
+// the entry back off so the stack stays balanced.
+//
+// The entry carries the current URL unchanged: it is a pure
+// dismissal breakpoint, leaving the address bar and the
+// timeline's own hash sync untouched.
+function bindHistoryBack(effect: Effect, opts: ModalChrome): void {
+  if (typeof window === 'undefined') return
+
+  // Persist across effect re-runs. `pushed` tracks whether
+  // our entry is on the stack so a re-run while the modal
+  // stays open (openModal swapping one dialog for another)
+  // does not stack a second entry. `dismissedByPop` records
+  // that a Back already discarded the entry, so the close
+  // path must not pop a second time.
+  let pushed = false
+  let dismissedByPop = false
+
+  const onPop = (): void => {
+    if (!opts.isOpen()) return
+    dismissedByPop = true
+    opts.onClose()
+  }
+
+  // Pop our entry to keep the stack balanced, but only if it
+  // is still on top. A modal that navigates as it closes (the
+  // proof modal's version rows jump into the timeline) pushes
+  // a fresh entry synchronously right after close(), burying
+  // our marker; popping then would rewind that navigation.
+  // Deferring past the close() call lets that push land first,
+  // so `history.state` reflects the real top before we decide.
+  const rebalance = (): void => {
+    queueMicrotask(() => {
+      if (opts.isOpen()) return
+      if (!isModalHistoryState(window.history.state)) return
+      window.history.back()
+    })
+  }
+
+  effect(() => {
+    const open = opts.isOpen()
+    if (open && !pushed) {
+      pushed = true
+      dismissedByPop = false
+      window.history.pushState(MODAL_HISTORY_STATE, '')
+    } else if (!open && pushed) {
+      pushed = false
+      if (!dismissedByPop) rebalance()
+    }
+
+    if (!open) return
+    window.addEventListener('popstate', onPop)
+    return () => window.removeEventListener('popstate', onPop)
   })
 }
 

@@ -10,6 +10,17 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Added
+
+- The browser Back button (and the mobile swipe-back gesture)
+  now closes an open modal instead of navigating the host page
+  away. While a dialog is open it keeps one extra history entry
+  as a dismissal breakpoint; Escape, click-outside, and the
+  close button pop that entry back off so the history stack
+  stays balanced. Applies to every modal (proof, event,
+  library, auth, lightbox, and the public `openModal` API) and
+  layers cleanly over the timeline's own hash navigation.
+
 ## [2.4.0] - 2026-07-02
 
 ### Changed
