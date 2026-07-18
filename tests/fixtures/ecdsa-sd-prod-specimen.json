@@ -1,0 +1,130 @@
+{
+  "view": {
+    "@id": "https://dpp.acme-corp.com/dpp/abc12345#credential",
+    "type": [
+      "VerifiableCredential",
+      "dpp:DigitalProductPassport"
+    ],
+    "@context": [
+      "https://transpareo.com/vocab/vc/v1",
+      "https://transpareo.com/vocab/transpareo/v1"
+    ],
+    "issuer": "did:web:acme.002.fsn.transpareo.com",
+    "credentialSubject": {
+      "@id": "https://dpp.acme-corp.com/dpp/abc12345",
+      "@type": "dpp:DigitalProductPassport",
+      "version": 3,
+      "dppSchemaVersion": "EN 18223:2026",
+      "publishedAt": "2026-07-18T14:28:37Z",
+      "lastUpdated": "2026-07-18T14:28:37Z",
+      "identifiers": {
+        "@id": "https://dpp.acme-corp.com/dpp/abc12345#identifiers",
+        "code": "abc12345"
+      },
+      "uniqueProductIdentifier": "https://dpp.acme-corp.com/dpp/abc12345",
+      "passportAlias": "abc12345",
+      "priorVersion": 2,
+      "issuer": {
+        "@id": "https://dpp.acme-corp.com/dpp/abc12345#issuer",
+        "@type": "Organization",
+        "name": "Acme Cosmetics GmbH",
+        "did": "did:web:acme.002.fsn.transpareo.com"
+      },
+      "platform": {
+        "@id": "https://dpp.acme-corp.com/dpp/abc12345#platform",
+        "@type": "Organization",
+        "name": "Transpareo",
+        "did": "did:web:transpareo.com"
+      },
+      "accessRights": {
+        "@id": "https://dpp.acme-corp.com/dpp/abc12345#accessRights",
+        "@type": "dpp:AccessRights",
+        "publicLicense": "https://creativecommons.org/licenses/by/4.0/",
+        "authorisedNote": "",
+        "regulatoryContext": "https://eur-lex.europa.eu/eli/reg/2023/1542"
+      },
+      "dppStatus": "in_use",
+      "passportStatus": "Active",
+      "lifecycle": {
+        "@id": "https://dpp.acme-corp.com/dpp/abc12345#lifecycle",
+        "stage": "in_use",
+        "stageAt": "2026-05-01T10:00:00Z",
+        "priorStage": "placed_on_market"
+      },
+      "granularity": "item",
+      "contentSpecificationIds": [
+        "https://transpareo.com/spec/dpp/v1.0"
+      ],
+      "product": {
+        "@id": "https://dpp.acme-corp.com/dpp/abc12345#product",
+        "@type": "Product",
+        "name": [
+          {
+            "@value": "Wundercreme",
+            "@language": "de"
+          },
+          {
+            "@value": "Wonder Cream",
+            "@language": "en"
+          }
+        ],
+        "brand": "Acme Cosmetics",
+        "category": "Cosmetics",
+        "images": [
+          {
+            "@id": "https://dpp.acme-corp.com/dpp/abc12345#product/images/0",
+            "thumbnail": "/media/abc.jpg",
+            "large": "/media/abc.jpg"
+          }
+        ],
+        "weight": {
+          "@id": "https://dpp.acme-corp.com/dpp/abc12345#product/weight",
+          "@type": "QuantitativeValue",
+          "value": "250",
+          "unitCode": "KGM"
+        },
+        "properties": [
+          {
+            "@id": "https://dpp.acme-corp.com/dpp/abc12345#property/1",
+            "@type": "PropertyValue",
+            "propertyID": "1",
+            "name": [
+              {
+                "@value": "Origin",
+                "@language": "en"
+              }
+            ],
+            "value": "Germany",
+            "valueDataType": "xsd:string"
+          },
+          {
+            "@id": "https://dpp.acme-corp.com/dpp/abc12345#property/2",
+            "@type": "PropertyValue",
+            "propertyID": "2",
+            "name": [
+              {
+                "@value": "Supplier",
+                "@language": "en"
+              }
+            ],
+            "value": "Acme Chemicals GmbH",
+            "valueDataType": "xsd:string",
+            "access": "legitimateInterest"
+          }
+        ]
+      },
+      "passportVersion": 3,
+      "did": "did:web:acme.002.fsn.transpareo.com",
+      "identityCredentialUrl": "https://dpp.acme-corp.com/.well-known/did.json"
+    },
+    "proof": {
+      "type": "DataIntegrityProof",
+      "cryptosuite": "ecdsa-sd-2023",
+      "created": "2026-05-01T12:00:00Z",
+      "verificationMethod": "did:web:dpp.acme-corp.com#key-1",
+      "proofPurpose": "assertionMethod",
+      "proofValue": "u2V0BhVhAPVoJd9Dn9E9cEx1nTIekmb9oQtKxnTJGpLGdLHaV6fPJ9Pq7I0ixcizP_WEZ2N20i_j_X1Fd-NZWBvr7TaeR51gjgCQC4wdUex0yIA0vlUn2bKJzmgfzBc2w0v21yWMxZ95T7FiHWEDI4S1OcYj38rwd7SlgUOVOM23H09RuehLuwOQ2aNLOG-8-1iQPwf2Iq2ghAKRB4ZoRrWH201eOf_DROb39PhcPWEA_y9iGnllhQVRxZJoalM9JXwSWsVBNDxZmbRQf9H1Zx7Ua9haYqbLw90WOi2sT0qwIZqkrd98sa_gx-LiXUtXGWECeWY4ipewCih46GzdulBaCwn8t9ILncw9ZPIQUUQMwpAnQimosNeS0_CayOGAc3QWgg-0oxWAkM19sKATESeg6WEC33-XLuT1LnIeVMtCCZQMF6hiaBKJ-oVAgLUg0g3nTnpTlT5EoVE0Djf5FYMCKhrRpiFnWzwF6f1ghW0QrNXCLWEDDjn5O7ECQJX--WX3zNiJGCGY9zK2m5yf9Cy7OY96nBjipLd27aUsaOqLF2pqVNTz-G_0GshylaYVuseXJvF3DWEAo720usPeAxtDpG_w4PvuPhdzCD42wKDuoXpTAn_dkTHXfKccuuLr6ox6QyOkfq0-C0YHBlLLN5nMDy7GYur7uWEAUxVTrLvTRg2NV0ImyEOczOH8UuCXSvlNK4P7Ws4sb8Wf4KP_2RNFl_G37Gsw_acY-ntqmNTZw6VjS0tR7-fpeoJg5AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBgYGRgaGBsYHBgdGB8YIBghGCIYIxgkGCsYLBgtGC4YLxgwGDEYMhgzGDQYNRg2GDcYOBg5GDoYOxg8GD0YPhg_"
+    }
+  },
+  "issuer_multikey_b64": "gCQCgjB/Vc6oyYI/WDIeyJVJoxD5OqLys0xF3FTwwi0dSHo="
+}

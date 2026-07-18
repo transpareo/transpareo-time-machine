@@ -1,0 +1,13 @@
+{
+  "@context": {
+    "@version": 1.1,
+    "@vocab": "https://transpareo.com/vocab/vc/v1#",
+    "type": "@type",
+    "VerifiableCredential": "https://www.w3.org/2018/credentials#VerifiableCredential",
+    "issuer": {
+      "@id": "https://www.w3.org/2018/credentials#issuer",
+      "@type": "@id"
+    },
+    "credentialSubject": "https://www.w3.org/2018/credentials#credentialSubject"
+  }
+}

@@ -57,6 +57,8 @@
 import { canonicalize } from './jcs'
 import { decodeMultibaseBase58 } from './multibase'
 import { proofConfig, unsecuredDocument, joinHashes } from './eddsa-jcs'
+import { resolveMultikey } from './did-web'
+import { asBuffer } from './buffer'
 import type { ManifestSignature } from '@/archive'
 import { describeError } from '@/errors'
 
@@ -390,18 +392,6 @@ async function verifyEntry(
   }
 }
 
-// A key resolution document is either a single Multikey
-// (publicKeyMultibase at the top) or a DID document whose
-// verificationMethod array is selected by fragment.
-interface MultikeyEntry {
-  readonly id?: string
-  readonly publicKeyMultibase?: string
-}
-interface ResolutionDoc {
-  readonly publicKeyMultibase?: string
-  readonly verificationMethod?: ReadonlyArray<MultikeyEntry>
-}
-
 // Cache resolved keys by verificationMethod URL so two
 // proof entries pointing at the same key (rare, but
 // allowed) don't refetch + reimport. The map lives for the
@@ -437,29 +427,14 @@ function resolveVerificationKey(method: string): Promise<ResolvedKey> {
 }
 
 async function fetchAndImportKey(method: string): Promise<ResolvedKey> {
-  const { url, fragment } = splitVerificationMethod(method)
-
-  // 'no-cache' revalidates the key document instead of
-  // trusting a stale HTTP-cache copy; a rotated or fixed
-  // key should take effect on the next page load.
-  const res = await fetch(url, {
-    credentials: 'omit',
-    cache: 'no-cache',
-  })
-  if (!res.ok) {
-    throw new Error(`HTTP ${res.status} fetching ${url}`)
-  }
-  const doc = await res.json() as ResolutionDoc
-  const multibase = selectMultibase(doc, fragment)
-  const multikeyBytes = decodeMultibaseBase58(multibase)
+  const { multibase, bytes } = await resolveMultikey(method)
   // Multikey for Ed25519: 0xed 0x01 prefix + 32-byte raw
   // key, then base58. Strip the two-byte prefix to get the
   // 32 raw public-key bytes.
-  if (multikeyBytes.length !== 34 || multikeyBytes[0] !== 0xed
-    || multikeyBytes[1] !== 0x01) {
+  if (bytes.length !== 34 || bytes[0] !== 0xed || bytes[1] !== 0x01) {
     throw new Error('publicKeyMultibase is not an Ed25519 multikey')
   }
-  const rawKey = multikeyBytes.slice(2)
+  const rawKey = bytes.slice(2)
   return { verify: await buildVerifier(rawKey), multibase }
 }
 
@@ -527,91 +502,5 @@ function hexToBytes(hex: string): Uint8Array {
   for (let i = 0; i < out.length; i++) {
     out[i] = parseInt(hex.slice(i * 2, i * 2 + 2), 16)
   }
-  return out
-}
-
-// Matches a URL scheme prefix (RFC 3986 alpha + alnum/+-.).
-const SCHEME_RE = /^[a-z][a-z0-9+.-]*:/i
-
-// Split a verificationMethod into a fetchable URL + an
-// optional fragment. Only three shapes resolve: a did:web
-// method (mapped to its did.json), an absolute https: URL,
-// and a schemeless relative path (which can only land on
-// the page's own origin). Anything else carrying a scheme
-// (http:, data:, blob:, file:, other did methods) is
-// refused before any fetch happens, so a proof entry can't
-// point key resolution at a plaintext host or a
-// self-supplied inline document.
-function splitVerificationMethod(
-  method: string,
-): { url: string; fragment: string | undefined } {
-  const hash = method.indexOf('#')
-  const fragment = hash >= 0 ? method.slice(hash + 1) : undefined
-  if (method.startsWith('did:web:')) {
-    const base = hash >= 0 ? method.slice(0, hash) : method
-    return { url: didWebToUrl(base), fragment }
-  }
-  const scheme = SCHEME_RE.exec(method)?.[0].toLowerCase()
-  if (scheme && scheme !== 'https:') {
-    throw new Error(
-      `refusing to resolve a ${scheme} verificationMethod`,
-    )
-  }
-  // The fragment is not sent over the wire, so keeping it
-  // in the URL is harmless and leaves it unchanged.
-  return { url: method, fragment }
-}
-
-// did:web:example.com     -> https://example.com/.well-known/did.json
-// did:web:example.com:a:b -> https://example.com/a/b/did.json
-// Path segments are percent-encoded in the method, so
-// each is decoded before it is joined into the URL.
-function didWebToUrl(did: string): string {
-  const parts = did.slice('did:web:'.length).split(':')
-    .map((p) => decodeURIComponent(p))
-  const host = parts[0]
-  if (parts.length <= 1) return `https://${host}/.well-known/did.json`
-  return `https://${host}/${parts.slice(1).join('/')}/did.json`
-}
-
-// Pick the public key from a resolution document. A DID
-// document's verificationMethod array is selected by
-// fragment (or the first entry when none is given); a
-// single-key document exposes publicKeyMultibase at the
-// top and the fragment is decorative.
-function selectMultibase(
-  doc: ResolutionDoc, fragment: string | undefined,
-): string {
-  if (Array.isArray(doc.verificationMethod)) {
-    const entry = fragment
-      ? doc.verificationMethod.find((m) => fragmentMatches(m.id, fragment))
-      : doc.verificationMethod[0]
-    const mb = entry?.publicKeyMultibase
-    if (mb && mb.startsWith('z')) return mb
-    throw new Error('DID document has no matching Ed25519 verificationMethod')
-  }
-  if (doc.publicKeyMultibase && doc.publicKeyMultibase.startsWith('z')) {
-    return doc.publicKeyMultibase
-  }
-  throw new Error('resolution doc missing publicKeyMultibase')
-}
-
-function fragmentMatches(
-  id: string | undefined, fragment: string,
-): boolean {
-  if (!id) return false
-  return id === `#${fragment}` || id.endsWith(`#${fragment}`)
-}
-
-// Workaround for TS's recent narrowing of BufferSource:
-// `Uint8Array<ArrayBufferLike>` is not assignable where
-// `ArrayBuffer` is required because ArrayBufferLike now
-// includes SharedArrayBuffer. The runtime values here
-// are always plain ArrayBuffer-backed, so a tight slice
-// of the underlying buffer is safe and matches the
-// API's runtime contract.
-function asBuffer(u: Uint8Array): ArrayBuffer {
-  const out = new ArrayBuffer(u.byteLength)
-  new Uint8Array(out).set(u)
   return out
 }

@@ -1,0 +1,216 @@
+{
+  "@context": {
+    "@version": 1.1,
+    "transpareo": "https://transpareo.com/vocab/transpareo/v1#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "dppEventId": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#dppEventId",
+      "@type": "xsd:string"
+    },
+    "eventType": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#eventType",
+      "@type": "xsd:string"
+    },
+    "versionNumber": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#versionNumber",
+      "@type": "xsd:integer"
+    },
+    "statusFrom": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#statusFrom",
+      "@type": "xsd:string"
+    },
+    "statusTo": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#statusTo",
+      "@type": "xsd:string"
+    },
+    "scope": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#scope",
+      "@type": "xsd:string"
+    },
+    "Disp-unchanged": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#Disp-unchanged"
+    },
+    "code": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#code",
+      "@type": "xsd:string"
+    },
+    "currentVersion": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#currentVersion",
+      "@type": "xsd:integer"
+    },
+    "description": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#description",
+      "@type": "xsd:string"
+    },
+    "originCountry": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#originCountry",
+      "@type": "xsd:string"
+    },
+    "capacity": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#capacity",
+      "@type": "xsd:decimal"
+    },
+    "tradeSecret": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#tradeSecret",
+      "@type": "xsd:string"
+    },
+    "carbonFootprint": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#carbonFootprint",
+      "@type": "xsd:decimal"
+    },
+    "recycledContent": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#recycledContent",
+      "@type": "xsd:decimal"
+    },
+    "repairabilityScore": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#repairabilityScore",
+      "@type": "xsd:decimal"
+    },
+    "energyEfficiencyClass": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#energyEfficiencyClass",
+      "@type": "xsd:string"
+    },
+    "hazardousSubstance": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#hazardousSubstance",
+      "@type": "xsd:string"
+    },
+    "criticalRawMaterials": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#criticalRawMaterials",
+      "@type": "xsd:string"
+    },
+    "disassemblyInstructions": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#disassemblyInstructions",
+      "@type": "xsd:string"
+    },
+    "materialComposition": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#materialComposition"
+    },
+    "actorLabel": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#actorLabel",
+      "@type": "xsd:string"
+    },
+    "declarationOfConformity": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#declarationOfConformity"
+    },
+    "technicalDocumentation": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#technicalDocumentation"
+    },
+    "testReport": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#testReport"
+    },
+    "instructionsForUse": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#instructionsForUse"
+    },
+    "repairInstructions": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#repairInstructions"
+    },
+    "recyclingInstructions": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#recyclingInstructions"
+    },
+    "environmentalProductDeclaration": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#environmentalProductDeclaration"
+    },
+    "substancesOfConcernDeclaration": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#substancesOfConcernDeclaration"
+    },
+    "recycledContentDeclaration": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#recycledContentDeclaration"
+    },
+    "fibreCompositionLabel": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#fibreCompositionLabel"
+    },
+    "careInstructions": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#careInstructions"
+    },
+    "chemicalComplianceCertificate": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#chemicalComplianceCertificate"
+    },
+    "durabilityTestReport": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#durabilityTestReport"
+    },
+    "rohsDeclaration": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#rohsDeclaration"
+    },
+    "weeeRegistration": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#weeeRegistration"
+    },
+    "energyLabel": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#energyLabel"
+    },
+    "softwareUpdatePolicy": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#softwareUpdatePolicy"
+    },
+    "formaldehydeEmissionCertificate": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#formaldehydeEmissionCertificate"
+    },
+    "flammabilityCertificate": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#flammabilityCertificate"
+    },
+    "stabilityTestReport": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#stabilityTestReport"
+    },
+    "tyreLabel": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#tyreLabel"
+    },
+    "typeApprovalCertificate": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#typeApprovalCertificate"
+    },
+    "rollingResistanceTestReport": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#rollingResistanceTestReport"
+    },
+    "wetGripTestReport": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#wetGripTestReport"
+    },
+    "noiseTestReport": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#noiseTestReport"
+    },
+    "declarationOfPerformance": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#declarationOfPerformance"
+    },
+    "ceCertificate": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#ceCertificate"
+    },
+    "reactionToFireClassification": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#reactionToFireClassification"
+    },
+    "safetyDataSheet": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#safetyDataSheet"
+    },
+    "reachRegistrationDossier": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#reachRegistrationDossier"
+    },
+    "clpClassification": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#clpClassification"
+    },
+    "exposureScenario": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#exposureScenario"
+    },
+    "recyclabilityAssessment": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#recyclabilityAssessment"
+    },
+    "recycledContentCertificate": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#recycledContentCertificate"
+    },
+    "compostabilityCertificate": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#compostabilityCertificate"
+    },
+    "materialComplianceDeclaration": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#materialComplianceDeclaration"
+    },
+    "declarationOfCompliance": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#declarationOfCompliance"
+    },
+    "migrationTestReport": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#migrationTestReport"
+    },
+    "gmpDeclaration": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#gmpDeclaration"
+    },
+    "inspectionCertificate": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#inspectionCertificate"
+    },
+    "alloyCompositionCertificate": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#alloyCompositionCertificate"
+    }
+  }
+}
