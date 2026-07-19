@@ -110,6 +110,7 @@
   "cryptoProof.downloadRowAria": "Изтегляне на подписаната моментна снимка за версия {version}",
   "cryptoProof.versionsTable.caption": "Резултати по версии",
   "cryptoProof.versionsCheck.summary": "Версия v{version} е потвърдена с {count} ключа в браузъра ви.",
+  "cryptoProof.versionsCheck.summary.one": "Версия v{version} е потвърдена с {count} ключ в браузъра ви.",
   "cryptoProof.chain.note": "Верига: всяка версия включва хеша на предходната, така че отметка тук означава, че връзката с предишната версия е непокътната. v1 няма предшественик, оттам и тиренцето.",
   "product.rating": "Оценка",
   "verifier.url": "Връзка към паспорта или URL на манифеста",

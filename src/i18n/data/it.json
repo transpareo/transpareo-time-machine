@@ -110,6 +110,7 @@
   "cryptoProof.downloadRowAria": "Scarica lo snapshot firmato per la versione {version}",
   "cryptoProof.versionsTable.caption": "Verdetti per versione",
   "cryptoProof.versionsCheck.summary": "Versione v{version} verificata contro {count} chiavi nel tuo browser.",
+  "cryptoProof.versionsCheck.summary.one": "Versione v{version} verificata contro {count} chiave nel tuo browser.",
   "cryptoProof.chain.note": "Catena: ogni versione include l'hash della versione precedente, quindi un segno di spunta qui significa che il collegamento alla versione precedente è intatto. v1 non ha predecessore, da qui il trattino.",
   "product.rating": "Valutazione",
   "verifier.url": "Link del passaporto o URL del manifesto",

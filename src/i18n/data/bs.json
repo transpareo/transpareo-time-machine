@@ -27,6 +27,7 @@
   "cryptoProof.chain.note": "Lanac: svaka verzija uključuje hash prethodne verzije, pa znak kvačice ovdje znači da je poveznica na prethodnu verziju neoštećena. v1 nema prethodnika, stoga je tu crtica.",
   "cryptoProof.versionOf": "{current} {total} -a potpisanih verzija",
   "cryptoProof.versionsCheck.summary": "Verzija v{version} provjerena pomoću ključeva {count} u vašem pregledniku.",
+  "cryptoProof.versionsCheck.summary.one": "Verzija v{version} provjerena pomoću {count} ključa u vašem pregledniku.",
   "cryptoProof.chainPending": "Provjera dokaza snimka u vašem pregledniku...",
   "cryptoProof.method.https": "https",
   "cryptoProof.chain.header": "Lanac",

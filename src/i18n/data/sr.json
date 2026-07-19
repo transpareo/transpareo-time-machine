@@ -27,6 +27,7 @@
   "cryptoProof.chain.note": "Ланac: свака верзија уграђује хеш претходне верзије, па јешлик овде значи да је веза ка претходној верзији нетакнута. v1 нема претходника, због тога је ту цртица.",
   "cryptoProof.versionOf": "{current} од потписаних верзија {total} ",
   "cryptoProof.versionsCheck.summary": "Верзија v{version} проверена помоћу кључева {count} у вашем прегледачу.",
+  "cryptoProof.versionsCheck.summary.one": "Верзија v{version} проверена помоћу {count} кључа у вашем прегледачу.",
   "cryptoProof.chainPending": "Проверa доказа снимка у вашем прегледачу...",
   "cryptoProof.method.https": "https",
   "cryptoProof.chain.header": "Ланac",

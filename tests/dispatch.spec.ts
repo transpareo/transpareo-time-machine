@@ -65,7 +65,7 @@ describe('verifyDpp: routes ecdsa-sd-2023', () => {
     });
     expect(dppIsAuthentic(v)).toBe(false);
     if (v.cryptosuite === 'ecdsa-sd-2023') {
-      expect(v.result.reason).toMatch(/issuer key resolution failed: offline/);
+      expect(v.results[0]?.result.reason).toMatch(/issuer key resolution failed: offline/);
     } else throw new Error('expected ecdsa-sd routing');
   });
 
@@ -77,7 +77,7 @@ describe('verifyDpp: routes ecdsa-sd-2023', () => {
     });
     expect(dppIsAuthentic(v)).toBe(false);
     if (v.cryptosuite === 'ecdsa-sd-2023') {
-      expect(v.result.reason).toMatch(/no verificationMethod/);
+      expect(v.results[0]?.result.reason).toMatch(/no verificationMethod/);
     } else throw new Error('expected ecdsa-sd routing');
   });
 });

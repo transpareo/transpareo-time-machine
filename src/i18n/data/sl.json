@@ -110,6 +110,7 @@
   "cryptoProof.downloadRowAria": "Prenesi podpisan posnetek za različico {version}",
   "cryptoProof.versionsTable.caption": "Sodbe po različicah",
   "cryptoProof.versionsCheck.summary": "Različica v{version} preverjena s {count} ključi v vašem brskalniku.",
+  "cryptoProof.versionsCheck.summary.one": "Različica v{version} preverjena s {count} ključem v vašem brskalniku.",
   "cryptoProof.chain.note": "Veriga: vsaka različica vsebuje povzetek prejšnje, zato kljukica pomeni, da je povezava s prejšnjo različico nedotaknjena. v1 nima predhodnika, od tod črta.",
   "product.rating": "Ocena",
   "verifier.url": "Povezava do potnega lista ali URL manifesta",

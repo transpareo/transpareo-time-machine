@@ -110,6 +110,7 @@
   "cryptoProof.downloadRowAria": "下载版本 {version} 的已签名快照",
   "cryptoProof.versionsTable.caption": "各版本判定",
   "cryptoProof.versionsCheck.summary": "版本 v{version} 已在浏览器中通过 {count} 个密钥验证。",
+  "cryptoProof.versionsCheck.summary.one": "版本 v{version} 已在浏览器中通过 {count} 个密钥验证。",
   "cryptoProof.chain.note": "链：每个版本都嵌入了前一版本的哈希，因此此处的勾选表示与前一版本的链接完整。v1 没有前任，因此显示为短横线。",
   "product.rating": "评分",
   "verifier.url": "护照链接或清单 URL",

@@ -110,6 +110,7 @@
   "cryptoProof.downloadRowAria": "Lataa version {version} allekirjoitettu tilannekuva",
   "cryptoProof.versionsTable.caption": "Versiokohtaiset tulokset",
   "cryptoProof.versionsCheck.summary": "Versio v{version} vahvistettu {count} avainta vasten selaimessasi.",
+  "cryptoProof.versionsCheck.summary.one": "Versio v{version} vahvistettu {count} avainta vasten selaimessasi.",
   "cryptoProof.chain.note": "Ketju: jokainen versio sisältää edellisen version tiivisteen, joten merkki tässä tarkoittaa, että linkki edelliseen versioon on ehjä. v1:llä ei ole edeltäjää, siksi viiva.",
   "product.rating": "Arvosana",
   "verifier.url": "Passin linkki tai manifestin URL-osoite",

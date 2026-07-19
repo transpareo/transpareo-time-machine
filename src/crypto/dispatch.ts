@@ -9,8 +9,9 @@
  *   - eddsa-jcs-2022  -> the whole-document Ed25519 proof
  *     set (multi-authority), unchanged;
  *   - ecdsa-sd-2023   -> the selective-disclosure P-256
- *     path, resolving the issuer key from the proof's
- *     verificationMethod.
+ *     path, verifying every derived proof the snapshot
+ *     carries (issuer + platform counter-signature) against
+ *     the key each one's verificationMethod resolves to.
  * A DPP viewer should verify any proof it is handed, ours
  * or a third party's, and dispatch also eases migration
  * while both suites are in the wild.
@@ -32,6 +33,15 @@ import { describeError } from '@/errors'
 // testable without a network fetch.
 export type IssuerKeyResolver = (method: string) => Promise<Uint8Array>
 
+// One ecdsa-sd derived proof's outcome: the verify result plus
+// the key it named, kept so the renderer can show one row per
+// proof (issuer + the platform counter-signature).
+export interface EcdsaProofResult {
+  readonly verificationMethod: string
+  readonly proofValue: string
+  readonly result: DerivedVerifyResult
+}
+
 export type DppVerification =
   | {
       readonly cryptosuite: typeof EDDSA_JCS_2022
@@ -39,7 +49,7 @@ export type DppVerification =
     }
   | {
       readonly cryptosuite: typeof ECDSA_SD_2023
-      readonly result: DerivedVerifyResult
+      readonly results: ReadonlyArray<EcdsaProofResult>
     }
   | { readonly cryptosuite: 'unknown', readonly reason: string }
 
@@ -66,7 +76,7 @@ export async function verifyDpp(
   }
 
   if (cryptosuite === ECDSA_SD_2023) {
-    return verifyEcdsaSd(document, proof, opts.resolveIssuerKey)
+    return verifyEcdsaSd(document, opts.resolveIssuerKey)
   }
 
   return {
@@ -80,29 +90,67 @@ export async function verifyDpp(
 // eddsa-jcs, or the derived-proof pass for ecdsa-sd.
 export function dppIsAuthentic(v: DppVerification): boolean {
   if (v.cryptosuite === EDDSA_JCS_2022) return v.result.verdict === 'authentic'
-  if (v.cryptosuite === ECDSA_SD_2023) return v.result.verified
+  if (v.cryptosuite === ECDSA_SD_2023) {
+    return v.results.length > 0 && v.results.every((r) => r.result.verified)
+  }
   return false
 }
 
+// Verify every ecdsa-sd derived proof the snapshot carries.
+// A snapshot is signed twice (issuer + platform counter-
+// signature) and a derived view keeps both proofs; each
+// verifies against the key its own verificationMethod resolves
+// to. Mirrors the eddsa-jcs proof-set loop in verify.ts.
 async function verifyEcdsaSd(
   document: Record<string, unknown>,
-  proof: Record<string, unknown>,
   resolveIssuerKey: IssuerKeyResolver | undefined,
 ): Promise<DppVerification> {
-  const method = proof.verificationMethod
-  if (typeof method !== 'string') {
-    return failed('proof has no verificationMethod')
-  }
-  let issuerKey: Uint8Array
+  const resolve = resolveIssuerKey ?? resolveIssuerP256Key
+  const results = await Promise.all(
+    ecdsaProofs(document.proof).map(
+      (proof) => verifyOneProof(document, proof, resolve),
+    ),
+  )
+  return { cryptosuite: ECDSA_SD_2023, results }
+}
+
+async function verifyOneProof(
+  document: Record<string, unknown>,
+  proof: Record<string, unknown>,
+  resolve: IssuerKeyResolver,
+): Promise<EcdsaProofResult> {
+  const method = typeof proof.verificationMethod === 'string'
+    ? proof.verificationMethod : ''
+  const proofValue = typeof proof.proofValue === 'string'
+    ? proof.proofValue : ''
+  return { verificationMethod: method, proofValue,
+    result: await runOneProof(document, proof, method, resolve) }
+}
+
+async function runOneProof(
+  document: Record<string, unknown>,
+  proof: Record<string, unknown>,
+  method: string,
+  resolve: IssuerKeyResolver,
+): Promise<DerivedVerifyResult> {
+  if (!method) return failResult('proof has no verificationMethod')
+  let key: Uint8Array
   try {
-    issuerKey = await (resolveIssuerKey ?? resolveIssuerP256Key)(method)
+    key = await resolve(method)
   } catch (err) {
-    return failed(`issuer key resolution failed: ${describeError(err)}`)
+    return failResult(`issuer key resolution failed: ${describeError(err)}`)
   }
-  // verifyDerivedProof expects a single proof block, so
-  // hand it the document with proof normalized to one.
-  const result = await verifyDerivedProof({ ...document, proof }, issuerKey)
-  return { cryptosuite: ECDSA_SD_2023, result }
+  return verifyDerivedProof({ ...document, proof }, key)
+}
+
+// The ecdsa-sd proofs to verify: the whole `proof` array (a
+// two-proof snapshot carries issuer + platform), or the lone
+// object form.
+function ecdsaProofs(
+  proof: unknown,
+): ReadonlyArray<Record<string, unknown>> {
+  if (Array.isArray(proof)) return proof.filter(isObject)
+  return isObject(proof) ? [proof] : []
 }
 
 async function resolveIssuerP256Key(method: string): Promise<Uint8Array> {
@@ -115,13 +163,8 @@ async function resolveIssuerP256Key(method: string): Promise<Uint8Array> {
   return bytes
 }
 
-function failed(reason: string): DppVerification {
-  return {
-    cryptosuite: ECDSA_SD_2023,
-    result: {
-      verified: false, reason, mandatoryCount: 0, nonMandatoryCount: 0,
-    },
-  }
+function failResult(reason: string): DerivedVerifyResult {
+  return { verified: false, reason, mandatoryCount: 0, nonMandatoryCount: 0 }
 }
 
 // The proof to dispatch on: a single proof block, or the

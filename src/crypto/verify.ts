@@ -123,6 +123,13 @@ export interface VerificationResult {
   // mode requires totalEntryCount === verifiedEntryCount;
   // the default rule requires verifiedAuthorityCount >= 2.
   readonly mode: VerificationMode
+
+  // The Data Integrity cryptosuite that produced this
+  // result (`eddsa-jcs-2022` or `ecdsa-sd-2023`), stamped
+  // by the dispatcher so the proof modal can label which
+  // suite the active snapshot was verified under. Absent
+  // when a single-suite verifier is called directly.
+  readonly cryptosuite?: string
 }
 
 export type VerificationMode = 'default' | 'strict'

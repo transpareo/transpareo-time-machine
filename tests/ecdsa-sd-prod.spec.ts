@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * Verifies a real, independently issued ecdsa-sd-2023
- * derived proof (produced by a separate issuer over the VC
- * base + transpareo contexts, resolved offline). This is
- * the cross-implementation check: our hand-written
- * canonicalizer and verifier against a separate JSON-LD +
- * RDF canonicalization toolchain.
+ * snapshot carrying both derived proofs (issuer + platform
+ * counter-signature) over the VC base + transpareo contexts,
+ * resolved offline. This is the cross-implementation check:
+ * our hand-written canonicalizer and verifier against a
+ * separate JSON-LD + RDF canonicalization toolchain.
  */
 
 import { describe, it, expect } from 'vitest';
@@ -21,13 +21,19 @@ const SPECIMEN = fileURLToPath(
 );
 
 describe('ecdsa-sd: real production specimen', () => {
-  it('verifies an independently issued derived proof', async () => {
+  it('verifies both independently issued derived proofs', async () => {
     const spec = JSON.parse(readFileSync(SPECIMEN, 'utf8'));
-    const key = new Uint8Array(
-      Buffer.from(spec.issuer_multikey_b64, 'base64'),
-    );
-    const result = await verifyDerivedProof(spec.view, key);
-    expect(result.reason ?? '').toBe('');
-    expect(result.verified).toBe(true);
+    const keys = spec.issuer_multikeys_b64 as string[];
+    const proofs = spec.view.proof as unknown[];
+    expect(proofs.length).toBe(keys.length);
+    expect(proofs.length).toBeGreaterThan(1);
+    for (let i = 0; i < proofs.length; i++) {
+      const key = new Uint8Array(Buffer.from(keys[i], 'base64'));
+      const result = await verifyDerivedProof(
+        { ...spec.view, proof: proofs[i] }, key,
+      );
+      expect(result.reason ?? '').toBe('');
+      expect(result.verified).toBe(true);
+    }
   });
 });

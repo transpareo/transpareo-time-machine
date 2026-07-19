@@ -110,6 +110,7 @@
   "cryptoProof.downloadRowAria": "A(z) {version} verzió aláírt pillanatképének letöltése",
   "cryptoProof.versionsTable.caption": "Verziónkénti döntések",
   "cryptoProof.versionsCheck.summary": "A v{version} verzió {count} kulccsal hitelesítve a böngészőjében.",
+  "cryptoProof.versionsCheck.summary.one": "A v{version} verzió {count} kulccsal hitelesítve a böngészőjében.",
   "cryptoProof.chain.note": "Lánc: minden verzió tartalmazza az előző verzió hash-értékét, így a pipa azt jelenti, hogy a kapcsolat az előző verzióval ép. A v1-nek nincs előzménye, ezért szerepel a kötőjel.",
   "product.rating": "Értékelés",
   "verifier.url": "Útlevél-link vagy manifest URL",

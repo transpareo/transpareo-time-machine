@@ -15,8 +15,8 @@
       "@type": "dpp:DigitalProductPassport",
       "version": 3,
       "dppSchemaVersion": "EN 18223:2026",
-      "publishedAt": "2026-07-18T14:28:37Z",
-      "lastUpdated": "2026-07-18T14:28:37Z",
+      "publishedAt": "2026-07-18T22:38:37Z",
+      "lastUpdated": "2026-07-18T22:38:37Z",
       "identifiers": {
         "@id": "https://dpp.acme-corp.com/dpp/abc12345#identifiers",
         "code": "abc12345"
@@ -117,14 +117,323 @@
       "did": "did:web:acme.002.fsn.transpareo.com",
       "identityCredentialUrl": "https://dpp.acme-corp.com/.well-known/did.json"
     },
-    "proof": {
-      "type": "DataIntegrityProof",
-      "cryptosuite": "ecdsa-sd-2023",
-      "created": "2026-05-01T12:00:00Z",
-      "verificationMethod": "did:web:dpp.acme-corp.com#key-1",
-      "proofPurpose": "assertionMethod",
-      "proofValue": "u2V0BhVhAPVoJd9Dn9E9cEx1nTIekmb9oQtKxnTJGpLGdLHaV6fPJ9Pq7I0ixcizP_WEZ2N20i_j_X1Fd-NZWBvr7TaeR51gjgCQC4wdUex0yIA0vlUn2bKJzmgfzBc2w0v21yWMxZ95T7FiHWEDI4S1OcYj38rwd7SlgUOVOM23H09RuehLuwOQ2aNLOG-8-1iQPwf2Iq2ghAKRB4ZoRrWH201eOf_DROb39PhcPWEA_y9iGnllhQVRxZJoalM9JXwSWsVBNDxZmbRQf9H1Zx7Ua9haYqbLw90WOi2sT0qwIZqkrd98sa_gx-LiXUtXGWECeWY4ipewCih46GzdulBaCwn8t9ILncw9ZPIQUUQMwpAnQimosNeS0_CayOGAc3QWgg-0oxWAkM19sKATESeg6WEC33-XLuT1LnIeVMtCCZQMF6hiaBKJ-oVAgLUg0g3nTnpTlT5EoVE0Djf5FYMCKhrRpiFnWzwF6f1ghW0QrNXCLWEDDjn5O7ECQJX--WX3zNiJGCGY9zK2m5yf9Cy7OY96nBjipLd27aUsaOqLF2pqVNTz-G_0GshylaYVuseXJvF3DWEAo720usPeAxtDpG_w4PvuPhdzCD42wKDuoXpTAn_dkTHXfKccuuLr6ox6QyOkfq0-C0YHBlLLN5nMDy7GYur7uWEAUxVTrLvTRg2NV0ImyEOczOH8UuCXSvlNK4P7Ws4sb8Wf4KP_2RNFl_G37Gsw_acY-ntqmNTZw6VjS0tR7-fpeoJg5AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBgYGRgaGBsYHBgdGB8YIBghGCIYIxgkGCsYLBgtGC4YLxgwGDEYMhgzGDQYNRg2GDcYOBg5GDoYOxg8GD0YPhg_"
+    "proof": [
+      {
+        "type": "DataIntegrityProof",
+        "cryptosuite": "ecdsa-sd-2023",
+        "created": "2026-05-01T12:00:00Z",
+        "verificationMethod": "did:web:dpp.acme-corp.com#key-1",
+        "proofPurpose": "assertionMethod",
+        "proofValue": "u2V0BhVhAh_0KMgvyOr40ETMjhasERbuwNbEBpwcLwgHrjfEb8tbQ7M2swJ1b4Pz9c4HzgVhIAwg6ZfFvbl80BGQuhzUJ8FgjgCQDpn6Cff9jj6xqT2_TcmEk2d56KsE9Oma4Uehn2FmVFPuHWEAVorO89mtvf58JOH6_SAMzKoy9CkOHLhD729-xpSprvd2IS2spnUOuumUfhO1hFJQufOpb0aIIZH0HKSGLDlROWEDr2rfnI1QbpU3uwnrKxBHIvojaYenCm-J-lkjcZoXaKTIzR7Z52IT70sACEcurwqdZQfs_eE41jrgo1yXCjgCAWEDIh4uDxFreEheeW4VamAK2wBI-R4ZV4UODUW-GyIiQVIjM4M5o1Cs1oSJZRB6Otgrrq-AIl2oj6K4BFnYa7e8EWECwlWlcj7Z9yH3MTs2yYHtLRF8KL3PgyWKNXNPlwoITv86SPvBObd6S2oPkChD-UwX3AdphOOyXH_B-CInnhCjFWEDa5zLh-UNEzTPikLrjq6qSljL-Y9lG-QSqoKJ1dDKPeOW4lAatZjCdWi8stShPSfplj8fTAKbX8JuYFYj1O9PdWEB1KWW7kQewalljBe7ydZpFsR5qHndBw8WnMLwWNaHyCP6fuLWWVKmEMD8iS-3LKUJwDYpBSPCPVQCs6qVBFgL7WED5NcbOYu3UeAoE5iIBnKbxDekRfQxiDBEv1ZCs6CXYg3hXGuX3UcgEyp9qHDaNVvWfswXSnACO522MonVOA6R3oJg5AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBgYGRgaGBsYHBgdGB8YIBghGCIYIxgkGCsYLBgtGC4YLxgwGDEYMhgzGDQYNRg2GDcYOBg5GDoYOxg8GD0YPhg_"
+      },
+      {
+        "type": "DataIntegrityProof",
+        "cryptosuite": "ecdsa-sd-2023",
+        "created": "2026-05-01T12:00:00Z",
+        "verificationMethod": "did:web:transpareo.com#key-1",
+        "proofPurpose": "assertionMethod",
+        "proofValue": "u2V0BhVhA5yK0cMYdhok3Qyt2vZCFZEvK4-hMN7FXLGGKvmQ8y8rJRi1XNTF0TvAYYqrPhzF7MLK5y0rIfiXT4A-6P9akE1gjgCQCVB50EKXqru-alrEuoaCsAbN0LmJ8je4NDBnboXgaDs2HWECWK9L9Dqa-sOpPJwVbKVM3nTHoEcfeIsyI65zDCCJFiw_ETHnb-fvsS10JEx9mXL93VjuHOQhJZqQXao8n1fbLWEA88imG5WCeiYW1YTvjY52nO1-7HyLfJUvhgzpym_iQmQRlXGUDcbog_KCJtvAzmedsyBpVHxwZAouyQtw9mzWAWECw67aBYveu_q51ZDLDCoqfrFvF1_nLGaI6EJ65JLygs10w4_1DpHHZp1M5WZe85oelTStcVw6YPbA1nW1rVSSJWEDiaReRojIy_6INL1_9VLHFX2E6hwfwxVVaFBOWRRPeG5Jwa3luU_qvdo0KdiXgEHD4C0UuUTcl6h1_bUDEb0PZWEB1GF88b1jzchqPS3Tv5858lXs4-xdXQSjWIRwKP9HOa1ZTh2TbkXgXETb8vLqHntEd4RG__okXQR7Met1miQIKWEB6JDg2OmTcg-FbSlWKJsqcYzo2doSMaFED85J_7ODLAP1EoONS0PXYnzgIbwqIma4vu1TSrkhlLTzzc8H5Pyp2WEDvc1Y11UMMyZfmvrlcu1PeIyo9o4ShnQVvw3TWeileM8YMc4CFbNCQBnKj03hfCvzK8Jue-OfkqOQ7ksRF9sb8oJg5AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBgYGRgaGBsYHBgdGB8YIBghGCIYIxgkGCsYLBgtGC4YLxgwGDEYMhgzGDQYNRg2GDcYOBg5GDoYOxg8GD0YPhg_"
+      }
+    ]
+  },
+  "issuer_multikeys_b64": [
+    "gCQCa8gu+lgpDL/wC6z6qiO6JFbzi/yFMYmyOvypco49+Ts=",
+    "gCQCvCr2N2Dph2qHB2zHFc2G60xDIW90LWLEI6RqpDu9Jj4="
+  ],
+  "backend_ok": true,
+  "backend_nquads": [
+    "<https://dpp.acme-corp.com/dpp/abc12345#accessRights> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <dpp:AccessRights> .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#accessRights> <https://transpareo.com/vocab/vc/v1#authorisedNote> \"\" .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#accessRights> <https://transpareo.com/vocab/vc/v1#publicLicense> \"https://creativecommons.org/licenses/by/4.0/\" .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#accessRights> <https://transpareo.com/vocab/vc/v1#regulatoryContext> \"https://eur-lex.europa.eu/eli/reg/2023/1542\" .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#credential> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <dpp:DigitalProductPassport> .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#credential> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://www.w3.org/2018/credentials#VerifiableCredential> .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#credential> <https://www.w3.org/2018/credentials#credentialSubject> <https://dpp.acme-corp.com/dpp/abc12345> .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#credential> <https://www.w3.org/2018/credentials#issuer> <did:web:acme.002.fsn.transpareo.com> .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#identifiers> <https://transpareo.com/vocab/transpareo/v1#code> \"abc12345\" .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#issuer> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://transpareo.com/vocab/vc/v1#Organization> .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#issuer> <https://transpareo.com/vocab/vc/v1#did> \"did:web:acme.002.fsn.transpareo.com\" .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#issuer> <https://transpareo.com/vocab/vc/v1#name> \"Acme Cosmetics GmbH\" .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#lifecycle> <https://transpareo.com/vocab/vc/v1#priorStage> \"placed_on_market\" .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#lifecycle> <https://transpareo.com/vocab/vc/v1#stage> \"in_use\" .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#lifecycle> <https://transpareo.com/vocab/vc/v1#stageAt> \"2026-05-01T10:00:00Z\" .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#platform> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://transpareo.com/vocab/vc/v1#Organization> .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#platform> <https://transpareo.com/vocab/vc/v1#did> \"did:web:transpareo.com\" .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#platform> <https://transpareo.com/vocab/vc/v1#name> \"Transpareo\" .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#product/images/0> <https://transpareo.com/vocab/vc/v1#large> \"/media/abc.jpg\" .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#product/images/0> <https://transpareo.com/vocab/vc/v1#thumbnail> \"/media/abc.jpg\" .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#product/weight> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://transpareo.com/vocab/vc/v1#QuantitativeValue> .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#product/weight> <https://transpareo.com/vocab/vc/v1#unitCode> \"KGM\" .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#product/weight> <https://transpareo.com/vocab/vc/v1#value> \"250\" .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#product> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://transpareo.com/vocab/vc/v1#Product> .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#product> <https://transpareo.com/vocab/vc/v1#brand> \"Acme Cosmetics\" .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#product> <https://transpareo.com/vocab/vc/v1#category> \"Cosmetics\" .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#product> <https://transpareo.com/vocab/vc/v1#images> <https://dpp.acme-corp.com/dpp/abc12345#product/images/0> .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#product> <https://transpareo.com/vocab/vc/v1#name> \"Wonder Cream\"@en .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#product> <https://transpareo.com/vocab/vc/v1#name> \"Wundercreme\"@de .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#product> <https://transpareo.com/vocab/vc/v1#properties> <https://dpp.acme-corp.com/dpp/abc12345#property/1> .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#product> <https://transpareo.com/vocab/vc/v1#properties> <https://dpp.acme-corp.com/dpp/abc12345#property/2> .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#product> <https://transpareo.com/vocab/vc/v1#weight> <https://dpp.acme-corp.com/dpp/abc12345#product/weight> .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#property/1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://transpareo.com/vocab/vc/v1#PropertyValue> .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#property/1> <https://transpareo.com/vocab/vc/v1#name> \"Origin\"@en .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#property/1> <https://transpareo.com/vocab/vc/v1#propertyID> \"1\" .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#property/1> <https://transpareo.com/vocab/vc/v1#value> \"Germany\" .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#property/1> <https://transpareo.com/vocab/vc/v1#valueDataType> \"xsd:string\" .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#property/2> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://transpareo.com/vocab/vc/v1#PropertyValue> .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#property/2> <https://transpareo.com/vocab/vc/v1#access> \"legitimateInterest\" .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#property/2> <https://transpareo.com/vocab/vc/v1#name> \"Supplier\"@en .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#property/2> <https://transpareo.com/vocab/vc/v1#propertyID> \"2\" .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#property/2> <https://transpareo.com/vocab/vc/v1#value> \"Acme Chemicals GmbH\" .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#property/2> <https://transpareo.com/vocab/vc/v1#valueDataType> \"xsd:string\" .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <dpp:DigitalProductPassport> .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345> <https://transpareo.com/vocab/vc/v1#accessRights> <https://dpp.acme-corp.com/dpp/abc12345#accessRights> .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345> <https://transpareo.com/vocab/vc/v1#contentSpecificationIds> \"https://transpareo.com/spec/dpp/v1.0\" .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345> <https://transpareo.com/vocab/vc/v1#did> \"did:web:acme.002.fsn.transpareo.com\" .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345> <https://transpareo.com/vocab/vc/v1#dppSchemaVersion> \"EN 18223:2026\" .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345> <https://transpareo.com/vocab/vc/v1#dppStatus> \"in_use\" .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345> <https://transpareo.com/vocab/vc/v1#granularity> \"item\" .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345> <https://transpareo.com/vocab/vc/v1#identifiers> <https://dpp.acme-corp.com/dpp/abc12345#identifiers> .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345> <https://transpareo.com/vocab/vc/v1#identityCredentialUrl> \"https://dpp.acme-corp.com/.well-known/did.json\" .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345> <https://transpareo.com/vocab/vc/v1#lastUpdated> \"2026-07-18T22:38:37Z\" .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345> <https://transpareo.com/vocab/vc/v1#lifecycle> <https://dpp.acme-corp.com/dpp/abc12345#lifecycle> .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345> <https://transpareo.com/vocab/vc/v1#passportAlias> \"abc12345\" .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345> <https://transpareo.com/vocab/vc/v1#passportStatus> \"Active\" .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345> <https://transpareo.com/vocab/vc/v1#passportVersion> \"3\"^^<http://www.w3.org/2001/XMLSchema#integer> .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345> <https://transpareo.com/vocab/vc/v1#platform> <https://dpp.acme-corp.com/dpp/abc12345#platform> .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345> <https://transpareo.com/vocab/vc/v1#priorVersion> \"2\"^^<http://www.w3.org/2001/XMLSchema#integer> .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345> <https://transpareo.com/vocab/vc/v1#product> <https://dpp.acme-corp.com/dpp/abc12345#product> .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345> <https://transpareo.com/vocab/vc/v1#publishedAt> \"2026-07-18T22:38:37Z\" .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345> <https://transpareo.com/vocab/vc/v1#uniqueProductIdentifier> \"https://dpp.acme-corp.com/dpp/abc12345\" .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345> <https://transpareo.com/vocab/vc/v1#version> \"3\"^^<http://www.w3.org/2001/XMLSchema#integer> .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345> <https://www.w3.org/2018/credentials#issuer> <https://dpp.acme-corp.com/dpp/abc12345#issuer> .\n"
+  ],
+  "vc_context": {
+    "@context": {
+      "@version": 1.1,
+      "@vocab": "https://transpareo.com/vocab/vc/v1#",
+      "type": "@type",
+      "VerifiableCredential": "https://www.w3.org/2018/credentials#VerifiableCredential",
+      "issuer": {
+        "@id": "https://www.w3.org/2018/credentials#issuer",
+        "@type": "@id"
+      },
+      "credentialSubject": "https://www.w3.org/2018/credentials#credentialSubject"
     }
   },
-  "issuer_multikey_b64": "gCQCgjB/Vc6oyYI/WDIeyJVJoxD5OqLys0xF3FTwwi0dSHo="
+  "transpareo_context": {
+    "@context": {
+      "@version": 1.1,
+      "transpareo": "https://transpareo.com/vocab/transpareo/v1#",
+      "xsd": "http://www.w3.org/2001/XMLSchema#",
+      "dppEventId": {
+        "@id": "https://transpareo.com/vocab/transpareo/v1#dppEventId",
+        "@type": "xsd:string"
+      },
+      "eventType": {
+        "@id": "https://transpareo.com/vocab/transpareo/v1#eventType",
+        "@type": "xsd:string"
+      },
+      "versionNumber": {
+        "@id": "https://transpareo.com/vocab/transpareo/v1#versionNumber",
+        "@type": "xsd:integer"
+      },
+      "statusFrom": {
+        "@id": "https://transpareo.com/vocab/transpareo/v1#statusFrom",
+        "@type": "xsd:string"
+      },
+      "statusTo": {
+        "@id": "https://transpareo.com/vocab/transpareo/v1#statusTo",
+        "@type": "xsd:string"
+      },
+      "scope": {
+        "@id": "https://transpareo.com/vocab/transpareo/v1#scope",
+        "@type": "xsd:string"
+      },
+      "Disp-unchanged": {
+        "@id": "https://transpareo.com/vocab/transpareo/v1#Disp-unchanged"
+      },
+      "code": {
+        "@id": "https://transpareo.com/vocab/transpareo/v1#code",
+        "@type": "xsd:string"
+      },
+      "currentVersion": {
+        "@id": "https://transpareo.com/vocab/transpareo/v1#currentVersion",
+        "@type": "xsd:integer"
+      },
+      "description": {
+        "@id": "https://transpareo.com/vocab/transpareo/v1#description",
+        "@type": "xsd:string"
+      },
+      "originCountry": {
+        "@id": "https://transpareo.com/vocab/transpareo/v1#originCountry",
+        "@type": "xsd:string"
+      },
+      "capacity": {
+        "@id": "https://transpareo.com/vocab/transpareo/v1#capacity",
+        "@type": "xsd:decimal"
+      },
+      "tradeSecret": {
+        "@id": "https://transpareo.com/vocab/transpareo/v1#tradeSecret",
+        "@type": "xsd:string"
+      },
+      "carbonFootprint": {
+        "@id": "https://transpareo.com/vocab/transpareo/v1#carbonFootprint",
+        "@type": "xsd:decimal"
+      },
+      "recycledContent": {
+        "@id": "https://transpareo.com/vocab/transpareo/v1#recycledContent",
+        "@type": "xsd:decimal"
+      },
+      "repairabilityScore": {
+        "@id": "https://transpareo.com/vocab/transpareo/v1#repairabilityScore",
+        "@type": "xsd:decimal"
+      },
+      "energyEfficiencyClass": {
+        "@id": "https://transpareo.com/vocab/transpareo/v1#energyEfficiencyClass",
+        "@type": "xsd:string"
+      },
+      "hazardousSubstance": {
+        "@id": "https://transpareo.com/vocab/transpareo/v1#hazardousSubstance",
+        "@type": "xsd:string"
+      },
+      "criticalRawMaterials": {
+        "@id": "https://transpareo.com/vocab/transpareo/v1#criticalRawMaterials",
+        "@type": "xsd:string"
+      },
+      "disassemblyInstructions": {
+        "@id": "https://transpareo.com/vocab/transpareo/v1#disassemblyInstructions",
+        "@type": "xsd:string"
+      },
+      "materialComposition": {
+        "@id": "https://transpareo.com/vocab/transpareo/v1#materialComposition"
+      },
+      "actorLabel": {
+        "@id": "https://transpareo.com/vocab/transpareo/v1#actorLabel",
+        "@type": "xsd:string"
+      },
+      "declarationOfConformity": {
+        "@id": "https://transpareo.com/vocab/transpareo/v1#declarationOfConformity"
+      },
+      "technicalDocumentation": {
+        "@id": "https://transpareo.com/vocab/transpareo/v1#technicalDocumentation"
+      },
+      "testReport": {
+        "@id": "https://transpareo.com/vocab/transpareo/v1#testReport"
+      },
+      "instructionsForUse": {
+        "@id": "https://transpareo.com/vocab/transpareo/v1#instructionsForUse"
+      },
+      "repairInstructions": {
+        "@id": "https://transpareo.com/vocab/transpareo/v1#repairInstructions"
+      },
+      "recyclingInstructions": {
+        "@id": "https://transpareo.com/vocab/transpareo/v1#recyclingInstructions"
+      },
+      "environmentalProductDeclaration": {
+        "@id": "https://transpareo.com/vocab/transpareo/v1#environmentalProductDeclaration"
+      },
+      "substancesOfConcernDeclaration": {
+        "@id": "https://transpareo.com/vocab/transpareo/v1#substancesOfConcernDeclaration"
+      },
+      "recycledContentDeclaration": {
+        "@id": "https://transpareo.com/vocab/transpareo/v1#recycledContentDeclaration"
+      },
+      "fibreCompositionLabel": {
+        "@id": "https://transpareo.com/vocab/transpareo/v1#fibreCompositionLabel"
+      },
+      "careInstructions": {
+        "@id": "https://transpareo.com/vocab/transpareo/v1#careInstructions"
+      },
+      "chemicalComplianceCertificate": {
+        "@id": "https://transpareo.com/vocab/transpareo/v1#chemicalComplianceCertificate"
+      },
+      "durabilityTestReport": {
+        "@id": "https://transpareo.com/vocab/transpareo/v1#durabilityTestReport"
+      },
+      "rohsDeclaration": {
+        "@id": "https://transpareo.com/vocab/transpareo/v1#rohsDeclaration"
+      },
+      "weeeRegistration": {
+        "@id": "https://transpareo.com/vocab/transpareo/v1#weeeRegistration"
+      },
+      "energyLabel": {
+        "@id": "https://transpareo.com/vocab/transpareo/v1#energyLabel"
+      },
+      "softwareUpdatePolicy": {
+        "@id": "https://transpareo.com/vocab/transpareo/v1#softwareUpdatePolicy"
+      },
+      "formaldehydeEmissionCertificate": {
+        "@id": "https://transpareo.com/vocab/transpareo/v1#formaldehydeEmissionCertificate"
+      },
+      "flammabilityCertificate": {
+        "@id": "https://transpareo.com/vocab/transpareo/v1#flammabilityCertificate"
+      },
+      "stabilityTestReport": {
+        "@id": "https://transpareo.com/vocab/transpareo/v1#stabilityTestReport"
+      },
+      "tyreLabel": {
+        "@id": "https://transpareo.com/vocab/transpareo/v1#tyreLabel"
+      },
+      "typeApprovalCertificate": {
+        "@id": "https://transpareo.com/vocab/transpareo/v1#typeApprovalCertificate"
+      },
+      "rollingResistanceTestReport": {
+        "@id": "https://transpareo.com/vocab/transpareo/v1#rollingResistanceTestReport"
+      },
+      "wetGripTestReport": {
+        "@id": "https://transpareo.com/vocab/transpareo/v1#wetGripTestReport"
+      },
+      "noiseTestReport": {
+        "@id": "https://transpareo.com/vocab/transpareo/v1#noiseTestReport"
+      },
+      "declarationOfPerformance": {
+        "@id": "https://transpareo.com/vocab/transpareo/v1#declarationOfPerformance"
+      },
+      "ceCertificate": {
+        "@id": "https://transpareo.com/vocab/transpareo/v1#ceCertificate"
+      },
+      "reactionToFireClassification": {
+        "@id": "https://transpareo.com/vocab/transpareo/v1#reactionToFireClassification"
+      },
+      "safetyDataSheet": {
+        "@id": "https://transpareo.com/vocab/transpareo/v1#safetyDataSheet"
+      },
+      "reachRegistrationDossier": {
+        "@id": "https://transpareo.com/vocab/transpareo/v1#reachRegistrationDossier"
+      },
+      "clpClassification": {
+        "@id": "https://transpareo.com/vocab/transpareo/v1#clpClassification"
+      },
+      "exposureScenario": {
+        "@id": "https://transpareo.com/vocab/transpareo/v1#exposureScenario"
+      },
+      "recyclabilityAssessment": {
+        "@id": "https://transpareo.com/vocab/transpareo/v1#recyclabilityAssessment"
+      },
+      "recycledContentCertificate": {
+        "@id": "https://transpareo.com/vocab/transpareo/v1#recycledContentCertificate"
+      },
+      "compostabilityCertificate": {
+        "@id": "https://transpareo.com/vocab/transpareo/v1#compostabilityCertificate"
+      },
+      "materialComplianceDeclaration": {
+        "@id": "https://transpareo.com/vocab/transpareo/v1#materialComplianceDeclaration"
+      },
+      "declarationOfCompliance": {
+        "@id": "https://transpareo.com/vocab/transpareo/v1#declarationOfCompliance"
+      },
+      "migrationTestReport": {
+        "@id": "https://transpareo.com/vocab/transpareo/v1#migrationTestReport"
+      },
+      "gmpDeclaration": {
+        "@id": "https://transpareo.com/vocab/transpareo/v1#gmpDeclaration"
+      },
+      "inspectionCertificate": {
+        "@id": "https://transpareo.com/vocab/transpareo/v1#inspectionCertificate"
+      },
+      "alloyCompositionCertificate": {
+        "@id": "https://transpareo.com/vocab/transpareo/v1#alloyCompositionCertificate"
+      }
+    }
+  }
 }

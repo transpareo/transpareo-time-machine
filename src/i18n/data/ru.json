@@ -110,6 +110,7 @@
   "cryptoProof.downloadRowAria": "Скачать подписанный снимок для версии {version}",
   "cryptoProof.versionsTable.caption": "Вердикты по версиям",
   "cryptoProof.versionsCheck.summary": "Версия v{version} подтверждена по {count} ключам в вашем браузере.",
+  "cryptoProof.versionsCheck.summary.one": "Версия v{version} подтверждена по {count} ключу в вашем браузере.",
   "cryptoProof.chain.note": "Цепочка: каждая версия включает хеш предыдущей, поэтому галочка означает, что связь с предыдущей версией не нарушена. У v1 нет предшественника, отсюда тире.",
   "product.rating": "Оценка",
   "verifier.url": "Ссылка на паспорт или URL манифеста",

@@ -27,6 +27,7 @@
   "cryptoProof.chain.note": "Chaîne : chaque version contient le hash de la précédente ; une coche signifie que le lien à la version précédente est intact. v1 n'a pas de prédécesseur, d'où le tiret.",
   "cryptoProof.versionOf": "{current} sur {total} versions signées",
   "cryptoProof.versionsCheck.summary": "Version v{version} vérifiée face à {count} clés dans votre navigateur.",
+  "cryptoProof.versionsCheck.summary.one": "Version v{version} vérifiée face à {count} clé dans votre navigateur.",
   "cryptoProof.chainPending": "Vérification des preuves dans votre navigateur...",
   "cryptoProof.method.https": "https",
   "cryptoProof.chain.header": "Chaîne",

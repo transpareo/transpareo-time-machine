@@ -110,6 +110,7 @@
   "cryptoProof.downloadRowAria": "Завантажити підписаний знімок для версії {version}",
   "cryptoProof.versionsTable.caption": "Вердикти за версіями",
   "cryptoProof.versionsCheck.summary": "Версію v{version} підтверджено за {count} ключами у вашому браузері.",
+  "cryptoProof.versionsCheck.summary.one": "Версію v{version} підтверджено за {count} ключем у вашому браузері.",
   "cryptoProof.chain.note": "Ланцюг: кожна версія містить хеш попередньої, тож галочка означає, що зв'язок із попередньою версією не порушено. v1 не має попередника, звідси тире.",
   "product.rating": "Оцінка",
   "verifier.url": "Посилання на паспорт або URL маніфесту",

@@ -30,6 +30,7 @@ import {
   type ImageMap,
 } from './emit-artefacts.ts';
 import { buildSnapshotSigner } from './signing.ts';
+import { buildEcdsaSdIssuer } from './ecdsa-sd-signing.ts';
 
 type AssetSource = { url: string } | { file: string };
 
@@ -58,8 +59,18 @@ async function main(): Promise<void> {
       fixture.code,
       fixture.published_at,
     );
+    // The manifest + EPCIS keep the platform's eddsa-jcs
+    // signature; only ecdsa-sd fixtures also get a P-256
+    // issuer that wraps each snapshot as a Verifiable
+    // Credential.
+    const ecdsaIssuer = fixture.proof_suite === 'ecdsa-sd-2023'
+      ? await buildEcdsaSdIssuer(
+          PUBLIC_DIR, fixture.id, fixture.code,
+          fixture.published_at, fixture.issuer.did, fixture.platform.did,
+        )
+      : undefined;
     const out = await emitFixture(
-      fixture, images, branding, signer,
+      fixture, images, branding, signer, ecdsaIssuer,
     );
     console.log(`  emitted ${relative(out)}`);
   }

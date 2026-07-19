@@ -27,6 +27,7 @@
   "cryptoProof.chain.note": "Kette: Jede Version enthält den Hash der Vorversion; ein Häkchen bedeutet, dass die Verkettung zur vorherigen Version intakt ist. v1 hat keinen Vorgänger, daher der Strich.",
   "cryptoProof.versionOf": "{current} von {total} signierten Versionen",
   "cryptoProof.versionsCheck.summary": "Version v{version} gegen {count} Schlüssel in Ihrem Browser geprüft.",
+  "cryptoProof.versionsCheck.summary.one": "Version v{version} gegen {count} Schlüssel in Ihrem Browser geprüft.",
   "cryptoProof.chainPending": "Snapshot-Nachweise werden im Browser geprüft...",
   "cryptoProof.method.https": "https",
   "cryptoProof.chain.header": "Kette",

@@ -23,14 +23,16 @@
  *      carries one): the platform proof bound to the
  *      whole EPCIS document the timeline is built from,
  *      verified the same way and badged the same way.
- *   4. Active snapshot's proof chain: the five proof
- *      entries the renderer just verified, grouped by
- *      authority (issuer vs platform). Each
- *      row shows the verificationMethod URL and a
+ *   4. Active snapshot's proof chain: the proof entries
+ *      the renderer just verified, labelled with their
+ *      cryptosuite and grouped by authority (an eddsa-jcs
+ *      proof set groups into issuer + platform rows; an
+ *      ecdsa-sd derived proof is a single issuer row).
+ *      Each row shows the verificationMethod URL and a
  *      status badge (verified / unreachable / invalid /
- *      pending). Followed by a "Versions check"
- *      disclosure with the per-version aggregate
- *      verdicts so the visitor can browse the chain.
+ *      pending). Wrapped in a "Versions check" disclosure
+ *      with the per-version aggregate verdicts so the
+ *      visitor can browse the chain.
  *
  * Versions verify lazily: the active version on scrub
  * (bootstrap.ts -> bootstrapVerify, plus a prefetch
@@ -387,11 +389,29 @@ function buildChainSection(
     return section
   }
 
+  const suite = state.result.cryptosuite
+  if (suite) section.appendChild(buildChainSuite(suite))
+
   const groups = groupByAuthority(state.result.entries)
   for (const group of groups) {
     section.appendChild(buildAuthorityRow(group))
   }
+
   return section
+}
+
+// The Data Integrity cryptosuite the active snapshot was
+// verified under, shown so a reviewer can see which
+// algorithm the key chips below were checked with (the
+// platform's own manifest signature carries its suite in
+// its own section).
+function buildChainSuite(suite: string): HTMLElement {
+  const row = el('p', 'proof-chain-suite')
+  row.append(
+    el('span', 'proof-chain-suite-label', tr('cryptoProof.cryptosuite')),
+    el('code', undefined, suite),
+  )
+  return row
 }
 
 interface AuthorityGroup {
@@ -557,8 +577,13 @@ function buildDisclosureSubtitle(
   if (!state || state.status === 'pending') {
     p.textContent = tr('cryptoProof.chainPending')
   } else {
-    p.textContent = t(i18n.labels, 'cryptoProof.versionsCheck.summary',
-      { version, count: state.result.entries.length })
+    // One key per proof: a two-proof ecdsa-sd snapshot (issuer
+    // + platform) counts two, matching the authority rows below.
+    const count = state.result.entries.length
+    const key: LabelKey = count === 1
+      ? 'cryptoProof.versionsCheck.summary.one'
+      : 'cryptoProof.versionsCheck.summary'
+    p.textContent = t(i18n.labels, key, { version, count })
   }
   return p
 }
@@ -685,6 +710,12 @@ function buildVersionRow(
     if (s.status === 'failed' && s.chain.status === 'broken') {
       chainTd.title = s.chain.reason ?? ''
     }
+
+    // A suite that carries no proof entry for an authority
+    // leaves that column with nothing to badge; show the
+    // not-applicable dash.
+    if (!issuerTd.hasChildNodes()) issuerTd.textContent = '-'
+    if (!platformTd.hasChildNodes()) platformTd.textContent = '-'
   } else if (s?.status === 'pending') {
     issuerTd.textContent = '…'
     platformTd.textContent = '…'

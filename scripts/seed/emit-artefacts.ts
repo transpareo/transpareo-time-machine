@@ -39,7 +39,8 @@ import { canonicalize } from '../../src/crypto/jcs.ts';
 import type { Fixture } from './schema.ts';
 
 type FixtureSnapshot = Fixture['snapshots'][number];
-import type { ProofEntry, SnapshotSigner } from './signing.ts';
+import type { SnapshotSigner } from './signing.ts';
+import type { EcdsaSdIssuer } from './ecdsa-sd-signing.ts';
 
 const ROOT = join(import.meta.dirname, '..', '..');
 const FIXTURES_ROOT = join(ROOT, 'fixtures');
@@ -65,6 +66,7 @@ export async function emitFixture(
   images: ImageMap,
   branding: BrandingAssets | null,
   signer: SnapshotSigner,
+  ecdsaIssuer?: EcdsaSdIssuer,
 ): Promise<string> {
   const id = fixture.id;
   const code = fixture.code;
@@ -75,12 +77,14 @@ export async function emitFixture(
   // Build per-version self-contained snapshots first;
   // the manifest reads each version's signed bytes for
   // hashValue + sizeBytes.
-  const snapshotDocs = buildSnapshots(fixture, images, signer);
+  const snapshotDocs = await buildSnapshots(
+    fixture, images, signer, ecdsaIssuer,
+  );
   await Promise.all(
     snapshotDocs.map((s) =>
       writeFile(
         join(versionsDir, `${s.version}.json`),
-        JSON.stringify(s, null, 2) + '\n',
+        JSON.stringify(s.doc, null, 2) + '\n',
       ),
     ),
   );
@@ -175,11 +179,12 @@ async function copyTree(src: string, dest: string): Promise<void> {
 
 // ─── Snapshots (self-contained) ───────────────────
 
-interface SnapshotOut {
+interface SnapshotRecord {
   readonly version: number;
   readonly publishedAt: string;
-  readonly proof: ProofEntry[];
-  readonly [key: string]: unknown;
+  // The full signed snapshot document: a flat eddsa-jcs
+  // snapshot, or an ecdsa-sd Verifiable Credential.
+  readonly doc: Record<string, unknown>;
 }
 
 // ─── Contract identity, scalars + derivations ───────
@@ -321,11 +326,12 @@ function diffProperties(
   };
 }
 
-function buildSnapshots(
+async function buildSnapshots(
   fixture: Fixture,
   images: ImageMap,
   signer: SnapshotSigner,
-): SnapshotOut[] {
+  ecdsaIssuer: EcdsaSdIssuer | undefined,
+): Promise<SnapshotRecord[]> {
   const baseProduct = buildBaseProduct(fixture);
   const issuer = buildIssuer(fixture);
   const platform = buildPlatform(fixture);
@@ -337,34 +343,37 @@ function buildSnapshots(
   // predecessor's content-addressed hash in
   // priorVersionHash. The chain link is part of the
   // signed body, so tampering with it breaks the proof.
-  const out: SnapshotOut[] = [];
+  const out: SnapshotRecord[] = [];
   let priorHash: string | undefined;
   let priorProps: ReadonlyArray<Record<string, unknown>> | undefined;
   for (const s of ordered) {
     const props = buildProperties(fixture, s);
     const changed = priorProps ? diffProperties(priorProps, props) : undefined;
-    const snap = buildOneSnapshot(
-      s, fixture, images, baseProduct, issuer, platform, signer,
-      priorHash, changed,
+    const body = buildSnapshotBody(
+      s, fixture, images, baseProduct, issuer, platform, priorHash, changed,
     );
-    out.push(snap);
-    priorHash = snapshotHashOf(snap);
+    // eddsa-jcs appends a proof set to the flat body; ecdsa-sd
+    // wraps the body as a Verifiable Credential and signs that.
+    const doc = ecdsaIssuer
+      ? await ecdsaIssuer.issue(body)
+      : { ...body, proof: signer.signSnapshot(body) };
+    out.push({ version: s.version, publishedAt: s.published_at, doc });
+    priorHash = docHashOf(doc);
     priorProps = props;
   }
   return out;
 }
 
-function buildOneSnapshot(
+function buildSnapshotBody(
   s: FixtureSnapshot,
   fixture: Fixture,
   images: ImageMap,
   baseProduct: Record<string, unknown>,
   issuer: Record<string, unknown>,
   platform: Record<string, unknown>,
-  signer: SnapshotSigner,
   priorVersionHash: string | undefined,
   changedProperties: Record<string, unknown> | undefined,
-): SnapshotOut {
+): Record<string, unknown> {
   const productForVersion = applyVersionDiff(baseProduct, s, images);
   const properties = buildProperties(fixture, s);
   const dppId = deterministicUuid(fixture.code);
@@ -420,8 +429,7 @@ function buildOneSnapshot(
     // properties of the product, per the wire contract.
     product: { ...productForVersion, properties },
   };
-  const proof = signer.signSnapshot(body as Record<string, unknown>);
-  return { ...body, proof };
+  return body;
 }
 
 // Issuer block in the W3C JSON-LD shape. The slug is
@@ -553,7 +561,9 @@ function buildProperties(
 ): ReadonlyArray<Record<string, unknown>> {
   const p = fixture.product;
   return [
-    ...p.metrics.map((m) => propertyRow(m.key, m.label, m.value, m.unit)),
+    ...p.metrics
+      .filter((m) => !m.private)
+      .map((m) => propertyRow(m.key, m.label, m.value, m.unit)),
     ...p.lists.map((l) => propertyRow(l.key, l.label, l.values)),
     ...p.accordions.map((a) => propertyRow(a.key, a.label, a.body)),
 
@@ -698,18 +708,30 @@ function enrichVersionEntries(
 
 function buildManifest(
   fixture: Fixture,
-  snapshots: ReadonlyArray<SnapshotOut>,
+  snapshots: ReadonlyArray<SnapshotRecord>,
   signer: SnapshotSigner,
 ): Record<string, unknown> {
+  // A fixture with any private row makes every version expose
+  // the authorised-viewer endpoint the SPA offers a sign-in
+  // for; the seed points it at the dev-server mock (401 in the
+  // demo). Production emits its own resolver URL here.
+  const hasPrivate = fixture.product.metrics.some((m) => m.private);
   const versions = snapshots.map((s) => {
-    const serialised = JSON.stringify(s);
+    const serialised = JSON.stringify(s.doc);
     return {
       number: s.version,
       publishedAt: s.publishedAt,
       reason: 'fixture',
-      hashValue: snapshotHashOf(s),
+      hashValue: docHashOf(s.doc),
       url: `v/${s.version}.json`,
       sizeBytes: serialised.length,
+      ...(hasPrivate
+        ? {
+            privateProperties: {
+              url: `/api/authority/${fixture.code}/private/v${s.version}.json`,
+            },
+          }
+        : {}),
     };
   });
   const current = versions[versions.length - 1];
@@ -736,8 +758,13 @@ function buildManifest(
   return { ...body, signature: signer.signManifest(body) };
 }
 
-function snapshotHashOf(s: SnapshotOut): string {
-  const { proof: _proof, ...body } = s;
+// Content hash of a snapshot document, minus its proof, in
+// JCS canonical form. Used for the manifest hashValue and
+// the priorVersionHash chain; the SPA recomputes the same
+// way (verify.ts hexHashOfSnapshotBody), so both the flat
+// snapshot and the VC chain identically.
+function docHashOf(doc: Record<string, unknown>): string {
+  const { proof: _proof, ...body } = doc;
   return createHash('sha256')
     .update(canonicalize(body), 'utf8')
     .digest('hex');

@@ -110,6 +110,7 @@
   "cryptoProof.downloadRowAria": "Preuzmi potpisani snimak za verziju {version}",
   "cryptoProof.versionsTable.caption": "Presude po verziji",
   "cryptoProof.versionsCheck.summary": "Verzija v{version} potvrđena s {count} ključeva u vašem pregledniku.",
+  "cryptoProof.versionsCheck.summary.one": "Verzija v{version} potvrđena s {count} ključem u vašem pregledniku.",
   "cryptoProof.chain.note": "Lanac: svaka verzija sadrži sažetak prethodne, pa kvačica znači da je poveznica s prethodnom verzijom očuvana. v1 nema prethodnika, otuda crta.",
   "product.rating": "Ocjena",
   "verifier.url": "Poveznica putovnice ili URL manifesta",

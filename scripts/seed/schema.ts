@@ -75,6 +75,11 @@ const DppMetric = z.object({
   value: z.union([LocalizedText, z.number()]),
   unit: z.string().optional(),
   icon: z.string().optional(),
+  // A private row is dropped from the public snapshot and
+  // reachable only through the version's privateProperties
+  // endpoint (authorised viewers). Its presence is what makes
+  // the manifest carry that endpoint URL.
+  private: z.boolean().optional(),
 });
 
 const DppList = z.object({
@@ -264,6 +269,12 @@ export const FixtureSchema = z.object({
   status: LifecycleStatus,
   published_at: Iso8601,
   verified: z.boolean(),
+  // Which proof the snapshots carry. eddsa-jcs-2022 (the
+  // default) is the whole-document Ed25519 proof set;
+  // ecdsa-sd-2023 wraps each snapshot as a selective-
+  // disclosure Verifiable Credential signed with P-256.
+  proof_suite: z.enum(['eddsa-jcs-2022', 'ecdsa-sd-2023'])
+    .default('eddsa-jcs-2022'),
   // Optional. Omit for fixtures that aren't regulated
   // under one of the listed EU schemes. When set, the
   // codegen appends the matching ref.openepcis.io

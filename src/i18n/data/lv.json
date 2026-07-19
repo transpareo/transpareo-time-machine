@@ -110,6 +110,7 @@
   "cryptoProof.downloadRowAria": "Lejupielādēt versijas {version} parakstīto momentuzņēmumu",
   "cryptoProof.versionsTable.caption": "Spriedumi pa versijām",
   "cryptoProof.versionsCheck.summary": "Versija v{version} apstiprināta ar {count} atslēgām jūsu pārlūkprogrammā.",
+  "cryptoProof.versionsCheck.summary.one": "Versija v{version} apstiprināta ar {count} atslēgu jūsu pārlūkprogrammā.",
   "cryptoProof.chain.note": "Ķēde: katra versija ietver iepriekšējās versijas jaucējkodu, tāpēc atzīme nozīmē, ka saite ar iepriekšējo versiju ir neskarta. v1 nav priekšteča, tāpēc tiek rādīta domuzīme.",
   "product.rating": "Vērtējums",
   "verifier.url": "Pases saite vai manifesta URL",

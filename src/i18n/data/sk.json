@@ -110,6 +110,7 @@
   "cryptoProof.downloadRowAria": "Stiahnuť podpísaný snímok verzie {version}",
   "cryptoProof.versionsTable.caption": "Verdikty podľa verzií",
   "cryptoProof.versionsCheck.summary": "Verzia v{version} overená voči {count} kľúčom vo vašom prehliadači.",
+  "cryptoProof.versionsCheck.summary.one": "Verzia v{version} overená voči {count} kľúču vo vašom prehliadači.",
   "cryptoProof.chain.note": "Reťazec: každá verzia obsahuje hash predchádzajúcej verzie, takže zaškrtnutie znamená, že väzba na predchádzajúcu verziu je neporušená. v1 nemá predchodcu, preto pomlčka.",
   "product.rating": "Hodnotenie",
   "verifier.url": "Odkaz na pas alebo URL manifestu",

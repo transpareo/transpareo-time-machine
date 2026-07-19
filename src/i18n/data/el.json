@@ -110,6 +110,7 @@
   "cryptoProof.downloadRowAria": "Λήψη υπογεγραμμένου στιγμιότυπου για την έκδοση {version}",
   "cryptoProof.versionsTable.caption": "Ετυμηγορίες ανά έκδοση",
   "cryptoProof.versionsCheck.summary": "Η έκδοση v{version} επαληθεύτηκε με {count} κλειδιά στον περιηγητή σας.",
+  "cryptoProof.versionsCheck.summary.one": "Η έκδοση v{version} επαληθεύτηκε με {count} κλειδί στον περιηγητή σας.",
   "cryptoProof.chain.note": "Αλυσίδα: κάθε έκδοση ενσωματώνει το hash της προηγούμενης, οπότε μια ένδειξη ελέγχου εδώ σημαίνει ότι ο σύνδεσμος με την προηγούμενη έκδοση είναι ανέπαφος. Η v1 δεν έχει προκάτοχο, εξ ου και η παύλα.",
   "product.rating": "Αξιολόγηση",
   "verifier.url": "Σύνδεσμος διαβατηρίου ή URL μανιφέστου",

@@ -110,6 +110,7 @@
   "cryptoProof.downloadRowAria": "Íoslódáil an roghbhlúire sínithe le haghaidh leagan {version}",
   "cryptoProof.versionsTable.caption": "Breithiúnais de réir leaganacha",
   "cryptoProof.versionsCheck.summary": "Fíoraíodh leagan v{version} le {count} eochair i do bhrabhsálaí.",
+  "cryptoProof.versionsCheck.summary.one": "Fíoraíodh leagan v{version} le {count} eochair i do bhrabhsálaí.",
   "cryptoProof.chain.note": "Slabhra: tá hais an leagain roimhe ionchorpraithe i ngach leagan, mar sin léiríonn tic anseo go bhfuil an nasc leis an leagan roimhe slán. Níl réamhtheachtaí ag v1, mar sin an dais.",
   "product.rating": "Rátáil",
   "verifier.url": "Nasc an phas nó URL an mhainiféiste",

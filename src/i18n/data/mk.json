@@ -27,6 +27,7 @@
   "cryptoProof.chain.note": "Ланч: секоја верзија го вградува хешот на претходната верзија, па ознаката ✓ овде значи дека врската до претходната верзија е нетакната. v1 нема претходник, оттука цртичката.",
   "cryptoProof.versionOf": "{current} од верзии потпишани со {total} ",
   "cryptoProof.versionsCheck.summary": "Верзија v{version} проверена со клучевите на {count} во вашиот прелистувач.",
+  "cryptoProof.versionsCheck.summary.one": "Верзија v{version} проверена со {count} клуч во вашиот прелистувач.",
   "cryptoProof.chainPending": "Проверка на доказите за снимка во вашиот прелистувач...",
   "cryptoProof.method.https": "https",
   "cryptoProof.chain.header": "Ланц",

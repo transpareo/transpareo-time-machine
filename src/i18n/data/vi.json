@@ -27,6 +27,7 @@
   "cryptoProof.chain.note": "Chuỗi: mỗi phiên bản nhúng giá trị băm của phiên bản trước, nên dấu tích ở đây có nghĩa là liên kết tới phiên bản trước còn nguyên vẹn. v1 không có phiên bản trước, do đó hiển thị dấu gạch ngang.",
   "cryptoProof.versionOf": "{current} trên {total} phiên bản đã ký",
   "cryptoProof.versionsCheck.summary": "Phiên bản v{version} đã được xác minh với {count} khóa trong trình duyệt của bạn.",
+  "cryptoProof.versionsCheck.summary.one": "Phiên bản v{version} đã được xác minh với {count} khóa trong trình duyệt của bạn.",
   "cryptoProof.chainPending": "Đang xác minh bằng chứng bản chụp trong trình duyệt của bạn...",
   "cryptoProof.method.https": "https",
   "cryptoProof.chain.header": "Chuỗi",

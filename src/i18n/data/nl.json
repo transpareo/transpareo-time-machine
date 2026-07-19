@@ -110,6 +110,7 @@
   "cryptoProof.downloadRowAria": "Ondertekende momentopname voor versie {version} downloaden",
   "cryptoProof.versionsTable.caption": "Oordelen per versie",
   "cryptoProof.versionsCheck.summary": "Versie v{version} geverifieerd met {count} sleutels in je browser.",
+  "cryptoProof.versionsCheck.summary.one": "Versie v{version} geverifieerd met {count} sleutel in je browser.",
   "cryptoProof.chain.note": "Keten: elke versie bevat de hash van de vorige versie, dus een vinkje hier betekent dat de koppeling met de vorige versie intact is. v1 heeft geen voorganger, vandaar het streepje.",
   "product.rating": "Beoordeling",
   "verifier.url": "Paspoortlink of manifest-URL",

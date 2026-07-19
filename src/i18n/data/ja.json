@@ -110,6 +110,7 @@
   "cryptoProof.downloadRowAria": "バージョン {version} の署名付きスナップショットをダウンロード",
   "cryptoProof.versionsTable.caption": "バージョンごとの判定",
   "cryptoProof.versionsCheck.summary": "バージョン v{version} はブラウザ内で {count} 個の鍵に対して検証されました。",
+  "cryptoProof.versionsCheck.summary.one": "バージョン v{version} はブラウザ内で {count} 個の鍵に対して検証されました。",
   "cryptoProof.chain.note": "チェーン: 各バージョンは前バージョンのハッシュを内包しているため、ここのチェックは前バージョンへのリンクが保たれていることを示します。v1 には前任がないためダッシュで表示されます。",
   "product.rating": "評価",
   "verifier.url": "パスポートのリンクまたはマニフェストURL",

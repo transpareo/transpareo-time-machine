@@ -15,8 +15,10 @@ instead of taken on trust from a server.
 **Demo:**
 [time-machine.transpareo.com](https://time-machine.transpareo.com)
 renders two sample passports end to end, a Nordic Wear
-t-shirt and a Volturra Pulse 2000, so you can scrub the
-timeline and watch the verification chip in action.
+t-shirt (signed with `eddsa-jcs-2022`) and a Volturra Pulse
+2000 (signed with the `ecdsa-sd-2023` selective-disclosure
+suite), so you can scrub the timeline and watch the
+verification chip in action on both proof types.
 
 Embedding it is one custom-element tag, pointed at a
 passport manifest:
@@ -380,16 +382,59 @@ tier.
 Same surface notes as `<transpareo-time-machine>` (open
 shadow root, CSS custom properties, no events).
 
+## Proof cryptosuites
+
+A snapshot's embedded proof names its `cryptosuite`, and the
+verifier dispatches on it, so one build verifies either:
+
+- **`eddsa-jcs-2022`** - a whole-document Ed25519 proof set
+  (issuer + platform, multi-authority). JCS-canonicalize the
+  snapshot without its proof, SHA-256, verify each entry.
+  The Nordic Wear demo uses this.
+- **`ecdsa-sd-2023`** - a W3C selective-disclosure proof
+  (P-256, RDF Dataset Canonicalization). Each snapshot is a
+  Verifiable Credential whose proof commits to each statement
+  independently, so a per-reader subset of fields can be
+  disclosed and still verify. The Volturra Pulse 2000 demo
+  uses this.
+
+Both verifiers are hand-written and vendored under
+`src/crypto/`, with no runtime dependencies. The two cached
+JSON-LD contexts the ecdsa-sd path canonicalizes against
+(`src/contexts/`) ship with the bundle, so verification stays
+fully offline.
+
+**Verify it yourself.** The proof modal (opened from the
+verification chip) prints, for the active version, the
+snapshot's cryptosuite and the verificationMethod URL of every
+key that signed it, and each version row has a download button
+for the raw signed snapshot. To reproduce a check without this
+code:
+
+- **`eddsa-jcs-2022`** - strip the `proof` array,
+  JCS-canonicalize (RFC 8785) the remaining document and
+  SHA-256 it; then for each proof entry SHA-256 its proof
+  options, concatenate the two hashes, and Ed25519-verify
+  against the key its verificationMethod resolves to.
+  `src/crypto/verify.ts` is the reference.
+- **`ecdsa-sd-2023`** - follow the W3C ecdsa-sd-2023 verify
+  algorithm: parse the CBOR `proofValue`, RDFC-canonicalize the
+  document against the cached contexts, and P-256-verify the
+  base signature over `proofHash || publicKey || mandatoryHash`
+  plus each disclosed statement. `src/crypto/ecdsa-sd.ts` is the
+  reference.
+
 ## Browser support
 
 The renderer runs entirely in the visitor's browser.
-Proof verification uses **Ed25519**: native WebCrypto
-where the engine supports it, and a bundled pure-JS
-fallback (`noble-ed25519`, lazily imported) everywhere
-else, so the verification chip resolves to a real
-verdict even on engines without native Ed25519. Keys
-import as `spki`, the only format Firefox accepts for
-Ed25519.
+`eddsa-jcs-2022` verification uses **Ed25519**: native
+WebCrypto where the engine supports it, and a bundled pure-JS
+fallback (`noble-ed25519`, lazily imported) everywhere else,
+so the verification chip resolves to a real verdict even on
+engines without native Ed25519. Keys import as `spki`, the
+only format Firefox accepts for Ed25519. `ecdsa-sd-2023` uses
+**P-256**, which every WebCrypto engine supports natively, so
+it needs no fallback.
 
 Native WebCrypto Ed25519 ships enabled by default in:
 
@@ -646,6 +691,12 @@ src/
     jcs.ts                    RFC 8785 canonicalizer
     multibase.ts              z-base-58 encode/decode
     verify.ts                 eddsa-jcs-sha256 verifier + aggregate verdict
+    dispatch.ts               routes a proof to its cryptosuite verifier
+    ecdsa-sd.ts               ecdsa-sd-2023 derived-proof verifier
+    rdfc.ts                   JSON-LD to N-Quads (RDFC-1.0) for ecdsa-sd
+    base64url.ts, cbor.ts, p256.ts   ecdsa-sd proof-value primitives
+    did-web.ts, buffer.ts     shared verificationMethod + buffer helpers
+  contexts/                   cached JSON-LD contexts (offline ecdsa-sd)
   i18n/                       label loaders + native locale names
   reactive/                   tiny signals + html`` template runtime
                               (no external framework). See

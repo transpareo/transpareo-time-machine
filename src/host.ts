@@ -265,7 +265,10 @@ export async function fetchSnapshot(
 // adapted render model the rendering layer reads.
 function storeSnapshot(raw: SignedSnapshot): DppSnapshot {
   const model = toRenderModel(raw)
-  rawSnapshots.update((cache) => ({ ...cache, [raw.version]: raw }))
+  // Key both caches by the model version: a VC snapshot
+  // carries its version under credentialSubject, so raw.version
+  // is absent and only the adapted model has it resolved.
+  rawSnapshots.update((cache) => ({ ...cache, [model.version]: raw }))
   snapshots.update((cache) => ({ ...cache, [model.version]: model }))
   return model
 }
@@ -377,8 +380,28 @@ function adaptChangeSet(raw: unknown): ChangeSet | undefined {
   return set
 }
 
+// An ecdsa-sd snapshot is a Verifiable Credential: the DPP
+// body lives under `credentialSubject` and the proof is a
+// single DataIntegrityProof. Unwrap it to the same flat
+// shape the eddsa-jcs snapshot already has, so one adapter
+// serves both. The credentialSubject uses the same EN 18223
+// wire fields (language arrays, PropertyValue rows), so no
+// per-field translation is needed here.
+function unwrapCredential(raw: SignedSnapshot): WireSnapshot {
+  const r = raw as unknown as Record<string, unknown>
+  const subject = r.credentialSubject
+  if (subject === undefined || typeof subject !== 'object') {
+    return raw as unknown as WireSnapshot
+  }
+  const proof = r.proof
+  const proofs = Array.isArray(proof) ? proof : proof ? [proof] : []
+  return {
+    ...(subject as Record<string, unknown>), proof: proofs,
+  } as unknown as WireSnapshot
+}
+
 export function toRenderModel(raw: SignedSnapshot): DppSnapshot {
-  const w = raw as unknown as WireSnapshot
+  const w = unwrapCredential(raw)
   const changed = adaptChangeSet(w.changedProperties)
   return {
     version: w.version,

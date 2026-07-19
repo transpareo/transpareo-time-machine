@@ -27,6 +27,7 @@
   "cryptoProof.chain.note": "Chain: each version embeds the previous version's hash, so a tick here means the link to the prior version is intact. v1 has no predecessor, hence the dash.",
   "cryptoProof.versionOf": "{current} of {total} signed versions",
   "cryptoProof.versionsCheck.summary": "Version v{version} verified against {count} keys in your browser.",
+  "cryptoProof.versionsCheck.summary.one": "Version v{version} verified against {count} key in your browser.",
   "cryptoProof.chainPending": "Verifying snapshot proofs in your browser...",
   "cryptoProof.method.https": "https",
   "cryptoProof.chain.header": "Chain",

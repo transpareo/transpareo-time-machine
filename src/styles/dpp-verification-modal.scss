@@ -62,8 +62,11 @@
     in oklab, var(--font-color) 12%, transparent);
 
   h3 {
-    margin: 0 0 10px;
     @include dpp.eyebrow;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 10px;
     font-weight: 800;
     color: var(--color-muted, #777);
   }
@@ -124,6 +127,21 @@ code {
 .proof-keys-summary {
   margin: 0 0 10px;
   @include dpp.sm;
+  color: var(--color-muted, #777);
+}
+
+// Cryptosuite line above the authority rows: muted label +
+// the raw suite id in a code chip, so a reviewer sees which
+// algorithm verified the key chips below.
+.proof-chain-suite {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 10px;
+  @include dpp.sm;
+}
+
+.proof-chain-suite-label {
   color: var(--color-muted, #777);
 }
 

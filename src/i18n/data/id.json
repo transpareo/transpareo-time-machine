@@ -110,6 +110,7 @@
   "cryptoProof.downloadRowAria": "Unduh snapshot bertanda tangan untuk versi {version}",
   "cryptoProof.versionsTable.caption": "Putusan per versi",
   "cryptoProof.versionsCheck.summary": "Versi v{version} diverifikasi dengan {count} kunci di peramban Anda.",
+  "cryptoProof.versionsCheck.summary.one": "Versi v{version} diverifikasi dengan {count} kunci di peramban Anda.",
   "cryptoProof.chain.note": "Rantai: setiap versi memuat hash versi sebelumnya, jadi centang di sini berarti tautan ke versi sebelumnya utuh. v1 tidak memiliki pendahulu, karena itu tanda hubung.",
   "product.rating": "Peringkat",
   "verifier.url": "Tautan paspor atau URL manifes",

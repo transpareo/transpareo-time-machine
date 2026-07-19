@@ -4,6 +4,7 @@ code: demo-2026-b001
 status: in_use
 published_at: 2024-03-01T09:00:00Z
 verified: true
+proof_suite: ecdsa-sd-2023
 regulation: battery
 issuer:
   name: Volturra Energia
