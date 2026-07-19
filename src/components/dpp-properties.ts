@@ -46,10 +46,8 @@ import {
 import { showTokens, isUnlocked } from '@/show-filter'
 import {
   fetchStateByVersion,
-  requestPrivateRowsFetch,
   type PrivateFetchState,
 } from '@/private-properties'
-import { authModalOpen } from '@/components/dpp-auth-modal'
 
 // Short alias for the active-locale label lookup, used by
 // the private-tier rows below.
@@ -65,14 +63,12 @@ class DppProperties extends LightElement {
       const ver = activeVersionNumber()
       const state = fetchStateByVersion()[ver]
       const privateRows = visiblePrivateRows(state)
-      const aff = affordance(state)
 
       const children: HTMLElement[] = publicRows.map(buildRow)
       if (privateRows.length > 0) {
         children.push(buildHeading(tr('properties.additionalHeading')))
         for (const r of privateRows) children.push(buildRow(r))
       }
-      if (aff) children.push(aff)
 
       const hasContent = children.length > 0
       wrap.style.display = hasContent ? '' : 'none'
@@ -109,15 +105,6 @@ function visiblePrivateRows(
   return state?.status === 'ok' ? detailRows(state.rows) : []
 }
 
-function affordance(
-  state: PrivateFetchState | undefined,
-): HTMLElement | null {
-  if (!state) return null
-  if (state.status === 'unauth') return buildSignInButton()
-  if (state.status === 'error') return buildRetryAffordance()
-  return null
-}
-
 function buildRow(row: ScalarRow): HTMLElement {
   const wrap = el('div', 'dpp-property-row')
   const v = row.value
@@ -133,34 +120,6 @@ function buildRow(row: ScalarRow): HTMLElement {
 
 function buildHeading(text: string): HTMLElement {
   return el('h3', 'dpp-properties-heading', text)
-}
-
-function buildSignInButton(): HTMLElement {
-  const btn = el(
-    'button', 'dpp-properties-affordance', tr('properties.signInForData'),
-  ) as HTMLButtonElement
-  btn.type = 'button'
-  btn.addEventListener('click', () => {
-    authModalOpen.set(true)
-    void requestPrivateRowsFetch()
-  })
-  return btn
-}
-
-function buildRetryAffordance(): HTMLElement {
-  const wrap = el('div', 'dpp-properties-error')
-  wrap.append(
-    el('span', 'dpp-properties-error-text', tr('properties.loadError')),
-  )
-  const btn = el(
-    'button', 'dpp-properties-retry', tr('properties.retry'),
-  ) as HTMLButtonElement
-  btn.type = 'button'
-  btn.addEventListener('click', () => {
-    void requestPrivateRowsFetch()
-  })
-  wrap.appendChild(btn)
-  return wrap
 }
 
 customElements.define('dpp-properties', DppProperties)

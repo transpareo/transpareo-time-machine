@@ -67,12 +67,52 @@ function seedCode(id: string): string {
   return parsed.code;
 }
 
+// The seed points a fixture's privateProperties URL at
+// /api/authority/... (see emit-artefacts buildManifest). There
+// is no auth server in the demo, so the private endpoint 401s
+// with a login URL, and that login URL serves a stub standing
+// in for the authorising system's real eIDAS / SSO flow. The
+// SPA redirects the whole page to it: full-page hand-off, no
+// credentials. Serve-only.
+function devPrivateAuthMock(): Plugin {
+  const LOGIN_PATH = '/api/authority/login';
+  const STUB = '<!doctype html><html lang="en"><head>'
+    + '<meta charset="utf-8"><title>Sign in</title></head>'
+    + '<body style="font-family:system-ui;max-width:34rem;'
+    + 'margin:5rem auto;padding:0 1rem;line-height:1.5">'
+    + '<h1>eIDAS sign-in</h1>'
+    + '<p>In production the authorising system runs its own '
+    + 'eIDAS / SSO flow here, then returns you to the passport '
+    + 'with a session.</p>'
+    + '<p>This is a demo stub, so there is nothing to sign into.</p>'
+    + '<button type="button" onclick="history.back()">'
+    + 'Return to passport</button></body></html>';
+  return {
+    name: 'dev-private-auth-mock',
+    apply: 'serve',
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        const path = req.url?.split('?')[0];
+        if (path === LOGIN_PATH) {
+          res.setHeader('Content-Type', 'text/html; charset=utf-8');
+          res.end(STUB);
+          return;
+        }
+        if (!path?.startsWith('/api/authority/')) return next();
+        res.statusCode = 401;
+        res.setHeader('X-Auth-Url', LOGIN_PATH);
+        res.end();
+      });
+    },
+  };
+}
+
 // Matches the banner at the top of src/crypto/ed25519.ts.
 const NOBLE_BANNER =
   '/*! noble-ed25519 - MIT License (c) 2019 Paul Miller (paulmillr.com) */';
 
 export default defineConfig({
-  plugins: [devSeedSelect()],
+  plugins: [devSeedSelect(), devPrivateAuthMock()],
 
   resolve: {
     alias: {

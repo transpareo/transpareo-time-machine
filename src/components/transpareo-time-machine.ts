@@ -58,12 +58,12 @@ import './dpp-properties'
 import './dpp-badge-lists'
 import './dpp-manufacturer'
 import './dpp-accordions'
+import './dpp-private-signin'
 import './dpp-composition-donut'
 import './dpp-compositions'
 import './dpp-verification-modal'
 import './dpp-event-modal'
 import './dpp-library-modal'
-import './dpp-auth-modal'
 import './dpp-modal'
 import './dpp-lightbox'
 import './dpp-footer'
@@ -270,6 +270,7 @@ class TranspareoTimeMachine extends BaseElement {
               <dpp-properties></dpp-properties>
               <dpp-badge-lists></dpp-badge-lists>
               <dpp-accordions></dpp-accordions>
+              <dpp-private-signin></dpp-private-signin>
             </div>
           </article>
         </dpp-deck>
@@ -277,7 +278,6 @@ class TranspareoTimeMachine extends BaseElement {
         <dpp-verification-modal></dpp-verification-modal>
         <dpp-event-modal></dpp-event-modal>
         <dpp-library-modal></dpp-library-modal>
-        <dpp-auth-modal></dpp-auth-modal>
         <dpp-modal></dpp-modal>
         <dpp-lightbox></dpp-lightbox>
       </main>

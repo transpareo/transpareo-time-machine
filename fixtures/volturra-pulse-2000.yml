@@ -252,6 +252,14 @@ product:
         de: Prismatisch, 8 Zellen in modularer 4er-Pack-Anordnung
         fr: Prismatiques, 8 cellules en module 4-pack
       icon: tag
+    - key: cell_defect_rate
+      private: true
+      label:
+        en: Cell defect rate (internal QC)
+        de: Zelldefektrate (interne QS)
+        fr: Taux de défaut cellule (CQ interne)
+      value: 38
+      unit: ppm
     - key: capacity_wh
       label:
         en: Rated energy

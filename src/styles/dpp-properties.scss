@@ -54,8 +54,18 @@
   letter-spacing: 0.04em;
 }
 
+// End-of-passport sign-in prompt (dpp-private-signin), placed
+// after the last content section. A flex column so the reused
+// affordance button keeps its flex-start, content-width shape;
+// the top margin sets it off from the section above.
+.dpp-private-signin {
+  display: flex;
+  flex-direction: column;
+  margin-top: 24px;
+}
+
 .dpp-properties-affordance {
-  align-self: flex-start;
+  align-self: center;
   margin-top: 12px;
   padding: 8px 14px;
   background: transparent;
