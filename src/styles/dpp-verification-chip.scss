@@ -178,6 +178,10 @@
 
 .label-text {
   line-height: 1;
+
+  // Optical centering: the cap-height sits high against the
+  // orb, so nudge the label down 2px to sit on the axis.
+  transform: translateY(2px);
 }
 
 @media (prefers-reduced-motion: reduce) {
