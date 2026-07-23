@@ -33,6 +33,12 @@ export interface ResolvedMultikey {
   readonly bytes: Uint8Array
 }
 
+// A key host that accepts a connection but never answers
+// must not stall verification forever - matches the
+// FETCH_TIMEOUT_MS budget host.ts gives every other fetch
+// on the verify path.
+const KEY_FETCH_TIMEOUT_MS = 15_000
+
 // Fetch the verificationMethod's key document and return
 // the selected Multikey (string + decoded bytes). The
 // caller checks the multicodec prefix for its curve.
@@ -44,7 +50,10 @@ export async function resolveMultikey(
   // 'no-cache' revalidates the key document instead of
   // trusting a stale HTTP-cache copy; a rotated or fixed
   // key should take effect on the next page load.
-  const res = await fetch(url, { credentials: 'omit', cache: 'no-cache' })
+  const res = await fetch(url, {
+    credentials: 'omit', cache: 'no-cache',
+    signal: AbortSignal.timeout(KEY_FETCH_TIMEOUT_MS),
+  })
   if (!res.ok) throw new Error(`HTTP ${res.status} fetching ${url}`)
   const doc = await res.json() as ResolutionDoc
   const multibase = selectMultibase(doc, fragment)
@@ -57,11 +66,13 @@ const SCHEME_RE = /^[a-z][a-z0-9+.-]*:/i
 // Split a verificationMethod into a fetchable URL + an
 // optional fragment. Only three shapes resolve: a did:web
 // method (mapped to its did.json), an absolute https: URL,
-// and a schemeless relative path (which can only land on
-// the page's own origin). Anything else carrying a scheme
-// (http:, data:, blob:, file:, other did methods) is
-// refused before any fetch happens, so a proof entry can't
-// point key resolution at a plaintext host or a
+// and a schemeless relative path (resolved by the platform
+// fetch API against the embedding page's origin - the demo
+// signer's snapshots and key documents are served from that
+// same origin, so this is intentional there). Anything else
+// carrying a scheme (http:, data:, blob:, file:, other did
+// methods) is refused before any fetch happens, so a proof
+// entry can't point key resolution at a plaintext host or a
 // self-supplied inline document.
 export function splitVerificationMethod(
   method: string,

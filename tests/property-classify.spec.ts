@@ -52,6 +52,47 @@ describe('classifyWireValue: scalars', () => {
   });
 });
 
+describe('classifyWireValue: typed literal values', () => {
+  // The signed wire form for a non-string PropertyValue/
+  // QuantitativeValue scalar: {'@value', '@type'} (see the
+  // backend's typed_literal), never a bare JSON number/
+  // boolean - so decimal/integer/boolean/date all arrive
+  // this way, not as the JS-native type.
+  it('reads a decimal typed literal as a numeric scalar', () => {
+    const v = { '@value': '30.0', '@type': 'xsd:decimal' };
+    expect(classifyWireValue(v, 'kg')).toEqual({
+      type: 'scalar', value: '30.0', numeric: 30, unit: 'kg',
+    });
+  });
+
+  it('reads an integer typed literal as a numeric scalar', () => {
+    const v = { '@value': '3', '@type': 'xsd:integer' };
+    expect(classifyWireValue(v, undefined)).toEqual({
+      type: 'scalar', value: '3', numeric: 3,
+    });
+  });
+
+  it('reads a boolean typed literal as its text value (not a blank tile)', () => {
+    const v = { '@value': 'true', '@type': 'xsd:boolean' };
+    expect(classifyWireValue(v, undefined)).toEqual({
+      type: 'scalar', value: 'true',
+    });
+  });
+
+  it('reads a date typed literal as its text value', () => {
+    const v = { '@value': '2026-07-03', '@type': 'xsd:date' };
+    expect(classifyWireValue(v, undefined)).toEqual({
+      type: 'scalar', value: '2026-07-03',
+    });
+  });
+
+  it('does not mistake a typed literal for a locale-hash scalar', () => {
+    const v = { '@value': '30.0', '@type': 'xsd:decimal' };
+    const k = classifyWireValue(v, undefined);
+    expect(k).not.toEqual({ type: 'scalar', value: v });
+  });
+});
+
 describe('classifyWireValue: language-array scalars', () => {
   it('folds the JSON-LD expanded form to a locale-hash scalar', () => {
     const v = [
@@ -167,6 +208,17 @@ describe('classifyWireValue: composition', () => {
       undefined,
     ) as Extract<PropertyValueKind, { type: 'composition' }>;
     expect(k.entries[0].rating).toBe('veryGood');
+  });
+
+  it('reads a substance percentage from a typed literal value', () => {
+    const k = classifyWireValue(
+      [{
+        '@type': 'Substance', name: { en: 'Aqua' },
+        value: { '@value': '62.0', '@type': 'xsd:decimal' },
+      }],
+      undefined,
+    ) as Extract<PropertyValueKind, { type: 'composition' }>;
+    expect(k.entries[0].percent).toBe(62);
   });
 
   it('omits percent when a substance carries no value', () => {

@@ -53,6 +53,8 @@ import { manifest, adaptPrivateRows, type WireProperty } from '@/host'
 import { activeVersionNumber } from '@/state'
 import type { PropertyValue } from '@/types'
 import { describeError } from '@/errors'
+import { verifyDpp, dppIsAuthentic } from '@/crypto/dispatch'
+import { config } from '@/config'
 
 // Per-version state of the private-properties fetch. Drives
 // the renderer's per-version branch (merge, show-nothing,
@@ -106,11 +108,21 @@ export function bootstrapPrivateRowsFetch(): void {
   })
 }
 
-// The endpoint serves the full ordered property set in the
-// wire shape. Accept either key the backend emits it under.
+// The endpoint serves the full derived ecdsa-sd Verifiable
+// Credential restricted to what this reader may see - the
+// same shape as the public snapshot, not a bare properties
+// list - so it carries its own `proof` and must be verified
+// exactly like the public one before anything in it is
+// trusted. Properties live at credentialSubject.product
+// .properties, mixed with the public rows the derive step
+// always reveals; adaptPrivateRows keeps only the
+// legitimateInterest ones.
 interface PrivateResponseBody {
-  readonly properties?: ReadonlyArray<WireProperty>
-  readonly privateProperties?: ReadonlyArray<WireProperty>
+  readonly credentialSubject?: {
+    readonly product?: {
+      readonly properties?: ReadonlyArray<WireProperty>
+    }
+  }
 }
 
 export async function fetchPrivateRows(
@@ -158,15 +170,35 @@ export async function fetchPrivateRows(
     return setState(versionNumber, { status: 'error', reason })
   }
 
-  let body: PrivateResponseBody
+  let body: Record<string, unknown>
   try {
-    body = await res.json() as PrivateResponseBody
+    body = await res.json() as Record<string, unknown>
   } catch (err) {
     const reason = describeError(err)
     console.warn(`[private] bad JSON: ${reason}`)
     return setState(versionNumber, { status: 'error', reason })
   }
-  const rows = adaptPrivateRows(body.properties ?? body.privateProperties ?? [])
+
+  // This response is a signed derived credential, not a
+  // trusted-by-transport blob: an authenticated fetch proves
+  // who asked, not that the rows it got back are the ones the
+  // issuer actually signed. Verify it the same way the public
+  // snapshot is verified before any row reaches the DOM.
+  const verification = await verifyDpp(body, {
+    verifyOptions: {
+      pinnedPlatformKeys: config.pinnedPlatformKeys,
+      pinnedIssuerKeys: config.pinnedIssuerKeys,
+    },
+  })
+  if (!dppIsAuthentic(verification)) {
+    const reason = 'private property proof did not verify'
+    console.warn(`[private] ${reason}`)
+    return setState(versionNumber, { status: 'error', reason })
+  }
+
+  const parsed = body as PrivateResponseBody
+  const properties = parsed.credentialSubject?.product?.properties ?? []
+  const rows = adaptPrivateRows(properties)
   return setState(versionNumber, { status: 'ok', rows })
 }
 

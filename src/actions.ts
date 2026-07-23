@@ -27,7 +27,7 @@ import {
   verifyManifestSignature, hexHashOfSnapshotBody,
 } from '@/crypto/verify'
 import type { ProofEntryResult, VerificationResult } from '@/crypto/verify'
-import { verifyDpp } from '@/crypto/dispatch'
+import { verifyDpp, dppIsAuthentic } from '@/crypto/dispatch'
 import { manifestProofState, eventsProofState } from '@/state'
 import { config } from '@/config'
 import {
@@ -297,7 +297,7 @@ async function verifySnapshotDispatch(
     }
   })
   const verifiedCount = entries.filter((e) => e.status === 'verified').length
-  const allOk = entries.length > 0 && verifiedCount === entries.length
+  const allOk = dppIsAuthentic(v)
   return {
     entries,
     verdict: allOk ? 'authentic' : 'unauthenticated',

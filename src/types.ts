@@ -55,6 +55,12 @@ export function tx(
 ): string {
   if (text == null) return ''
   if (typeof text === 'string') return text
+  // A signed typed literal ({'@value', '@type'} - numeric
+  // structured-composition cells arrive this way) renders as
+  // its lexical value, guaranteed rather than left to the
+  // hash-key order the generic first-value fallback happens
+  // to pick.
+  if (typeof text['@value'] === 'string') return text['@value']
   return text[locale]
     ?? text[fallback]
     ?? Object.values(text)[0]

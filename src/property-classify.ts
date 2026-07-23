@@ -60,6 +60,35 @@ function isSubstanceLike(v: unknown): boolean {
   return 'value' in obj || obj['@type'] === 'Substance'
 }
 
+// The signed wire form for a non-string PropertyValue/
+// QuantitativeValue scalar (decimal, integer, boolean,
+// date, dateTime): an explicit JSON-LD value object rather
+// than the bare JS type, so its RDF datatype at
+// verification time never depends on the JSON number's own
+// ambiguous int/float-ness. Checked ahead of isLocaleHash,
+// which a two-key all-string object would otherwise match.
+const NUMERIC_XSD_TYPES = new Set(['xsd:decimal', 'xsd:integer'])
+
+function isTypedLiteral(
+  v: unknown,
+): v is { readonly '@value': string; readonly '@type': string } {
+  if (!v || typeof v !== 'object' || Array.isArray(v)) return false
+  const obj = v as Record<string, unknown>
+  return typeof obj['@value'] === 'string' && typeof obj['@type'] === 'string'
+    && Object.keys(obj).length === 2
+}
+
+// A wire scalar's numeric reading, whether it arrives as a
+// bare JSON number or a decimal/integer typed literal.
+export function numericWireValue(raw: unknown): number | undefined {
+  if (typeof raw === 'number') return Number.isFinite(raw) ? raw : undefined
+  if (isTypedLiteral(raw) && NUMERIC_XSD_TYPES.has(raw['@type'])) {
+    const n = Number(raw['@value'])
+    return Number.isFinite(n) ? n : undefined
+  }
+  return undefined
+}
+
 // Longest character count across all locale renderings of
 // a localized scalar (or the length of a plain string).
 function maxTextLength(v: SnapshotLocalizedText): number {
@@ -105,7 +134,8 @@ function toCompositionEntry(raw: unknown): CompositionEntry {
 // breakdown (names + ratings, no percentages) renders as a
 // plain list instead of a column of "0%".
 function parsePercent(raw: unknown): number | undefined {
-  if (typeof raw === 'number') return Number.isFinite(raw) ? raw : undefined
+  const numeric = numericWireValue(raw)
+  if (numeric != null) return numeric
   if (typeof raw === 'string' && raw.trim() !== '') {
     const n = Number(raw)
     return Number.isFinite(n) ? n : undefined
@@ -120,11 +150,13 @@ function parsePercent(raw: unknown): number | undefined {
 export function classifyWireValue(
   raw: unknown, unit: string | undefined,
 ): PropertyValueKind {
-  if (typeof raw === 'number') {
-    return {
-      type: 'scalar', value: String(raw), numeric: raw,
-      ...(unit ? { unit } : {}),
-    }
+  const numeric = numericWireValue(raw)
+  if (numeric != null) {
+    const value = isTypedLiteral(raw) ? raw['@value'] : String(raw)
+    return { type: 'scalar', value, numeric, ...(unit ? { unit } : {}) }
+  }
+  if (isTypedLiteral(raw)) {
+    return scalarOrLongText(raw['@value'], unit)
   }
   if (typeof raw === 'string') {
     return scalarOrLongText(raw, unit)

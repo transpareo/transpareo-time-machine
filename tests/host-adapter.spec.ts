@@ -41,6 +41,26 @@ function wire(
   } as unknown as SignedSnapshot;
 }
 
+describe('toRenderModel: product weight', () => {
+  // The wire weight is a QuantitativeValue whose own `value`
+  // is now a typed literal ({'@value', '@type'}), not a bare
+  // JSON number - see the backend's typed_literal.
+  it('reads a QuantitativeValue weight from a typed literal value', () => {
+    const model = toRenderModel(wire([], {
+      product: {
+        '@type': 'Product', name: { en: 'X' }, brand: 'B', properties: [],
+        weight: {
+          '@type': 'QuantitativeValue',
+          value: { '@value': '250.0', '@type': 'xsd:decimal' },
+          unitCode: 'KGM',
+        },
+      },
+    }));
+    expect(model.product.weight).toBe(250);
+    expect(model.product.weightUnit).toBe('kg');
+  });
+});
+
 describe('toRenderModel: access split', () => {
   it('keeps public + onDemand, drops legitimateInterest + authorities', () => {
     const model = toRenderModel(wire([

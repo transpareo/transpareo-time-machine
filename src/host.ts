@@ -48,7 +48,9 @@ import type {
   ChangeSet,
 } from '@/types'
 import { canonicalRating, canonicalStatus, foldLocale } from '@/types'
-import { classifyWireValue, bridgeLongTextGroups } from '@/property-classify'
+import {
+  classifyWireValue, bridgeLongTextGroups, numericWireValue,
+} from '@/property-classify'
 import type { EpcisDocument } from '@/epcis'
 
 export type LoadState = 'idle' | 'loading' | 'ready' | 'error' | 'retired'
@@ -318,7 +320,7 @@ interface WireProduct {
   readonly category?: SnapshotLocalizedText
   readonly weight?:
     | number
-    | { readonly value?: number; readonly unitCode?: string }
+    | { readonly value?: unknown; readonly unitCode?: string }
   readonly weightUnit?: string
   readonly images?: ReadonlyArray<SnapshotImage | string>
   readonly manufacturer?: WireManufacturer
@@ -439,9 +441,10 @@ function adaptProduct(
 }
 
 // Read the product weight from either a QuantitativeValue
-// object (`{ value, unitCode }`) or a bare number +
-// weightUnit, yielding the internal weight + weightUnit
-// pair. Empty when there is no usable value.
+// object (`{ value, unitCode }`, its value a bare number or
+// a decimal typed literal) or a bare number + weightUnit,
+// yielding the internal weight + weightUnit pair. Empty
+// when there is no usable value.
 function adaptWeight(
   p: WireProduct | undefined,
 ): { weight?: number; weightUnit?: string } {
@@ -449,9 +452,12 @@ function adaptWeight(
   if (typeof w === 'number') {
     return { weight: w, ...(p?.weightUnit ? { weightUnit: p.weightUnit } : {}) }
   }
-  if (w && typeof w === 'object' && typeof w.value === 'number') {
-    const unit = unitCodeToText(w.unitCode)
-    return { weight: w.value, ...(unit ? { weightUnit: unit } : {}) }
+  if (w && typeof w === 'object') {
+    const numeric = numericWireValue(w.value)
+    if (numeric != null) {
+      const unit = unitCodeToText(w.unitCode)
+      return { weight: numeric, ...(unit ? { weightUnit: unit } : {}) }
+    }
   }
   return {}
 }

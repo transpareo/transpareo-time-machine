@@ -15,8 +15,8 @@
       "@type": "dpp:DigitalProductPassport",
       "version": 3,
       "dppSchemaVersion": "EN 18223:2026",
-      "publishedAt": "2026-07-18T22:38:37Z",
-      "lastUpdated": "2026-07-18T22:38:37Z",
+      "publishedAt": "2026-07-23T17:16:36Z",
+      "lastUpdated": "2026-07-23T17:16:36Z",
       "identifiers": {
         "@id": "https://dpp.acme-corp.com/dpp/abc12345#identifiers",
         "code": "abc12345"
@@ -80,8 +80,12 @@
         "weight": {
           "@id": "https://dpp.acme-corp.com/dpp/abc12345#product/weight",
           "@type": "QuantitativeValue",
-          "value": "250",
-          "unitCode": "KGM"
+          "value": {
+            "@type": "xsd:decimal",
+            "@value": "250.0"
+          },
+          "unitCode": "KGM",
+          "valueDataType": "xsd:decimal"
         },
         "properties": [
           {
@@ -94,8 +98,56 @@
                 "@language": "en"
               }
             ],
-            "value": "Germany",
-            "valueDataType": "xsd:string"
+            "valueDataType": "xsd:string",
+            "value": "Germany"
+          },
+          {
+            "@id": "https://dpp.acme-corp.com/dpp/abc12345#property/transpareo-capacity",
+            "@type": "PropertyValue",
+            "propertyID": "transpareo:capacity",
+            "name": [
+              {
+                "@value": "Capacity",
+                "@language": "en"
+              }
+            ],
+            "dictionaryReference": "https://transpareo.com/vocab/transpareo/v1#capacity",
+            "valueDataType": "xsd:decimal",
+            "value": {
+              "@value": "12.5",
+              "@type": "xsd:decimal"
+            }
+          },
+          {
+            "@id": "https://dpp.acme-corp.com/dpp/abc12345#property/4",
+            "@type": "PropertyValue",
+            "propertyID": "4",
+            "name": [
+              {
+                "@value": "Hazardous Substances",
+                "@language": "en"
+              }
+            ],
+            "value": [
+              {
+                "name": "LiPF6",
+                "weight_percent": {
+                  "@value": "3.5",
+                  "@type": "xsd:decimal"
+                },
+                "elementId": "4/1",
+                "@id": "https://dpp.acme-corp.com/dpp/abc12345#4/1"
+              },
+              {
+                "name": "Graphite",
+                "weight_percent": {
+                  "@value": "12.0",
+                  "@type": "xsd:decimal"
+                },
+                "elementId": "4/2",
+                "@id": "https://dpp.acme-corp.com/dpp/abc12345#4/2"
+              }
+            ]
           },
           {
             "@id": "https://dpp.acme-corp.com/dpp/abc12345#property/2",
@@ -107,8 +159,8 @@
                 "@language": "en"
               }
             ],
-            "value": "Acme Chemicals GmbH",
             "valueDataType": "xsd:string",
+            "value": "Acme Chemicals GmbH",
             "access": "legitimateInterest"
           }
         ]
@@ -124,7 +176,7 @@
         "created": "2026-05-01T12:00:00Z",
         "verificationMethod": "did:web:dpp.acme-corp.com#key-1",
         "proofPurpose": "assertionMethod",
-        "proofValue": "u2V0BhVhAh_0KMgvyOr40ETMjhasERbuwNbEBpwcLwgHrjfEb8tbQ7M2swJ1b4Pz9c4HzgVhIAwg6ZfFvbl80BGQuhzUJ8FgjgCQDpn6Cff9jj6xqT2_TcmEk2d56KsE9Oma4Uehn2FmVFPuHWEAVorO89mtvf58JOH6_SAMzKoy9CkOHLhD729-xpSprvd2IS2spnUOuumUfhO1hFJQufOpb0aIIZH0HKSGLDlROWEDr2rfnI1QbpU3uwnrKxBHIvojaYenCm-J-lkjcZoXaKTIzR7Z52IT70sACEcurwqdZQfs_eE41jrgo1yXCjgCAWEDIh4uDxFreEheeW4VamAK2wBI-R4ZV4UODUW-GyIiQVIjM4M5o1Cs1oSJZRB6Otgrrq-AIl2oj6K4BFnYa7e8EWECwlWlcj7Z9yH3MTs2yYHtLRF8KL3PgyWKNXNPlwoITv86SPvBObd6S2oPkChD-UwX3AdphOOyXH_B-CInnhCjFWEDa5zLh-UNEzTPikLrjq6qSljL-Y9lG-QSqoKJ1dDKPeOW4lAatZjCdWi8stShPSfplj8fTAKbX8JuYFYj1O9PdWEB1KWW7kQewalljBe7ydZpFsR5qHndBw8WnMLwWNaHyCP6fuLWWVKmEMD8iS-3LKUJwDYpBSPCPVQCs6qVBFgL7WED5NcbOYu3UeAoE5iIBnKbxDekRfQxiDBEv1ZCs6CXYg3hXGuX3UcgEyp9qHDaNVvWfswXSnACO522MonVOA6R3oJg5AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBgYGRgaGBsYHBgdGB8YIBghGCIYIxgkGCsYLBgtGC4YLxgwGDEYMhgzGDQYNRg2GDcYOBg5GDoYOxg8GD0YPhg_"
+        "proofValue": "u2V0BhVhAfB2i1Q9kvfIo_QVow-Eff1i0bs-YIQ15MSjp2Wd_EznXM6dOsf_QCkg4CnqAQbeFhU2Nka9obB8LubENJU8jtVgjgCQDphPXMfQJIsJQtzu-nmVzPDlxyR8vz8WbW2_71HoO6z2HWEBWdF6EMdI3t2NCVXZ--nDqt19KO3AMu_lEuFhetNh8i7efA4u9lsYXdjW3ikzvXpX5DmrN_dFBhVjTeORqVK6BWEDCzwrHrA5J8UrJ0w8v-X4dTdxAKJH34C89VVyt8pD4e0367vq88RPvet5zB5rsRP5nVthnw-UQXdHgP6sKn2PnWECCJpqfsls3K7Y77fH873U4fvXnuiFm0Rp2HpyV3jGb8N1nePIHvgm6SmU6y7Jz2vee906aOOiQlGcAgjMVWmzjWEA1OfauBJOxQhvXOl8RogyG4bUJUV9R_ZBPuTKEOCYzi5Ci9kgBc3epqVyfzDxoBkRHFzEpcSVdb1yzlmPzFbJeWEDk-T-E2Ll9HRtzvHmhZqwMcEer3T9u08bP7yQjS3I_muqMrjW93MwIxNZ3J7vSn8MTtbGWHWgVd-knyfKVfGZqWEBv6BVRWSjuBFSRqz8FWKDIU-jWHvjySgDCuMQmHOjAGOvhgBymtsmPcUPD98gM6rBSHZCDWcN59oIw7vPErVJVWECvgXygAur-Il5wkAKqp1C36if11UhcSAdHFrfp16pOwUrqA1gmq9MwHihzAnfAX9B-8m6rRV1AzoYF08NSV8GLoJhNAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBgYGRgaGBsYHBgdGB4YHxggGCEYIhgjGCQYJhgnGCgYKRgqGCsYLBgtGDQYNRg2GDcYOBg5GDoYOxg8GD0YPhg_GEAYQRhCGEMYRBhFGEYYRxhIGEkYShhLGEwYTRhOGE8YUBhRGFIYUw"
       },
       {
         "type": "DataIntegrityProof",
@@ -132,16 +184,22 @@
         "created": "2026-05-01T12:00:00Z",
         "verificationMethod": "did:web:transpareo.com#key-1",
         "proofPurpose": "assertionMethod",
-        "proofValue": "u2V0BhVhA5yK0cMYdhok3Qyt2vZCFZEvK4-hMN7FXLGGKvmQ8y8rJRi1XNTF0TvAYYqrPhzF7MLK5y0rIfiXT4A-6P9akE1gjgCQCVB50EKXqru-alrEuoaCsAbN0LmJ8je4NDBnboXgaDs2HWECWK9L9Dqa-sOpPJwVbKVM3nTHoEcfeIsyI65zDCCJFiw_ETHnb-fvsS10JEx9mXL93VjuHOQhJZqQXao8n1fbLWEA88imG5WCeiYW1YTvjY52nO1-7HyLfJUvhgzpym_iQmQRlXGUDcbog_KCJtvAzmedsyBpVHxwZAouyQtw9mzWAWECw67aBYveu_q51ZDLDCoqfrFvF1_nLGaI6EJ65JLygs10w4_1DpHHZp1M5WZe85oelTStcVw6YPbA1nW1rVSSJWEDiaReRojIy_6INL1_9VLHFX2E6hwfwxVVaFBOWRRPeG5Jwa3luU_qvdo0KdiXgEHD4C0UuUTcl6h1_bUDEb0PZWEB1GF88b1jzchqPS3Tv5858lXs4-xdXQSjWIRwKP9HOa1ZTh2TbkXgXETb8vLqHntEd4RG__okXQR7Met1miQIKWEB6JDg2OmTcg-FbSlWKJsqcYzo2doSMaFED85J_7ODLAP1EoONS0PXYnzgIbwqIma4vu1TSrkhlLTzzc8H5Pyp2WEDvc1Y11UMMyZfmvrlcu1PeIyo9o4ShnQVvw3TWeileM8YMc4CFbNCQBnKj03hfCvzK8Jue-OfkqOQ7ksRF9sb8oJg5AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBgYGRgaGBsYHBgdGB8YIBghGCIYIxgkGCsYLBgtGC4YLxgwGDEYMhgzGDQYNRg2GDcYOBg5GDoYOxg8GD0YPhg_"
+        "proofValue": "u2V0BhVhA6kWXRjR3uGAKqXKSil_l9nWBsCjxzmllm0axf9x1qJk60ewnHSnD45Z0Dr6QLHc_oJRtKluT-UTqWukh1315h1gjgCQC1ImfbDFU0yVKx_sQrgt_ZjXMCH6OyHyQAirGzsjG9Q6HWECNo8O_fTHTb-73Cs92b-CHQB7Adr54YiPwdEaSXG4w411XNspwitfzbvjbDCSDXkgMGBNaG9eWICtTJchMOTaTWEBkWn7n4_ux2Ef3hnYodlOIuHwKP_NB3fBWjAVD5ufdJ1hH6yvXE1SrOcM1biOYVEPG755kWWANlm63wuNjC4ByWECZOXK-j3jqfDIJISHMiHz9q_gB2v7o7qlnv2UYlZe-bsfrNeZH5h9KbuH8bSOxj3OqVA2672UBY8TsGV2NfrCdWEB4X-YDQ9RT144rj8u9g1R2ID6iSaHNIeyHjq7sdyn9XAnkJWj95HVrxfxPNx9uZ7z5f3iT5iNAiX43j3QtPp5AWEAGUshUzUCVpXv8h0NXgObCUeWnoK8rmhKiDfeyFQKtldtdubxQJ88nkXp-T8uaCtWbDgTeaxPK9SQPIR3EYS41WECvPY2MCrnjHybQB4JTc-iAydwbuBGQjZ_xLwRQ1FZMEprIYbIlMkbxSTeeMsbNY8gewZYU-iG2UQUpwvHbVA-bWEDYD2OUG8M2P89Md9FF27paPW9Pp8252OnI2Mda-Hj28bGp2DQwYsqteH67Vk-l9GXTtHHG4B6iTXcPh60vbo5MoJhNAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBgYGRgaGBsYHBgdGB4YHxggGCEYIhgjGCQYJhgnGCgYKRgqGCsYLBgtGDQYNRg2GDcYOBg5GDoYOxg8GD0YPhg_GEAYQRhCGEMYRBhFGEYYRxhIGEkYShhLGEwYTRhOGE8YUBhRGFIYUw"
       }
     ]
   },
   "issuer_multikeys_b64": [
-    "gCQCa8gu+lgpDL/wC6z6qiO6JFbzi/yFMYmyOvypco49+Ts=",
-    "gCQCvCr2N2Dph2qHB2zHFc2G60xDIW90LWLEI6RqpDu9Jj4="
+    "gCQD2R0ytuPCITFkgPilywE317evnYW12YU0cOAhkXswDO4=",
+    "gCQCeQsvz89pH3W0qvmIFPr1r15jTxFRyQsd77Ss/CZNkwc="
   ],
   "backend_ok": true,
   "backend_nquads": [
+    "<https://dpp.acme-corp.com/dpp/abc12345#4/1> <https://transpareo.com/vocab/vc/v1#elementId> \"4/1\" .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#4/1> <https://transpareo.com/vocab/vc/v1#name> \"LiPF6\" .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#4/1> <https://transpareo.com/vocab/vc/v1#weight_percent> \"3.5\"^^<http://www.w3.org/2001/XMLSchema#decimal> .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#4/2> <https://transpareo.com/vocab/vc/v1#elementId> \"4/2\" .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#4/2> <https://transpareo.com/vocab/vc/v1#name> \"Graphite\" .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#4/2> <https://transpareo.com/vocab/vc/v1#weight_percent> \"12.0\"^^<http://www.w3.org/2001/XMLSchema#decimal> .\n",
     "<https://dpp.acme-corp.com/dpp/abc12345#accessRights> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <dpp:AccessRights> .\n",
     "<https://dpp.acme-corp.com/dpp/abc12345#accessRights> <https://transpareo.com/vocab/vc/v1#authorisedNote> \"\" .\n",
     "<https://dpp.acme-corp.com/dpp/abc12345#accessRights> <https://transpareo.com/vocab/vc/v1#publicLicense> \"https://creativecommons.org/licenses/by/4.0/\" .\n",
@@ -164,7 +222,8 @@
     "<https://dpp.acme-corp.com/dpp/abc12345#product/images/0> <https://transpareo.com/vocab/vc/v1#thumbnail> \"/media/abc.jpg\" .\n",
     "<https://dpp.acme-corp.com/dpp/abc12345#product/weight> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://transpareo.com/vocab/vc/v1#QuantitativeValue> .\n",
     "<https://dpp.acme-corp.com/dpp/abc12345#product/weight> <https://transpareo.com/vocab/vc/v1#unitCode> \"KGM\" .\n",
-    "<https://dpp.acme-corp.com/dpp/abc12345#product/weight> <https://transpareo.com/vocab/vc/v1#value> \"250\" .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#product/weight> <https://transpareo.com/vocab/vc/v1#value> \"250.0\"^^<http://www.w3.org/2001/XMLSchema#decimal> .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#product/weight> <https://transpareo.com/vocab/vc/v1#valueDataType> \"xsd:decimal\" .\n",
     "<https://dpp.acme-corp.com/dpp/abc12345#product> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://transpareo.com/vocab/vc/v1#Product> .\n",
     "<https://dpp.acme-corp.com/dpp/abc12345#product> <https://transpareo.com/vocab/vc/v1#brand> \"Acme Cosmetics\" .\n",
     "<https://dpp.acme-corp.com/dpp/abc12345#product> <https://transpareo.com/vocab/vc/v1#category> \"Cosmetics\" .\n",
@@ -173,6 +232,8 @@
     "<https://dpp.acme-corp.com/dpp/abc12345#product> <https://transpareo.com/vocab/vc/v1#name> \"Wundercreme\"@de .\n",
     "<https://dpp.acme-corp.com/dpp/abc12345#product> <https://transpareo.com/vocab/vc/v1#properties> <https://dpp.acme-corp.com/dpp/abc12345#property/1> .\n",
     "<https://dpp.acme-corp.com/dpp/abc12345#product> <https://transpareo.com/vocab/vc/v1#properties> <https://dpp.acme-corp.com/dpp/abc12345#property/2> .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#product> <https://transpareo.com/vocab/vc/v1#properties> <https://dpp.acme-corp.com/dpp/abc12345#property/4> .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#product> <https://transpareo.com/vocab/vc/v1#properties> <https://dpp.acme-corp.com/dpp/abc12345#property/transpareo-capacity> .\n",
     "<https://dpp.acme-corp.com/dpp/abc12345#product> <https://transpareo.com/vocab/vc/v1#weight> <https://dpp.acme-corp.com/dpp/abc12345#product/weight> .\n",
     "<https://dpp.acme-corp.com/dpp/abc12345#property/1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://transpareo.com/vocab/vc/v1#PropertyValue> .\n",
     "<https://dpp.acme-corp.com/dpp/abc12345#property/1> <https://transpareo.com/vocab/vc/v1#name> \"Origin\"@en .\n",
@@ -185,6 +246,17 @@
     "<https://dpp.acme-corp.com/dpp/abc12345#property/2> <https://transpareo.com/vocab/vc/v1#propertyID> \"2\" .\n",
     "<https://dpp.acme-corp.com/dpp/abc12345#property/2> <https://transpareo.com/vocab/vc/v1#value> \"Acme Chemicals GmbH\" .\n",
     "<https://dpp.acme-corp.com/dpp/abc12345#property/2> <https://transpareo.com/vocab/vc/v1#valueDataType> \"xsd:string\" .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#property/4> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://transpareo.com/vocab/vc/v1#PropertyValue> .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#property/4> <https://transpareo.com/vocab/vc/v1#name> \"Hazardous Substances\"@en .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#property/4> <https://transpareo.com/vocab/vc/v1#propertyID> \"4\" .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#property/4> <https://transpareo.com/vocab/vc/v1#value> <https://dpp.acme-corp.com/dpp/abc12345#4/1> .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#property/4> <https://transpareo.com/vocab/vc/v1#value> <https://dpp.acme-corp.com/dpp/abc12345#4/2> .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#property/transpareo-capacity> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://transpareo.com/vocab/vc/v1#PropertyValue> .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#property/transpareo-capacity> <https://transpareo.com/vocab/vc/v1#dictionaryReference> \"https://transpareo.com/vocab/transpareo/v1#capacity\" .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#property/transpareo-capacity> <https://transpareo.com/vocab/vc/v1#name> \"Capacity\"@en .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#property/transpareo-capacity> <https://transpareo.com/vocab/vc/v1#propertyID> \"transpareo:capacity\" .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#property/transpareo-capacity> <https://transpareo.com/vocab/vc/v1#value> \"12.5\"^^<http://www.w3.org/2001/XMLSchema#decimal> .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#property/transpareo-capacity> <https://transpareo.com/vocab/vc/v1#valueDataType> \"xsd:decimal\" .\n",
     "<https://dpp.acme-corp.com/dpp/abc12345> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <dpp:DigitalProductPassport> .\n",
     "<https://dpp.acme-corp.com/dpp/abc12345> <https://transpareo.com/vocab/vc/v1#accessRights> <https://dpp.acme-corp.com/dpp/abc12345#accessRights> .\n",
     "<https://dpp.acme-corp.com/dpp/abc12345> <https://transpareo.com/vocab/vc/v1#contentSpecificationIds> \"https://transpareo.com/spec/dpp/v1.0\" .\n",
@@ -194,7 +266,7 @@
     "<https://dpp.acme-corp.com/dpp/abc12345> <https://transpareo.com/vocab/vc/v1#granularity> \"item\" .\n",
     "<https://dpp.acme-corp.com/dpp/abc12345> <https://transpareo.com/vocab/vc/v1#identifiers> <https://dpp.acme-corp.com/dpp/abc12345#identifiers> .\n",
     "<https://dpp.acme-corp.com/dpp/abc12345> <https://transpareo.com/vocab/vc/v1#identityCredentialUrl> \"https://dpp.acme-corp.com/.well-known/did.json\" .\n",
-    "<https://dpp.acme-corp.com/dpp/abc12345> <https://transpareo.com/vocab/vc/v1#lastUpdated> \"2026-07-18T22:38:37Z\" .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345> <https://transpareo.com/vocab/vc/v1#lastUpdated> \"2026-07-23T17:16:36Z\" .\n",
     "<https://dpp.acme-corp.com/dpp/abc12345> <https://transpareo.com/vocab/vc/v1#lifecycle> <https://dpp.acme-corp.com/dpp/abc12345#lifecycle> .\n",
     "<https://dpp.acme-corp.com/dpp/abc12345> <https://transpareo.com/vocab/vc/v1#passportAlias> \"abc12345\" .\n",
     "<https://dpp.acme-corp.com/dpp/abc12345> <https://transpareo.com/vocab/vc/v1#passportStatus> \"Active\" .\n",
@@ -202,7 +274,7 @@
     "<https://dpp.acme-corp.com/dpp/abc12345> <https://transpareo.com/vocab/vc/v1#platform> <https://dpp.acme-corp.com/dpp/abc12345#platform> .\n",
     "<https://dpp.acme-corp.com/dpp/abc12345> <https://transpareo.com/vocab/vc/v1#priorVersion> \"2\"^^<http://www.w3.org/2001/XMLSchema#integer> .\n",
     "<https://dpp.acme-corp.com/dpp/abc12345> <https://transpareo.com/vocab/vc/v1#product> <https://dpp.acme-corp.com/dpp/abc12345#product> .\n",
-    "<https://dpp.acme-corp.com/dpp/abc12345> <https://transpareo.com/vocab/vc/v1#publishedAt> \"2026-07-18T22:38:37Z\" .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345> <https://transpareo.com/vocab/vc/v1#publishedAt> \"2026-07-23T17:16:36Z\" .\n",
     "<https://dpp.acme-corp.com/dpp/abc12345> <https://transpareo.com/vocab/vc/v1#uniqueProductIdentifier> \"https://dpp.acme-corp.com/dpp/abc12345\" .\n",
     "<https://dpp.acme-corp.com/dpp/abc12345> <https://transpareo.com/vocab/vc/v1#version> \"3\"^^<http://www.w3.org/2001/XMLSchema#integer> .\n",
     "<https://dpp.acme-corp.com/dpp/abc12345> <https://www.w3.org/2018/credentials#issuer> <https://dpp.acme-corp.com/dpp/abc12345#issuer> .\n"

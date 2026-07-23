@@ -24,7 +24,15 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   parseLoginUrl, isSameRegistrableSite,
+  fetchPrivateRows, fetchStateByVersion,
 } from '../src/private-properties'
+
+const verifyDpp = vi.fn()
+const dppIsAuthentic = vi.fn()
+vi.mock('../src/crypto/dispatch', () => ({
+  verifyDpp: (...args: unknown[]) => verifyDpp(...args),
+  dppIsAuthentic: (...args: unknown[]) => dppIsAuthentic(...args),
+}))
 
 function res(
   status: number,
@@ -141,5 +149,71 @@ describe('parseLoginUrl: cross-site guard', () => {
     onPage('acme.com')
     expect(parseLoginUrl(res(401, { 'X-Auth-Url': '/login' })))
       .toBe('/login')
+  })
+})
+
+describe('fetchPrivateRows: verification gate + wire shape', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    vi.clearAllMocks()
+  })
+
+  // The endpoint returns the full derived credential; rows
+  // live at credentialSubject.product.properties, not at a
+  // bare top-level `properties` key.
+  function derivedCredentialBody(): unknown {
+    return {
+      '@context': ['https://www.w3.org/ns/credentials/v2'],
+      credentialSubject: {
+        product: {
+          properties: [
+            {
+              '@type': 'PropertyValue', propertyID: 'a:public',
+              name: { en: 'Public' }, value: 'x',
+            },
+            {
+              '@type': 'PropertyValue', propertyID: 'a:secret',
+              name: { en: 'Secret' }, value: 'y',
+              access: 'legitimateInterest',
+            },
+          ],
+        },
+      },
+      proof: [{ type: 'DataIntegrityProof', cryptosuite: 'ecdsa-sd-2023' }],
+    }
+  }
+
+  function jsonResponse(body: unknown): Response {
+    return new Response(JSON.stringify(body), {
+      status: 200, headers: { 'content-type': 'application/json' },
+    })
+  }
+
+  it('renders rows from credentialSubject.product.properties when the proof verifies', async () => {
+    vi.stubGlobal('window', { location: { href: 'https://acme.com/dpp', hostname: 'acme.com' } })
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse(derivedCredentialBody())))
+    verifyDpp.mockResolvedValue({ cryptosuite: 'ecdsa-sd-2023', results: [] })
+    dppIsAuthentic.mockReturnValue(true)
+
+    const status = await fetchPrivateRows(1, '/api/private/1')
+
+    expect(status).toBe('ok')
+    const state = fetchStateByVersion.peek()[1]
+    expect(state?.status).toBe('ok')
+    if (state?.status === 'ok') {
+      expect(state.rows.map((r) => r.key)).toEqual(['a:secret'])
+    }
+  })
+
+  it('fails closed to an error state when the derived proof does not verify, rendering nothing', async () => {
+    vi.stubGlobal('window', { location: { href: 'https://acme.com/dpp', hostname: 'acme.com' } })
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse(derivedCredentialBody())))
+    verifyDpp.mockResolvedValue({ cryptosuite: 'ecdsa-sd-2023', results: [] })
+    dppIsAuthentic.mockReturnValue(false)
+
+    const status = await fetchPrivateRows(1, '/api/private/1')
+
+    expect(status).toBe('error')
+    expect(fetchStateByVersion.peek()[1]?.status).toBe('error')
   })
 })

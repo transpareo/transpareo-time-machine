@@ -46,6 +46,16 @@ describe('foldLocale', () => {
     expect(tx(folded, 'de')).toBe('Hallo');
     expect(tx(folded, 'fr')).toBe('Hello');
   });
+
+  it('tx renders a typed literal as its @value, explicitly ' +
+      'rather than by hash-key order', () => {
+    // Structured-composition cells carry the signed typed-
+    // literal form; when one reaches tx (a list row whose
+    // first cell is numeric) it must render its lexical
+    // value, never fall into the locale lookup.
+    const typed = { '@value': '3.5', '@type': 'xsd:decimal' };
+    expect(tx(typed as never, 'de')).toBe('3.5');
+  });
 });
 
 describe('isLanguageArray', () => {
