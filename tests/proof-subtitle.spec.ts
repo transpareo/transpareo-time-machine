@@ -18,7 +18,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import * as host from '../src/host';
 import {
-  buildDisclosureSubtitle,
+  buildDisclosureSubtitle, buildChainSection,
 } from '../src/components/dpp-verification-modal';
 import type { DppSnapshot } from '../src/types';
 import type { VersionState } from '../src/archive';
@@ -128,5 +128,30 @@ describe('buildDisclosureSubtitle', () => {
       'Version v4 verified against 2 keys in your browser, '
       + "the issuer's (Volturra Energia) and Transpareo's.",
     );
+  });
+});
+
+describe('buildChainSection', () => {
+  function names(section: HTMLElement): (string | null)[] {
+    return [...section.querySelectorAll('.proof-authority-name')].
+      map((n) => n.textContent);
+  }
+
+  it('labels the issuer row generically, platform by name', () => {
+    const section = buildChainSection(verified([
+      entry(PLAT_URL, 'zPlat'),
+      entry(ISS_URL, 'zIss'),
+    ]));
+    // Issuer ordered first, shown as the generic "Issuer"
+    // rather than "Volturra Energia"; platform keeps its
+    // short brand name.
+    expect(names(section)).toEqual(['Issuer', 'Transpareo']);
+  });
+
+  it('renders the pending notice while verifying', () => {
+    const section = buildChainSection({ status: 'pending' });
+    expect(names(section)).toEqual([]);
+    expect(section.textContent).
+      toBe('Verifying snapshot proofs in your browser...');
   });
 });

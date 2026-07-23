@@ -378,7 +378,9 @@ function buildSignatureBadge(state: SignatureProofState): HTMLElement {
 
 // ─── Proof chain (active snapshot) ───────────────────
 
-function buildChainSection(
+// Exported for tests: the per-authority chain rows that
+// label the issuer generically and the platform by name.
+export function buildChainSection(
   state: VersionState | undefined,
 ): HTMLElement {
   const section = el('section', 'proof-section')
@@ -414,7 +416,10 @@ function buildChainSuite(suite: string): HTMLElement {
   return row
 }
 
+type AuthorityKind = 'issuer' | 'platform' | 'other'
+
 interface AuthorityGroup {
+  readonly kind: AuthorityKind
   readonly name: string
   readonly entries: ReadonlyArray<ProofEntryResult>
   readonly verifiedHere: boolean
@@ -425,9 +430,18 @@ function buildAuthorityRow(group: AuthorityGroup): HTMLElement {
     'div',
     `proof-authority ${group.verifiedHere ? 'is-ok' : 'is-bad'}`,
   )
+
+  // The issuer row carries the generic "Issuer" label, not
+  // the economic operator's own name: that name can run long
+  // and is spelled out once in the subtitle above. The
+  // platform keeps its short brand name, matching the
+  // per-version table's column headers.
+  const label = group.kind === 'issuer'
+    ? tr('verifier.meta.issuer')
+    : group.name
   row.append(
     buildVerdictBadge(group.verifiedHere),
-    el('span', 'proof-authority-name', group.name),
+    el('span', 'proof-authority-name', label),
     buildKeyChips(group.entries),
   )
   return row
@@ -511,19 +525,19 @@ function groupByAuthority(
         ? activePlatform().name
         : ''
     const verifiedHere = bucket.some((e) => e.status === 'verified')
-    groups.push({ name, entries: bucket, verifiedHere })
+    groups.push({ kind, name, entries: bucket, verifiedHere })
   }
 
   // Issuer first, platform second, anything we can't
   // classify last, so the ordering carries the role
   // information visually.
-  groups.sort((a, b) => orderForName(a.name) - orderForName(b.name))
+  groups.sort((a, b) => orderForKind(a.kind) - orderForKind(b.kind))
   return groups
 }
 
 function kindForGroup(
   bucket: ReadonlyArray<ProofEntryResult>,
-): 'issuer' | 'platform' | 'other' {
+): AuthorityKind {
   for (const e of bucket) {
     if (/\/keys\/issuer\b/.test(e.verificationMethod)) return 'issuer'
     if (/\/keys\/platform\b/.test(e.verificationMethod)) return 'platform'
@@ -531,9 +545,9 @@ function kindForGroup(
   return 'other'
 }
 
-function orderForName(name: string): number {
-  if (name === activeIssuer().name) return 0
-  if (name === activePlatform().name) return 1
+function orderForKind(kind: AuthorityKind): number {
+  if (kind === 'issuer') return 0
+  if (kind === 'platform') return 1
   return 2
 }
 
@@ -591,8 +605,8 @@ export function buildDisclosureSubtitle(
   const platformName = activePlatform().name
   const isOneKeyEach = count === 2
     && groups.length === 2
-    && groups.some((g) => g.name === issuerName)
-    && groups.some((g) => g.name === platformName)
+    && groups.some((g) => g.kind === 'issuer')
+    && groups.some((g) => g.kind === 'platform')
 
   // Name both keys' owners when it's exactly one issuer key
   // plus one platform key (the ecdsa-sd two-proof shape): the
