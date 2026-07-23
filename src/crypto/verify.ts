@@ -55,6 +55,10 @@
  */
 
 import { canonicalize } from './jcs'
+import {
+  canonicalize as canonicalizeRdfc, hashNQuads,
+} from './rdfc'
+import { DPP_CONTEXTS } from './dpp-contexts'
 import { decodeMultibaseBase58 } from './multibase'
 import { proofConfig, unsecuredDocument, joinHashes } from './eddsa-jcs'
 import { resolveMultikey } from './did-web'
@@ -310,6 +314,34 @@ export async function hexHashOfSnapshotBody(
   snapshot: ProofCarrier,
 ): Promise<string> {
   const digest = await hashDocument(snapshot)
+  return hexOf(digest)
+}
+
+// The hash a snapshot contributes to the version chain,
+// per its format. An ecdsa-sd snapshot is a Verifiable
+// Credential whose manifest hashValue is the SHA-256 over
+// ALL its RDFC canonical statements - equal to the
+// issuer's mandatory-statements hash, because the public
+// view reveals exactly the mandatory statements. A flat
+// eddsa-jcs snapshot chains on its JCS body hash. The
+// walker must pick per prior-version format: a chain can
+// cross the cryptosuite boundary mid-history.
+export async function hexChainHashOfSnapshot(
+  snapshot: ProofCarrier,
+): Promise<string> {
+  const doc = snapshot as Record<string, unknown>
+  if (doc.credentialSubject === undefined) {
+    return hexHashOfSnapshotBody(snapshot)
+  }
+  const unsecured = { ...doc }
+  delete unsecured.proof
+  const nquads = await canonicalizeRdfc(unsecured, {
+    contexts: DPP_CONTEXTS,
+  })
+  return hexOf(await hashNQuads(nquads))
+}
+
+function hexOf(digest: Uint8Array): string {
   let out = ''
   for (const b of digest) out += b.toString(16).padStart(2, '0')
   return out

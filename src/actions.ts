@@ -24,7 +24,7 @@ import {
 import * as host from '@/host'
 import type { SignedSnapshot, VersionState } from '@/archive'
 import {
-  verifyManifestSignature, hexHashOfSnapshotBody,
+  verifyManifestSignature, hexChainHashOfSnapshot,
 } from '@/crypto/verify'
 import type { ProofEntryResult, VerificationResult } from '@/crypto/verify'
 import { verifyDpp, dppIsAuthentic } from '@/crypto/dispatch'
@@ -473,9 +473,12 @@ function manifestGateReason(entry: ArtefactSignatureState): string {
 
 // Walks the snapshot chain backwards from `versionNumber`
 // down to v1. For each step we recompute the prior
-// snapshot's body hash from its bytes (JCS-canonicalise
-// without the proof field, SHA-256) and cross-check it
-// against TWO independent claims:
+// snapshot's chain hash from its bytes - per that prior's
+// own format (JCS body hash for a flat eddsa-jcs snapshot,
+// SHA-256 over the RDFC canonical statements for an
+// ecdsa-sd credential; a chain can cross the cryptosuite
+// boundary mid-history) - and cross-check it against TWO
+// independent claims:
 //
 //   - the manifest's `versions[N-1].hashValue` entry, and
 //   - the next snapshot's `priorVersionHash` field.
@@ -554,7 +557,7 @@ export async function verifyChainLink(
       reason: `prior snapshot v${priorVersion} not retrievable`,
     }
   }
-  const computed = await hexHashOfSnapshotBody(prior)
+  const computed = await hexChainHashOfSnapshot(prior)
   if (computed !== priorEntry.hashValue) {
     return {
       status: 'broken',

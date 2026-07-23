@@ -22,6 +22,8 @@ vi.mock('@/host', () => ({
   fetchSnapshot: vi.fn(async () => undefined),
 }));
 
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import * as host from '@/host';
 import { verifyChainLink } from '@/actions';
 import { hexHashOfSnapshotBody } from '@/crypto/verify';
@@ -111,6 +113,54 @@ describe('verifyChainLink', () => {
     );
     expect(res.status).toBe('broken');
     expect(res.reason).toMatch(/does not hash to the manifest claim/);
+  });
+
+  // The prior version's chain hash follows ITS OWN format:
+  // an ecdsa-sd credential's manifest hashValue is the
+  // SHA-256 over its RDFC canonical statements (the
+  // backend's mandatory hash), not the JCS body hash the
+  // flat snapshots chain on. Recomputing every prior with
+  // JCS reported 'broken' from the second ecdsa-sd version
+  // onward. The specimen supplies the real public view and
+  // the backend-computed hash, so this walks the exact
+  // cross-language bytes.
+  describe('with an ecdsa-sd credential as the prior version', () => {
+    const spec = JSON.parse(readFileSync(fileURLToPath(
+      new URL('./fixtures/ecdsa-sd-prod-specimen.json', import.meta.url),
+    ), 'utf8'));
+    const publicView = spec.public_view as Rec;
+    const publicHash = spec.public_view_hash_hex as string;
+
+    it('is ok when the RDFC statement hash matches both claims', async () => {
+      vi.mocked(host.manifest.peek).mockReturnValue(
+        manifestWith([{ number: 1, hashValue: publicHash }]),
+      );
+      vi.mocked(host.rawSnapshots.peek).mockReturnValue(
+        { 1: publicView } as never,
+      );
+      const res = await verifyChainLink(2, asSnap({
+        credentialSubject: { priorVersionHash: publicHash },
+        proof: [],
+      }));
+      expect(res.status).toBe('ok');
+    });
+
+    it('breaks when the prior credential bytes are tampered', async () => {
+      const tampered = JSON.parse(JSON.stringify(publicView)) as Rec;
+      (tampered.credentialSubject as Rec).tamperMarker = 'x';
+      vi.mocked(host.manifest.peek).mockReturnValue(
+        manifestWith([{ number: 1, hashValue: publicHash }]),
+      );
+      vi.mocked(host.rawSnapshots.peek).mockReturnValue(
+        { 1: tampered } as never,
+      );
+      const res = await verifyChainLink(2, asSnap({
+        credentialSubject: { priorVersionHash: publicHash },
+        proof: [],
+      }));
+      expect(res.status).toBe('broken');
+      expect(res.reason).toMatch(/does not hash to the manifest claim/);
+    });
   });
 
   it('propagates a deeper unknown instead of upgrading it to ok', async () => {

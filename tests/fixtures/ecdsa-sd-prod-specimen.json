@@ -15,8 +15,8 @@
       "@type": "dpp:DigitalProductPassport",
       "version": 3,
       "dppSchemaVersion": "EN 18223:2026",
-      "publishedAt": "2026-07-23T17:16:36Z",
-      "lastUpdated": "2026-07-23T17:16:36Z",
+      "publishedAt": "2026-07-23T18:57:10Z",
+      "lastUpdated": "2026-07-23T18:57:10Z",
       "identifiers": {
         "@id": "https://dpp.acme-corp.com/dpp/abc12345#identifiers",
         "code": "abc12345"
@@ -176,7 +176,7 @@
         "created": "2026-05-01T12:00:00Z",
         "verificationMethod": "did:web:dpp.acme-corp.com#key-1",
         "proofPurpose": "assertionMethod",
-        "proofValue": "u2V0BhVhAfB2i1Q9kvfIo_QVow-Eff1i0bs-YIQ15MSjp2Wd_EznXM6dOsf_QCkg4CnqAQbeFhU2Nka9obB8LubENJU8jtVgjgCQDphPXMfQJIsJQtzu-nmVzPDlxyR8vz8WbW2_71HoO6z2HWEBWdF6EMdI3t2NCVXZ--nDqt19KO3AMu_lEuFhetNh8i7efA4u9lsYXdjW3ikzvXpX5DmrN_dFBhVjTeORqVK6BWEDCzwrHrA5J8UrJ0w8v-X4dTdxAKJH34C89VVyt8pD4e0367vq88RPvet5zB5rsRP5nVthnw-UQXdHgP6sKn2PnWECCJpqfsls3K7Y77fH873U4fvXnuiFm0Rp2HpyV3jGb8N1nePIHvgm6SmU6y7Jz2vee906aOOiQlGcAgjMVWmzjWEA1OfauBJOxQhvXOl8RogyG4bUJUV9R_ZBPuTKEOCYzi5Ci9kgBc3epqVyfzDxoBkRHFzEpcSVdb1yzlmPzFbJeWEDk-T-E2Ll9HRtzvHmhZqwMcEer3T9u08bP7yQjS3I_muqMrjW93MwIxNZ3J7vSn8MTtbGWHWgVd-knyfKVfGZqWEBv6BVRWSjuBFSRqz8FWKDIU-jWHvjySgDCuMQmHOjAGOvhgBymtsmPcUPD98gM6rBSHZCDWcN59oIw7vPErVJVWECvgXygAur-Il5wkAKqp1C36if11UhcSAdHFrfp16pOwUrqA1gmq9MwHihzAnfAX9B-8m6rRV1AzoYF08NSV8GLoJhNAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBgYGRgaGBsYHBgdGB4YHxggGCEYIhgjGCQYJhgnGCgYKRgqGCsYLBgtGDQYNRg2GDcYOBg5GDoYOxg8GD0YPhg_GEAYQRhCGEMYRBhFGEYYRxhIGEkYShhLGEwYTRhOGE8YUBhRGFIYUw"
+        "proofValue": "u2V0BhVhAOb-tBPnmAMIeHBa5CVUE-yPwucASpEr7gjKlqt54uZccLYeOBLHKRXKeIMV4SAZ32d6iQPfNI57fjEQGhu57UVgjgCQDzqNCptK-abpv0qCSswzSF5nZtbnHvEHoxiIM0JoSWkWHWECFdA7EiUBWgs5AORNsvGjT6bIjZcUGH4LFGGCkA036ijDi4uAXcL3lPnNNIT_hNFW7Alv2bslH9ahH_AQt_OQ8WEA5711Rk7oYKihq5EJ03ZFFFtUXRmwZywnjPK0x7oW6x0bbWMpOIr4BPwpLpDPPaAs1R-z_c9E-WElp0GhQYEnIWEBYjKoW7rfFXFZxiTeNVvcSBs6rW0ZfaKEvS5BD7ud-olEkia5yoeRIgtHV0a1ma2Ypw1Z0x9YImDn55R9zWQrVWECOjuroCbuUD_UwtDg7Fmy3Fc_K4p_z0vyqK9B-IbLJAWz5ffNM-vsa2A9Vsfa_m-dr-xiY6E7gqguYflxSNQp9WEAFSQS5TL2paEPlalOt2on6D3__zr4wxEyqWzEpRM__JY4O_uYz3B3Kq8GpDAyFeU9G7-CL3L3gPNc5oLMvt65IWEAG4_jelkHJ3T3kOzD1dpTFnUr3cCTyO4jabWzkyeKOg5JzpqYP_8rXaMQxrPq3W3B3f2xbeXTfwsvL4eKeXplmWEAsfHDTxKh7ZEvRFB1EHsuRJjlOHqhSzskTrJV6RRTIsqqjEetyOYBD8eRD0hNjucZc1Giog8QTCF3u-OeYPnAkoJhNAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBgYGRgaGBsYHBgdGB4YHxggGCEYIhgjGCQYJhgnGCgYKRgqGCsYLBgtGDQYNRg2GDcYOBg5GDoYOxg8GD0YPhg_GEAYQRhCGEMYRBhFGEYYRxhIGEkYShhLGEwYTRhOGE8YUBhRGFIYUw"
       },
       {
         "type": "DataIntegrityProof",
@@ -184,13 +184,13 @@
         "created": "2026-05-01T12:00:00Z",
         "verificationMethod": "did:web:transpareo.com#key-1",
         "proofPurpose": "assertionMethod",
-        "proofValue": "u2V0BhVhA6kWXRjR3uGAKqXKSil_l9nWBsCjxzmllm0axf9x1qJk60ewnHSnD45Z0Dr6QLHc_oJRtKluT-UTqWukh1315h1gjgCQC1ImfbDFU0yVKx_sQrgt_ZjXMCH6OyHyQAirGzsjG9Q6HWECNo8O_fTHTb-73Cs92b-CHQB7Adr54YiPwdEaSXG4w411XNspwitfzbvjbDCSDXkgMGBNaG9eWICtTJchMOTaTWEBkWn7n4_ux2Ef3hnYodlOIuHwKP_NB3fBWjAVD5ufdJ1hH6yvXE1SrOcM1biOYVEPG755kWWANlm63wuNjC4ByWECZOXK-j3jqfDIJISHMiHz9q_gB2v7o7qlnv2UYlZe-bsfrNeZH5h9KbuH8bSOxj3OqVA2672UBY8TsGV2NfrCdWEB4X-YDQ9RT144rj8u9g1R2ID6iSaHNIeyHjq7sdyn9XAnkJWj95HVrxfxPNx9uZ7z5f3iT5iNAiX43j3QtPp5AWEAGUshUzUCVpXv8h0NXgObCUeWnoK8rmhKiDfeyFQKtldtdubxQJ88nkXp-T8uaCtWbDgTeaxPK9SQPIR3EYS41WECvPY2MCrnjHybQB4JTc-iAydwbuBGQjZ_xLwRQ1FZMEprIYbIlMkbxSTeeMsbNY8gewZYU-iG2UQUpwvHbVA-bWEDYD2OUG8M2P89Md9FF27paPW9Pp8252OnI2Mda-Hj28bGp2DQwYsqteH67Vk-l9GXTtHHG4B6iTXcPh60vbo5MoJhNAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBgYGRgaGBsYHBgdGB4YHxggGCEYIhgjGCQYJhgnGCgYKRgqGCsYLBgtGDQYNRg2GDcYOBg5GDoYOxg8GD0YPhg_GEAYQRhCGEMYRBhFGEYYRxhIGEkYShhLGEwYTRhOGE8YUBhRGFIYUw"
+        "proofValue": "u2V0BhVhA3NJnXm1p8TEaF1hbfkBx_klJ4UbeE_ouu0fy1UO79pnr0GKiF8wtFzzmVt9xFYZTWr8l599LAg6swLP15De5ClgjgCQCUMkMBrcvz26cb6h_jNLYHCzyqsccheNbd7fxtosyS0qHWEAAuzLZVO0KcRZ1ejw1QE1w39-rRBSiN608l9t4kwu0xvM-BOD6_591sUJbpNWKtetFZS038xwD6LQ1iTXGGtgpWEAr1GKMW3S7UiD6Gjto7MsvGUwARWB-E7O5Ps2f-NAEkI48xlqVY3fKFH5yA4IBH5njD5riNpg5LrgaVBv3KI2aWEADrsDJN59wQTxIAYeHFakOuHIq7EA7eSr37ZWIjJzJhSxNm9OigWBAj5t4rTA8Rwv--LSupazCQApV8BIwAAykWEAutouC-KrOLoCr_fH-TWGfxgCMeLNAOY6Q88DXNoQuiQwHVtaUhAfRFV9Lu8DTdpY3UV1o1oHkdDViRBHn0elaWEBRqRYXklRYeYokoNreydcwExB8Vs-Y7RlU-rx72zpkPfAZh3CYRqLHKJpTZEVdIEz0sBWrnJxGleZ5zywjFQbuWEBQQ_23iC9YZXptXN-b-7hhIgDcUdPBk-v5ISxeXqLWMtb7QFfiYTJcxuJ3s7RIYomGQ3JmDrV8JK6kcO_wEJBbWEBNB1gr6pPzA79Vk1IJC0mwnMSllqfpQe5ADK_aVZ6B745TJnLjgZBjF2RfSDbklZk6LilOmSinKS_i3YHkPFU6oJhNAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBgYGRgaGBsYHBgdGB4YHxggGCEYIhgjGCQYJhgnGCgYKRgqGCsYLBgtGDQYNRg2GDcYOBg5GDoYOxg8GD0YPhg_GEAYQRhCGEMYRBhFGEYYRxhIGEkYShhLGEwYTRhOGE8YUBhRGFIYUw"
       }
     ]
   },
   "issuer_multikeys_b64": [
-    "gCQD2R0ytuPCITFkgPilywE317evnYW12YU0cOAhkXswDO4=",
-    "gCQCeQsvz89pH3W0qvmIFPr1r15jTxFRyQsd77Ss/CZNkwc="
+    "gCQDpDia5g6/bQuxjA2X33Qe1NqHAtMOfn/2cFc+FRa4jZs=",
+    "gCQCJCXNZr+SaAZMo9Z/s8AJZe7dt451nIVkm1jeRMg6etQ="
   ],
   "backend_ok": true,
   "backend_nquads": [
@@ -266,7 +266,7 @@
     "<https://dpp.acme-corp.com/dpp/abc12345> <https://transpareo.com/vocab/vc/v1#granularity> \"item\" .\n",
     "<https://dpp.acme-corp.com/dpp/abc12345> <https://transpareo.com/vocab/vc/v1#identifiers> <https://dpp.acme-corp.com/dpp/abc12345#identifiers> .\n",
     "<https://dpp.acme-corp.com/dpp/abc12345> <https://transpareo.com/vocab/vc/v1#identityCredentialUrl> \"https://dpp.acme-corp.com/.well-known/did.json\" .\n",
-    "<https://dpp.acme-corp.com/dpp/abc12345> <https://transpareo.com/vocab/vc/v1#lastUpdated> \"2026-07-23T17:16:36Z\" .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345> <https://transpareo.com/vocab/vc/v1#lastUpdated> \"2026-07-23T18:57:10Z\" .\n",
     "<https://dpp.acme-corp.com/dpp/abc12345> <https://transpareo.com/vocab/vc/v1#lifecycle> <https://dpp.acme-corp.com/dpp/abc12345#lifecycle> .\n",
     "<https://dpp.acme-corp.com/dpp/abc12345> <https://transpareo.com/vocab/vc/v1#passportAlias> \"abc12345\" .\n",
     "<https://dpp.acme-corp.com/dpp/abc12345> <https://transpareo.com/vocab/vc/v1#passportStatus> \"Active\" .\n",
@@ -274,11 +274,187 @@
     "<https://dpp.acme-corp.com/dpp/abc12345> <https://transpareo.com/vocab/vc/v1#platform> <https://dpp.acme-corp.com/dpp/abc12345#platform> .\n",
     "<https://dpp.acme-corp.com/dpp/abc12345> <https://transpareo.com/vocab/vc/v1#priorVersion> \"2\"^^<http://www.w3.org/2001/XMLSchema#integer> .\n",
     "<https://dpp.acme-corp.com/dpp/abc12345> <https://transpareo.com/vocab/vc/v1#product> <https://dpp.acme-corp.com/dpp/abc12345#product> .\n",
-    "<https://dpp.acme-corp.com/dpp/abc12345> <https://transpareo.com/vocab/vc/v1#publishedAt> \"2026-07-23T17:16:36Z\" .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345> <https://transpareo.com/vocab/vc/v1#publishedAt> \"2026-07-23T18:57:10Z\" .\n",
     "<https://dpp.acme-corp.com/dpp/abc12345> <https://transpareo.com/vocab/vc/v1#uniqueProductIdentifier> \"https://dpp.acme-corp.com/dpp/abc12345\" .\n",
     "<https://dpp.acme-corp.com/dpp/abc12345> <https://transpareo.com/vocab/vc/v1#version> \"3\"^^<http://www.w3.org/2001/XMLSchema#integer> .\n",
     "<https://dpp.acme-corp.com/dpp/abc12345> <https://www.w3.org/2018/credentials#issuer> <https://dpp.acme-corp.com/dpp/abc12345#issuer> .\n"
   ],
+  "public_view": {
+    "@id": "https://dpp.acme-corp.com/dpp/abc12345#credential",
+    "type": [
+      "VerifiableCredential",
+      "dpp:DigitalProductPassport"
+    ],
+    "@context": [
+      "https://transpareo.com/vocab/vc/v1",
+      "https://transpareo.com/vocab/transpareo/v1"
+    ],
+    "issuer": "did:web:acme.002.fsn.transpareo.com",
+    "credentialSubject": {
+      "@id": "https://dpp.acme-corp.com/dpp/abc12345",
+      "@type": "dpp:DigitalProductPassport",
+      "version": 3,
+      "dppSchemaVersion": "EN 18223:2026",
+      "publishedAt": "2026-07-23T18:57:10Z",
+      "lastUpdated": "2026-07-23T18:57:10Z",
+      "identifiers": {
+        "@id": "https://dpp.acme-corp.com/dpp/abc12345#identifiers",
+        "code": "abc12345"
+      },
+      "uniqueProductIdentifier": "https://dpp.acme-corp.com/dpp/abc12345",
+      "passportAlias": "abc12345",
+      "priorVersion": 2,
+      "issuer": {
+        "@id": "https://dpp.acme-corp.com/dpp/abc12345#issuer",
+        "@type": "Organization",
+        "name": "Acme Cosmetics GmbH",
+        "did": "did:web:acme.002.fsn.transpareo.com"
+      },
+      "platform": {
+        "@id": "https://dpp.acme-corp.com/dpp/abc12345#platform",
+        "@type": "Organization",
+        "name": "Transpareo",
+        "did": "did:web:transpareo.com"
+      },
+      "accessRights": {
+        "@id": "https://dpp.acme-corp.com/dpp/abc12345#accessRights",
+        "@type": "dpp:AccessRights",
+        "publicLicense": "https://creativecommons.org/licenses/by/4.0/",
+        "authorisedNote": "",
+        "regulatoryContext": "https://eur-lex.europa.eu/eli/reg/2023/1542"
+      },
+      "dppStatus": "in_use",
+      "passportStatus": "Active",
+      "lifecycle": {
+        "@id": "https://dpp.acme-corp.com/dpp/abc12345#lifecycle",
+        "stage": "in_use",
+        "stageAt": "2026-05-01T10:00:00Z",
+        "priorStage": "placed_on_market"
+      },
+      "granularity": "item",
+      "contentSpecificationIds": [
+        "https://transpareo.com/spec/dpp/v1.0"
+      ],
+      "product": {
+        "@id": "https://dpp.acme-corp.com/dpp/abc12345#product",
+        "@type": "Product",
+        "name": [
+          {
+            "@value": "Wundercreme",
+            "@language": "de"
+          },
+          {
+            "@value": "Wonder Cream",
+            "@language": "en"
+          }
+        ],
+        "brand": "Acme Cosmetics",
+        "category": "Cosmetics",
+        "images": [
+          {
+            "@id": "https://dpp.acme-corp.com/dpp/abc12345#product/images/0",
+            "thumbnail": "/media/abc.jpg",
+            "large": "/media/abc.jpg"
+          }
+        ],
+        "weight": {
+          "@id": "https://dpp.acme-corp.com/dpp/abc12345#product/weight",
+          "@type": "QuantitativeValue",
+          "value": {
+            "@type": "xsd:decimal",
+            "@value": "250.0"
+          },
+          "unitCode": "KGM",
+          "valueDataType": "xsd:decimal"
+        },
+        "properties": [
+          {
+            "@id": "https://dpp.acme-corp.com/dpp/abc12345#property/1",
+            "@type": "PropertyValue",
+            "propertyID": "1",
+            "name": [
+              {
+                "@value": "Origin",
+                "@language": "en"
+              }
+            ],
+            "valueDataType": "xsd:string",
+            "value": "Germany"
+          },
+          {
+            "@id": "https://dpp.acme-corp.com/dpp/abc12345#property/transpareo-capacity",
+            "@type": "PropertyValue",
+            "propertyID": "transpareo:capacity",
+            "name": [
+              {
+                "@value": "Capacity",
+                "@language": "en"
+              }
+            ],
+            "dictionaryReference": "https://transpareo.com/vocab/transpareo/v1#capacity",
+            "valueDataType": "xsd:decimal",
+            "value": {
+              "@value": "12.5",
+              "@type": "xsd:decimal"
+            }
+          },
+          {
+            "@id": "https://dpp.acme-corp.com/dpp/abc12345#property/4",
+            "@type": "PropertyValue",
+            "propertyID": "4",
+            "name": [
+              {
+                "@value": "Hazardous Substances",
+                "@language": "en"
+              }
+            ],
+            "value": [
+              {
+                "name": "LiPF6",
+                "weight_percent": {
+                  "@value": "3.5",
+                  "@type": "xsd:decimal"
+                },
+                "elementId": "4/1",
+                "@id": "https://dpp.acme-corp.com/dpp/abc12345#4/1"
+              },
+              {
+                "name": "Graphite",
+                "weight_percent": {
+                  "@value": "12.0",
+                  "@type": "xsd:decimal"
+                },
+                "elementId": "4/2",
+                "@id": "https://dpp.acme-corp.com/dpp/abc12345#4/2"
+              }
+            ]
+          }
+        ]
+      },
+      "passportVersion": 3,
+      "did": "did:web:acme.002.fsn.transpareo.com",
+      "identityCredentialUrl": "https://dpp.acme-corp.com/.well-known/did.json"
+    },
+    "proof": [
+      {
+        "type": "DataIntegrityProof",
+        "cryptosuite": "ecdsa-sd-2023",
+        "created": "2026-05-01T12:00:00Z",
+        "verificationMethod": "did:web:dpp.acme-corp.com#key-1",
+        "proofPurpose": "assertionMethod",
+        "proofValue": "u2V0BhVhAOb-tBPnmAMIeHBa5CVUE-yPwucASpEr7gjKlqt54uZccLYeOBLHKRXKeIMV4SAZ32d6iQPfNI57fjEQGhu57UVgjgCQDzqNCptK-abpv0qCSswzSF5nZtbnHvEHoxiIM0JoSWkWAoJhNAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBgYGRgaGBsYHBgdGB4YHxggGCEYIhgjGCQYJRgmGCcYKBgpGCoYKxgsGC0YLhgvGDAYMRgyGDMYNBg1GDYYNxg4GDkYOhg7GDwYPRg-GD8YQBhBGEIYQxhEGEUYRhhHGEgYSRhKGEsYTA"
+      },
+      {
+        "type": "DataIntegrityProof",
+        "cryptosuite": "ecdsa-sd-2023",
+        "created": "2026-05-01T12:00:00Z",
+        "verificationMethod": "did:web:transpareo.com#key-1",
+        "proofPurpose": "assertionMethod",
+        "proofValue": "u2V0BhVhA3NJnXm1p8TEaF1hbfkBx_klJ4UbeE_ouu0fy1UO79pnr0GKiF8wtFzzmVt9xFYZTWr8l599LAg6swLP15De5ClgjgCQCUMkMBrcvz26cb6h_jNLYHCzyqsccheNbd7fxtosyS0qAoJhNAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBgYGRgaGBsYHBgdGB4YHxggGCEYIhgjGCQYJRgmGCcYKBgpGCoYKxgsGC0YLhgvGDAYMRgyGDMYNBg1GDYYNxg4GDkYOhg7GDwYPRg-GD8YQBhBGEIYQxhEGEUYRhhHGEgYSRhKGEsYTA"
+      }
+    ]
+  },
+  "public_view_hash_hex": "7a27eb5d8f8fb37c64bdbb4f7029991a5eb8f8bca888b32dc03e0eb21090183b",
   "vc_context": {
     "@context": {
       "@version": 1.1,

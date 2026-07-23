@@ -15,6 +15,8 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { verifyDerivedProof } from '../src/crypto/ecdsa-sd';
+import { hexChainHashOfSnapshot } from '../src/crypto/verify';
+import type { ProofCarrier } from '../src/crypto/verify';
 
 const SPECIMEN = fileURLToPath(
   new URL('./fixtures/ecdsa-sd-prod-specimen.json', import.meta.url),
@@ -35,5 +37,20 @@ describe('ecdsa-sd: real production specimen', () => {
       expect(result.reason ?? '').toBe('');
       expect(result.verified).toBe(true);
     }
+  });
+
+  // The chain walker recomputes each prior public snapshot's
+  // manifest hashValue from its bytes. For an ecdsa-sd
+  // snapshot that hash is the SHA-256 over ALL its RDFC
+  // canonical statements (equal to the backend's mandatory
+  // hash, because the public view reveals exactly the
+  // mandatory statements) - never the JCS body hash the flat
+  // eddsa-jcs snapshots use.
+  it('recomputes the backend chain hash from the public view bytes', async () => {
+    const spec = JSON.parse(readFileSync(SPECIMEN, 'utf8'));
+    const computed = await hexChainHashOfSnapshot(
+      spec.public_view as ProofCarrier,
+    );
+    expect(computed).toBe(spec.public_view_hash_hex);
   });
 });
