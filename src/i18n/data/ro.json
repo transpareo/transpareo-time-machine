@@ -111,6 +111,7 @@
   "cryptoProof.versionsTable.caption": "Verdicte per versiune",
   "cryptoProof.versionsCheck.summary": "Versiunea v{version} verificată cu {count} chei în browserul tău.",
   "cryptoProof.versionsCheck.summary.one": "Versiunea v{version} verificată cu {count} cheie în browserul tău.",
+  "cryptoProof.versionsCheck.summary.twoAuthorities": "Versiunea v{version} verificată cu {count} chei în browserul tău: una de la emitent ({issuer}), una de la {platform}.",
   "cryptoProof.chain.note": "Lanț: fiecare versiune înglobează hash-ul versiunii anterioare, deci o bifă aici înseamnă că legătura cu versiunea anterioară este intactă. v1 nu are predecesor, de aceea apare linia.",
   "product.rating": "Evaluare",
   "verifier.url": "Linkul pașaportului sau URL-ul manifestului",

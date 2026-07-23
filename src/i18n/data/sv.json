@@ -111,6 +111,7 @@
   "cryptoProof.versionsTable.caption": "Bedömningar per version",
   "cryptoProof.versionsCheck.summary": "Version v{version} verifierad mot {count} nycklar i din webbläsare.",
   "cryptoProof.versionsCheck.summary.one": "Version v{version} verifierad mot {count} nyckel i din webbläsare.",
+  "cryptoProof.versionsCheck.summary.twoAuthorities": "Version v{version} verifierad mot {count} nycklar i din webbläsare: en från utfärdaren ({issuer}), en från {platform}.",
   "cryptoProof.chain.note": "Kedja: varje version bäddar in föregående versions hash, så en bock här betyder att länken till föregående version är intakt. v1 har ingen föregångare, därför strecket.",
   "product.rating": "Betyg",
   "verifier.url": "Länk till passet eller manifest-URL",

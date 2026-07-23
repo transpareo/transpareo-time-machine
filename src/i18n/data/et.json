@@ -111,6 +111,7 @@
   "cryptoProof.versionsTable.caption": "Otsused versioonide kaupa",
   "cryptoProof.versionsCheck.summary": "Versioon v{version} kinnitati {count} võtmega teie brauseris.",
   "cryptoProof.versionsCheck.summary.one": "Versioon v{version} kinnitati {count} võtmega teie brauseris.",
+  "cryptoProof.versionsCheck.summary.twoAuthorities": "Versioon v{version} kinnitati {count} võtmega teie brauseris: üks väljaandjalt ({issuer}), üks {platform}-lt.",
   "cryptoProof.chain.note": "Ahel: iga versioon sisaldab eelmise räsi, seega siinne linnuke tähendab, et seos eelmise versiooniga on terve. v1-l pole eelkäijat, sellest ka kriips.",
   "product.rating": "Hinnang",
   "verifier.url": "Passi link või manifesti URL",

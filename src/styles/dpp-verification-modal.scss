@@ -275,6 +275,15 @@ code {
   color: var(--color-muted, #777);
 }
 
+// Horizontal scroll is scoped to the table alone: its
+// nowrap authority columns can outgrow a narrow viewport
+// once an issuer's legal name is long, and this keeps
+// that overflow from widening the whole modal body.
+.proof-versions-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 .proof-versions-list {
   width: 100%;
   border-collapse: collapse;

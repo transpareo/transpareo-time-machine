@@ -111,6 +111,7 @@
   "cryptoProof.versionsTable.caption": "সংস্করণভিত্তিক রায়",
   "cryptoProof.versionsCheck.summary": "সংস্করণ v{version} আপনার ব্রাউজারে {count}টি কীয়ের বিপরীতে যাচাই করা হয়েছে।",
   "cryptoProof.versionsCheck.summary.one": "সংস্করণ v{version} আপনার ব্রাউজারে {count}টি কীয়ের বিপরীতে যাচাই করা হয়েছে।",
+  "cryptoProof.versionsCheck.summary.twoAuthorities": "সংস্করণ v{version} আপনার ব্রাউজারে {count}টি কীয়ের বিপরীতে যাচাই করা হয়েছে: একটি প্রদানকারীর ({issuer}) থেকে, একটি {platform}-এর থেকে।",
   "cryptoProof.chain.note": "শৃঙ্খল: প্রতিটি সংস্করণ পূর্ববর্তী সংস্করণের হ্যাশ ধারণ করে, তাই এখানে টিক চিহ্নের অর্থ পূর্ববর্তী সংস্করণের সাথে সংযোগ অক্ষুণ্ণ। v1-এর কোনো পূর্বসূরি নেই, তাই ড্যাশ।",
   "product.rating": "মূল্যায়ন",
   "verifier.url": "পাসপোর্ট লিঙ্ক বা ম্যানিফেস্ট URL",

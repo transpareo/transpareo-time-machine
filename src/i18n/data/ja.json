@@ -111,6 +111,7 @@
   "cryptoProof.versionsTable.caption": "バージョンごとの判定",
   "cryptoProof.versionsCheck.summary": "バージョン v{version} はブラウザ内で {count} 個の鍵に対して検証されました。",
   "cryptoProof.versionsCheck.summary.one": "バージョン v{version} はブラウザ内で {count} 個の鍵に対して検証されました。",
+  "cryptoProof.versionsCheck.summary.twoAuthorities": "バージョン v{version} はブラウザ内で {count} 個の鍵に対して検証されました: 1つは発行者({issuer})、もう1つは{platform}のものです。",
   "cryptoProof.chain.note": "チェーン: 各バージョンは前バージョンのハッシュを内包しているため、ここのチェックは前バージョンへのリンクが保たれていることを示します。v1 には前任がないためダッシュで表示されます。",
   "product.rating": "評価",
   "verifier.url": "パスポートのリンクまたはマニフェストURL",

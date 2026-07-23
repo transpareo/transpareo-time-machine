@@ -111,6 +111,7 @@
   "cryptoProof.versionsTable.caption": "Vurderinger per versjon",
   "cryptoProof.versionsCheck.summary": "Versjon v{version} bekreftet mot {count} nøkler i nettleseren din.",
   "cryptoProof.versionsCheck.summary.one": "Versjon v{version} bekreftet mot {count} nøkkel i nettleseren din.",
+  "cryptoProof.versionsCheck.summary.twoAuthorities": "Versjon v{version} bekreftet mot {count} nøkler i nettleseren din: én fra utstederen ({issuer}), én fra {platform}.",
   "cryptoProof.chain.note": "Kjede: hver versjon inneholder hashen til forrige versjon, så en hake her betyr at lenken til forrige versjon er intakt. v1 har ingen forgjenger, derav streken.",
   "product.rating": "Vurdering",
   "verifier.url": "Lenke til passet eller manifest-URL",

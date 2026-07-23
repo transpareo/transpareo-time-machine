@@ -570,21 +570,50 @@ function buildVerificationDisclosure(
   return section
 }
 
-function buildDisclosureSubtitle(
+// Exported for tests: the choice between the pending
+// notice, the generic count sentence, and the naming
+// two-authorities wording is behaviour worth pinning
+// without mounting the whole element.
+export function buildDisclosureSubtitle(
   version: number, state: VersionState | undefined,
 ): HTMLElement {
   const p = el('p', 'proof-disclosure-subtitle')
   if (!state || state.status === 'pending') {
     p.textContent = tr('cryptoProof.chainPending')
-  } else {
-    // One key per proof: a two-proof ecdsa-sd snapshot (issuer
-    // + platform) counts two, matching the authority rows below.
-    const count = state.result.entries.length
-    const key: LabelKey = count === 1
-      ? 'cryptoProof.versionsCheck.summary.one'
-      : 'cryptoProof.versionsCheck.summary'
-    p.textContent = t(i18n.labels, key, { version, count })
+    return p
   }
+
+  // One key per proof: a two-proof ecdsa-sd snapshot (issuer
+  // + platform) counts two, matching the authority rows below.
+  const count = state.result.entries.length
+  const groups = groupByAuthority(state.result.entries)
+  const issuerName = activeIssuer().name
+  const platformName = activePlatform().name
+  const isOneKeyEach = count === 2
+    && groups.length === 2
+    && groups.some((g) => g.name === issuerName)
+    && groups.some((g) => g.name === platformName)
+
+  // Name both keys' owners when it's exactly one issuer key
+  // plus one platform key (the ecdsa-sd two-proof shape): the
+  // issuer's name is called out by role since it can run long
+  // (an economic operator's full legal name), while the
+  // platform's short brand name reads fine inline. Multi-alias
+  // proof sets (an eddsa suite listing several verification
+  // methods per authority) keep the generic count sentence,
+  // whose per-owner possessives would misstate the key count.
+  if (isOneKeyEach) {
+    p.textContent = t(
+      i18n.labels, 'cryptoProof.versionsCheck.summary.twoAuthorities',
+      { version, count, issuer: issuerName, platform: platformName },
+    )
+    return p
+  }
+
+  const key: LabelKey = count === 1
+    ? 'cryptoProof.versionsCheck.summary.one'
+    : 'cryptoProof.versionsCheck.summary'
+  p.textContent = t(i18n.labels, key, { version, count })
   return p
 }
 
@@ -639,7 +668,11 @@ function buildVersionsList(
   const headRow = el('tr')
   headRow.append(
     el('th'),
-    el('th', 'col-authority', activeIssuer().name),
+    // Generic "Issuer" rather than the economic operator's
+    // own name: that name can run much longer than a fixed
+    // narrow table column comfortably holds (see the full
+    // name spelled out in the subtitle above instead).
+    el('th', 'col-authority', tr('verifier.meta.issuer')),
     el('th', 'col-authority', activePlatform().name),
     el('th', 'col-authority', tr('cryptoProof.chain.header')),
   )
@@ -657,7 +690,16 @@ function buildVersionsList(
     tbody.appendChild(buildVersionRow(v.number, states[v.number], manifest))
   }
   table.append(thead, tbody)
-  wrap.appendChild(table)
+
+  // The nowrap authority columns can outgrow a narrow
+  // viewport once an issuer's legal name is long (e.g.
+  // "Volturra Energia"). Scope the scroll to the table
+  // itself rather than letting it widen the whole modal
+  // body, which would carry every other section along.
+  const scroll = el('div', 'proof-versions-scroll')
+  scroll.appendChild(table)
+  wrap.appendChild(scroll)
+
   wrap.appendChild(
     el('p', 'proof-versions-note', tr('cryptoProof.chain.note')),
   )

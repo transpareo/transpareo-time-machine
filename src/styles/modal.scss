@@ -131,6 +131,13 @@ dpp-library-modal      { --modal-max-width: 560px; }
   padding: 18px 22px 22px;
   color: var(--color-text);
   overflow-y: auto;
+
+  // Explicit, not left to default: with only overflow-y
+  // set, browsers force overflow-x to auto too, so any
+  // over-wide child (a nowrap table cell, a long token)
+  // silently grows the whole body sideways instead of
+  // being contained where it occurs.
+  overflow-x: hidden;
   min-height: 0;
 
   // Slim, theme-aware scrollbar. Firefox honours the

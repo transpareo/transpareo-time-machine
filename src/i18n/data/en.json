@@ -28,6 +28,7 @@
   "cryptoProof.versionOf": "{current} of {total} signed versions",
   "cryptoProof.versionsCheck.summary": "Version v{version} verified against {count} keys in your browser.",
   "cryptoProof.versionsCheck.summary.one": "Version v{version} verified against {count} key in your browser.",
+  "cryptoProof.versionsCheck.summary.twoAuthorities": "Version v{version} verified against {count} keys in your browser, the issuer's ({issuer}) and {platform}'s.",
   "cryptoProof.chainPending": "Verifying snapshot proofs in your browser...",
   "cryptoProof.method.https": "https",
   "cryptoProof.chain.header": "Chain",

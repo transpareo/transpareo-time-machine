@@ -111,6 +111,7 @@
   "cryptoProof.versionsTable.caption": "संस्करणवार निर्णय",
   "cryptoProof.versionsCheck.summary": "संस्करण v{version} को आपके ब्राउज़र में {count} कुंजियों के विरुद्ध सत्यापित किया गया।",
   "cryptoProof.versionsCheck.summary.one": "संस्करण v{version} को आपके ब्राउज़र में {count} कुंजी के विरुद्ध सत्यापित किया गया।",
+  "cryptoProof.versionsCheck.summary.twoAuthorities": "संस्करण v{version} को आपके ब्राउज़र में {count} कुंजियों के विरुद्ध सत्यापित किया गया: एक जारीकर्ता ({issuer}) की, एक {platform} की।",
   "cryptoProof.chain.note": "श्रृंखला: प्रत्येक संस्करण पिछले संस्करण के हैश को समाहित करता है, इसलिए यहाँ का चिह्न दर्शाता है कि पिछले संस्करण से कड़ी अक्षुण्ण है। v1 का कोई पूर्ववर्ती नहीं है, इसलिए डैश है।",
   "product.rating": "रेटिंग",
   "verifier.url": "पासपोर्ट लिंक या मेनिफ़ेस्ट URL",

@@ -111,6 +111,7 @@
   "cryptoProof.versionsTable.caption": "Vurderinger pr. version",
   "cryptoProof.versionsCheck.summary": "Version v{version} verificeret mod {count} nøgler i din browser.",
   "cryptoProof.versionsCheck.summary.one": "Version v{version} verificeret mod {count} nøgle i din browser.",
+  "cryptoProof.versionsCheck.summary.twoAuthorities": "Version v{version} verificeret mod {count} nøgler i din browser: én fra udstederen ({issuer}), én fra {platform}.",
   "cryptoProof.chain.note": "Kæde: hver version indeholder hash-værdien fra den forrige version, så et flueben her betyder, at linket til den forrige version er intakt. v1 har ingen forgænger, deraf stregen.",
   "product.rating": "Vurdering",
   "verifier.url": "Link til passet eller manifest-URL",

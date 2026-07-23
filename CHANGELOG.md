@@ -21,6 +21,25 @@ and this project adheres to
   library, auth, lightbox, and the public `openModal` API) and
   layers cleanly over the timeline's own hash navigation.
 
+### Changed
+
+- The proof modal's per-version verdicts table heads the
+  issuer column with a generic "Issuer" label instead of the
+  economic operator's own name, which can run long. When a
+  snapshot carries exactly one issuer key and one platform key
+  (the ecdsa-sd two-proof shape), the version-checks intro
+  names both owners: "verified against 2 keys in your browser,
+  the issuer's (...) and ...'s." New label key
+  `cryptoProof.versionsCheck.summary.twoAuthorities` across
+  all 40 locales.
+
+### Fixed
+
+- The proof modal no longer overflows horizontally on narrow
+  phones: the per-version verdicts table scrolls inside its
+  own strip when it outgrows the viewport, and modal bodies
+  clip sideways overflow instead of growing a second scrollbar.
+
 ## [2.4.0] - 2026-07-02
 
 ### Changed

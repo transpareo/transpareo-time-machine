@@ -28,6 +28,7 @@
   "cryptoProof.versionOf": "{current} {total} -a potpisanih verzija",
   "cryptoProof.versionsCheck.summary": "Verzija v{version} provjerena pomoću ključeva {count} u vašem pregledniku.",
   "cryptoProof.versionsCheck.summary.one": "Verzija v{version} provjerena pomoću {count} ključa u vašem pregledniku.",
+  "cryptoProof.versionsCheck.summary.twoAuthorities": "Verzija v{version} provjerena pomoću {count} ključeva u vašem pregledniku: jedan od emitenta ({issuer}), jedan od {platform}.",
   "cryptoProof.chainPending": "Provjera dokaza snimka u vašem pregledniku...",
   "cryptoProof.method.https": "https",
   "cryptoProof.chain.header": "Lanac",

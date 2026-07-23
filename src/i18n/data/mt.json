@@ -111,6 +111,7 @@
   "cryptoProof.versionsTable.caption": "Verdetti skont il-verżjoni",
   "cryptoProof.versionsCheck.summary": "Il-verżjoni v{version} ġiet ivverifikata kontra {count} ċwievet fil-browser tiegħek.",
   "cryptoProof.versionsCheck.summary.one": "Il-verżjoni v{version} ġiet ivverifikata kontra {count} ċavetta fil-browser tiegħek.",
+  "cryptoProof.versionsCheck.summary.twoAuthorities": "Il-verżjoni v{version} ġiet ivverifikata kontra {count} ċwievet fil-browser tiegħek: waħda mill-emittent ({issuer}), waħda minn {platform}.",
   "cryptoProof.chain.note": "Katina: kull verżjoni tinkludi l-hash tal-verżjoni preċedenti, allura tikk hawn ifisser li l-link mal-verżjoni preċedenti hu intatt. v1 m'għandhiex predeċessur, għalhekk il-linja.",
   "product.rating": "Klassifikazzjoni",
   "verifier.url": "Link tal-passaport jew URL tal-manifest",

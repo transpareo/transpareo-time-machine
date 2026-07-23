@@ -111,6 +111,7 @@
   "cryptoProof.versionsTable.caption": "Werdykty dla wersji",
   "cryptoProof.versionsCheck.summary": "Wersja v{version} zweryfikowana przy użyciu {count} kluczy w Twojej przeglądarce.",
   "cryptoProof.versionsCheck.summary.one": "Wersja v{version} zweryfikowana przy użyciu {count} klucza w Twojej przeglądarce.",
+  "cryptoProof.versionsCheck.summary.twoAuthorities": "Wersja v{version} zweryfikowana przy użyciu {count} kluczy w Twojej przeglądarce: jeden od wydawcy ({issuer}), jeden od {platform}.",
   "cryptoProof.chain.note": "Łańcuch: każda wersja zawiera skrót poprzedniej, więc znacznik tutaj oznacza, że powiązanie z poprzednią wersją jest zachowane. v1 nie ma poprzednika, stąd myślnik.",
   "product.rating": "Ocena",
   "verifier.url": "Link do paszportu lub URL manifestu",

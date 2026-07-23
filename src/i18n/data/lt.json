@@ -111,6 +111,7 @@
   "cryptoProof.versionsTable.caption": "Versijų verdiktai",
   "cryptoProof.versionsCheck.summary": "Versija v{version} patvirtinta naudojant {count} raktus jūsų naršyklėje.",
   "cryptoProof.versionsCheck.summary.one": "Versija v{version} patvirtinta naudojant {count} raktą jūsų naršyklėje.",
+  "cryptoProof.versionsCheck.summary.twoAuthorities": "Versija v{version} patvirtinta naudojant {count} raktus jūsų naršyklėje: vienas iš išdavėjo ({issuer}), kitas iš {platform}.",
   "cryptoProof.chain.note": "Grandinė: kiekviena versija turi ankstesnės versijos maišos kodą, todėl varnelė reiškia, kad nuoroda į ankstesnę versiją yra nepažeista. v1 neturi pirmtako, todėl rodomas brūkšnys.",
   "product.rating": "Įvertinimas",
   "verifier.url": "Paso nuoroda arba manifesto URL",
