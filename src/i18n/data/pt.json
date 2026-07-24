@@ -111,7 +111,7 @@
   "cryptoProof.versionsTable.caption": "Veredictos por versão",
   "cryptoProof.versionsCheck.summary": "Versão v{version} verificada com {count} chaves no seu navegador.",
   "cryptoProof.versionsCheck.summary.one": "Versão v{version} verificada com {count} chave no seu navegador.",
-  "cryptoProof.versionsCheck.summary.twoAuthorities": "Versão v{version} verificada com {count} chaves no seu navegador: uma do emissor ({issuer}), uma da {platform}.",
+  "cryptoProof.versionsCheck.summary.twoAuthorities": "Versão v{version} verificada com {count} chaves no seu navegador: {issuerCount} do emissor ({issuer}) e {platformCount} de {platform}.",
   "cryptoProof.chain.note": "Cadeia: cada versão incorpora o hash da versão anterior, por isso uma marca aqui significa que a ligação com a versão anterior está intacta. v1 não tem predecessor, daí o travessão.",
   "product.rating": "Avaliação",
   "verifier.url": "Link do passaporte ou URL do manifesto",

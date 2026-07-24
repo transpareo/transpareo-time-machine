@@ -111,7 +111,7 @@
   "cryptoProof.versionsTable.caption": "버전별 판정",
   "cryptoProof.versionsCheck.summary": "버전 v{version}이(가) 브라우저에서 {count}개의 키로 확인되었습니다.",
   "cryptoProof.versionsCheck.summary.one": "버전 v{version}이(가) 브라우저에서 {count}개의 키로 확인되었습니다.",
-  "cryptoProof.versionsCheck.summary.twoAuthorities": "버전 v{version}이(가) 브라우저에서 {count}개의 키로 확인되었습니다: 하나는 발급자({issuer}), 다른 하나는 {platform}의 키입니다.",
+  "cryptoProof.versionsCheck.summary.twoAuthorities": "버전 v{version}이(가) 브라우저에서 {count}개의 키로 확인되었습니다: {issuerCount}개는 발급자({issuer}), {platformCount}개는 {platform}의 키입니다.",
   "cryptoProof.chain.note": "체인: 각 버전은 이전 버전의 해시를 포함하므로 여기의 체크는 이전 버전과의 연결이 손상되지 않았음을 의미합니다. v1은 이전 버전이 없어 대시로 표시됩니다.",
   "product.rating": "평가",
   "verifier.url": "여권 링크 또는 매니페스트 URL",

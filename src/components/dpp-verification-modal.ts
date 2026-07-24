@@ -597,33 +597,35 @@ export function buildDisclosureSubtitle(
     return p
   }
 
-  // One key per proof: a two-proof ecdsa-sd snapshot (issuer
-  // + platform) counts two, matching the authority rows below.
-  const count = state.result.entries.length
   const groups = groupByAuthority(state.result.entries)
-  const issuerName = activeIssuer().name
-  const platformName = activePlatform().name
-  const isOneKeyEach = count === 2
-    && groups.length === 2
-    && groups.some((g) => g.kind === 'issuer')
-    && groups.some((g) => g.kind === 'platform')
+  const issuerGroup = groups.find((g) => g.kind === 'issuer')
+  const platformGroup = groups.find((g) => g.kind === 'platform')
 
-  // Name both keys' owners when it's exactly one issuer key
-  // plus one platform key (the ecdsa-sd two-proof shape): the
-  // issuer's name is called out by role since it can run long
-  // (an economic operator's full legal name), while the
-  // platform's short brand name reads fine inline. Multi-alias
-  // proof sets (an eddsa suite listing several verification
-  // methods per authority) keep the generic count sentence,
-  // whose per-owner possessives would misstate the key count.
-  if (isOneKeyEach) {
+  // When the proofs split cleanly into exactly the issuer and
+  // the platform, break the key count down per authority and
+  // name the issuer (its legal name can run long). Each group's
+  // count folds its aliases: an eddsa proof set lists several
+  // verification methods per authority, one key chip each.
+  // Anything else (unknown authorities, a lone proof) keeps the
+  // plain total.
+  if (groups.length === 2 && issuerGroup && platformGroup) {
+    const issuerCount = issuerGroup.entries.length
+    const platformCount = platformGroup.entries.length
     p.textContent = t(
       i18n.labels, 'cryptoProof.versionsCheck.summary.twoAuthorities',
-      { version, count, issuer: issuerName, platform: platformName },
+      {
+        version,
+        count: issuerCount + platformCount,
+        issuerCount,
+        issuer: activeIssuer().name,
+        platformCount,
+        platform: activePlatform().name,
+      },
     )
     return p
   }
 
+  const count = state.result.entries.length
   const key: LabelKey = count === 1
     ? 'cryptoProof.versionsCheck.summary.one'
     : 'cryptoProof.versionsCheck.summary'

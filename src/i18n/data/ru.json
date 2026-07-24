@@ -111,7 +111,7 @@
   "cryptoProof.versionsTable.caption": "Вердикты по версиям",
   "cryptoProof.versionsCheck.summary": "Версия v{version} подтверждена по {count} ключам в вашем браузере.",
   "cryptoProof.versionsCheck.summary.one": "Версия v{version} подтверждена по {count} ключу в вашем браузере.",
-  "cryptoProof.versionsCheck.summary.twoAuthorities": "Версия v{version} подтверждена по {count} ключам в вашем браузере: один от издателя ({issuer}), один от {platform}.",
+  "cryptoProof.versionsCheck.summary.twoAuthorities": "Версия v{version} подтверждена по {count} ключам в вашем браузере: {issuerCount} от издателя ({issuer}) и {platformCount} от {platform}.",
   "cryptoProof.chain.note": "Цепочка: каждая версия включает хеш предыдущей, поэтому галочка означает, что связь с предыдущей версией не нарушена. У v1 нет предшественника, отсюда тире.",
   "product.rating": "Оценка",
   "verifier.url": "Ссылка на паспорт или URL манифеста",

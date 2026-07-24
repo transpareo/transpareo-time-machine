@@ -217,6 +217,14 @@ code {
   &[open] .proof-disclosure-summary .chevron {
     transform: rotate(180deg);
   }
+
+  // The active-version chain block is a nested .proof-section;
+  // drop its inline padding so the cryptosuite line and the
+  // authority rows align with the subtitle above instead of
+  // indenting a second time.
+  > .proof-section {
+    padding-inline: 0;
+  }
 }
 
 .proof-disclosure-summary {

@@ -28,7 +28,7 @@
   "cryptoProof.versionOf": "{current} {total} -ve të nënshkruara",
   "cryptoProof.versionsCheck.summary": "Versioni v{version} verifikuar kundër çelësave {count} në shfletuesin tuaj.",
   "cryptoProof.versionsCheck.summary.one": "Versioni v{version} verifikuar kundër {count} çelësi në shfletuesin tuaj.",
-  "cryptoProof.versionsCheck.summary.twoAuthorities": "Versioni v{version} verifikuar kundër çelësave {count} në shfletuesin tuaj: një nga emetuesi ({issuer}), një nga {platform}.",
+  "cryptoProof.versionsCheck.summary.twoAuthorities": "Versioni v{version} verifikuar kundër {count} çelësave në shfletuesin tuaj: {issuerCount} nga emetuesi ({issuer}) dhe {platformCount} nga {platform}.",
   "cryptoProof.chainPending": "Verifikimi i provave snapshot në shfletuesin tuaj...",
   "cryptoProof.method.https": "https",
   "cryptoProof.chain.header": "Zinxhir",

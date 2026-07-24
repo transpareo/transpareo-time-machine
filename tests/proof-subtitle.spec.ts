@@ -71,18 +71,18 @@ describe('buildDisclosureSubtitle', () => {
       toBe('Verifying snapshot proofs in your browser...');
   });
 
-  it('names both owners for one issuer + one platform key', () => {
+  it('breaks the count down per authority for one key each', () => {
     const state = verified([
       entry(ISS_URL, 'zIssuer'),
       entry(PLAT_URL, 'zPlatform'),
     ]);
     expect(buildDisclosureSubtitle(4, state).textContent).toBe(
       'Version v4 verified against 2 keys in your browser, '
-      + "the issuer's (Volturra Energia) and Transpareo's.",
+      + '1 from the issuer (Volturra Energia) and 1 from Transpareo.',
     );
   });
 
-  it('keeps the count sentence for multi-alias proof sets', () => {
+  it('folds aliases into the per-authority counts', () => {
     const state = verified([
       entry(`${ISS_URL}#did-web`, 'zIss'),
       entry(`${ISS_URL}#cdn`, 'zIss'),
@@ -90,8 +90,10 @@ describe('buildDisclosureSubtitle', () => {
       entry(`${PLAT_URL}#did-web`, 'zPlat'),
       entry(PLAT_URL, 'zPlat'),
     ]);
-    expect(buildDisclosureSubtitle(6, state).textContent).
-      toBe('Version v6 verified against 5 keys in your browser.');
+    expect(buildDisclosureSubtitle(6, state).textContent).toBe(
+      'Version v6 verified against 5 keys in your browser, '
+      + '3 from the issuer (Volturra Energia) and 2 from Transpareo.',
+    );
   });
 
   it('uses the singular sentence for one key', () => {
@@ -100,10 +102,10 @@ describe('buildDisclosureSubtitle', () => {
       toBe('Version v1 verified against 1 key in your browser.');
   });
 
-  it('needs one key per authority, not merely two keys', () => {
-    // Two distinct issuer keys and no platform key group
-    // into two issuer-named authorities; the naming wording
-    // would misattribute one of them to the platform.
+  it('falls back to the plain count without a platform group', () => {
+    // Two distinct issuer keys and no platform: two groups, but
+    // both are the issuer, so the per-authority wording (which
+    // needs one issuer and one platform) does not apply.
     const state = verified([
       entry(ISS_URL, 'zIssA'),
       entry(`${ISS_URL}#did-web`, 'zIssB'),
@@ -126,7 +128,7 @@ describe('buildDisclosureSubtitle', () => {
     } as unknown as VersionState;
     expect(buildDisclosureSubtitle(4, state).textContent).toBe(
       'Version v4 verified against 2 keys in your browser, '
-      + "the issuer's (Volturra Energia) and Transpareo's.",
+      + '1 from the issuer (Volturra Energia) and 1 from Transpareo.',
     );
   });
 });

@@ -111,7 +111,7 @@
   "cryptoProof.versionsTable.caption": "Резултати по версии",
   "cryptoProof.versionsCheck.summary": "Версия v{version} е потвърдена с {count} ключа в браузъра ви.",
   "cryptoProof.versionsCheck.summary.one": "Версия v{version} е потвърдена с {count} ключ в браузъра ви.",
-  "cryptoProof.versionsCheck.summary.twoAuthorities": "Версия v{version} е потвърдена с {count} ключа в браузъра ви: един от издателя ({issuer}), един от {platform}.",
+  "cryptoProof.versionsCheck.summary.twoAuthorities": "Версия v{version} е потвърдена с {count} ключа в браузъра ви: {issuerCount} от издателя ({issuer}) и {platformCount} от {platform}.",
   "cryptoProof.chain.note": "Верига: всяка версия включва хеша на предходната, така че отметка тук означава, че връзката с предишната версия е непокътната. v1 няма предшественик, оттам и тиренцето.",
   "product.rating": "Оценка",
   "verifier.url": "Връзка към паспорта или URL на манифеста",

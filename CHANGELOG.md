@@ -10,6 +10,14 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Changed
+
+- The version-checks subtitle breaks the key count down per
+  authority and names the issuer: "verified against 5 keys in
+  your browser, 3 from the issuer (Nordic Wear) and 2 from
+  Transpareo." The chain block (cryptosuite line and authority
+  rows) no longer double-indents; it aligns with the subtitle.
+
 ### Fixed
 
 - The ecdsa-sd version chain no longer reports every version as

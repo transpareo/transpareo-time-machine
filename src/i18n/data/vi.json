@@ -28,7 +28,7 @@
   "cryptoProof.versionOf": "{current} trên {total} phiên bản đã ký",
   "cryptoProof.versionsCheck.summary": "Phiên bản v{version} đã được xác minh với {count} khóa trong trình duyệt của bạn.",
   "cryptoProof.versionsCheck.summary.one": "Phiên bản v{version} đã được xác minh với {count} khóa trong trình duyệt của bạn.",
-  "cryptoProof.versionsCheck.summary.twoAuthorities": "Phiên bản v{version} đã được xác minh với {count} khóa trong trình duyệt của bạn: một từ đơn vị phát hành ({issuer}), một từ {platform}.",
+  "cryptoProof.versionsCheck.summary.twoAuthorities": "Phiên bản v{version} đã được xác minh với {count} khóa trong trình duyệt của bạn: {issuerCount} từ đơn vị phát hành ({issuer}) và {platformCount} từ {platform}.",
   "cryptoProof.chainPending": "Đang xác minh bằng chứng bản chụp trong trình duyệt của bạn...",
   "cryptoProof.method.https": "https",
   "cryptoProof.chain.header": "Chuỗi",

@@ -28,7 +28,7 @@
   "cryptoProof.versionOf": "{current} af undirrituðum útgáfum af {total} ",
   "cryptoProof.versionsCheck.summary": "Útgáfa v{version} staðfest gegn {count} -lyklum í vafranum þínum.",
   "cryptoProof.versionsCheck.summary.one": "Útgáfa v{version} staðfest gegn {count} lykli í vafranum þínum.",
-  "cryptoProof.versionsCheck.summary.twoAuthorities": "Útgáfa v{version} staðfest gegn {count} lyklum í vafranum þínum: einn frá útgefanda ({issuer}), einn frá {platform}.",
+  "cryptoProof.versionsCheck.summary.twoAuthorities": "Útgáfa v{version} staðfest gegn {count} lyklum í vafranum þínum: {issuerCount} frá útgefanda ({issuer}) og {platformCount} frá {platform}.",
   "cryptoProof.chainPending": "Staðfesta myndskeytis-sönnanir í vafranum þínum...",
   "cryptoProof.method.https": "https",
   "cryptoProof.chain.header": "Keti",

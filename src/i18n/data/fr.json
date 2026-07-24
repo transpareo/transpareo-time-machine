@@ -28,7 +28,7 @@
   "cryptoProof.versionOf": "{current} sur {total} versions signées",
   "cryptoProof.versionsCheck.summary": "Version v{version} vérifiée face à {count} clés dans votre navigateur.",
   "cryptoProof.versionsCheck.summary.one": "Version v{version} vérifiée face à {count} clé dans votre navigateur.",
-  "cryptoProof.versionsCheck.summary.twoAuthorities": "Version v{version} vérifiée face à {count} clés dans votre navigateur : une de l'émetteur ({issuer}), une de {platform}.",
+  "cryptoProof.versionsCheck.summary.twoAuthorities": "Version v{version} vérifiée face à {count} clés dans votre navigateur : {issuerCount} de l'émetteur ({issuer}) et {platformCount} de {platform}.",
   "cryptoProof.chainPending": "Vérification des preuves dans votre navigateur...",
   "cryptoProof.method.https": "https",
   "cryptoProof.chain.header": "Chaîne",

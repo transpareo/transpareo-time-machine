@@ -28,7 +28,7 @@
   "cryptoProof.versionOf": "{current} од потписаних верзија {total} ",
   "cryptoProof.versionsCheck.summary": "Верзија v{version} проверена помоћу кључева {count} у вашем прегледачу.",
   "cryptoProof.versionsCheck.summary.one": "Верзија v{version} проверена помоћу {count} кључа у вашем прегледачу.",
-  "cryptoProof.versionsCheck.summary.twoAuthorities": "Верзија v{version} проверена помоћу кључева {count} у вашем прегледачу: један од издавача ({issuer}), један од {platform}.",
+  "cryptoProof.versionsCheck.summary.twoAuthorities": "Верзија v{version} проверена помоћу {count} кључева у вашем прегледачу: {issuerCount} од издавача ({issuer}) и {platformCount} од {platform}.",
   "cryptoProof.chainPending": "Проверa доказа снимка у вашем прегледачу...",
   "cryptoProof.method.https": "https",
   "cryptoProof.chain.header": "Ланac",

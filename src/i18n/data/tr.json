@@ -111,7 +111,7 @@
   "cryptoProof.versionsTable.caption": "Sürüm bazlı kararlar",
   "cryptoProof.versionsCheck.summary": "Sürüm v{version}, tarayıcınızda {count} anahtara karşı doğrulandı.",
   "cryptoProof.versionsCheck.summary.one": "Sürüm v{version}, tarayıcınızda {count} anahtara karşı doğrulandı.",
-  "cryptoProof.versionsCheck.summary.twoAuthorities": "Sürüm v{version}, tarayıcınızda {count} anahtara karşı doğrulandı: biri düzenleyenden ({issuer}), biri {platform}'dan.",
+  "cryptoProof.versionsCheck.summary.twoAuthorities": "Sürüm v{version}, tarayıcınızda {count} anahtara karşı doğrulandı: {issuerCount} düzenleyenden ({issuer}) ve {platformCount} {platform}'dan.",
   "cryptoProof.chain.note": "Zincir: her sürüm bir önceki sürümün hash'ini içerir; dolayısıyla buradaki onay önceki sürüme bağlantının bozulmadığını gösterir. v1'in öncülü yoktur, bu nedenle çizgi gösterilir.",
   "product.rating": "Değerlendirme",
   "verifier.url": "Pasaport bağlantısı veya manifest URL’si",
