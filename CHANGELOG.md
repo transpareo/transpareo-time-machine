@@ -10,6 +10,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.5.1] - 2026-07-24
+
 ### Changed
 
 - The version-checks subtitle breaks the key count down per
