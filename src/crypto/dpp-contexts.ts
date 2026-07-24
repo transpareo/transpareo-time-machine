@@ -13,8 +13,8 @@
  * in v1, this copy is updated in lockstep.
  */
 
-import vcV1 from '@/contexts/vc-v1.json'
-import transpareoV1 from '@/contexts/transpareo-v1.json'
+import vcV1 from '../contexts/vc-v1.json'
+import transpareoV1 from '../contexts/transpareo-v1.json'
 
 export const VC_CONTEXT_URL = 'https://transpareo.com/vocab/vc/v1'
 export const TRANSPAREO_CONTEXT_URL =

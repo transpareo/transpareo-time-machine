@@ -10,6 +10,20 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Fixed
+
+- The ecdsa-sd version chain no longer reports every version as
+  broken. The seed stamped each manifest `hashValue` and
+  `priorVersionHash` with the flat JCS body hash, but the
+  verifier recomputes an ecdsa-sd snapshot's chain hash over
+  its RDFC canonical statements, so the two never matched on a
+  selective-disclosure passport. The chain hash now lives in
+  one module (`src/crypto/chain-hash.ts`) shared by the seed,
+  the SPA chain walk, and the standalone verifier widget, so
+  producer and consumer cannot drift apart. The widget also now
+  reads `priorVersionHash` from `credentialSubject` for
+  VC-shaped snapshots.
+
 ## [2.5.0] - 2026-07-24
 
 ### Added

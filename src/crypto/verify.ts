@@ -55,16 +55,18 @@
  */
 
 import { canonicalize } from './jcs'
-import {
-  canonicalize as canonicalizeRdfc, hashNQuads,
-} from './rdfc'
-import { DPP_CONTEXTS } from './dpp-contexts'
 import { decodeMultibaseBase58 } from './multibase'
-import { proofConfig, unsecuredDocument, joinHashes } from './eddsa-jcs'
+import { proofConfig, joinHashes } from './eddsa-jcs'
 import { resolveMultikey } from './did-web'
 import { asBuffer } from './buffer'
+import { hashDocument, sha256Utf8 } from './chain-hash'
 import type { ManifestSignature } from '@/archive'
 import { describeError } from '@/errors'
+
+// The version-chain content hashes live in their own module so
+// the seed and the verifier share one implementation; re-export
+// the snapshot-facing surface here where callers expect it.
+export { hexHashOfSnapshotBody, hexChainHashOfSnapshot } from './chain-hash'
 
 export type ProofEntryStatus =
   | 'pending'
@@ -242,23 +244,6 @@ function isAuthentic(
   return authorities >= 2
 }
 
-async function sha256Utf8(text: string): Promise<Uint8Array> {
-  const bytes = new TextEncoder().encode(text)
-  return new Uint8Array(await crypto.subtle.digest('SHA-256', bytes))
-}
-
-// SHA-256 of the JCS-canonical unsecured document (the body
-// with its proof / signature removed). Shared by every
-// entry, then combined with each entry's own proof-config
-// hash to form that entry's hashData.
-async function hashDocument(
-  document: ProofCarrier | Record<string, unknown>,
-): Promise<Uint8Array> {
-  return sha256Utf8(
-    canonicalize(unsecuredDocument(document as Record<string, unknown>)),
-  )
-}
-
 // hashData for one entry: proofConfigHash || documentHash.
 // The proof config is the entry minus proofValue, carrying
 // the document's @context, exactly the bytes the signer
@@ -303,48 +288,6 @@ export async function verifyManifestSignature(
   const documentHash = await hashDocument(manifest)
   const context = manifest['@context']
   return verifyEntry(sig, 0, documentHash, context, pinnedPlatformKeys)
-}
-
-// Hex form of hashDocument, exposed so the chain
-// walker in actions.ts can recompute a prior
-// snapshot's body hash and compare it against the
-// manifest's hashValue claim (and the next snapshot's
-// priorVersionHash claim) without depending on either.
-export async function hexHashOfSnapshotBody(
-  snapshot: ProofCarrier,
-): Promise<string> {
-  const digest = await hashDocument(snapshot)
-  return hexOf(digest)
-}
-
-// The hash a snapshot contributes to the version chain,
-// per its format. An ecdsa-sd snapshot is a Verifiable
-// Credential whose manifest hashValue is the SHA-256 over
-// ALL its RDFC canonical statements - equal to the
-// issuer's mandatory-statements hash, because the public
-// view reveals exactly the mandatory statements. A flat
-// eddsa-jcs snapshot chains on its JCS body hash. The
-// walker must pick per prior-version format: a chain can
-// cross the cryptosuite boundary mid-history.
-export async function hexChainHashOfSnapshot(
-  snapshot: ProofCarrier,
-): Promise<string> {
-  const doc = snapshot as Record<string, unknown>
-  if (doc.credentialSubject === undefined) {
-    return hexHashOfSnapshotBody(snapshot)
-  }
-  const unsecured = { ...doc }
-  delete unsecured.proof
-  const nquads = await canonicalizeRdfc(unsecured, {
-    contexts: DPP_CONTEXTS,
-  })
-  return hexOf(await hashNQuads(nquads))
-}
-
-function hexOf(digest: Uint8Array): string {
-  let out = ''
-  for (const b of digest) out += b.toString(16).padStart(2, '0')
-  return out
 }
 
 async function verifyEntry(

@@ -35,7 +35,7 @@ import {
 } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { join } from 'node:path';
-import { canonicalize } from '../../src/crypto/jcs.ts';
+import { hexChainHashOfSnapshot } from '../../src/crypto/chain-hash.ts';
 import type { Fixture } from './schema.ts';
 
 type FixtureSnapshot = Fixture['snapshots'][number];
@@ -185,6 +185,10 @@ interface SnapshotRecord {
   // The full signed snapshot document: a flat eddsa-jcs
   // snapshot, or an ecdsa-sd Verifiable Credential.
   readonly doc: Record<string, unknown>;
+  // The version-chain hash the verifier recomputes for this
+  // snapshot; stamped into the manifest hashValue and the
+  // next version's priorVersionHash.
+  readonly chainHash: string;
 }
 
 // ─── Contract identity, scalars + derivations ───────
@@ -357,8 +361,15 @@ async function buildSnapshots(
     const doc = ecdsaIssuer
       ? await ecdsaIssuer.issue(body)
       : { ...body, proof: signer.signSnapshot(body) };
-    out.push({ version: s.version, publishedAt: s.published_at, doc });
-    priorHash = docHashOf(doc);
+    // The chain hash the verifier will recompute from this
+    // snapshot's bytes: RDFC statements for an ecdsa-sd VC, the
+    // JCS body for a flat one. Shared with the verifier via
+    // hexChainHashOfSnapshot so producer and consumer agree.
+    const chainHash = await hexChainHashOfSnapshot(doc);
+    out.push({
+      version: s.version, publishedAt: s.published_at, doc, chainHash,
+    });
+    priorHash = chainHash;
     priorProps = props;
   }
   return out;
@@ -722,7 +733,7 @@ function buildManifest(
       number: s.version,
       publishedAt: s.publishedAt,
       reason: 'fixture',
-      hashValue: docHashOf(s.doc),
+      hashValue: s.chainHash,
       url: `v/${s.version}.json`,
       sizeBytes: serialised.length,
       ...(hasPrivate
@@ -756,18 +767,6 @@ function buildManifest(
     signedAt: current.publishedAt,
   };
   return { ...body, signature: signer.signManifest(body) };
-}
-
-// Content hash of a snapshot document, minus its proof, in
-// JCS canonical form. Used for the manifest hashValue and
-// the priorVersionHash chain; the SPA recomputes the same
-// way (verify.ts hexHashOfSnapshotBody), so both the flat
-// snapshot and the VC chain identically.
-function docHashOf(doc: Record<string, unknown>): string {
-  const { proof: _proof, ...body } = doc;
-  return createHash('sha256')
-    .update(canonicalize(body), 'utf8')
-    .digest('hex');
 }
 
 // ─── EPCIS (the public events sidecar) ──────────────

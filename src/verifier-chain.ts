@@ -7,7 +7,9 @@
  * <dpp-verifier> widget. Same contract as the SPA's
  * verifyChainLink (actions.ts): walk backwards from the
  * current version to v1, recomputing each prior snapshot's
- * body hash from its bytes and cross-checking it against
+ * chain hash from its bytes (JCS body for a flat snapshot,
+ * RDFC statements for an ecdsa-sd VC, via
+ * hexChainHashOfSnapshot) and cross-checking it against
  * BOTH the manifest's hashValue entry and the next
  * snapshot's priorVersionHash claim, so a re-emitted
  * manifest with matching forged hashes still fails.
@@ -17,7 +19,7 @@
  */
 
 import type { DppManifest, SignedSnapshot } from '@/archive'
-import { hexHashOfSnapshotBody } from '@/crypto/verify'
+import { hexChainHashOfSnapshot } from '@/crypto/chain-hash'
 
 export interface ChainCheckResult {
   readonly status: 'ok' | 'broken' | 'not-applicable'
@@ -55,7 +57,7 @@ export async function verifyChainFromHead(
     const prior = await fetchSnapshot(
       new URL(priorEntry.url, manifestUrl).toString(),
     )
-    const computed = await hexHashOfSnapshotBody(prior)
+    const computed = await hexChainHashOfSnapshot(prior)
     if (computed !== claim) {
       return broken(
         `v${priorNumber} body does not hash to the claimed value`,
@@ -72,6 +74,13 @@ function broken(reason: string): ChainCheckResult {
 }
 
 function priorHashOf(snapshot: SignedSnapshot): string | undefined {
-  const v = (snapshot as { priorVersionHash?: unknown }).priorVersionHash
+  // An ecdsa-sd snapshot is a Verifiable Credential, so the
+  // field lives under credentialSubject; a flat eddsa-jcs
+  // snapshot carries it at the top level.
+  const r = snapshot as Record<string, unknown>
+  const subject = r.credentialSubject
+  const scope = (subject && typeof subject === 'object')
+    ? subject as Record<string, unknown> : r
+  const v = scope.priorVersionHash
   return typeof v === 'string' ? v : undefined
 }
