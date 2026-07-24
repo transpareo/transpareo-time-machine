@@ -10,6 +10,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.5.0] - 2026-07-24
+
 ### Added
 
 - ecdsa-sd-2023 selective-disclosure verification. The SPA now
