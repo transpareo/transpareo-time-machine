@@ -10,6 +10,16 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Fixed
+
+- Dismissing a modal no longer closes the DPP history behind
+  it. An open modal keeps one extra history entry so the
+  platform Back gesture closes the dialog; popping that entry
+  on Escape / X / Back landed on the same URL, which the hash
+  sync read as a navigation to "no event focused" and
+  collapsed the timeline. Same-hash history events are now
+  ignored.
+
 ## [2.5.1] - 2026-07-24
 
 ### Changed

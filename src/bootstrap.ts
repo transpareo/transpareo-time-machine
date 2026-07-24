@@ -72,7 +72,15 @@ let lazyVerifyArmed = false
 
 // ─── URL hash sync ───────────────────────────────────
 
-let lastHashWritten: string | null = null
+// The hash the SPA state currently corresponds to, kept in
+// sync by both directions below so a history event that
+// leaves the hash untouched can be told apart from a real
+// navigation.
+let syncedHash = ''
+
+function hashFor(id: string | null): string {
+  return id ? '#' + encodeURIComponent(id) : ''
+}
 
 // Guard against re-entry: bootstrapHash is called from
 // `<transpareo-time-machine>`'s setup, which can run more
@@ -97,6 +105,7 @@ export function bootstrapHash(): void {
   // a deep link to a specific version, so the timeline
   // opens straight into expanded mode.
   const initial = parseHash()
+  syncedHash = hashFor(initial)
   focusedEventId.set(initial)
   if (initial) timelineState.set('expanded')
 
@@ -108,21 +117,29 @@ export function bootstrapHash(): void {
   effect(() => {
     const id = focusedEventId()
     const visible = timelineState() !== 'hidden'
-    const target = (visible && id)
-      ? '#' + encodeURIComponent(id)
-      : ''
+    const target = (visible && id) ? hashFor(id) : ''
+    if (syncedHash === target) return
+    syncedHash = target
     if (window.location.hash === target) return
-    if (lastHashWritten === target) return
-    lastHashWritten = target
     const next = window.location.pathname
       + window.location.search + target
     window.history.pushState(null, '', next)
   })
 
   // hash -> focusedEventId + timelineState (back/forward).
+  //
+  // A history event that lands on the same hash is not a
+  // navigation: an open modal keeps one extra entry on the
+  // stack carrying the current URL unchanged, so dismissing
+  // it (or backing out of it) pops onto a twin of the entry
+  // we are already on. Reacting to that would read the
+  // absent hash of a history-open-but-unfocused view as
+  // "close the history".
   const onHash = (): void => {
     const next = parseHash()
-    lastHashWritten = next ? '#' + encodeURIComponent(next) : ''
+    const target = hashFor(next)
+    if (target === syncedHash) return
+    syncedHash = target
     navByEventId(next)
     timelineState.set(next ? 'expanded' : 'hidden')
   }
