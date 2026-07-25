@@ -10,6 +10,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.5.2] - 2026-07-25
+
 ### Fixed
 
 - Dismissing a modal no longer closes the DPP history behind
