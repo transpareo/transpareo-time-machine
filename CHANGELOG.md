@@ -10,6 +10,17 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Fixed
+
+- The integration-hook docs describe the `additional` slot
+  and the `:state` event accurately for more than one
+  integration. Multiple slotted children are supported and
+  project in source order; the event re-dispatches on every
+  timeline step rather than only on a version change; and
+  the example dedupes on a marker the integration owns
+  instead of on the slot name, which two integrations would
+  have raced on. No code change.
+
 ## [2.5.2] - 2026-07-25
 
 ### Fixed

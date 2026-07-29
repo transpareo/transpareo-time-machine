@@ -265,11 +265,14 @@ the bundle.
   position inside the card, directly above the
   composition donut. Light-DOM children of
   `<transpareo-time-machine>` with that `slot`
-  attribute are projected into it. Branding CSS
-  custom properties (the `--color-*` and `--font-*`
-  tokens) cascade through the slot boundary, so a
-  slotted button inherits the publisher's theme without
-  extra wiring. An element with no children or no
+  attribute are projected into it. More than one such
+  child is supported, projected in light-DOM source
+  order, so independent integrations can each slot
+  their own CTA without composing a shared wrapper.
+  Branding CSS custom properties (the `--color-*` and
+  `--font-*` tokens) cascade through the slot boundary,
+  so a slotted button inherits the publisher's theme
+  without extra wiring. An element with no children or no
   `slot="additional"` child renders nothing extra; the
   SPA fetches nothing on the integration's behalf.
   The slot is hidden while the visitor scrubs to a
@@ -282,8 +285,8 @@ the bundle.
   the regulatory record being scrubbed.
 - **Event**: `transpareo-time-machine:state`. Fires
   on the host element (does not bubble) once the SPA
-  is ready, and again whenever the active version,
-  the active locale, or the manifest changes:
+  is ready, and again on every timeline step, locale
+  switch, and manifest change:
 
   ```ts
   tm.addEventListener('transpareo-time-machine:state', (e) => {
@@ -294,15 +297,29 @@ the bundle.
 
   The detail is intentionally identity-only, no
   snapshot content. The SPA never inspects the slot's
-  content or the integration's network calls. If the
-  integration script attaches its listener after the
-  initial `'ready'` dispatch (script-load-order
-  edge case), the next state change (version scrub,
-  locale switch) re-fires the event; host shells that
-  need the first dispatch should load the integration
-  module immediately after the
-  `<transpareo-time-machine>` element so the async
-  manifest fetch settles after the listener attaches.
+  content or the integration's network calls.
+
+  The event is a "here is the current identity"
+  signal, not a change notification: it re-dispatches
+  on every timeline step, including steps between two
+  events that resolve to the same version number, so
+  the detail is often identical to the previous one.
+  Every handler must be idempotent. Note also that a
+  URL hash is a deep link to a historical version, so
+  for those loads the very first dispatch already
+  carries `version !== currentVersion` and the slot
+  starts hidden; an integration that opens a modal by
+  itself should gate on `version === currentVersion`.
+  If the integration script attaches its listener
+  after the initial `'ready'` dispatch
+  (script-load-order edge case), the next state change
+  (any timeline step, a locale switch) re-fires the
+  event; there is no replay and no getter for the
+  current state, so host shells that need the first
+  dispatch should load the integration module
+  immediately after the `<transpareo-time-machine>`
+  element, so the async manifest fetch settles after
+  the listener attaches.
 - **Method**: `tm.openModal({ title, body, onClose? })`.
   Opens a modal styled with the same chrome as the
   SPA's own modals (overlay, header with close button,
@@ -319,9 +336,11 @@ the bundle.
 
   ```ts
   tm.addEventListener('transpareo-time-machine:state', (e) => {
-    // The event re-fires on every version / locale
-    // change, so build the CTA only once.
-    if (tm.querySelector(':scope > [slot="additional"]')) return
+    // The event re-fires on every step, and another
+    // integration may have slotted a child of its own,
+    // so dedupe on a marker this integration owns
+    // rather than on the slot name.
+    if (tm.querySelector(':scope > [data-newsletter-cta]')) return
     const button = document.createElement('button')
     button.textContent = 'Sign up'
     button.addEventListener('click', () => {
@@ -334,10 +353,11 @@ the bundle.
       })
       // handle.close() to dismiss programmatically.
     })
-    const host = document.createElement('div')
-    host.slot = 'additional'
-    host.appendChild(button)
-    tm.appendChild(host)
+    const wrap = document.createElement('div')
+    wrap.slot = 'additional'
+    wrap.dataset.newsletterCta = ''
+    wrap.appendChild(button)
+    tm.appendChild(wrap)
   })
   ```
 
