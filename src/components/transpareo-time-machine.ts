@@ -70,6 +70,33 @@ import './dpp-footer'
 
 import css from '@/styles/transpareo-time-machine.scss?inline'
 
+// Identity of what the SPA is showing: the payload of the
+// `transpareo-time-machine:state` event and the value of the
+// element's `state` getter.
+export interface TimeMachineStateDetail {
+  readonly code: string
+  readonly locale: string
+  readonly version: number
+  readonly currentVersion: number
+  readonly manifestUrl: string
+}
+
+// One builder behind both the event and the getter so the
+// two can never drift. Null before the manifest has loaded,
+// when there is no identity to report.
+function currentState(): TimeMachineStateDetail | null {
+  const state = host.loadState()
+  const m = host.manifest()
+  if (state !== 'ready' || !m) return null
+  return {
+    code: m.code,
+    locale: i18n.locale,
+    version: activeVersionNumber(),
+    currentVersion: m.currentVersion,
+    manifestUrl: host.getManifestUrl() ?? '',
+  }
+}
+
 class TranspareoTimeMachine extends BaseElement {
   static get observedAttributes(): string[] {
     return ['src']
@@ -96,6 +123,17 @@ class TranspareoTimeMachine extends BaseElement {
   // subscribes.
   openModal(opts: ModalOpenOptions): ModalHandle {
     return openGenericModal(opts)
+  }
+
+  // Public read of the same identity the `:state` event
+  // carries. The event has no replay, so an integration
+  // whose script attaches its listener after the first
+  // dispatch would otherwise stay blind until the visitor
+  // scrubs or switches locale. Null until the manifest has
+  // loaded: read it once when attaching the listener, then
+  // follow the event from there.
+  get state(): TimeMachineStateDetail | null {
+    return currentState()
   }
 
   attributeChangedCallback(
@@ -204,27 +242,21 @@ class TranspareoTimeMachine extends BaseElement {
 
     // Public state event for integrations that slot
     // content above <dpp-compositions>. Fires once on
-    // first 'ready', then again whenever the active
-    // version, the active locale, or the manifest
-    // changes. Consumers listen on this element
-    // directly; the event does not bubble. The detail
-    // is intentionally small (no snapshot content) so
-    // marketing / overlay JS reads the DPP identity and
-    // either fetches its own per-DPP config or decides
-    // not to render.
+    // first 'ready', then again on every timeline step,
+    // locale switch, and manifest change: the derivations
+    // it reads invalidate per step, so two steps landing
+    // on the same version dispatch the same detail twice.
+    // Consumers listen on this element directly; the event
+    // does not bubble. The detail is intentionally small
+    // (no snapshot content) so marketing / overlay JS reads
+    // the DPP identity and either fetches its own per-DPP
+    // config or decides not to render.
     this.effect(() => {
-      const state = host.loadState()
-      const m = host.manifest()
-      if (state !== 'ready' || !m) return
-      this.dispatchEvent(new CustomEvent('transpareo-time-machine:state', {
-        detail: {
-          code: m.code,
-          locale: i18n.locale,
-          version: activeVersionNumber(),
-          currentVersion: m.currentVersion,
-          manifestUrl: host.getManifestUrl() ?? '',
-        },
-      }))
+      const detail = currentState()
+      if (!detail) return
+      this.dispatchEvent(
+        new CustomEvent('transpareo-time-machine:state', { detail }),
+      )
     })
   }
 

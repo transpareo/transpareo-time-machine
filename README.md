@@ -235,6 +235,7 @@ The full passport renderer.
 | Events | `transpareo-time-machine:state` (see "Integration hook" below). |
 | Slots | `additional` (see "Integration hook" below). |
 | Methods | `openModal({ title, body, onClose? }) -> { close }` (see "Integration hook" below). |
+| Properties | `state` (read-only): the same detail the `:state` event carries, or `null` before the manifest has loaded. |
 | CSS parts | None today. The element has an open shadow root, so host pages can reach inner DOM via `::shadow`-style selectors but doing so is unsupported and may break on any release. |
 | CSS custom properties | The publisher theming surface (see "Theming" below). Custom properties inherit through the shadow boundary, so any `--token` set on the host page applies inside. |
 | Attributes | `src` (DPP **manifest** URL, or a single signed **snapshot** URL; see "Single-snapshot mode" below), `icons-src` (decorative content sprite), `icon-map-src` (per-publisher JSON mapping each property's `propertyID` to a sprite symbol id; pairs with `icons-src`), `revoked-roots-src` (revocation endpoint; `''` disables the boot check), `show-verification-mark` (`false` hides the verification chip), `pinned-platform-key` (whitespace-separated Multikey set; the chip must see one of them among the verified entries; also keys the revoked-roots check), `pinned-issuer-key` (whitespace-separated Multikey set of the issuer's declared signing keys - under BYOK the customer's own registered keys; the chip requires a verified issuer entry under one of them), `verifier` (present: mount `<dpp-verifier>` in place of the renderer), `footer-copyright` + `footer-links` (footer chrome; `footer-links` is a JSON array of `{ label, url }`). Read once in the element's `setup()` (`src/config.ts`). The standard `lang` attribute (e.g. `lang="de"`) pins the UI locale ahead of the browser preference; see "Localization" below. |
@@ -255,11 +256,11 @@ not that it is the current version of a history.
 
 #### Integration hook
 
-The renderer exposes one named slot and one custom
-event so a host page can drop in extras (a leadgen
-CTA, a recall banner, a regional disclosure, ...)
-without coupling to the SPA's internals or forking
-the bundle.
+The renderer exposes one named slot, one custom event,
+one property, and one method so a host page can drop in
+extras (a leadgen CTA, a recall banner, a regional
+disclosure, ...) without coupling to the SPA's
+internals or forking the bundle.
 
 - **Slot**: `slot="additional"`. Renders at a stable
   position inside the card, directly above the
@@ -310,16 +311,27 @@ the bundle.
   carries `version !== currentVersion` and the slot
   starts hidden; an integration that opens a modal by
   itself should gate on `version === currentVersion`.
-  If the integration script attaches its listener
-  after the initial `'ready'` dispatch
-  (script-load-order edge case), the next state change
-  (any timeline step, a locale switch) re-fires the
-  event; there is no replay and no getter for the
-  current state, so host shells that need the first
-  dispatch should load the integration module
-  immediately after the `<transpareo-time-machine>`
-  element, so the async manifest fetch settles after
-  the listener attaches.
+  The event has no replay, so an integration script
+  that attaches its listener after the initial
+  `'ready'` dispatch would otherwise wait for the next
+  state change to learn anything. Read `tm.state` once
+  when attaching the listener and follow the event from
+  there; it returns the same detail, or `null` if the
+  manifest has not loaded yet, in which case the first
+  dispatch is still to come.
+- **Property**: `tm.state`, read-only. The same detail
+  the event carries, or `null` before the manifest has
+  loaded. It is a live read, not a copy of the last
+  dispatch, so it is also the way to answer "is the
+  visitor on the current version right now" outside a
+  listener:
+
+  ```ts
+  const s = tm.state
+  if (s && s.version === s.currentVersion) {
+    // ...safe to show a CTA or open a modal
+  }
+  ```
 - **Method**: `tm.openModal({ title, body, onClose? })`.
   Opens a modal styled with the same chrome as the
   SPA's own modals (overlay, header with close button,

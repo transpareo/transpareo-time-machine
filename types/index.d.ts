@@ -36,8 +36,9 @@ export interface ModalHandle {
 
 /** Detail of the `transpareo-time-machine:state` event,
  *  fired on the element (it does not bubble) once on first
- *  'ready' and again whenever the active version, locale,
- *  or manifest changes. */
+ *  'ready' and again on every timeline step, locale switch,
+ *  and manifest change. Also the type of the element's
+ *  `state` property. */
 export interface TimeMachineStateDetail {
   readonly code: string
   readonly locale: string
@@ -54,6 +55,13 @@ export interface TimeMachineStateDetail {
  *  "Public API" section. */
 export interface TranspareoTimeMachineElement extends HTMLElement {
   openModal(options: ModalOpenOptions): ModalHandle
+
+  /** The same identity the `:state` event carries, readable
+   *  at any time. Null until the manifest has loaded. The
+   *  event has no replay, so a listener attached after the
+   *  first dispatch reads this once and follows the event
+   *  from there. Read-only. */
+  readonly state: TimeMachineStateDetail | null
 }
 
 /** The standalone verification widget, `<dpp-verifier>`.

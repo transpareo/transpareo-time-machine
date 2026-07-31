@@ -10,6 +10,18 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Added
+
+- `<transpareo-time-machine>` exposes a read-only `state`
+  property carrying the same detail as the
+  `transpareo-time-machine:state` event, or `null` before the
+  manifest has loaded. The event has no replay, so an
+  integration script that attached its listener after the
+  first dispatch previously stayed blind until the visitor
+  scrubbed or switched locale. It is a live read, so it also
+  answers "is the visitor on the current version right now"
+  outside a listener.
+
 ### Fixed
 
 - The integration-hook docs describe the `additional` slot
