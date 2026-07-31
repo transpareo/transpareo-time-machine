@@ -10,6 +10,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.6.0] - 2026-07-31
+
 ### Added
 
 - `<transpareo-time-machine>` exposes a read-only `state`
