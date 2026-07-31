@@ -279,6 +279,21 @@ body.no-scroll {
   overflow: hidden;
 }
 
+/* While the lock holds, the root hands its reserved
+ * scrollbar slot to the modal overlay: a fixed
+ * overlay's containing block excludes the root's
+ * scrollbar zone, so with the gutter kept the overlay
+ * stops short of the window edge and its scrollbar
+ * sits beside the empty page gutter as two slots.
+ * Releasing the gutter lets the overlay span the full
+ * viewport and show the one scrollbar at the true
+ * edge. The scroll lock compensates the released width
+ * with body padding (see bindBodyScrollLock), so the
+ * page behind the backdrop does not reflow. */
+html:has(body.no-scroll) {
+  scrollbar-gutter: auto;
+}
+
 /* Boot-time spinner. Host pages embed
  * `<transpareo-time-machine src="…">
  *    <div class="ttm-boot" aria-label="Loading"></div>

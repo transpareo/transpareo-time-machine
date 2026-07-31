@@ -136,8 +136,21 @@ function bindEscape(effect: Effect, opts: ModalChrome): void {
 function bindBodyScrollLock(effect: Effect, opts: ModalChrome): void {
   effect(() => {
     if (!opts.isOpen()) return
+
+    // Locking releases the root's reserved scrollbar
+    // gutter (html:has(body.no-scroll) in app.css) so
+    // the overlay's scrollbar can take the page one's
+    // edge slot. Measure the released width before the
+    // class flips and give it back as body padding, so
+    // the page behind the backdrop does not reflow.
+    const gutter = window.innerWidth
+      - document.documentElement.getBoundingClientRect().width
     document.body.classList.add('no-scroll')
-    return () => document.body.classList.remove('no-scroll')
+    if (gutter > 0) document.body.style.paddingRight = `${gutter}px`
+    return () => {
+      document.body.classList.remove('no-scroll')
+      document.body.style.paddingRight = ''
+    }
   })
 }
 

@@ -35,7 +35,10 @@ and this project adheres to
   the overlay gap and pinning flush once content scrolls
   under it. Applies to the proof, event, and library
   modals and to integration modals opened via
-  `tm.openModal(...)`.
+  `tm.openModal(...)`. While a modal is open, the page
+  hands its reserved scrollbar slot to the overlay, so a
+  single scrollbar shows at the window edge and the page
+  behind keeps its width.
 - The integration-hook docs describe the `additional` slot
   and the `:state` event accurately for more than one
   integration. Multiple slotted children are supported and
