@@ -34,7 +34,12 @@
   display: none;
   align-items: flex-start;
   justify-content: center;
-  padding: 5vh 16px 16px;
+
+  // The top padding is the dialog's gap at rest; the
+  // sticky header cancels the same token to pin flush
+  // once the body scrolls under it.
+  --modal-overlay-pad-top: 5vh;
+  padding: var(--modal-overlay-pad-top) 16px 16px;
 
   // Always-dark overlay so it actually dims the page on
   // both themes. Mixing with `var(--font-color)` would
@@ -44,6 +49,48 @@
   backdrop-filter: blur(6px);
 
   &.open { display: flex; }
+}
+
+// The overlay itself is the scroll container, for the
+// generic .dpp-modal-overlay host too: a swipe anywhere,
+// the gutters beside the dialog included, moves the
+// dialog instead of dead-ending. `contain` stops the
+// scroll from chaining to the locked page behind.
+// The overlay's scrollbar paints over the page gutter
+// reserved by `scrollbar-gutter` on html, so only one
+// scrollbar shows at a time.
+:where(
+  dpp-verification-modal,
+  dpp-event-modal,
+  dpp-library-modal,
+  .dpp-modal-overlay
+) {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+
+  // Slim scrollbar on a fixed white base: the backdrop
+  // is always dark, so theme tokens (which follow the
+  // content surface) can vanish against it.
+  scrollbar-width: thin;
+  scrollbar-color:
+    color-mix(in oklab, #fff 45%, transparent)
+    transparent;
+
+  &::-webkit-scrollbar { width: 6px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-button { display: none; }
+  &::-webkit-scrollbar-corner { background: transparent; }
+
+  &::-webkit-scrollbar-thumb {
+    background: color-mix(in oklab, #fff 45%, transparent);
+    border-radius: 6px;
+    border: 1px solid transparent;
+    background-clip: padding-box;
+
+    &:hover {
+      background: color-mix(in oklab, #fff 65%, transparent);
+    }
+  }
 }
 
 // Per-modal max-width tokens. The .modal box reads
@@ -61,18 +108,32 @@ dpp-library-modal      { --modal-max-width: 560px; }
     in oklab, var(--font-color) 14%, transparent);
   border-radius: var(--radius-md);
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
-  overflow: hidden;
 
-  // Scroll inside the modal body, not at the host
-  // overlay, otherwise the page's scrollbar gutter
-  // stays visible alongside the host's own scrollbar
-  // and reads as two stacked scrollbars.
+  // No max-height and no overflow clip: the dialog
+  // grows with its content and the overlay scrolls it
+  // as one piece. The clip had to go so the sticky
+  // header can pin against the overlay; header and
+  // body round their own corners instead.
   display: flex;
   flex-direction: column;
-  max-height: 90vh;
 }
 
 .modal-header {
+  // Rests below the overlay's top padding, then pins
+  // flush to the viewport once the body scrolls under
+  // it: the negative offset cancels that padding. A
+  // plain top: 0 would stick below the padding and let
+  // scrolled content peek through the gap. The z-index
+  // lifts it over the body content it covers; nothing
+  // in the modal bodies carries a competing z-index.
+  position: sticky;
+  top: calc(-1 * var(--modal-overlay-pad-top, 0px));
+  z-index: 5;
+
+  // Rounds its own top corners now that .modal no
+  // longer clips its children via overflow: hidden.
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+
   display: flex;
   align-items: center;
   gap: 12px;
@@ -130,48 +191,16 @@ dpp-library-modal      { --modal-max-width: 560px; }
 .modal-body {
   padding: 18px 22px 22px;
   color: var(--color-text);
-  overflow-y: auto;
 
-  // Explicit, not left to default: with only overflow-y
-  // set, browsers force overflow-x to auto too, so any
-  // over-wide child (a nowrap table cell, a long token)
-  // silently grows the whole body sideways instead of
-  // being contained where it occurs.
+  // The overlay scrolls the whole dialog; the body only
+  // clips sideways so an over-wide child (a nowrap table
+  // cell, a long token) is contained where it occurs
+  // instead of growing the body. Height stays auto, so
+  // the clip never cuts content vertically. The same
+  // clip also rounds children's backgrounds at the
+  // dialog's bottom corners.
   overflow-x: hidden;
-  min-height: 0;
-
-  // Slim, theme-aware scrollbar. Firefox honours the
-  // `scrollbar-*` properties; Chromium/Safari read the
-  // `::-webkit-scrollbar` rules below.
-  scrollbar-width: thin;
-  scrollbar-color:
-    color-mix(in oklab, var(--font-color) 24%, transparent)
-    transparent;
-
-  &::-webkit-scrollbar { width: 6px; }
-  &::-webkit-scrollbar-track { background: transparent; }
-
-  // Suppress the legacy up/down arrow buttons Chromium
-  // paints at the track ends, they don't render at the
-  // thin width and leave stray chevrons in the gutter.
-  &::-webkit-scrollbar-button { display: none; }
-  &::-webkit-scrollbar-corner { background: transparent; }
-
-  &::-webkit-scrollbar-thumb {
-    background: color-mix(
-      in oklab, var(--font-color) 22%, transparent);
-    border-radius: 6px;
-
-    // 1px transparent border keeps the thumb as a slim
-    // pill inside the gutter without crowding the edges.
-    border: 1px solid transparent;
-    background-clip: padding-box;
-
-    &:hover {
-      background: color-mix(
-        in oklab, var(--font-color) 38%, transparent);
-    }
-  }
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
 }
 
 // Section-based modal bodies opt out of the default
@@ -193,15 +222,23 @@ dpp-library-modal      { --modal-max-width: 560px; }
     dpp-event-modal,
     dpp-library-modal
   ).open {
+    --modal-overlay-pad-top: 0px;
     padding: 0;
-    align-items: stretch;
-    justify-content: stretch;
 
+    // min-height instead of height: content taller than
+    // the screen extends the dialog and the overlay
+    // scrolls it, instead of clipping at one screen.
+    // 100% width, not 100vw, so the overlay's own
+    // scrollbar never causes sideways overflow.
     .modal {
       max-width: none;
-      max-height: 100vh;
-      width: 100vw;
-      height: 100vh;
+      width: 100%;
+      min-height: 100vh;
+      border-radius: 0;
+    }
+
+    .modal-header,
+    .modal-body {
       border-radius: 0;
     }
   }

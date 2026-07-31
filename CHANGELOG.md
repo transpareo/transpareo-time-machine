@@ -24,6 +24,18 @@ and this project adheres to
 
 ### Fixed
 
+- Modal overlays are now the scroll container: on wide and
+  tablet viewports a swipe or wheel anywhere over the
+  overlay, the gutters beside the dialog included, scrolls
+  the dialog instead of dead-ending, and
+  `overscroll-behavior: contain` keeps the locked page
+  behind from moving. The dialog no longer caps at 90vh
+  with an inner scrolling body; it grows with its content
+  while the header stays sticky at the top, resting with
+  the overlay gap and pinning flush once content scrolls
+  under it. Applies to the proof, event, and library
+  modals and to integration modals opened via
+  `tm.openModal(...)`.
 - The integration-hook docs describe the `additional` slot
   and the `:state` event accurately for more than one
   integration. Multiple slotted children are supported and
