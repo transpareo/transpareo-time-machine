@@ -10,6 +10,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.7.0] - 2026-08-08
+
 ### Added
 
 - The footer language picker now leads each row with what the
