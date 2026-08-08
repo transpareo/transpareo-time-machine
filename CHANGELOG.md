@@ -10,6 +10,17 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Added
+
+- The footer language picker now leads each row with what the
+  viewer's current locale calls the language ("German" while
+  browsing in English) and keeps the native name ("Deutsch")
+  as a muted italic hint on the row's right edge; where both
+  names coincide the native name stands alone. Rows sort by
+  the leading name and re-sort on every language switch, and
+  the type-ahead filter matches either name, so "deutsch"
+  still finds German while browsing in English.
+
 ## [2.6.0] - 2026-07-31
 
 ### Added

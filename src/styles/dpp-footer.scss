@@ -180,7 +180,12 @@ dpp-footer:empty {
   li { margin: 0; }
 
   button {
-    display: block;
+    // Flex row: viewer-locale name on the left, the
+    // native-name hint pushed to the menu's right edge.
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
     width: 100%;
     padding: 6px 10px;
     background: transparent;
@@ -213,5 +218,15 @@ dpp-footer:empty {
       color: var(--link-color, var(--action-color, #2563eb));
       font-weight: 600;
     }
+  }
+
+  // The row's native name ("Deutsch" beside the leading
+  // "German" when browsing in English). Keeps its muted
+  // colour on the active row too; its own declaration
+  // wins over the inherited link colour.
+  .locale-hint {
+    font-style: italic;
+    font-weight: 600;
+    color: var(--color-muted, #888);
   }
 }

@@ -82,6 +82,40 @@ export function nativeName(code: string): string {
   return NATIVE_NAMES[code] ?? code.toUpperCase()
 }
 
+// What the viewer's locale calls a language ("German" for
+// `de` while browsing in English); the picker leads every
+// row with it and keeps the native name as the hint.
+// Backed by Intl.DisplayNames, cached per viewer locale
+// since the picker calls this once per option row on
+// every menu render. Returns null when it would add
+// nothing over the native name: the platform can't
+// resolve either tag (both ride in untrusted manifest
+// data and an invalid one throws RangeError, hence the
+// try/catch pair), or the answer merely repeats the
+// native name (compared case-insensitively; DisplayNames
+// lowercases where the language itself does, e.g.
+// "français").
+const displayNames = new Map<string, Intl.DisplayNames | null>()
+
+export function localizedName(
+  code: string, viewerLocale: string,
+): string | null {
+  let dn = displayNames.get(viewerLocale)
+  if (dn === undefined) {
+    try {
+      dn = new Intl.DisplayNames([viewerLocale], { type: 'language' })
+    } catch { dn = null }
+    displayNames.set(viewerLocale, dn)
+  }
+  if (!dn) return null
+
+  let name: string | undefined
+  try { name = dn.of(code) } catch { name = undefined }
+  if (!name || name === code) return null
+  const isEcho = name.toLowerCase() === nativeName(code).toLowerCase()
+  return isEcho ? null : name
+}
+
 // Every locale we ship a UI label bundle for, English first
 // so it is the fallback. The verifier resolves its own locale
 // against this (it has no DPP `availableLocales` to draw on,

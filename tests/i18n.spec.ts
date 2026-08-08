@@ -14,7 +14,8 @@ import {
   t, englishLabels, bundledLocales, type Labels,
 } from '../src/i18n/labels';
 import {
-  detectLocale, setHostLocale, nativeName, NATIVE_NAMES,
+  detectLocale, setHostLocale, nativeName, localizedName,
+  NATIVE_NAMES,
 } from '../src/i18n';
 
 describe('t', () => {
@@ -62,6 +63,31 @@ describe('nativeName', () => {
   it('names every shipped locale bundle', () => {
     const unnamed = bundledLocales.filter((c) => !NATIVE_NAMES[c]);
     expect(unnamed).toEqual([]);
+  });
+});
+
+describe('localizedName', () => {
+  it('names the language in the viewer locale', () => {
+    expect(localizedName('de', 'en')).toBe('German');
+    expect(localizedName('en', 'de')).toBe('Englisch');
+  });
+
+  it('drops the hint when it echoes the native name', () => {
+    expect(localizedName('de', 'de')).toBeNull();
+  });
+
+  it('compares the echo case-insensitively', () => {
+    // French calls itself lowercase "français"; that is
+    // still an echo of native "Français", not a hint.
+    expect(localizedName('fr', 'fr')).toBeNull();
+  });
+
+  it('returns null for a code the platform cannot name', () => {
+    expect(localizedName('xx', 'en')).toBeNull();
+  });
+
+  it('returns null for an invalid viewer locale', () => {
+    expect(localizedName('de', 'not a tag!')).toBeNull();
   });
 });
 

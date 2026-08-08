@@ -4,15 +4,19 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * <dpp-footer>, copyright + host links on the left,
- * locale picker on the right. Picker shows native names
- * and persists the choice via pickLocale().
+ * locale picker on the right. Picker rows lead with what
+ * the viewer's current locale calls each language, keep
+ * the native name as a right-hand hint, and persist the
+ * choice via pickLocale().
  */
 
 import { LightElement } from '@/reactive/element'
 import { signal } from '@/reactive/signals'
 import { el } from '@/reactive/dom'
 import { availableLocales } from '@/state'
-import { i18n, locale, nativeName, pickLocale } from '@/i18n'
+import {
+  i18n, locale, localizedName, nativeName, pickLocale,
+} from '@/i18n'
 import { t } from '@/i18n/labels'
 import { config, hasFooter } from '@/config'
 import { safeLinkHref } from '@/safe-url'
@@ -69,14 +73,10 @@ class DppFooter extends LightElement {
   }
 
   private bindPicker(locales: ReadonlyArray<string>): void {
-    // Alphabetise once: the locales array is fixed for
-    // the lifetime of the manifest, and Intl.Collator is
-    // non-trivial.
-    const sortedLocales = sortByNativeName(locales)
     const refs = this.buildPickerMarkup(locales)
     this.bindPickerInteractions(refs)
     this.bindPickerKeyboard(refs)
-    this.bindPickerSync(refs, sortedLocales)
+    this.bindPickerSync(refs, locales)
   }
 
   // Fill the .locale-wrap with the button + menu shell
@@ -136,7 +136,10 @@ class DppFooter extends LightElement {
     })
 
     refs.menu.addEventListener('click', (e) => {
-      const code = (e.target as HTMLElement).dataset.code
+      // Option buttons hold name spans, so the click target
+      // may be a span; resolve to the code-bearing button.
+      const btn = (e.target as HTMLElement).closest('[data-code]')
+      const code = (btn as HTMLElement | null)?.dataset.code
       if (!code) return
       pickLocale(code)
       this.open.set(false)
@@ -194,7 +197,7 @@ class DppFooter extends LightElement {
   // re-renders so the picker's own strings (filter
   // placeholder + empty-state) stay localised.
   private bindPickerSync(
-    refs: PickerRefs, sortedLocales: ReadonlyArray<string>,
+    refs: PickerRefs, locales: ReadonlyArray<string>,
   ): void {
     this.effect(() => {
       const cur = locale()
@@ -214,7 +217,7 @@ class DppFooter extends LightElement {
         return
       }
       refs.list.replaceChildren(
-        ...sortedLocales.map((code) => localeOption(code, cur)),
+        ...sortForViewer(locales, cur).map((code) => localeOption(code, cur)),
       )
       if (refs.filterInput) {
         refs.filterInput.value = ''
@@ -245,18 +248,21 @@ interface PickerRefs {
   readonly filterInput: HTMLInputElement | null
 }
 
-// Hide list items whose nativeName / code doesn't
-// contain the typed query. No re-render so the filter
-// input keeps focus + caret position. When the filter
-// excludes every option we surface the "no matches"
-// line; clearing the filter hides it again.
+// Hide list items whose visible names / code don't
+// contain the typed query. Matching on the row's text
+// covers both the leading viewer-locale name and the
+// native hint, so "deutsch" still finds German while
+// browsing in English. No re-render so the filter input
+// keeps focus + caret position. When the filter excludes
+// every option we surface the "no matches" line; clearing
+// the filter hides it again.
 function applyFilter(refs: PickerRefs, query: string): void {
   const q = query.trim().toLowerCase()
   let visible = 0
   for (const li of Array.from(refs.list.children) as HTMLElement[]) {
     const code = (li.firstElementChild as HTMLElement).dataset.code!
     const matches = !q
-      || nativeName(code).toLowerCase().includes(q)
+      || (li.textContent ?? '').toLowerCase().includes(q)
       || code.toLowerCase().includes(q)
     li.style.display = matches ? '' : 'none'
     if (matches) visible++
@@ -302,27 +308,51 @@ function moveFocus(
   items[idx - 1].focus()
 }
 
-function sortByNativeName(
-  locales: ReadonlyArray<string>,
+// Alphabetise by each row's leading name: what the
+// viewer's locale calls the language, falling back to the
+// native name where the two coincide or no localized name
+// resolves. Runs per menu render (not once) because the
+// leading names change with every locale switch. The
+// viewer tag rides in untrusted manifest data, so an
+// unparseable one falls back to the browser default
+// collation instead of throwing.
+function sortForViewer(
+  locales: ReadonlyArray<string>, viewer: string,
 ): ReadonlyArray<string> {
-  const collator = new Intl.Collator(undefined, { sensitivity: 'base' })
-  return [...locales].sort(
-    (a, b) => collator.compare(nativeName(a), nativeName(b)),
-  )
+  let collator: Intl.Collator
+  try {
+    collator = new Intl.Collator(viewer, { sensitivity: 'base' })
+  } catch {
+    collator = new Intl.Collator(undefined, { sensitivity: 'base' })
+  }
+  return locales
+    .map((code) => ({
+      code, label: localizedName(code, viewer) ?? nativeName(code),
+    }))
+    .sort((a, b) => collator.compare(a.label, b.label))
+    .map((entry) => entry.code)
 }
 
 // Built as DOM rather than an innerHTML string: `code`
 // comes from the manifest's availableLocales and is
 // untrusted, so it is set via dataset/textContent where
 // the browser escapes it, never interpolated into markup.
+// Each row leads with what the viewer's current locale
+// calls the language ("German" while browsing in English)
+// and carries the native name ("Deutsch") as the
+// right-hand hint; when the two coincide, or no localized
+// name resolves, the native name stands alone.
 function localeOption(code: string, current: string): HTMLLIElement {
   const li = el('li')
   const active = code === current
-  const btn = el('button', active ? 'active' : undefined, nativeName(code))
+  const btn = el('button', active ? 'active' : undefined)
   btn.type = 'button'
   btn.setAttribute('role', 'option')
   btn.dataset.code = code
   btn.setAttribute('aria-selected', String(active))
+  const localized = localizedName(code, current)
+  btn.appendChild(el('span', undefined, localized ?? nativeName(code)))
+  if (localized) btn.appendChild(el('span', 'locale-hint', nativeName(code)))
   li.appendChild(btn)
   return li
 }
