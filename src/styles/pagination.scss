@@ -38,16 +38,17 @@
 
 // Each btn is a 25px-square circle with a 1px ring.
 // `border-box` brings the border inside the 25px, so the
-// content area is 23px tall; a matching `line-height`
-// auto-centres digits vertically in the visible circle
-// for system + Inter fonts alike.
+// content area is 23px tall. The line-height exceeds it
+// by 2px on purpose: geometric centring (23px) leaves
+// the digits sitting optically high in the circle, so
+// the oversized line box nudges them 1px down.
 .navigation .btn {
   @include dpp.sm-bold;
   color: var(--nav-fg);
   border: 1px solid var(--nav-fg);
   border-radius: 100%;
   box-sizing: border-box;
-  line-height: 23px;
+  line-height: 25px;
   cursor: pointer;
   background: transparent;
   padding: 0;

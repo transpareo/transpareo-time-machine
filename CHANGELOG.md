@@ -10,6 +10,12 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Fixed
+
+- The page numbers in the gallery and lightbox pagination
+  circles sit 1px lower, optically centred instead of
+  geometrically centred a touch high.
+
 ### Added
 
 - Every artefact fetch sends
