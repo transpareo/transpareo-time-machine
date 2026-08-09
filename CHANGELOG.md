@@ -10,6 +10,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.8.0] - 2026-08-09
+
 ### Fixed
 
 - The page numbers in the gallery and lightbox pagination
