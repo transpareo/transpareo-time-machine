@@ -212,6 +212,14 @@ class ManifestGoneError extends Error {
 // path instead of leaving the boot spinner up forever.
 const FETCH_TIMEOUT_MS = 15_000
 
+// Sent on every artefact fetch. The `src` may be the
+// passport's own URL, where a publisher implementing
+// EN 18216 content negotiation serves either the HTML
+// page or the JSON dataset from one URL; asking for
+// JSON explicitly keeps that case deterministic.
+// Static hosts serving fixed JSON files ignore it.
+const ACCEPT_JSON = 'application/ld+json, application/json'
+
 // Fetch the boot source, either a DPP manifest or a single
 // signed snapshot. 404/410 means the resource is gone (the
 // boot caller maps it to the 'retired' load state) for both
@@ -228,6 +236,7 @@ async function fetchSource(
   const res = await fetch(url, {
     credentials: 'omit',
     cache: 'no-cache',
+    headers: { accept: ACCEPT_JSON },
     signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
   })
   if (res.status === 404 || res.status === 410) {
@@ -578,6 +587,7 @@ function resolveAgainst(base: string, relative: string | undefined): string | nu
 async function fetchJson<T>(url: string): Promise<T> {
   const res = await fetch(url, {
     credentials: 'omit',
+    headers: { accept: ACCEPT_JSON },
     signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
   })
   if (!res.ok) {

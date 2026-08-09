@@ -10,6 +10,20 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Added
+
+- Every artefact fetch sends
+  `Accept: application/ld+json, application/json`, so `src`
+  can be the passport URL itself on a publisher that serves
+  the HTML page and the JSON dataset from one URL via HTTP
+  content negotiation (the EN 18216 baseline). The dataset
+  such a URL returns is a single snapshot, rendered in the
+  existing single-snapshot mode. The README now opens with
+  that standards-mandated URL, explains that the full
+  timeline needs the manifest (the version index the
+  standardised APIs do not provide), and documents the
+  manifest structure field by field.
+
 ## [2.7.0] - 2026-08-08
 
 ### Added

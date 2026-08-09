@@ -20,20 +20,65 @@ t-shirt (signed with `eddsa-jcs-2022`) and a Volturra Pulse
 suite), so you can scrub the timeline and watch the
 verification chip in action on both proof types.
 
-Embedding it is one custom-element tag, pointed at a
-passport manifest:
+Embedding it is one custom-element tag. The simplest
+`src` is the passport URL itself - the URL the QR code
+on the product resolves to, here in its minimal
+standardised form, a GS1 Digital Link carrying just
+the 14-digit GTIN:
 
 ```html
 <transpareo-time-machine
-  src="https://example.com/dpp/abc-123/manifest.json">
+  src="https://example.com/01/09524000059109">
 </transpareo-time-machine>
 ```
 
-The `src` is a manifest that lists every version, and
-it can live anywhere you can serve a URL. The renderer
-assumes nothing about where or how you host: it reads
-each artefact's address from the manifest, so you
-publish wherever you like.
+That URL is the baseline the European DPP system
+standards mandate, in shape and in behaviour. The
+shape is EN 18219's web-enabled structured path:
+AI/value pairs on any domain, `/01/{GTIN}` at
+minimum, batch and item qualifiers appended as
+`/10/{lot}` and `/21/{serial}` (GS1 Digital Link URI
+syntax). The behaviour is one passport URL serving
+the human-readable page and, selected by HTTP content
+negotiation, the JSON dataset. EN 18216 makes JSON the
+required data format and HTML the negotiated
+human-readable rendering; EN 18222 defines the
+returned document as the passport's current version.
+The renderer holds up the client side of that
+contract: it requests its `src` with
+`Accept: application/ld+json, application/json`, so a
+norm-compliant publisher answers with the signed JSON
+dataset. From a single dataset the Transpareo Time
+Machine renders in single-snapshot mode: the current
+version with its verification chip, no timeline - one
+document carries no history.
+
+The full Time Machine - the timeline a visitor scrubs
+back through, per-version verification, the hash
+chain binding each version to its predecessor - needs
+a version index, and the standards do not provide
+one: EN 18221 obliges publishers to archive every
+version, but the standardised API reaches the archive
+one date-query at a time (`ReadDPPVersionByIdAndDate`,
+optional for the operator) and has no method that
+lists versions. The manifest is this package's
+convention for exactly that gap: one signed document
+naming every version with its URL, hash, and date.
+Point `src` at it and the timeline lights up:
+
+```html
+<transpareo-time-machine
+  src="https://example.com/01/09524000059109/manifest.json">
+</transpareo-time-machine>
+```
+
+The manifest can live anywhere you can serve a URL.
+The renderer assumes nothing about where or how you
+host: it reads each artefact's address from the
+manifest (relative URLs resolve against the
+manifest's own URL), so you publish wherever you
+like. Its structure is documented in "The manifest"
+below.
 
 License: [GPL-3.0-or-later](LICENSE).
 
@@ -79,6 +124,111 @@ DID-based authority discovery, X.509 cert chains,
 issuer-hosted verification), the Transpareo Time Machine
 is probably not the right fit. Forks are welcome.
 
+## The manifest
+
+The manifest is the version index of a passport: one
+signed JSON document listing every published version,
+so a client can enumerate the history that the
+standardised DPP APIs otherwise expose only one
+date-query at a time. Everything else the renderer
+touches is named by it - each version's snapshot at
+`versions[].url`, the events document at `epcisUrl` -
+so the renderer never assumes a path layout in your
+bucket. A trimmed real manifest:
+
+```json
+{
+  "@context": [
+    "https://www.w3.org/ns/credentials/v2",
+    "https://transpareo.com/contexts/dpp/v1"
+  ],
+  "@type": "DppManifest",
+  "code": "demo-2026-t001",
+  "issuer": {
+    "@type": "Organization",
+    "name": "Nordic Wear",
+    "did": "did:web:nordic-wear.example"
+  },
+  "platform": {
+    "@type": "Organization",
+    "name": "Transpareo",
+    "did": "did:web:transpareo.example"
+  },
+  "availableLocales": ["en", "de", "fr"],
+  "currentVersion": 6,
+  "versions": [
+    {
+      "number": 1,
+      "publishedAt": "2024-01-15T10:00:00Z",
+      "reason": "Initial publication",
+      "hashValue": "5a52500ff539...",
+      "url": "v/1.json",
+      "sizeBytes": 10812
+    },
+    {
+      "number": 6,
+      "publishedAt": "2026-04-05T13:45:00Z",
+      "reason": "Repair documented",
+      "hashValue": "dc65871414b2...",
+      "url": "v/6.json",
+      "sizeBytes": 11943,
+      "privateProperties": {
+        "url": "https://api.nordic-wear.example/dpps/demo-2026-t001/private_properties/6"
+      }
+    }
+  ],
+  "epcisUrl": "epcis.json",
+  "signedAt": "2026-04-05T13:45:00Z",
+  "signature": {
+    "type": "DataIntegrityProof",
+    "cryptosuite": "eddsa-jcs-2022",
+    "created": "2026-04-05T13:45:00Z",
+    "verificationMethod": "keys/platform.json",
+    "proofPurpose": "assertionMethod",
+    "proofValue": "z5owR9zthjFC..."
+  }
+}
+```
+
+Field notes:
+
+- `versions[]` - one entry per published version.
+  `url` points at the version's signed snapshot;
+  relative URLs resolve against the manifest's own
+  URL. `hashValue` (with optional `hashAlgorithm` /
+  `hashCanonicalForm`) is the snapshot's content
+  hash; the next version's snapshot names it as
+  `priorVersionHash`, the chain check that binds the
+  history together. `publishedAt` anchors the
+  version's timeline dot, `reason` is the
+  human-readable change label, `sizeBytes` the
+  snapshot's size on the wire.
+- `currentVersion` - the version rendered on first
+  paint; the timeline scrubs backward from there.
+- `versions[].privateProperties.url` (optional) - a
+  publisher-hosted endpoint returning the login-gated
+  property rows the current user may read. Present
+  only on versions carrying such rows. When it is,
+  the renderer fetches it anonymously and branches on
+  the status: 200 merges the returned rows, 401
+  surfaces a sign-in button that hands off to the
+  publisher's own login page.
+- `versions[].registeredAt` / `registrationProof`
+  (optional) - EU-registry round-trip metadata,
+  surfaced in the proof modal when present.
+- `availableLocales` - the locales this passport is
+  published in; drives the footer language picker.
+- `epcisUrl` - the EPCIS 2.0 events document the
+  event timeline derives from.
+- `issuer` / `platform` - schema.org-style
+  attribution blocks; their `did` identities are
+  matched against the snapshot proof entries.
+- `signature` - a W3C Data Integrity proof
+  (`eddsa-jcs-2022`, platform key) over the manifest
+  body. The renderer verifies it and folds the
+  outcome into every version verdict, so a tampered
+  version list cannot present itself as verified.
+
 ## Using it in a host page
 
 Three supported integration modes. Pick the one that
@@ -96,7 +246,7 @@ ordering risk:
         src="https://unpkg.com/transpareo-time-machine@1.0.0/dist-embed/embed.js"></script>
 
 <transpareo-time-machine
-  src="https://cdn.example.com/acme/dpp/abc-123/manifest.json">
+  src="https://cdn.example.com/acme/01/09524000059109/manifest.json">
 </transpareo-time-machine>
 ```
 
@@ -114,8 +264,8 @@ ships neither (see "Icons"):
 
 ```html
 <transpareo-time-machine
-  src="https://your-cdn/manifest.json"
-  icons-src="https://your-cdn/icons.svg">
+  src="https://cdn.example.com/acme/01/09524000059109/manifest.json"
+  icons-src="https://cdn.example.com/acme/icons.svg">
 </transpareo-time-machine>
 ```
 
@@ -228,7 +378,7 @@ The full passport renderer.
 
 | Attribute | Required | Effect |
 |-----------|----------|--------|
-| `src` | yes | URL of the DPP manifest. Resolved against `document.location` if relative. Changing the attribute live triggers a re-fetch. |
+| `src` | yes | URL of the DPP manifest, of a single signed snapshot, or the passport URL of a publisher that serves JSON via content negotiation. Resolved against `document.location` if relative. Changing the attribute live triggers a re-fetch. |
 
 | Surface | Notes |
 |---------|-------|
@@ -243,11 +393,17 @@ The full passport renderer.
 #### Single-snapshot mode
 
 `src` may point at a single signed snapshot instead of a
-manifest. The element detects which it was given; for a lone
-snapshot it renders that one frozen version with no version
-timeline, history, or EPCIS events (a snapshot carries no
-version list), and the language picker is derived from the
-snapshot's own localized strings. The snapshot's own 2-of-2
+manifest. This is also what a passport URL resolves to when
+the publisher serves JSON via content negotiation: every
+artefact fetch carries
+`Accept: application/ld+json, application/json`, and the
+dataset such a URL returns is one snapshot, the passport's
+current version. The element detects which shape it was
+given; for a lone snapshot it renders that one frozen
+version with no version timeline, history, or EPCIS events
+(a snapshot carries no version list), and the language
+picker is derived from the snapshot's own localized
+strings. The snapshot's own 2-of-2
 proof still verifies, so the chip reads "verified" on a
 validly-signed snapshot. This is a weaker assurance than the
 manifest flow: with no signed version list and no

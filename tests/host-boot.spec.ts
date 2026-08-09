@@ -87,6 +87,40 @@ describe('bootFrom', () => {
     expect(host.snapshots.peek()[1].code).toBe('alias-a');
   });
 
+  // The boot src may be the passport's own URL, where a
+  // content-negotiating publisher decides HTML vs JSON by
+  // the Accept header; every artefact fetch must ask for
+  // JSON so that case never returns the HTML page.
+  it('asks for JSON on every artefact fetch', async () => {
+    const host = await freshHost();
+    const accepts: Array<string | undefined> = [];
+    const routes: Record<string, unknown> = {
+      '/a/manifest.json': manifestOf('dpp-a', '/a'),
+      '/a/v/1.json': snapshotOf('alias-a'),
+      '/a/epcis.json': EPCIS,
+    };
+    vi.stubGlobal('fetch', async (
+      input: string | URL, init?: RequestInit,
+    ): Promise<Response> => {
+      const url = typeof input === 'string' ? input : input.toString();
+      accepts.push((init?.headers as Record<string, string>)?.accept);
+      for (const [key, value] of Object.entries(routes)) {
+        if (url.includes(key)) {
+          return new Response(JSON.stringify(value), { status: 200 });
+        }
+      }
+      return new Response('not found', { status: 404 });
+    });
+
+    await host.bootFrom('https://cdn.test/a/manifest.json');
+
+    expect(host.loadState.peek()).toBe('ready');
+    expect(accepts.length).toBeGreaterThan(0);
+    for (const accept of accepts) {
+      expect(accept).toBe('application/ld+json, application/json');
+    }
+  });
+
   it('a reboot clears the previous boot artefacts', async () => {
     const host = await freshHost();
     stubFetch({
