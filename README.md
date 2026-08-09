@@ -32,28 +32,19 @@ the 14-digit GTIN:
 </transpareo-time-machine>
 ```
 
-That URL is the baseline the European DPP system
-standards mandate, in shape and in behaviour. The
-shape is EN 18219's web-enabled structured path:
-AI/value pairs on any domain, `/01/{GTIN}` at
-minimum, batch and item qualifiers appended as
-`/10/{lot}` and `/21/{serial}` (GS1 Digital Link URI
-syntax). The behaviour is one passport URL serving
-the human-readable page and, selected by HTTP content
-negotiation, the JSON dataset. EN 18216 makes JSON the
-required data format and HTML the negotiated
-human-readable rendering; EN 18222 defines the
-returned document as the passport's current version.
-The renderer holds up the client side of that
-contract: it requests its `src` with
-`Accept: application/ld+json, application/json`, so a
-norm-compliant publisher answers with the signed JSON
-dataset. From a single dataset the Transpareo Time
-Machine renders in single-snapshot mode: the current
-version with its verification chip, no timeline - one
-document carries no history.
+That is just an example - any DPP URL works. The
+European DPP standards require a passport URL to
+answer with the JSON dataset when a client asks for
+JSON via HTTP content negotiation (the EN 18216
+baseline), and the renderer asks exactly that way: it
+requests its `src` with
+`Accept: application/ld+json, application/json`.
+From the single dataset such a URL returns, the
+Transpareo Time Machine renders in single-snapshot
+mode: the current version with its verification
+chip, no timeline - one document carries no history.
 
-The full Time Machine - the timeline a visitor scrubs
+The ***full*** Time Machine - the timeline a visitor scrubs
 back through, per-version verification, the hash
 chain binding each version to its predecessor - needs
 a version index, and the standards do not provide
