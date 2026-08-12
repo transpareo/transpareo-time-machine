@@ -131,6 +131,15 @@ and this project adheres to
   rendered "PT-BR" next to "Brazilian Portuguese", which
   reads as data leaking into the UI rather than as a
   language.
+- Language names the platform answers in the wrong language
+  are ignored. `Intl.DisplayNames` does not fail for a locale
+  an engine carries no data for: it resolves to a fallback
+  and answers confidently in that instead, so a viewer whose
+  language the browser lacks would have read English names
+  beside correct native ones, with nothing downstream able to
+  tell. The resolved locale is compared against the requested
+  one now, and a mismatch leaves the row with the native name
+  this project ships itself.
 
 ## [2.8.0] - 2026-08-09
 

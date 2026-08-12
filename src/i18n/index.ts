@@ -119,7 +119,8 @@ export function localizedName(
   let dn = displayNames.get(viewerLocale)
   if (dn === undefined) {
     try {
-      dn = new Intl.DisplayNames([viewerLocale], { type: 'language' })
+      const made = new Intl.DisplayNames([viewerLocale], { type: 'language' })
+      dn = answersIn(made, viewerLocale) ? made : null
     } catch { dn = null }
     displayNames.set(viewerLocale, dn)
   }
@@ -130,6 +131,21 @@ export function localizedName(
   if (!name || name === code) return null
   const isEcho = name.toLowerCase() === nativeName(code).toLowerCase()
   return isEcho ? null : menuCase(name, viewerLocale)
+}
+
+// True when the platform answers in the language we asked
+// for. An engine carrying no data for a locale does not
+// throw: it resolves to a fallback and answers in that
+// instead, so a Maltese viewer would read English language
+// names beside correct Maltese native ones, and nothing
+// downstream could tell. Rejecting the mismatch drops that
+// viewer to the names we ship ourselves.
+//
+// Only the language subtag is compared: a request for `pt`
+// answered as `pt-BR` is still Portuguese.
+function answersIn(dn: Intl.DisplayNames, requested: string): boolean {
+  const got = dn.resolvedOptions().locale.split('-')[0].toLowerCase()
+  return got === requested.split('-')[0].toLowerCase()
 }
 
 // Intl.DisplayNames answers in the form a sentence would

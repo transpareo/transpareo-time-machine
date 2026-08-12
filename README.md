@@ -1077,7 +1077,10 @@ language, via `Intl.DisplayNames`, capitalized for the
 list context: that API answers in the mid-sentence form,
 which most locales write lowercase (Italian "rumeno"),
 where CLDR's list-and-menu rule titlecases the first
-word.
+word. Those names are a hint layer, never a dependency:
+an engine without `Intl.DisplayNames`, or one whose data
+answers in a different language than the viewer's, leaves
+every row reading as the native name this project ships.
 
 Detection order: the user's stored pick when they made it
 on a page carrying the same `lang` the current one does,

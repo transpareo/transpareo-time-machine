@@ -158,6 +158,21 @@ describe('localizedName', () => {
     expect(checked).toBeGreaterThan(UI_LOCALES.length ** 2 * 0.9);
   });
 
+  it('refuses a name answered in some other language', () => {
+    // A locale the platform has no data for does not throw:
+    // it resolves to a fallback and answers confidently in
+    // that language. Here 'zz' resolves to en-US and would
+    // hand back "German" for a viewer who is not reading
+    // English, which is worse than no hint at all.
+    expect(localizedName('de', 'zz')).toBeNull();
+  });
+
+  it('accepts a regional answer to a language request', () => {
+    // pt-BR answering a pt-BR request is the right language;
+    // only the subtag has to match.
+    expect(localizedName('de', 'pt-BR')).toBe('Alemão');
+  });
+
   it('capitalizes the native name every row falls back to', () => {
     // A row whose hint is dropped leads with nativeName
     // instead, so that table has to satisfy the same rule.
