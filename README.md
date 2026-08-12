@@ -1072,6 +1072,13 @@ Two layers:
 
 The locale picker reads `availableLocales` from the
 DPP and shows native names from `src/i18n/index.ts`.
+Each row leads with what the viewer's locale calls the
+language, via `Intl.DisplayNames`, capitalized for the
+list context: that API answers in the mid-sentence form,
+which most locales write lowercase (Italian "rumeno"),
+where CLDR's list-and-menu rule titlecases the first
+word.
+
 Detection order: the user's stored pick when they made it
 on a page carrying the same `lang` the current one does,
 then the host page's `lang` attribute when it names an

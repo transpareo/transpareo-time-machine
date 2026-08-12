@@ -18,7 +18,7 @@ import {
 } from '../src/i18n/labels';
 import {
   detectLocale, setHostLocale, pickLocale, nativeName, localizedName,
-  NATIVE_NAMES,
+  NATIVE_NAMES, UI_LOCALES,
 } from '../src/i18n';
 
 describe('t', () => {
@@ -91,6 +91,73 @@ describe('localizedName', () => {
 
   it('returns null for an invalid viewer locale', () => {
     expect(localizedName('de', 'not a tag!')).toBeNull();
+  });
+
+  it('capitalizes a name the locale writes lowercase', () => {
+    // Italian, French and Spanish lowercase language names
+    // in a sentence ("parlo rumeno"), which is the only form
+    // Intl.DisplayNames offers. A menu row takes the
+    // stand-alone form instead.
+    expect(localizedName('ro', 'it')).toBe('Rumeno');
+    expect(localizedName('de', 'fr')).toBe('Allemand');
+    expect(localizedName('de', 'es')).toBe('Alemán');
+    expect(localizedName('bg', 'ru')).toBe('Болгарский');
+  });
+
+  it('capitalizes the first word only', () => {
+    expect(localizedName('en-GB', 'it')).toBe('Inglese britannico');
+  });
+
+  it('leaves a caseless script untouched', () => {
+    expect(localizedName('ro', 'zh')).toBe('罗马尼亚语');
+    expect(localizedName('ro', 'ja')).toBe('ルーマニア語');
+    expect(localizedName('ro', 'hi')).toBe('रोमानियाई');
+  });
+
+  it('leaves a name the locale already capitalized alone', () => {
+    // Dutch writes the IJ digraph as two capitals, which a
+    // lowercase-then-capitalize round trip would flatten to
+    // "Ijslands"; Turkish carries its dotted capital.
+    expect(localizedName('is', 'nl')).toBe('IJslands');
+    expect(localizedName('en', 'tr')).toBe('İngilizce');
+  });
+
+  it('starts every shipped locale pair with a capital', () => {
+    // 26 of the 40 bundled locales lowercase language names
+    // in a sentence, so this is the whole picker, not a
+    // handful of rows.
+    const lowercase: string[] = [];
+    let checked = 0;
+    for (const viewer of UI_LOCALES) {
+      for (const code of UI_LOCALES) {
+        const name = localizedName(code, viewer);
+        if (!name) continue;
+        checked++;
+        const [first] = name;
+        if (first !== first.toLocaleUpperCase(viewer)) {
+          lowercase.push(`${viewer}/${code}: ${name}`);
+        }
+      }
+    }
+    expect(lowercase).toEqual([]);
+
+    // Rows where the hint is dropped as an echo return null
+    // and are skipped above, so assert the sweep still saw
+    // most of the grid: a regression that made localizedName
+    // return null everywhere would otherwise pass silently.
+    expect(checked).toBeGreaterThan(UI_LOCALES.length ** 2 * 0.9);
+  });
+
+  it('capitalizes the native name every row falls back to', () => {
+    // A row whose hint is dropped leads with nativeName
+    // instead, so that table has to satisfy the same rule.
+    const lowercase = Object.entries(NATIVE_NAMES).filter(
+      ([code, name]) => {
+        const [first] = name;
+        return first !== first.toLocaleUpperCase(code);
+      },
+    );
+    expect(lowercase).toEqual([]);
   });
 });
 

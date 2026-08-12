@@ -102,6 +102,21 @@ and this project adheres to
   of its own and cleared the one the renderer had set. The
   attribute now travels with the mounted widget, like the
   pinned platform keys already did.
+- Language names in the footer picker start with a capital
+  in every locale. The leading name comes from
+  `Intl.DisplayNames`, which answers in the form a sentence
+  would use, and 26 of the 40 bundled locales write language
+  names lowercase there - Italian "rumeno", French
+  "allemand", Russian "болгарский" - so those rows read as
+  mid-sentence fragments beside their own native name
+  ("rumeno" next to "Română"). CLDR keeps a separate rule for
+  a list or menu (titlecase-firstword) that the Intl API has
+  no parameter for; the picker applies it now, to the first
+  word only and through the viewer's locale. Chinese,
+  Japanese, Korean, Hindi and Bengali rows are unchanged,
+  their scripts having no case. Sorting and the type-ahead
+  filter are unaffected: both already ignore case.
+
 ## [2.8.0] - 2026-08-09
 
 ### Fixed

@@ -100,9 +100,8 @@ export function nativeName(code: string): string {
 // resolve either tag (both ride in untrusted manifest
 // data and an invalid one throws RangeError, hence the
 // try/catch pair), or the answer merely repeats the
-// native name (compared case-insensitively; DisplayNames
-// lowercases where the language itself does, e.g.
-// "français").
+// native name (compared case-insensitively, since the two
+// sources disagree about case).
 const displayNames = new Map<string, Intl.DisplayNames | null>()
 
 export function localizedName(
@@ -121,7 +120,30 @@ export function localizedName(
   try { name = dn.of(code) } catch { name = undefined }
   if (!name || name === code) return null
   const isEcho = name.toLowerCase() === nativeName(code).toLowerCase()
-  return isEcho ? null : name
+  return isEcho ? null : menuCase(name, viewerLocale)
+}
+
+// Intl.DisplayNames answers in the form a sentence would
+// use, and more than half the locales we ship write language
+// names lowercase there: Italian "parlo rumeno", French
+// "allemand", Russian "болгарский". A picker row is not a
+// sentence, and CLDR carries a separate rule for exactly this
+// (contextTransforms, titlecase-firstword for uiListOrMenu
+// and stand-alone) that the Intl API has no parameter for, so
+// the caller applies it. Without this the row reads "rumeno"
+// beside its own native name "Română".
+//
+// First code point only: "inglese britannico" becomes
+// "Inglese britannico", never "Inglese Britannico". Locale-
+// aware so a Turkish viewer would get the dotted capital;
+// today no shipped locale hands us a lowercase Turkish
+// initial, but the casing rule belongs with the locale, not
+// with our assumptions about CLDR's current data. A caseless
+// script is untouched: Chinese 罗马尼亚语, Japanese
+// ルーマニア語 and Hindi रोमानियाई come back unchanged.
+function menuCase(name: string, viewerLocale: string): string {
+  const [first] = name
+  return first.toLocaleUpperCase(viewerLocale) + name.slice(first.length)
 }
 
 // Every locale we ship a UI label bundle for, English first
