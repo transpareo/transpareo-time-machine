@@ -24,6 +24,7 @@ export default defineConfig({
       'tests/embed-smoke.spec.ts',
       'tests/icons.spec.ts',
       'tests/integration-hook.spec.ts',
+      'tests/locale-picker.spec.ts',
       'tests/snapshot.spec.ts',
       'node_modules/**',
     ],
