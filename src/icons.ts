@@ -154,17 +154,28 @@ function sanitizeIconMap(data: unknown): Record<string, string> {
   return out
 }
 
-// Injects the bundled functional sprite into the shadow
-// root (always), and the configured content sprite (when
-// one is set), so bare `#id` <use> refs resolve same-origin
-// within the root. Marks the host with `data-icons` when a
+// Injects the bundled functional sprite into a shadow root
+// so the bare `#id` <use> refs `icon()` emits resolve inside
+// it. A `<use>` never crosses a shadow boundary, so EVERY
+// element that opens its own root and renders an icon has to
+// call this for its own root - the standalone <dpp-verifier>
+// widget as much as the SPA host, whether the widget is
+// mounted on its own or nested inside the SPA's root.
+export function installFunctionalIcons(root: ShadowRoot): void {
+  injectSprite(root, FUNCTIONAL_SPRITE)
+}
+
+// The full install for the SPA host: the functional sprite
+// plus the publisher's configured content sprite and its
+// key->symbol map, so decorative property icons resolve in
+// the same root. Marks the host with `data-icons` when a
 // content sprite is configured so the stylesheet reserves
 // space for decorative icons only then. Fetch failure or a
 // non-SVG content-type is swallowed: the (configured)
 // decorative boxes stay empty, the functional controls are
 // unaffected.
 export function installIcons(root: ShadowRoot, host: Element): void {
-  injectSprite(root, FUNCTIONAL_SPRITE)
+  installFunctionalIcons(root)
   loadContentIconMap()
   const url = contentSpriteUrl()
   if (!url) return

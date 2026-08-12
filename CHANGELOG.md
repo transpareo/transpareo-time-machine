@@ -54,6 +54,32 @@ and this project adheres to
 - A proof group neither rule can attribute keeps a name in
   the proof modal ("Authority", as the widget already showed)
   instead of rendering a nameless row.
+- The standalone `<dpp-verifier>` widget verifies
+  `ecdsa-sd-2023` passports. It called the `eddsa-jcs-2022`
+  verifier directly, with no cryptosuite dispatch, so every
+  derived proof failed on "bad signature encoding: not a
+  z-prefixed multibase string" (an ecdsa-sd `proofValue` is
+  base64url CBOR, not base58) and a valid passport read as
+  "Only 0 of 2 entries verified". Both surfaces now go
+  through one entry point that takes its pin sets as
+  arguments, so the widget's own `pinned-platform-key` set
+  applies where it previously would have inherited the
+  renderer's element config.
+- The widget's verdict orbs show their glyph again. It
+  renders into its own shadow root, which a `<use href="#…">`
+  cannot escape, and only the SPA host installed the bundled
+  functional sprite - so the orbs came out as empty circles,
+  standalone and nested alike. The widget installs the sprite
+  into its own root now.
+- Both surfaces attribute proofs to the issuer and the
+  platform by one shared rule, weighing a matching pin, a
+  key-path URL, a declared DID and the two-party structure
+  in that order. The widget had a second rule for a pinning
+  host page: every entry that matched no pin was the
+  issuer's, which put a foreign passport's platform proofs,
+  and a failed platform proof of its own, on the issuer's
+  card. A pin now only strengthens the attribution, never
+  replaces it.
 ## [2.8.0] - 2026-08-09
 
 ### Fixed

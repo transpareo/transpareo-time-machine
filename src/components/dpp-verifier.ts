@@ -10,10 +10,11 @@
  * is resolved to the manifest the page references (see
  * manifest-discovery.ts). The widget then fetches the
  * manifest + current snapshot and runs the same gates as
- * the SPA chip in the browser: verifySnapshot (strict),
- * the manifest's own platform signature, and the
- * priorVersionHash chain walk down to v1. Shows the
- * 5-entry proof chain plus the aggregate verdict.
+ * the SPA chip in the browser: the snapshot proof under
+ * whichever cryptosuite it declares (strict), the manifest's
+ * own platform signature, and the priorVersionHash chain
+ * walk down to v1. Shows the proof chain plus the aggregate
+ * verdict.
  *
  * Attributes:
  *
@@ -23,20 +24,26 @@
  *                          URL, like the input.
  *
  *   pinned-platform-key    Optional, one or more
- *                          multibase Ed25519 public keys
+ *                          multibase public keys
  *                          (z-prefixed), whitespace-
- *                          separated; rotation keeps
+ *                          separated: Ed25519 for
+ *                          eddsa-jcs-2022 snapshots, P-256
+ *                          for ecdsa-sd-2023 ones, and a
+ *                          publisher's history can span
+ *                          both. Rotation keeps
  *                          retired-but-sound keys in the
- *                          set. When set, proof entries
- *                          whose resolved key matches a
- *                          pin are flagged "platform" in
- *                          the UI and elevate the
- *                          identity tier. Without pins
- *                          the widget treats every
- *                          fetched key as equally
- *                          trusted and groups entries by
- *                          signature value (the default
- *                          2-of-2 rule).
+ *                          set. Entries are grouped by
+ *                          resolved key and attributed to
+ *                          the issuer or the platform from
+ *                          the key's own method either way;
+ *                          a matching pin names that group
+ *                          this platform's outright and
+ *                          elevates the identity tier. A
+ *                          foreign passport matches no pin
+ *                          and still shows both of its
+ *                          authorities. Without pins every
+ *                          fetched key is equally trusted
+ *                          (the default 2-of-2 rule).
  *
  * Independent of the SPA's state.ts / host.ts / actions
  * stack: has its own fetch + state machinery so the
@@ -47,18 +54,20 @@
 import { BaseElement } from '@/reactive/element'
 import { el } from '@/reactive/dom'
 import { signal } from '@/reactive/signals'
-import { icon } from '@/icons'
+import { icon, installFunctionalIcons } from '@/icons'
 import {
-  verifySnapshot,
   verifyManifestSignature,
   type VerificationResult,
   type ProofEntryResult,
 } from '@/crypto/verify'
+import { verifySnapshotAnySuite } from '@/crypto/dispatch'
 import {
+  attributeAuthorities,
   combinedVerdict,
   verdictIdentity,
   type AggregateVerdict,
   type ArtefactSignatureState,
+  type AuthorityKind,
   type VerdictIdentity,
 } from '@/verifier-verdict'
 import {
@@ -106,6 +115,13 @@ class DppVerifier extends BaseElement {
     locale.set(detectLocale(UI_LOCALES))
 
     this.addStyle(css)
+
+    // The verdict orbs render `<use href="#icon-ok">`, which
+    // resolves only inside the root the sprite lives in, so
+    // this root needs its own copy. Mounted inside the SPA
+    // it is a nested shadow root, so the host's install does
+    // not reach it either.
+    installFunctionalIcons(root)
 
     const wrap = el('div', 'verifier')
     wrap.appendChild(this.buildForm())
@@ -181,10 +197,16 @@ class DppVerifier extends BaseElement {
       }
       const snapUrl = new URL(currentEntry.url, manifestUrl).toString()
       const snapshot = await fetchJson<SignedSnapshot>(snapUrl)
-      const result = await verifySnapshot(snapshot, {
-        mode: 'strict',
-        pinnedPlatformKeys: pins,
-      })
+
+      // Whichever cryptosuite the snapshot's proof declares:
+      // the widget verifies foreign DPPs, so it cannot assume
+      // the suite this platform happens to publish. Its pins
+      // travel as arguments rather than through the SPA's
+      // element config, which is unpopulated here.
+      const result = await verifySnapshotAnySuite(
+        snapshot as unknown as Record<string, unknown>,
+        { mode: 'strict', pinnedPlatformKeys: pins },
+      )
 
       // The widget shows manifest-derived claims (version
       // count, issuer/platform names), so it runs the same
@@ -321,9 +343,7 @@ function buildResultCard(
 
   wrap.appendChild(buildBanner(verdict, identity, s))
   wrap.appendChild(buildMeta(s))
-  wrap.appendChild(buildChain(
-    s.result, pins, s.manifest.issuer.name, s.manifest.platform.name,
-  ))
+  wrap.appendChild(buildChain(s))
   return wrap
 }
 
@@ -374,50 +394,33 @@ function addRow(dl: HTMLElement, key: string, value: string): void {
   )
 }
 
-// ─── Proof chain (5 entries grouped by authority) ──
+// ─── Proof chain (entries grouped by authority) ────
 
-function buildChain(
-  result: VerificationResult,
-  pins: ReadonlyArray<string> | undefined,
-  issuerName: string,
-  platformName: string,
-): HTMLElement {
-  const groups = groupEntries(result.entries, pins)
+function buildChain(s: ReadyState): HTMLElement {
+  const groups = groupEntries(s.result.entries, s.manifest)
   const wrap = el('div', 'verifier-chain')
   wrap.appendChild(el('h3', 'verifier-section-title', tr('verifier.proofChain')))
   for (const g of groups) {
-    wrap.appendChild(buildGroup(g, issuerName, platformName))
+    wrap.appendChild(buildGroup(g, s.manifest))
   }
   return wrap
 }
 
 interface AuthorityGroup {
-  readonly label: 'platform' | 'issuer' | 'other'
+  readonly label: AuthorityKind
   readonly entries: ReadonlyArray<ProofEntryResult>
 }
 
-// When pins are set: split into "platform" (entries
-// whose resolved key matches a pin) vs "issuer"
-// (everything else). When unpinned: group by resolved
-// key (an authority's aliases all resolve to one key);
-// the first group is labelled "issuer" and the second
-// "platform" by URL heuristic.
+// Group by resolved key (an authority's aliases all resolve
+// to one key; entries that didn't resolve fall back to their
+// own verificationMethod), then attribute the groups with the
+// shared rule, which reads a matching pin, an eddsa-jcs key
+// path, or an ecdsa-sd credential's did:web method against
+// the DIDs the manifest declares.
 function groupEntries(
   entries: ReadonlyArray<ProofEntryResult>,
-  pins: ReadonlyArray<string> | undefined,
+  manifest: DppManifest,
 ): AuthorityGroup[] {
-  if (pins?.length) {
-    const platform = entries.filter((e) => e.pinned)
-    const issuer = entries.filter((e) => !e.pinned)
-    return [
-      { label: 'issuer', entries: issuer },
-      { label: 'platform', entries: platform },
-    ].filter((g) => g.entries.length > 0) as AuthorityGroup[]
-  }
-
-  // Unpinned: group by resolved key (an authority's
-  // aliases share one key); entries that didn't resolve
-  // fall back to their own verificationMethod.
   const byAuthority = new Map<string, ProofEntryResult[]>()
   for (const e of entries) {
     const key = e.keyMultibase ?? e.verificationMethod
@@ -425,42 +428,36 @@ function groupEntries(
     bucket.push(e)
     byAuthority.set(key, bucket)
   }
-  const groups: AuthorityGroup[] = []
-  for (const bucket of byAuthority.values()) {
-    groups.push({ label: labelFromUrls(bucket), entries: bucket })
-  }
+  const buckets = [...byAuthority.values()]
+  const kinds = attributeAuthorities(buckets, {
+    issuerDid: manifest.issuer.did,
+    platformDid: manifest.platform.did,
+  })
+  const groups = buckets.map((bucket, i): AuthorityGroup => (
+    { label: kinds[i], entries: bucket }
+  ))
   groups.sort((a, b) => order(a.label) - order(b.label))
   return groups
 }
 
-function labelFromUrls(
-  bucket: ReadonlyArray<ProofEntryResult>,
-): AuthorityGroup['label'] {
-  for (const e of bucket) {
-    if (/\/keys\/issuer\b/.test(e.verificationMethod)) return 'issuer'
-    if (/\/keys\/platform\b/.test(e.verificationMethod)) return 'platform'
-  }
-  return 'other'
-}
-
-function order(label: AuthorityGroup['label']): number {
+function order(label: AuthorityKind): number {
   if (label === 'issuer') return 0
   if (label === 'platform') return 1
   return 2
 }
 
 function buildGroup(
-  g: AuthorityGroup, issuerName: string, platformName: string,
+  g: AuthorityGroup, manifest: DppManifest,
 ): HTMLElement {
   const ok = g.entries.some((e) => e.status === 'verified')
   const card = el('div', `verifier-authority is-${ok ? 'ok' : 'bad'}`)
   const head = el('div', 'verifier-authority-head')
+  const label = g.label === 'issuer' ? manifest.issuer.name
+    : g.label === 'platform' ? manifest.platform.name
+      : tr('verifier.authority')
   head.append(
     buildOrb(ok),
-    el('span', 'verifier-authority-label',
-      g.label === 'issuer' ? issuerName
-        : g.label === 'platform' ? platformName
-          : tr('verifier.authority')),
+    el('span', 'verifier-authority-label', label),
   )
   card.appendChild(head)
 
