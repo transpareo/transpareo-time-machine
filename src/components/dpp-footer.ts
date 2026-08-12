@@ -15,7 +15,7 @@ import { signal } from '@/reactive/signals'
 import { el } from '@/reactive/dom'
 import { availableLocales } from '@/state'
 import {
-  i18n, locale, localizedName, nativeName, pickLocale,
+  i18n, locale, localizedName, nativeName, nativeNameOrNull, pickLocale,
 } from '@/i18n'
 import { t } from '@/i18n/labels'
 import { config, hasFooter } from '@/config'
@@ -342,6 +342,11 @@ function sortForViewer(
 // and carries the native name ("Deutsch") as the
 // right-hand hint; when the two coincide, or no localized
 // name resolves, the native name stands alone.
+//
+// The hint is only ever a real native name. A locale we
+// ship no name for falls back to its uppercased code, and
+// "PT-BR" beside "Brazilian Portuguese" reads as data
+// leaking into the UI, not as a language.
 function localeOption(code: string, current: string): HTMLLIElement {
   const li = el('li')
   const active = code === current
@@ -351,8 +356,11 @@ function localeOption(code: string, current: string): HTMLLIElement {
   btn.dataset.code = code
   btn.setAttribute('aria-selected', String(active))
   const localized = localizedName(code, current)
+  const native = nativeNameOrNull(code)
   btn.appendChild(el('span', undefined, localized ?? nativeName(code)))
-  if (localized) btn.appendChild(el('span', 'locale-hint', nativeName(code)))
+  if (localized && native) {
+    btn.appendChild(el('span', 'locale-hint', native))
+  }
   li.appendChild(btn)
   return li
 }

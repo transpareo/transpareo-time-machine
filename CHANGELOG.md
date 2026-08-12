@@ -125,6 +125,12 @@ and this project adheres to
   the result, taking the footer down with it, and the icon
   map would have spliced a function's source into a
   `<use href>`. Both read own properties only now.
+- A picker row's right-hand hint is a real native name or
+  nothing. It fell back to the uppercased locale code, so a
+  DPP declaring a locale outside the 40 we ship names for
+  rendered "PT-BR" next to "Brazilian Portuguese", which
+  reads as data leaking into the UI rather than as a
+  language.
 
 ## [2.8.0] - 2026-08-09
 
