@@ -25,14 +25,16 @@
  *      verified the same way and badged the same way.
  *   4. Active snapshot's proof chain: the proof entries
  *      the renderer just verified, labelled with their
- *      cryptosuite and grouped by authority (an eddsa-jcs
- *      proof set groups into issuer + platform rows; an
- *      ecdsa-sd derived proof is a single issuer row).
- *      Each row shows the verificationMethod URL and a
- *      status badge (verified / unreachable / invalid /
- *      pending). Wrapped in a "Versions check" disclosure
- *      with the per-version aggregate verdicts so the
- *      visitor can browse the chain.
+ *      cryptosuite and grouped by authority. Both suites
+ *      group into an issuer row and a platform row: an
+ *      eddsa-jcs proof set folds each authority's key
+ *      aliases into one row, an ecdsa-sd credential carries
+ *      one derived proof per authority. Each row shows the
+ *      verificationMethod URL and a status badge (verified /
+ *      unreachable / invalid / pending). Wrapped in a
+ *      "Versions check" disclosure with the per-version
+ *      aggregate verdicts so the visitor can browse the
+ *      chain.
  *
  * Versions verify lazily: the active version on scrub
  * (bootstrap.ts -> bootstrapVerify, plus a prefetch
@@ -59,11 +61,14 @@ import {
 } from '@/state'
 import * as host from '@/host'
 import { ensureVersionLoaded, signatureIsAcceptable } from '@/actions'
+import {
+  attributeAuthorities, type AuthorityKind,
+} from '@/verifier-verdict'
 import { icon } from '@/icons'
 import { i18n } from '@/i18n'
 import { t, type LabelKey } from '@/i18n/labels'
 import type {
-  DppManifest, ManifestSignature, VersionState,
+  ChainStatusResult, DppManifest, ManifestSignature, VersionState,
 } from '@/archive'
 import type {
   ProofEntryResult, VerificationResult,
@@ -363,17 +368,20 @@ function buildSignatureSection(
 // the same acceptance gate that drives the verdict. A state
 // the gate rejects (invalid; or absent / unreachable / a
 // non-pinned key when this build pins one) gets the failed
-// orb. An accepted 'verified' gets the green orb; the
-// remaining tolerated-but-unproven states ('pending', and
-// 'absent'/'unreachable' on unpinned builds) render a muted
-// dash (no claim either way), matching buildChainBadge.
+// orb, an accepted 'verified' the green one. The tolerated-
+// but-unproven states split: an unsigned artefact has no
+// signature to judge (not applicable), a still-pending check
+// and an unreachable key host have simply not produced an
+// answer yet (unrun).
 function buildSignatureBadge(state: SignatureProofState): HTMLElement {
-  if (state === 'pending') return el('span', 'col-authority-na', '-')
-  if (!signatureIsAcceptable(state)) return buildVerdictBadge(false)
-  if (state !== 'absent' && state.status === 'verified') {
-    return buildVerdictBadge(true)
-  }
-  return el('span', 'col-authority-na', '-')
+  return buildCell(signatureCellState(state))
+}
+
+function signatureCellState(state: SignatureProofState): CellState {
+  if (state === 'pending') return 'unrun'
+  if (!signatureIsAcceptable(state)) return 'failed'
+  if (state === 'absent') return 'not-applicable'
+  return state.status === 'verified' ? 'ok' : 'unrun'
 }
 
 // ─── Proof chain (active snapshot) ───────────────────
@@ -415,8 +423,6 @@ function buildChainSuite(suite: string): HTMLElement {
   )
   return row
 }
-
-type AuthorityKind = 'issuer' | 'platform' | 'other'
 
 interface AuthorityGroup {
   readonly kind: AuthorityKind
@@ -487,25 +493,42 @@ function buildVerdictBadge(ok: boolean): HTMLElement {
   return orb
 }
 
-function buildChainBadge(chain: { status: string }): HTMLElement {
-  if (chain.status === 'ok') return buildVerdictBadge(true)
-  if (chain.status === 'broken') return buildVerdictBadge(false)
+// What one check says. A check that ran always gets an orb,
+// so a failure reads as a red X and never as a neutral
+// placeholder. The two neutral states are kept apart: 'unrun'
+// is a check that has not produced an answer yet (the version
+// was never verified, a chain walk that could not complete),
+// 'not-applicable' is a check that cannot exist for the row
+// (v1 has no prior version to chain to, a snapshot that
+// carries no proof from one of the authorities).
+type CellState = 'ok' | 'failed' | 'unrun' | 'not-applicable'
 
-  // 'not-applicable' (v1, the chain root) and 'unknown'
-  // (manifest hadn't loaded when the check ran). Render
-  // a muted dash so the column visually aligns.
-  const span = el('span', 'col-authority-na', '-')
-  return span
+function buildCell(state: CellState): HTMLElement {
+  if (state === 'ok') return buildVerdictBadge(true)
+  if (state === 'failed') return buildVerdictBadge(false)
+  if (state === 'unrun') return el('span', 'col-authority-unrun', '…')
+  return el('span', 'col-authority-na', '-')
+}
+
+function chainCellState(chain: ChainStatusResult): CellState {
+  if (chain.status === 'ok') return 'ok'
+  if (chain.status === 'broken') return 'failed'
+  if (chain.status === 'not-applicable') return 'not-applicable'
+
+  // 'unknown': the manifest had not loaded, or a prior
+  // snapshot was not retrievable, so the walk never ran to a
+  // conclusion.
+  return 'unrun'
 }
 
 // Group entries by resolved key (an authority's aliases
-// all resolve to the same key) and label the group from
-// the verificationMethod URL of any entry in it. The
-// seeder writes keys/issuer.json and keys/platform.json
-// paths, which is what we pattern-match on; entries that
-// don't match either pattern fall through to a generic
-// label. Entries that didn't resolve fall back to their
-// own verificationMethod as the group key.
+// all resolve to the same key), then attribute each group
+// with the shared authorityKind rule: a key-path URL, as an
+// eddsa-jcs proof set writes it, or the did:web method an
+// ecdsa-sd credential names per authority. A group that
+// matches neither carries the generic authority label.
+// Entries that didn't resolve fall back to their own
+// verificationMethod as the group key.
 function groupByAuthority(
   entries: ReadonlyArray<ProofEntryResult>,
 ): AuthorityGroup[] {
@@ -516,33 +539,33 @@ function groupByAuthority(
     bucket.push(e)
     byKey.set(key, bucket)
   }
-  const groups: AuthorityGroup[] = []
-  for (const bucket of byKey.values()) {
-    const kind = kindForGroup(bucket)
+
+  // Attribution runs against the DIDs the active snapshot
+  // declares, and over every group at once so its structural
+  // rule can name the party opposite an identified one.
+  const buckets = [...byKey.values()]
+  const kinds = attributeAuthorities(buckets, {
+    issuerDid: activeIssuer().did,
+    platformDid: activePlatform().did,
+  })
+  const groups: AuthorityGroup[] = buckets.map((bucket, i) => {
+    const kind = kinds[i]
     const name = kind === 'issuer'
       ? activeIssuer().name
       : kind === 'platform'
         ? activePlatform().name
-        : ''
-    const verifiedHere = bucket.some((e) => e.status === 'verified')
-    groups.push({ kind, name, entries: bucket, verifiedHere })
-  }
+        : tr('verifier.authority')
+    return {
+      kind, name, entries: bucket,
+      verifiedHere: bucket.some((e) => e.status === 'verified'),
+    }
+  })
 
   // Issuer first, platform second, anything we can't
   // classify last, so the ordering carries the role
   // information visually.
   groups.sort((a, b) => orderForKind(a.kind) - orderForKind(b.kind))
   return groups
-}
-
-function kindForGroup(
-  bucket: ReadonlyArray<ProofEntryResult>,
-): AuthorityKind {
-  for (const e of bucket) {
-    if (/\/keys\/issuer\b/.test(e.verificationMethod)) return 'issuer'
-    if (/\/keys\/platform\b/.test(e.verificationMethod)) return 'platform'
-  }
-  return 'other'
 }
 
 function orderForKind(kind: AuthorityKind): number {
@@ -722,7 +745,11 @@ function buildVersionsList(
   return wrap
 }
 
-function buildVersionRow(
+// Exported for tests: which of the four cell states each of
+// the three check columns lands in is how a visitor reads a
+// version's verdict, and it has to hold across both
+// cryptosuites.
+export function buildVersionRow(
   versionNumber: number, s: VersionState | undefined,
   manifest: DppManifest,
 ): HTMLTableRowElement {
@@ -730,15 +757,71 @@ function buildVersionRow(
   if (s?.status === 'verified') row.classList.add('row-ok')
   if (s?.status === 'failed') row.classList.add('row-bad')
 
+  const issuerTd = el('td', 'col-authority')
+  const platformTd = el('td', 'col-authority')
+  const chainTd = el('td', 'col-authority')
+  if (s && (s.status === 'verified' || s.status === 'failed')) {
+    const groups = groupByAuthority(s.result.entries)
+    const blind = s.status === 'failed'
+      && !groups.some((g) => g.kind !== 'other')
+    issuerTd.appendChild(
+      buildCell(authorityCellState(groups, 'issuer', blind)),
+    )
+    platformTd.appendChild(
+      buildCell(authorityCellState(groups, 'platform', blind)),
+    )
+    chainTd.appendChild(buildCell(chainCellState(s.chain)))
+    if (s.chain.status === 'broken') chainTd.title = s.chain.reason ?? ''
+  } else {
+    // Nothing has been checked for this version yet: either
+    // its verify is still in flight, or it was never started
+    // (the visitor has not scrubbed to it and the DPP is too
+    // large to auto-verify). Neither is a verdict.
+    for (const td of [issuerTd, platformTd, chainTd]) {
+      td.appendChild(buildCell('unrun'))
+    }
+  }
+
+  row.append(
+    buildVersionCell(versionNumber, manifest),
+    issuerTd, platformTd, chainTd,
+  )
+  return row
+}
+
+// An authority column's verdict. A snapshot that carries a
+// proof from the other authority only has nothing to badge
+// here, which is a property of the row rather than a failure,
+// so it reads as not applicable.
+//
+// `blind` says the row failed and nothing in it could be
+// attributed to either party: a verify that threw, a
+// snapshot carrying no proof, a cryptosuite this build
+// cannot read, or proofs under keys nothing identifies.
+// Both columns then take the red X, since a dash would read
+// as "nothing to check here" on a row that did fail.
+function authorityCellState(
+  groups: ReadonlyArray<AuthorityGroup>,
+  kind: 'issuer' | 'platform',
+  blind: boolean,
+): CellState {
+  const group = groups.find((g) => g.kind === kind)
+  if (!group) return blind ? 'failed' : 'not-applicable'
+  return group.verifiedHere ? 'ok' : 'failed'
+}
+
+// The row's leading cell: the version label plus its
+// download button. The label navigates to the version's
+// timeline event; when no event carries the version (older
+// or partial feeds) there is nowhere to go, so it renders as
+// plain text instead of a button that would silently no-op.
+function buildVersionCell(
+  versionNumber: number, manifest: DppManifest,
+): HTMLTableCellElement {
   const versionTd = el('td')
   const label = t(i18n.labels, 'cryptoProof.versionRow',
     { version: versionNumber })
 
-  // The row label navigates to the version's timeline
-  // event. When no event carries the version (older or
-  // partial feeds) there is nowhere to go, so render
-  // plain text instead of a button that would silently
-  // no-op.
   if (events().some((e) => e.versionNumber === versionNumber)) {
     const versionBtn = el('button', 'proof-version-link')
     versionBtn.type = 'button'
@@ -753,47 +836,7 @@ function buildVersionRow(
     )
   }
   versionTd.appendChild(buildRowDownload(manifest, versionNumber))
-
-  const issuerTd = el('td', 'col-authority')
-  const platformTd = el('td', 'col-authority')
-  const chainTd = el('td', 'col-authority')
-  if (s && (s.status === 'verified' || s.status === 'failed')) {
-    const groups = groupByAuthority(s.result.entries)
-    for (const g of groups) {
-      const td = matchesAuthority(g, 'issuer') ? issuerTd
-        : matchesAuthority(g, 'platform') ? platformTd : null
-      if (td) td.appendChild(buildVerdictBadge(g.verifiedHere))
-    }
-    chainTd.appendChild(buildChainBadge(s.chain))
-    if (s.status === 'failed' && s.chain.status === 'broken') {
-      chainTd.title = s.chain.reason ?? ''
-    }
-
-    // A suite that carries no proof entry for an authority
-    // leaves that column with nothing to badge; show the
-    // not-applicable dash.
-    if (!issuerTd.hasChildNodes()) issuerTd.textContent = '-'
-    if (!platformTd.hasChildNodes()) platformTd.textContent = '-'
-  } else if (s?.status === 'pending') {
-    issuerTd.textContent = '…'
-    platformTd.textContent = '…'
-    chainTd.textContent = '…'
-  } else {
-    issuerTd.textContent = '-'
-    platformTd.textContent = '-'
-    chainTd.textContent = '-'
-  }
-
-  row.append(versionTd, issuerTd, platformTd, chainTd)
-  return row
-}
-
-function matchesAuthority(
-  group: AuthorityGroup, kind: 'issuer' | 'platform',
-): boolean {
-  return group.entries.some(
-    (e) => new RegExp(`/keys/${kind}\\b`).test(e.verificationMethod),
-  )
+  return versionTd
 }
 
 // ─── Helpers ─────────────────────────────────────────

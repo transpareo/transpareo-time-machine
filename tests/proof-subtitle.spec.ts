@@ -150,6 +150,16 @@ describe('buildChainSection', () => {
     expect(names(section)).toEqual(['Issuer', 'Transpareo']);
   });
 
+  it('labels a group it cannot attribute generically', () => {
+    // Neither a keys/issuer.json nor a keys/platform.json
+    // path, and the snapshot declares no DID to match: the
+    // row still needs a name, not an empty label.
+    const section = buildChainSection(verified([
+      entry('https://cdn.example/p/keys/backup.json', 'zBackup'),
+    ]));
+    expect(names(section)).toEqual(['Authority']);
+  });
+
   it('renders the pending notice while verifying', () => {
     const section = buildChainSection({ status: 'pending' });
     expect(names(section)).toEqual([]);

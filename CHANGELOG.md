@@ -25,6 +25,35 @@ and this project adheres to
   rides on each proof result, is matched against both pin
   sets (only for a proof that actually verified), and counts
   authorities the way the `eddsa-jcs-2022` path does.
+- The Issuer and platform columns of the per-version
+  verdicts table fill in for `ecdsa-sd-2023` versions, and
+  the proof rows are named and ordered issuer-first.
+  Authority grouping matched key-path URLs only, which is
+  how an eddsa-jcs proof set names its keys; an ecdsa-sd
+  credential names a `did:web` method per authority. Those
+  are now matched against the DIDs the snapshot declares,
+  and where that leaves one of two groups unnamed - an
+  issuer whose signing key lives under a `did:web` host of
+  its own, which the passport does not declare - the group
+  opposite an identified authority takes the remaining
+  party, since a DPP is signed by exactly two. Three or
+  more groups, or none identified, stay unattributed rather
+  than guessed.
+- The per-version verdicts table tells "not checked yet"
+  apart from "does not apply". A version whose check has not
+  run reads as the pending ellipsis in all three columns
+  instead of borrowing the dash that v1's chain cell
+  legitimately carries, and a check that ran and failed
+  always renders the red X. That includes a failed version
+  with nothing attributable in it - a verify that threw, a
+  snapshot carrying no proof, a cryptosuite this build
+  cannot read, proofs under keys nothing identifies - where
+  both authority columns used to show the dash that reads as
+  "nothing to check here". The dash stays where it belongs:
+  a credential that carries one authority's proof only.
+- A proof group neither rule can attribute keeps a name in
+  the proof modal ("Authority", as the widget already showed)
+  instead of rendering a nameless row.
 ## [2.8.0] - 2026-08-09
 
 ### Fixed

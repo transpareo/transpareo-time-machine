@@ -414,7 +414,14 @@ code {
   }
 }
 
-.proof-version-pending { color: var(--color-muted); }
+// The two neutral cell markers, muted so they never read as
+// a verdict next to the orbs. They stay distinguishable at a
+// glance: the ellipsis is a check that has not answered yet,
+// the dash a check that cannot apply to that row.
+.col-authority-unrun,
+.col-authority-na {
+  color: var(--color-muted, #777);
+}
 
 // Reuse the .orb element from dpp-verification-chip.
 // The orb's background is `color-mix(currentColor 18%,
@@ -426,5 +433,4 @@ code {
 // chip already carries for its own orb).
 .orb-verified { color: var(--color-verified, #16a34a); }
 .orb-failed { color: var(--color-verify-fail, #dc2626); }
-.orb-pending { color: var(--color-muted, #777); }
 .orb .icon { margin: 0; }

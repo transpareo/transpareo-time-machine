@@ -21,6 +21,12 @@
  * from the domain the manifest's platform.did declares,
  * 'unconfirmed' otherwise. The badge may carry the
  * manifest's platform name only on the first two tiers.
+ *
+ * attributeAuthorities is the matching attribution rule:
+ * which party each group of proof entries belongs to. Both
+ * surfaces label their proof rows with it, so the modal's
+ * per-version columns and the widget's authority cards can
+ * never disagree about who signed what.
  */
 
 import type { ProofEntryResult, VerificationResult } from '@/crypto/verify'
@@ -164,6 +170,99 @@ export function verdictIdentity(
       && methodDomain(e.verificationMethod, manifestUrl) === domain,
   )
   return bound ? 'bound' : 'unconfirmed'
+}
+
+// ─── Authority attribution ───────────────────────────
+
+export type AuthorityKind = 'issuer' | 'platform' | 'other'
+
+// The DIDs a DPP declares for its two parties, as the
+// manifest and every snapshot carry them.
+export interface DeclaredAuthorities {
+  readonly issuerDid?: string
+  readonly platformDid?: string
+}
+
+// As much of a proof entry as attribution reads.
+export interface AuthorityEntry {
+  readonly verificationMethod: string
+
+  // Set when the entry verified under one of the host page's
+  // pinned platform keys (see crypto/verify).
+  readonly pinned?: boolean
+}
+
+// Which party signed each group of proof entries, a group
+// being the entries that resolved to one key. Answers for
+// the whole set at once because the last rule is structural:
+// a DPP is signed by two parties, so the group opposite an
+// identified one is the remaining party.
+export function attributeAuthorities(
+  groups: ReadonlyArray<ReadonlyArray<AuthorityEntry>>,
+  declared: DeclaredAuthorities,
+): AuthorityKind[] {
+  return completeTwoParty(groups.map((g) => authorityKind(g, declared)))
+}
+
+// A DPP carries the issuer's proof and the platform's
+// counter-signature, so two groups with exactly one of them
+// identified leave no doubt about the other. Three or more
+// groups, or none identified, stay as they are: a guess
+// there would put a party's name on a key nothing vouches
+// for.
+function completeTwoParty(kinds: AuthorityKind[]): AuthorityKind[] {
+  if (kinds.length !== 2) return kinds
+  const [first, second] = kinds
+  if (first === 'other' && second !== 'other') {
+    return [otherParty(second), second]
+  }
+  if (second === 'other' && first !== 'other') {
+    return [first, otherParty(first)]
+  }
+  return kinds
+}
+
+function otherParty(kind: Exclude<AuthorityKind, 'other'>): AuthorityKind {
+  return kind === 'issuer' ? 'platform' : 'issuer'
+}
+
+// Which party a single group belongs to, in descending order
+// of how directly the evidence names a role. A pin is the
+// host page's own statement that the key is its platform's.
+// A key path names the role outright, which is how an
+// eddsa-jcs proof set writes its aliases. A did:web method,
+// how an ecdsa-sd credential names each authority, matches
+// only the DIDs this DPP declares - an issuer whose signing
+// key lives under a DID the passport never names falls
+// through to the structural rule above.
+function authorityKind(
+  entries: ReadonlyArray<AuthorityEntry>,
+  declared: DeclaredAuthorities,
+): AuthorityKind {
+  if (entries.some((e) => e.pinned)) return 'platform'
+
+  for (const e of entries) {
+    if (/\/keys\/issuer\b/.test(e.verificationMethod)) return 'issuer'
+    if (/\/keys\/platform\b/.test(e.verificationMethod)) return 'platform'
+  }
+
+  const { issuerDid, platformDid } = declared
+  for (const e of entries) {
+    const did = didOfMethod(e.verificationMethod)
+    if (did == null) continue
+    if (issuerDid != null && did === issuerDid) return 'issuer'
+    if (platformDid != null && did === platformDid) return 'platform'
+  }
+  return 'other'
+}
+
+// did:web:example.com#key-2 -> did:web:example.com. Null for
+// an http(s) method, which the key-path patterns above are
+// the rule for.
+function didOfMethod(method: string): string | null {
+  if (!method.startsWith('did:')) return null
+  const hash = method.indexOf('#')
+  return hash >= 0 ? method.slice(0, hash) : method
 }
 
 // did:web:example.com           -> example.com
