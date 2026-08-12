@@ -10,6 +10,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.9.0] - 2026-08-12
+
 ### Added
 
 - `locale` on either element states which language to render
