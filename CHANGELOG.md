@@ -94,6 +94,14 @@ and this project adheres to
   that switches its own `lang` still overrides a choice from
   the version it served before. On a page that sets no
   `lang` the stored pick decides as it always did.
+- `lang` reaches the widget in verifier mode. The renderer
+  mounts a `<dpp-verifier>` in its own shadow root there, and
+  the widget reads `lang` off its own element, so a
+  `<transpareo-time-machine lang="de" verifier>` came up in
+  the browser's language: the nested element found no `lang`
+  of its own and cleared the one the renderer had set. The
+  attribute now travels with the mounted widget, like the
+  pinned platform keys already did.
 ## [2.8.0] - 2026-08-09
 
 ### Fixed

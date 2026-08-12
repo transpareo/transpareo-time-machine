@@ -195,6 +195,14 @@ class TranspareoTimeMachine extends BaseElement {
           'pinned-platform-key', config.pinnedPlatformKeys.join(' '),
         )
       }
+
+      // `lang` travels too. The widget reads it off its own
+      // element and its setup overwrites the host locale set
+      // above, so without this the attribute on this element
+      // would resolve to nothing in verifier mode.
+      const lang = this.getAttribute('lang')
+      if (lang) widget.setAttribute('lang', lang)
+
       container.appendChild(widget)
       return
     }
