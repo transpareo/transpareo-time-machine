@@ -10,6 +10,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.8.1] - 2026-08-12
+
 ### Fixed
 
 - An `ecdsa-sd-2023` passport now reaches an authentic
