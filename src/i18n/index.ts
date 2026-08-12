@@ -86,8 +86,17 @@ export const NATIVE_NAMES: Record<string, string> = {
   zh: '中文',
 }
 
+// The name we ship for a locale, or null when we ship none.
+// Own properties only: locale codes ride in untrusted
+// manifest data, and a code like "toString" would otherwise
+// resolve to a function off Object's prototype, which every
+// caller here treats as a string.
+export function nativeNameOrNull(code: string): string | null {
+  return Object.hasOwn(NATIVE_NAMES, code) ? NATIVE_NAMES[code] : null
+}
+
 export function nativeName(code: string): string {
-  return NATIVE_NAMES[code] ?? code.toUpperCase()
+  return nativeNameOrNull(code) ?? code.toUpperCase()
 }
 
 // What the viewer's locale calls a language ("German" for

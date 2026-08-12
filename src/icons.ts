@@ -119,7 +119,12 @@ const contentIconMap = signal<Readonly<Record<string, string>>>({})
 // so a row rendered before the map arrives re-renders with
 // its icon once it does.
 export function iconForProperty(key: string): string | null {
-  return contentIconMap()[key] ?? null
+  // Own properties only: the key is a propertyID out of the
+  // DPP, and "toString" would otherwise resolve to a
+  // function off Object's prototype and be spliced into a
+  // `<use href>` as if it were a symbol id.
+  const map = contentIconMap()
+  return Object.hasOwn(map, key) ? map[key] : null
 }
 
 // The external icon-map URL from the host's `icon-map-src`,

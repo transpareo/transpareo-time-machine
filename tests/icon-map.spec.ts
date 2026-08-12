@@ -58,6 +58,19 @@ describe('iconForProperty', () => {
     expect(icons.iconForProperty('carbon')).toBe('leaf');
   });
 
+  it('returns null for a key inherited from Object', async () => {
+    // propertyID rides in the DPP. "toString" resolves off
+    // the prototype to a function, which would then be
+    // spliced into a `<use href>` as if it were a symbol id.
+    mockFetch({ material: 'sliders' });
+    const icons = await load();
+    icons.loadContentIconMap();
+    await vi.waitFor(() =>
+      expect(icons.iconForProperty('material')).toBe('sliders'));
+    expect(icons.iconForProperty('toString')).toBeNull();
+    expect(icons.iconForProperty('constructor')).toBeNull();
+  });
+
   it('returns null for a key the map omits', async () => {
     mockFetch({ material: 'sliders' });
     const icons = await load();

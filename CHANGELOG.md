@@ -116,6 +116,15 @@ and this project adheres to
   Japanese, Korean, Hindi and Bengali rows are unchanged,
   their scripts having no case. Sorting and the type-ahead
   filter are unaffected: both already ignore case.
+- A locale code or property key that names an `Object`
+  method no longer reaches the UI as a function. Both lookup
+  tables the renderer keys by untrusted data - the native
+  locale names and the publisher's icon map - are plain
+  objects, so `"toString"` resolved off the prototype: the
+  language picker threw where it called a string method on
+  the result, taking the footer down with it, and the icon
+  map would have spliced a function's source into a
+  `<use href>`. Both read own properties only now.
 
 ## [2.8.0] - 2026-08-09
 

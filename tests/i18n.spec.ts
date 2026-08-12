@@ -17,8 +17,8 @@ import {
   t, englishLabels, bundledLocales, type Labels,
 } from '../src/i18n/labels';
 import {
-  detectLocale, setHostLocale, pickLocale, nativeName, localizedName,
-  NATIVE_NAMES, UI_LOCALES,
+  detectLocale, setHostLocale, pickLocale, nativeName, nativeNameOrNull,
+  localizedName, NATIVE_NAMES, UI_LOCALES,
 } from '../src/i18n';
 
 describe('t', () => {
@@ -66,6 +66,16 @@ describe('nativeName', () => {
   it('names every shipped locale bundle', () => {
     const unnamed = bundledLocales.filter((c) => !NATIVE_NAMES[c]);
     expect(unnamed).toEqual([]);
+  });
+
+  it('does not answer with a key inherited from Object', () => {
+    // Locale codes ride in the manifest, and a plain object
+    // hands back a function for "toString", which every
+    // caller here goes on to treat as a string.
+    expect(nativeNameOrNull('toString')).toBeNull();
+    expect(nativeNameOrNull('constructor')).toBeNull();
+    expect(nativeName('toString')).toBe('TOSTRING');
+    expect(nativeNameOrNull('de')).toBe('Deutsch');
   });
 });
 
