@@ -58,7 +58,8 @@ jobs:
       # so we don't double-build twice in the matrix.
       - if: matrix.node == '22'
         run: npm run check:reproducible
-      # NOTE: the WCAG 2.2 AA gate (`npm run a11y`) is
+      # NOTE: the browser suite (`npm run browser`, which
+      # carries the WCAG 2.2 AA gate) is
       # NOT in this workflow. axe-core requires a
       # rendered SPA with fixture data, and `npm run
       # seed` (which materialises the fixture manifests
@@ -66,4 +67,4 @@ jobs:
       # upstream CDNs at runtime; running it here would
       # make CI's pass/fail signal depend on third-party
       # availability. Local contributors run
-      # `npm run seed && npm run a11y` before pushing.
+      # `npm run seed && npm run browser` before pushing.

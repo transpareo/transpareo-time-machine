@@ -795,9 +795,17 @@ work; none ship in the npm package:
 | `snapshot.html` | `/src/main.ts` | Single-snapshot mode: `src` points at one signed snapshot instead of a manifest, so the renderer shows that frozen version with no timeline/history. Open `/snapshot.html` while `npm run dev` is running. |
 
 The embed delivery is also smoke-tested by
-`tests/embed-smoke.spec.ts` (run under `npm run a11y`): it
+`tests/embed-smoke.spec.ts` (run under `npm run browser`): it
 loads the built bundle and asserts it registers the custom
 element and inlines its CSS.
+
+The browser suite runs on two engines and a release gates on
+both: `npm run browser` drives Chromium,
+`npm run browser:webkit` drives Safari's. WebKit's Linux
+build links against `libicu74` and `libflite`, so on a distro
+shipping neither, `npm run browser:webkit:docker` runs the
+same suite inside the Playwright container image instead.
+`npm run a11y` remains as an alias for `npm run browser`.
 
 ## What the SPA does on first paint
 
@@ -1135,7 +1143,8 @@ stamps the `CHANGELOG.md` `[Unreleased]` block into a dated
 section, commits `Release <version>`, tags `v<version>`, and
 pushes. The pushed tag is the release: it triggers
 `.github/workflows/release.yml`, which type-checks, lints,
-tests, builds, runs the a11y pass against a fresh seed, and
+tests, builds, runs the browser suite against a fresh seed,
+and
 publishes to npm with provenance. The helper runs the
 check / lint / test gates locally first, so a broken release
 never becomes a dangling tag.

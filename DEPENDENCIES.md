@@ -142,7 +142,7 @@ of public specifications, not imported code:
 
 - **What:** the browser-driving test framework.
 - **Used by:** the WCAG gate `tests/a11y.spec.ts` via
-  `npm run a11y` (release-only; see `ci.yml` for why it is
+  `npm run browser` (release-only; see `ci.yml` for why it is
   kept out of per-PR CI).
 - **Cost of removal:** no rendered Transpareo Time Machine
   test harness.

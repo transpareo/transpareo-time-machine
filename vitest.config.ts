@@ -16,7 +16,7 @@ export default defineConfig({
 
     // These are Playwright specs (browser tests driven by
     // @playwright/test); they run under Playwright
-    // (`npm run a11y`), not vitest, and throw on import here
+    // (`npm run browser`), not vitest, and throw on import here
     // because @playwright/test's test() needs the Playwright
     // runner.
     exclude: [

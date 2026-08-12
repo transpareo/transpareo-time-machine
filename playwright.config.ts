@@ -3,11 +3,11 @@
  * Copyright (C) 2026 Transpareo AG
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
- * Playwright config. Used only by the a11y test
- * (tests/a11y.spec.ts); the rest of the suite runs
- * under vitest. The webServer block boots `npm run
- * dev` on demand so the test works against a freshly
- * cloned tree.
+ * Playwright config. Drives the browser suite (the specs
+ * named in testMatch below, the WCAG gate among them); the
+ * rest of the tests run under vitest. The webServer block
+ * boots `npm run dev` on demand so the suite works against
+ * a freshly cloned tree.
  */
 import { defineConfig, devices } from '@playwright/test'
 
@@ -30,9 +30,29 @@ export default defineConfig({
   retries: 0,
   use: {
     baseURL: 'http://localhost:5173',
-    ...devices['Desktop Chrome'],
-    launchOptions: localChromium ? { executablePath: localChromium } : {},
   },
+
+  // Both browsers gate a release. Chromium is what
+  // `npm run browser` runs; WebKit is Safari's engine, as
+  // likely as anything to be what a phone scanning a DPP
+  // code runs, and `npm run browser:webkit` drives it. Its
+  // Linux build links against libicu74 and libflite, so on a
+  // distro shipping neither, `npm run browser:webkit:docker`
+  // runs the same suite inside the Playwright container
+  // image.
+  projects: [
+    {
+      name: 'chromium',
+      use: {
+        ...devices['Desktop Chrome'],
+        launchOptions: localChromium ? { executablePath: localChromium } : {},
+      },
+    },
+    {
+      name: 'webkit',
+      use: { ...devices['Desktop Safari'] },
+    },
+  ],
   webServer: [
     {
       command: 'npm run dev',

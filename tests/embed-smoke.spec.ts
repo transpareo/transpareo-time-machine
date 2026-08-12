@@ -5,7 +5,7 @@
  *
  * Smoke test for the single-file EMBED delivery
  * (dist-embed/embed.js). The lib/dev path (index.html and
- * the a11y test) never runs embed.ts's CSS inlining, so this
+ * the WCAG gate) never runs embed.ts's CSS inlining, so this
  * asserts the bundle's unique contract: loaded as one module
  * with no stylesheet link, it registers the custom element,
  * upgrades it to a shadow host, and injects app.css itself.

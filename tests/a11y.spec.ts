@@ -25,7 +25,7 @@
  * human review on top of this gate.
  *
  * Local: run `npm run seed && npm run dev` once, then
- * `npm run a11y` in another shell.
+ * `npm run browser` in another shell.
  */
 import { test, expect } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
