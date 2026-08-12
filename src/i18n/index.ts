@@ -180,20 +180,57 @@ export const UI_LOCALES: ReadonlyArray<string> = [
   ...bundledLocales.filter((c) => c !== 'en'),
 ]
 
-// Locale the embedding page hands us via the element's `lang`
-// attribute (e.g. `<dpp-verifier lang="de">`). A page that
-// pins `lang` is telling us to match its own chrome, and its
-// language picker reloads the page with a new `lang`, so this
-// outranks a pick the visitor made somewhere else. It does
-// not outrank one they made right here, on a page carrying
-// this same `lang` - see detectLocale. null on a page that
-// sets no `lang`, which either element may be.
+// Locale the embedding page hands us through the element's
+// markup (see hostLocaleOf). A page that names one is telling
+// us to match its own chrome, and its language picker reloads
+// the page with a new value, so this outranks a pick the
+// visitor made somewhere else. It does not outrank one they
+// made right here, on a page naming this same locale - see
+// detectLocale. null on a page that names none.
 //
 // Module-global, like the `locale` signal it feeds: one
 // active locale per page. Two widgets with different `lang`s
 // would share it, last to mount wins. Pages embed a single
 // widget, so this stays a documented assumption, not a bug.
 let hostLocale: string | null = null
+
+// What an element's markup asks for, in the form
+// setHostLocale takes. `locale` is the deliberate
+// instruction and outranks `lang`, which a shell may template
+// into every element for assistive tech and search engines
+// rather than to steer this one:
+//
+//   locale="de"       pin, region stripped below
+//   locale="inherit"  whatever language surrounds the element
+//   locale="auto"     detect, ignoring any `lang` here
+//   absent or empty   detect
+//
+// So `locale="auto"` is how a page that templates `lang`
+// everywhere says "not that, ask the visitor's browser".
+export function hostLocaleOf(el: Element): string | null {
+  const asked = el.getAttribute('locale')?.trim() ?? ''
+
+  // Keywords match case-insensitively. A language tag is
+  // case-insensitive too (BCP 47 recommends a casing, it does
+  // not require one), and `locale="INHERIT"` read as a tag
+  // would be quietly dropped as a locale no passport
+  // publishes, leaving the page detecting instead of
+  // inheriting with nothing said about it.
+  const keyword = asked.toLowerCase()
+  if (keyword === 'auto') return null
+  if (keyword === 'inherit') return surroundingLang(el)
+  return asked || el.getAttribute('lang')
+}
+
+// The language the markup around the element declares: the
+// nearest ancestor carrying `lang`, which is how HTML settles
+// an element's language. Read from the parent up, never from
+// the element itself, because `inherit` asks what this sits
+// inside of - the same sense CSS gives the word.
+function surroundingLang(el: Element): string | null {
+  const source = el.parentElement?.closest('[lang]')
+  return source?.getAttribute('lang') ?? null
+}
 
 export function setHostLocale(
   code: string | null | undefined,

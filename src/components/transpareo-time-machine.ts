@@ -33,7 +33,7 @@ import {
   activeVersionNumber, isOnCurrent, resetBootState,
 } from '@/state'
 import * as host from '@/host'
-import { i18n, setHostLocale } from '@/i18n'
+import { i18n, hostLocaleOf, setHostLocale } from '@/i18n'
 import { t } from '@/i18n/labels'
 import { bootstrapVerify, bootstrapHash } from '@/bootstrap'
 import { ensureEventsVerified, resetVerifyCaches } from '@/actions'
@@ -163,10 +163,11 @@ class TranspareoTimeMachine extends BaseElement {
     initConfigFromElement(this)
     this.configured = true
 
-    // The embedding page can pin the locale via `lang`; the
-    // i18n bootstrap then prefers it over the browser
-    // auto-detect once the snapshot's locales are known.
-    setHostLocale(this.getAttribute('lang'))
+    // The embedding page can pin the locale via `locale` (or
+    // the older `lang`); the i18n bootstrap then prefers it
+    // over the browser auto-detect once the snapshot's
+    // locales are known.
+    setHostLocale(hostLocaleOf(this))
 
     this.addStyle(css)
 
@@ -196,12 +197,15 @@ class TranspareoTimeMachine extends BaseElement {
         )
       }
 
-      // `lang` travels too. The widget reads it off its own
-      // element and its setup overwrites the host locale set
-      // above, so without this the attribute on this element
-      // would resolve to nothing in verifier mode.
-      const lang = this.getAttribute('lang')
-      if (lang) widget.setAttribute('lang', lang)
+      // The locale travels too: the widget resolves its own
+      // markup and overwrites the host locale set above, so
+      // without this the attribute on this element would come
+      // to nothing in verifier mode. It is handed the value
+      // already resolved, since `inherit` reads the page
+      // around the element and this widget sits inside a
+      // shadow root, where it can see none of it. 'auto' says
+      // "detect" for an element that named no locale.
+      widget.setAttribute('locale', hostLocaleOf(this) ?? 'auto')
 
       container.appendChild(widget)
       return

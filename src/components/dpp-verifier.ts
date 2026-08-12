@@ -45,6 +45,17 @@
  *                          fetched key is equally trusted
  *                          (the default 2-of-2 rule).
  *
+ *   locale                 Optional. `de` renders the widget
+ *                          in German (region stripped, and
+ *                          only locales with a shipped label
+ *                          bundle apply); `inherit` follows
+ *                          whatever language surrounds the
+ *                          element; `auto`, or no attribute
+ *                          at all, detects from the visitor's
+ *                          browser. Outranks `lang`, which is
+ *                          still read where no `locale` is
+ *                          given.
+ *
  * Independent of the SPA's state.ts / host.ts / actions
  * stack: has its own fetch + state machinery so the
  * widget bundles cleanly into its own dpp-verifier.js
@@ -77,7 +88,7 @@ import { readTextResponse } from '@/fetch-json'
 import { looksLikeHtml, discoverManifestUrl } from '@/manifest-discovery'
 import { parseKeySet } from '@/config'
 import {
-  i18n, locale, setHostLocale, detectLocale, UI_LOCALES,
+  i18n, locale, hostLocaleOf, setHostLocale, detectLocale, UI_LOCALES,
 } from '@/i18n'
 import { t, type LabelKey } from '@/i18n/labels'
 import type { DppManifest, SignedSnapshot } from '@/archive'
@@ -107,11 +118,12 @@ class DppVerifier extends BaseElement {
   private resultMount!: HTMLDivElement
 
   protected setup(root: ShadowRoot): void {
-    // Pin the widget's locale from the host page's `lang`. The
-    // verifier has no DPP available-locales to auto-detect from,
-    // so without this it sits on English. Falls back to the
-    // browser preference, then English (UI_LOCALES is en-first).
-    setHostLocale(this.getAttribute('lang'))
+    // Pin the widget's locale from the host page's markup (see
+    // hostLocaleOf). The verifier has no DPP available-locales
+    // to auto-detect from, so without a pin it falls back to
+    // the browser preference, then English (UI_LOCALES is
+    // en-first).
+    setHostLocale(hostLocaleOf(this))
     locale.set(detectLocale(UI_LOCALES))
 
     this.addStyle(css)

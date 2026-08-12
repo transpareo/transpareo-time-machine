@@ -10,6 +10,23 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Added
+
+- `locale` on either element states which language to render
+  in, without overloading the standard `lang` attribute a
+  shell may template everywhere for assistive tech and search
+  engines. A tag pins (`locale="de"`, region stripped),
+  `inherit` follows the language surrounding the element, and
+  `auto` detects from the visitor's browser, which is what an
+  absent attribute has always meant. Both keywords match in
+  any casing. `locale` outranks `lang`,
+  which is still read where no `locale` is given, so
+  `locale="auto"` is how a page that sets `lang` everywhere
+  keeps detection for this one element. In verifier mode the
+  renderer hands the mounted widget an already-resolved
+  locale, since `inherit` asks about the page around the
+  element and the widget cannot see out of its shadow root.
+
 ### Fixed
 
 - The sign-in hand-off tells the authorising system which
