@@ -8,16 +8,21 @@ import { fileURLToPath } from 'node:url';
 import { buildEcdsaSdIssuer } from '../scripts/seed/ecdsa-sd-signing';
 import { verifyDpp, dppIsAuthentic } from '../src/crypto/dispatch';
 import { decodeMultibaseBase58 } from '../src/crypto/multibase';
+import type { ResolvedMultikey } from '../src/crypto/did-web';
 
 // Resolve each proof's key from the emitted Multikey doc: the
 // platform proof verifies against platform-p256.json, every
 // other against issuer-p256.json.
-function keyResolver(keysDir: string): (m: string) => Promise<Uint8Array> {
-  const load = (fileName: string): Uint8Array => decodeMultibaseBase58(
-    (JSON.parse(readFileSync(join(keysDir, fileName), 'utf8')) as
-      { publicKeyMultibase: string }).publicKeyMultibase,
-  );
-  return (method: string): Promise<Uint8Array> => Promise.resolve(
+function keyResolver(
+  keysDir: string,
+): (m: string) => Promise<ResolvedMultikey> {
+  const load = (fileName: string): ResolvedMultikey => {
+    const multibase = (JSON.parse(
+      readFileSync(join(keysDir, fileName), 'utf8'),
+    ) as { publicKeyMultibase: string }).publicKeyMultibase;
+    return { multibase, bytes: decodeMultibaseBase58(multibase) };
+  };
+  return (method: string): Promise<ResolvedMultikey> => Promise.resolve(
     method.endsWith('platform-p256.json')
       ? load('platform-p256.json') : load('issuer-p256.json'),
   );

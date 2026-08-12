@@ -19,19 +19,20 @@
 
 import {
   verifySnapshot, type VerificationResult, type VerifyOptions,
-  type ProofCarrier,
+  type ProofCarrier, type ProofEntryResult,
 } from './verify'
 import {
   verifyDerivedProof, type DerivedVerifyResult, ECDSA_SD_2023,
 } from './ecdsa-sd'
 import { EDDSA_JCS_2022 } from './eddsa-jcs'
-import { resolveMultikey } from './did-web'
+import { resolveMultikey, type ResolvedMultikey } from './did-web'
 import { describeError } from '@/errors'
 
 // Resolves a proof's verificationMethod to the issuer's
-// raw P-256 key bytes. Injectable so the dispatch is
+// P-256 Multikey (the string for pin comparison, the bytes
+// for the signature check). Injectable so the dispatch is
 // testable without a network fetch.
-export type IssuerKeyResolver = (method: string) => Promise<Uint8Array>
+export type IssuerKeyResolver = (method: string) => Promise<ResolvedMultikey>
 
 // One ecdsa-sd derived proof's outcome: the verify result plus
 // the key it named, kept so the renderer can show one row per
@@ -39,6 +40,10 @@ export type IssuerKeyResolver = (method: string) => Promise<Uint8Array>
 export interface EcdsaProofResult {
   readonly verificationMethod: string
   readonly proofValue: string
+  // The Multikey the verificationMethod resolved to, kept so
+  // the renderer can match the proof against the host page's
+  // pinned key sets. Absent when resolution failed.
+  readonly keyMultibase?: string
   readonly result: DerivedVerifyResult
 }
 
@@ -85,6 +90,104 @@ export async function verifyDpp(
   }
 }
 
+export interface SnapshotVerifyOptions extends VerifyOptions {
+  // Same injectable P-256 key resolution DispatchOptions
+  // offers, so a caller can verify an ecdsa-sd credential
+  // without a network fetch.
+  readonly resolveIssuerKey?: IssuerKeyResolver
+}
+
+// Verify a snapshot under whichever cryptosuite its proof
+// declares, and answer in the single VerificationResult
+// shape both verification surfaces read: the SPA's
+// verification chip and proof modal, and the standalone
+// <dpp-verifier> widget. Each keeps its own pin sets (the
+// SPA's come off the host element's attributes, the widget's
+// off its own), so they are arguments here rather than a
+// module-global read - a surface that verifies foreign DPPs
+// must not silently inherit another one's pins.
+export async function verifySnapshotAnySuite(
+  document: Record<string, unknown>,
+  opts: SnapshotVerifyOptions = {},
+): Promise<VerificationResult> {
+  const v = await verifyDpp(document, {
+    verifyOptions: opts,
+    resolveIssuerKey: opts.resolveIssuerKey,
+  })
+  if (v.cryptosuite === EDDSA_JCS_2022) {
+    return { ...v.result, cryptosuite: v.cryptosuite }
+  }
+  if (v.cryptosuite === ECDSA_SD_2023) {
+    return ecdsaVerificationResult(v.results, opts)
+  }
+  return {
+    entries: [],
+    verdict: 'unauthenticated',
+    verifiedAuthorityCount: 0,
+    totalEntryCount: 0,
+    verifiedEntryCount: 0,
+    mode: opts.mode ?? 'default',
+  }
+}
+
+// Fold the ecdsa-sd derived proofs into the same result the
+// eddsa-jcs path returns. Each proof (the issuer's, then the
+// platform counter-signature) becomes one entry keyed on the
+// P-256 Multikey its verificationMethod resolved to, so a
+// renderer draws one authority row + key chip per proof and
+// the caller's pin sets have a key to match against.
+//
+// A pin is only honoured on a proof that verified, mirroring
+// verify.ts: the key an unverified entry resolved to says
+// nothing about who signed the snapshot.
+//
+// The caller's mode rides along: authenticity here is always
+// all-proofs-must-verify, but a surface that asked for strict
+// reads the mode back when it words a failure.
+export function ecdsaVerificationResult(
+  results: ReadonlyArray<EcdsaProofResult>,
+  opts: VerifyOptions,
+): VerificationResult {
+  const platformPins = opts.pinnedPlatformKeys ?? []
+  const issuerPins = opts.pinnedIssuerKeys ?? []
+  const entries = results.map((r, index): ProofEntryResult => {
+    const ok = r.result.verified
+    const key = r.keyMultibase
+    const reason = ok ? undefined : r.result.reason
+    return {
+      index,
+      verificationMethod: r.verificationMethod,
+      status: ok ? 'verified' : 'invalid',
+      proofValue: r.proofValue,
+      pinned: ok && key != null && platformPins.includes(key),
+      issuerPinned: ok && key != null && issuerPins.includes(key),
+      ...(key != null ? { keyMultibase: key } : {}),
+      ...(reason ? { reason } : {}),
+    }
+  })
+
+  // Authorities are counted by resolved key, as in verify.ts:
+  // two proofs under one key are one authority.
+  const verifiedKeys = new Set<string>()
+  let verifiedEntryCount = 0
+  for (const e of entries) {
+    if (e.status !== 'verified') continue
+    if (e.keyMultibase) verifiedKeys.add(e.keyMultibase)
+    verifiedEntryCount++
+  }
+
+  const authentic = dppIsAuthentic({ cryptosuite: ECDSA_SD_2023, results })
+  return {
+    entries,
+    verdict: authentic ? 'authentic' : 'unauthenticated',
+    verifiedAuthorityCount: verifiedKeys.size,
+    totalEntryCount: entries.length,
+    verifiedEntryCount,
+    mode: opts.mode ?? 'default',
+    cryptosuite: ECDSA_SD_2023,
+  }
+}
+
 // True when the document is authentic under whichever
 // suite verified it: the aggregate 'authentic' verdict for
 // eddsa-jcs, or the derived-proof pass for ecdsa-sd.
@@ -123,24 +226,23 @@ async function verifyOneProof(
     ? proof.verificationMethod : ''
   const proofValue = typeof proof.proofValue === 'string'
     ? proof.proofValue : ''
-  return { verificationMethod: method, proofValue,
-    result: await runOneProof(document, proof, method, resolve) }
-}
+  const named = { verificationMethod: method, proofValue }
+  if (!method) {
+    return { ...named, result: failResult('proof has no verificationMethod') }
+  }
 
-async function runOneProof(
-  document: Record<string, unknown>,
-  proof: Record<string, unknown>,
-  method: string,
-  resolve: IssuerKeyResolver,
-): Promise<DerivedVerifyResult> {
-  if (!method) return failResult('proof has no verificationMethod')
-  let key: Uint8Array
+  let key: ResolvedMultikey
   try {
     key = await resolve(method)
   } catch (err) {
-    return failResult(`issuer key resolution failed: ${describeError(err)}`)
+    const reason = `issuer key resolution failed: ${describeError(err)}`
+    return { ...named, result: failResult(reason) }
   }
-  return verifyDerivedProof({ ...document, proof }, key)
+  return {
+    ...named,
+    keyMultibase: key.multibase,
+    result: await verifyDerivedProof({ ...document, proof }, key.bytes),
+  }
 }
 
 // The ecdsa-sd proofs to verify: the whole `proof` array (a
@@ -153,14 +255,18 @@ function ecdsaProofs(
   return isObject(proof) ? [proof] : []
 }
 
-async function resolveIssuerP256Key(method: string): Promise<Uint8Array> {
-  const { bytes } = await resolveMultikey(method)
+async function resolveIssuerP256Key(
+  method: string,
+): Promise<ResolvedMultikey> {
+  const resolved = await resolveMultikey(method)
+  const { bytes } = resolved
+
   // P-256 Multikey: multicodec 0x8024 (p256-pub) prefix +
   // 33-byte compressed point.
   if (bytes.length !== 35 || bytes[0] !== 0x80 || bytes[1] !== 0x24) {
     throw new Error('verificationMethod is not a P-256 Multikey')
   }
-  return bytes
+  return resolved
 }
 
 function failResult(reason: string): DerivedVerifyResult {

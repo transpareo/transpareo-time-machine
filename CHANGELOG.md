@@ -10,6 +10,21 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Fixed
+
+- An `ecdsa-sd-2023` passport now reaches an authentic
+  verdict on a host page that pins keys. The derived-proof
+  path threw away the Multikey each proof's
+  `verificationMethod` resolved to, so no ecdsa-sd entry
+  could ever match `pinned-platform-key` /
+  `pinned-issuer-key`. Both pin gates failed and every
+  version was stored as failed - the chip read "Verification
+  failed" and the proof modal "Signature mismatch" - while
+  the proofs themselves, the manifest signature and the
+  whole version chain had verified. The resolved key now
+  rides on each proof result, is matched against both pin
+  sets (only for a proof that actually verified), and counts
+  authorities the way the `eddsa-jcs-2022` path does.
 ## [2.8.0] - 2026-08-09
 
 ### Fixed

@@ -27,7 +27,7 @@ import {
   verifyManifestSignature, hexChainHashOfSnapshot,
 } from '@/crypto/verify'
 import type { ProofEntryResult, VerificationResult } from '@/crypto/verify'
-import { verifyDpp, dppIsAuthentic } from '@/crypto/dispatch'
+import { verifySnapshotAnySuite } from '@/crypto/dispatch'
 import { manifestProofState, eventsProofState } from '@/state'
 import { config } from '@/config'
 import {
@@ -240,75 +240,19 @@ export function armRevocationGuard(): void {
 
 // ─── Lazy version verify ─────────────────────────────
 
-// Verifies a snapshot's multi-authority proof set in
-// the browser: JCS-canonicalize without the proof,
-// SHA-256, then walk each proof entry (fetch the
-// verificationMethod's Multikey doc, import the Ed25519
-// public key, crypto.subtle.verify). The aggregate
-// 2-of-2 verdict drives the verification chip; the
-// per-entry results power the proof modal's chain
-// rendering. Async so the chip flips through "Verifying"
-// to its outcome without blocking the first paint.
+// Verifies a snapshot's proof in the browser under whichever
+// cryptosuite it declares (see crypto/dispatch): the
+// eddsa-jcs-2022 multi-authority proof set, or the
+// ecdsa-sd-2023 derived proofs. The aggregate 2-of-2 verdict
+// drives the verification chip; the per-entry results power
+// the proof modal's chain rendering. Async so the chip flips
+// through "Verifying" to its outcome without blocking the
+// first paint.
 //
 // Snapshots not yet in the host cache get fetched
 // lazily via host.fetchSnapshot. The host module
 // resolves each version's URL relative to the manifest
 // the element was booted from.
-// Verify a raw snapshot by whichever cryptosuite its proof
-// declares. eddsa-jcs-2022 returns the multi-authority
-// aggregate directly; ecdsa-sd-2023's derived proofs (issuer
-// + platform) map onto the same entries shape so the chip and
-// the gate logic downstream read one verdict type.
-async function verifySnapshotDispatch(
-  raw: SignedSnapshot,
-): Promise<VerificationResult> {
-  const v = await verifyDpp(raw as unknown as Record<string, unknown>, {
-    verifyOptions: {
-      pinnedPlatformKeys: config.pinnedPlatformKeys,
-      pinnedIssuerKeys: config.pinnedIssuerKeys,
-    },
-  })
-  if (v.cryptosuite === 'eddsa-jcs-2022') {
-    return { ...v.result, cryptosuite: v.cryptosuite }
-  }
-  if (v.cryptosuite !== 'ecdsa-sd-2023') {
-    return {
-      entries: [], verdict: 'unauthenticated', verifiedAuthorityCount: 0,
-      totalEntryCount: 0, verifiedEntryCount: 0, mode: 'default',
-    }
-  }
-
-  // Each ecdsa-sd derived proof (issuer, then the platform
-  // counter-signature) becomes one entry keyed on its own
-  // P-256 verificationMethod, so the proof modal renders an
-  // authority row + key chip per proof, like an eddsa-jcs set.
-  // Authentic only when every proof verifies.
-  const entries = v.results.map((r, i): ProofEntryResult => {
-    const ok = r.result.verified
-    const reason = ok ? undefined : r.result.reason
-    return {
-      index: i,
-      verificationMethod: r.verificationMethod,
-      status: ok ? 'verified' : 'invalid',
-      proofValue: r.proofValue,
-      pinned: false,
-      issuerPinned: false,
-      ...(reason ? { reason } : {}),
-    }
-  })
-  const verifiedCount = entries.filter((e) => e.status === 'verified').length
-  const allOk = dppIsAuthentic(v)
-  return {
-    entries,
-    verdict: allOk ? 'authentic' : 'unauthenticated',
-    verifiedAuthorityCount: verifiedCount,
-    totalEntryCount: entries.length,
-    verifiedEntryCount: verifiedCount,
-    mode: 'default',
-    cryptosuite: 'ecdsa-sd-2023',
-  }
-}
-
 export function ensureVersionLoaded(n: number): void {
   if (versionStates.peek()[n]) return
   versionStates.update((m) => ({ ...m, [n]: { status: 'pending' } }))
@@ -337,7 +281,12 @@ export function ensureVersionLoaded(n: number): void {
       if (!raw) {
         throw new Error(`No raw snapshot available for version ${n}`)
       }
-      const result = await verifySnapshotDispatch(raw)
+      const result = await verifySnapshotAnySuite(
+        raw as unknown as Record<string, unknown>, {
+          pinnedPlatformKeys: config.pinnedPlatformKeys,
+          pinnedIssuerKeys: config.pinnedIssuerKeys,
+        },
+      )
       const chain = await verifyChainLink(n, raw)
       const manifestEntry = await verifyManifest()
       return { result, chain, manifestEntry }

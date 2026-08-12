@@ -15,7 +15,10 @@
 
 import { describe, expect, it, beforeAll } from 'vitest';
 import { verifyDpp, dppIsAuthentic } from '../src/crypto/dispatch';
+import type { ResolvedMultikey } from '../src/crypto/did-web';
 import { createSampleSigner, type SampleSigner } from './helpers/sd-signer';
+
+const ISSUER_MULTIBASE = 'zDnaeSampleIssuerP256Key';
 
 let signer: SampleSigner;
 
@@ -26,7 +29,7 @@ beforeAll(async () => {
 // Resolver that records the method it was asked for and
 // returns the sample issuer's key.
 function stubResolver(): {
-  resolve: (m: string) => Promise<Uint8Array>
+  resolve: (m: string) => Promise<ResolvedMultikey>
   calls: string[]
 } {
   const calls: string[] = [];
@@ -34,7 +37,9 @@ function stubResolver(): {
     calls,
     resolve: (method: string) => {
       calls.push(method);
-      return Promise.resolve(signer.issuer.multikey);
+      return Promise.resolve({
+        multibase: ISSUER_MULTIBASE, bytes: signer.issuer.multikey,
+      });
     },
   };
 }
@@ -47,6 +52,30 @@ describe('verifyDpp: routes ecdsa-sd-2023', () => {
     expect(v.cryptosuite).toBe('ecdsa-sd-2023');
     expect(dppIsAuthentic(v)).toBe(true);
     expect(resolver.calls).toEqual(['https://ex.dpp/issuer#key-1']);
+  });
+
+  it('carries the resolved Multikey on the proof result', async () => {
+    // The renderer compares this against the host page's
+    // pinned key sets, so a result that drops it can never
+    // satisfy a pin gate.
+    const doc = await signer.makeDerived(['recycled']);
+    const resolver = stubResolver();
+    const v = await verifyDpp(doc, { resolveIssuerKey: resolver.resolve });
+    if (v.cryptosuite !== 'ecdsa-sd-2023') {
+      throw new Error('expected ecdsa-sd routing');
+    }
+    expect(v.results[0]?.keyMultibase).toBe(ISSUER_MULTIBASE);
+  });
+
+  it('leaves the resolved key off a proof that never resolved', async () => {
+    const doc = await signer.makeDerived(['recycled']);
+    const v = await verifyDpp(doc, {
+      resolveIssuerKey: () => Promise.reject(new Error('offline')),
+    });
+    if (v.cryptosuite !== 'ecdsa-sd-2023') {
+      throw new Error('expected ecdsa-sd routing');
+    }
+    expect(v.results[0]?.keyMultibase).toBeUndefined();
   });
 
   it('normalizes a one-entry proof array to a single proof', async () => {
@@ -73,7 +102,9 @@ describe('verifyDpp: routes ecdsa-sd-2023', () => {
     const doc = await signer.makeDerived(['recycled']);
     delete (doc.proof as Record<string, unknown>).verificationMethod;
     const v = await verifyDpp(doc, {
-      resolveIssuerKey: () => Promise.resolve(signer.issuer.multikey),
+      resolveIssuerKey: () => Promise.resolve({
+        multibase: ISSUER_MULTIBASE, bytes: signer.issuer.multikey,
+      }),
     });
     expect(dppIsAuthentic(v)).toBe(false);
     if (v.cryptosuite === 'ecdsa-sd-2023') {

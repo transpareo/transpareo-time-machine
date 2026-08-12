@@ -531,7 +531,7 @@ it in production at
 | Attribute | Required | Effect |
 |-----------|----------|--------|
 | `src` | no | Manifest URL. Pre-fills the input and verifies on connect. |
-| `pinned-platform-key` | no | One or more multibase z-prefixed Ed25519 public keys, whitespace-separated (rotation keeps retired-but-sound keys in the set). An additional security layer for the host's own platform: it never gates pass/fail (foreign DPPs still verify on their own terms), it elevates the identity tier to the strongest claim when the signatures match one of the pins. |
+| `pinned-platform-key` | no | One or more multibase z-prefixed public keys, whitespace-separated (Ed25519 for `eddsa-jcs-2022` snapshots, P-256 for `ecdsa-sd-2023` ones; a publisher's history can span both, and rotation keeps retired-but-sound keys in the set). An additional security layer for the host's own platform: it never gates pass/fail (foreign DPPs still verify on their own terms), it elevates the identity tier to the strongest claim when the signatures match one of the pins. |
 | `lang` | no | Standard HTML locale for the widget UI (e.g. `lang="de"`, `lang="de-AT"`; the region is stripped). The verifier has no DPP `availableLocales` to detect from, so without this it stays English. Outranks the browser preference; a previously stored locale pick still wins. Only locales with a shipped label bundle apply. |
 
 The widget verifies any DPP, and the banner says exactly

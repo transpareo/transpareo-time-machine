@@ -84,13 +84,17 @@ export interface TimeMachineConfig {
   readonly verifier?: boolean
 
   // From `pinned-platform-key`: a whitespace-separated set
-  // of platform Ed25519 Multikeys (publicKeyMultibase,
-  // 'z' + Base58Btc of 0xED01 + 32 raw bytes) the SPA
-  // trusts as the platform-side proof keys. A set rather
-  // than one key because rotation keeps retired-but-sound
-  // keys verifiable for historical snapshots; the host
-  // shell lists every non-compromised version, current
-  // first. Used for two purposes:
+  // of platform Multikeys (publicKeyMultibase, 'z' +
+  // Base58Btc of the multicodec-prefixed public key:
+  // 0xED01 for the Ed25519 keys eddsa-jcs snapshots are
+  // signed with, 0x8024 for the P-256 keys ecdsa-sd
+  // snapshots use) the SPA trusts as the platform-side
+  // proof keys. A set rather than one key because a
+  // publisher's history can span both suites, and because
+  // rotation keeps retired-but-sound keys verifiable for
+  // historical snapshots; the host shell lists every
+  // non-compromised version, current first. Used for two
+  // purposes:
   //   1. Role-tag the platform proof entry so the
   //      chip's two-of-two verdict requires one of the
   //      pinned platform keys (not just two distinct
