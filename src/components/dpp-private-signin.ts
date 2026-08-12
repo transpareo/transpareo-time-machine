@@ -65,11 +65,34 @@ function buildSignInButton(loginUrl: string): HTMLElement {
   // redirect. On return the passport reloads and the fetch
   // re-runs against the new session.
   btn.addEventListener('click', () => {
-    const back = encodeURIComponent(window.location.href)
-    const sep = loginUrl.includes('?') ? '&' : '?'
-    window.location.assign(`${loginUrl}${sep}return=${back}`)
+    window.location.assign(signInUrl(loginUrl, window.location.href))
   })
   return btn
+}
+
+// Where the affordance sends the page. Exported because a
+// navigation is not observable from inside a click handler,
+// and this is the one URL the SPA builds for a system it does
+// not control.
+export function signInUrl(loginUrl: string, returnTo: string): string {
+  const sep = loginUrl.includes('?') ? '&' : '?'
+  const back = encodeURIComponent(returnTo)
+  return `${loginUrl}${sep}return=${back}${localeParam(loginUrl)}`
+}
+
+// The login page should come up in the language the visitor
+// is reading the passport in. `locale` is what this platform
+// names it, and parseLoginUrl holds the URL to the passport's
+// own registrable site, so the page reading it is the
+// publisher's own login rather than a stranger's.
+//
+// A login URL that already names a locale is left alone,
+// whichever of the usual spellings it uses: the system that
+// issued it has said what it wants, which is also how a
+// backend opts out of the parameter.
+function localeParam(loginUrl: string): string {
+  if (/[?&](locale|lang|ui_locales)=/i.test(loginUrl)) return ''
+  return `&locale=${encodeURIComponent(i18n.locale)}`
 }
 
 function buildRetryAffordance(): HTMLElement {

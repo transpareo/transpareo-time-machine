@@ -203,7 +203,12 @@ Field notes:
   the renderer fetches it anonymously and branches on
   the status: 200 merges the returned rows, 401
   surfaces a sign-in button that hands off to the
-  publisher's own login page.
+  publisher's own login page. That hand-off carries
+  `return=` (where to come back to) and `locale=` (the
+  language the visitor is reading the passport in, as
+  the passport declares it). A login URL that already
+  names a locale is passed through untouched, which is
+  how a backend opts out.
 - `versions[].registeredAt` / `registrationProof`
   (optional) - EU-registry round-trip metadata,
   surfaced in the proof modal when present.

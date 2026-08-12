@@ -10,6 +10,17 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Fixed
+
+- The sign-in hand-off tells the authorising system which
+  language to answer in. The button behind a 401 on the
+  private-properties endpoint sent only a return target, so a
+  visitor reading a German passport could land on an English
+  login page. It now carries the active locale as `locale`,
+  the name this platform uses for it elsewhere. A login URL
+  that already names a locale is left untouched, whichever
+  spelling it uses, which is how a backend opts out.
+
 ## [2.8.1] - 2026-08-12
 
 ### Fixed
