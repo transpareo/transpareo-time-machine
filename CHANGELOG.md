@@ -80,6 +80,20 @@ and this project adheres to
   and a failed platform proof of its own, on the issuer's
   card. A pin now only strengthens the attribution, never
   replaces it.
+- An embedding page's `lang` decides the widget's language.
+  A locale the visitor had once picked in the passport
+  widget is kept in `localStorage`, and that outranked
+  `lang`, so a page rendering `<dpp-verifier lang="en">` came
+  up in whatever language that visitor last chose and stayed
+  there. The host `lang` now wins over a pick made anywhere
+  else, whenever it names an available locale.
+  A pick is stamped with the `lang` it was made under, so the
+  one case it does not outrank is a choice the visitor made
+  right there, on a page carrying this same `lang`: an
+  in-page language picker still remembers, and an embedder
+  that switches its own `lang` still overrides a choice from
+  the version it served before. On a page that sets no
+  `lang` the stored pick decides as it always did.
 ## [2.8.0] - 2026-08-09
 
 ### Fixed

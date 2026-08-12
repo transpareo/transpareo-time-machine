@@ -379,7 +379,7 @@ The full passport renderer.
 | Properties | `state` (read-only): the same detail the `:state` event carries, or `null` before the manifest has loaded. |
 | CSS parts | None today. The element has an open shadow root, so host pages can reach inner DOM via `::shadow`-style selectors but doing so is unsupported and may break on any release. |
 | CSS custom properties | The publisher theming surface (see "Theming" below). Custom properties inherit through the shadow boundary, so any `--token` set on the host page applies inside. |
-| Attributes | `src` (DPP **manifest** URL, or a single signed **snapshot** URL; see "Single-snapshot mode" below), `icons-src` (decorative content sprite), `icon-map-src` (per-publisher JSON mapping each property's `propertyID` to a sprite symbol id; pairs with `icons-src`), `revoked-roots-src` (revocation endpoint; `''` disables the boot check), `show-verification-mark` (`false` hides the verification chip), `pinned-platform-key` (whitespace-separated Multikey set; the chip must see one of them among the verified entries; also keys the revoked-roots check), `pinned-issuer-key` (whitespace-separated Multikey set of the issuer's declared signing keys - under BYOK the customer's own registered keys; the chip requires a verified issuer entry under one of them), `verifier` (present: mount `<dpp-verifier>` in place of the renderer), `footer-copyright` + `footer-links` (footer chrome; `footer-links` is a JSON array of `{ label, url }`). Read once in the element's `setup()` (`src/config.ts`). The standard `lang` attribute (e.g. `lang="de"`) pins the UI locale ahead of the browser preference; see "Localization" below. |
+| Attributes | `src` (DPP **manifest** URL, or a single signed **snapshot** URL; see "Single-snapshot mode" below), `icons-src` (decorative content sprite), `icon-map-src` (per-publisher JSON mapping each property's `propertyID` to a sprite symbol id; pairs with `icons-src`), `revoked-roots-src` (revocation endpoint; `''` disables the boot check), `show-verification-mark` (`false` hides the verification chip), `pinned-platform-key` (whitespace-separated Multikey set; the chip must see one of them among the verified entries; also keys the revoked-roots check), `pinned-issuer-key` (whitespace-separated Multikey set of the issuer's declared signing keys - under BYOK the customer's own registered keys; the chip requires a verified issuer entry under one of them), `verifier` (present: mount `<dpp-verifier>` in place of the renderer), `footer-copyright` + `footer-links` (footer chrome; `footer-links` is a JSON array of `{ label, url }`). Read once in the element's `setup()` (`src/config.ts`). The standard `lang` attribute (e.g. `lang="de"`) pins the UI locale ahead of the browser preference and of a locale the visitor picked on another page; see "Localization" below. |
 
 #### Single-snapshot mode
 
@@ -532,7 +532,7 @@ it in production at
 |-----------|----------|--------|
 | `src` | no | Manifest URL. Pre-fills the input and verifies on connect. |
 | `pinned-platform-key` | no | One or more multibase z-prefixed public keys, whitespace-separated (Ed25519 for `eddsa-jcs-2022` snapshots, P-256 for `ecdsa-sd-2023` ones; a publisher's history can span both, and rotation keeps retired-but-sound keys in the set). An additional security layer for the host's own platform: it never gates pass/fail (foreign DPPs still verify on their own terms), it elevates the identity tier to the strongest claim when the signatures match one of the pins. |
-| `lang` | no | Standard HTML locale for the widget UI (e.g. `lang="de"`, `lang="de-AT"`; the region is stripped). The verifier has no DPP `availableLocales` to detect from, so without this it stays English. Outranks the browser preference; a previously stored locale pick still wins. Only locales with a shipped label bundle apply. |
+| `lang` | no | Standard HTML locale for the widget UI (e.g. `lang="de"`, `lang="de-AT"`; the region is stripped). The verifier has no DPP `availableLocales` to detect from, so without this it stays English. Outranks the browser preference and any locale the visitor picked on another page; a pick they made on a page carrying this same `lang` still wins, so an in-page picker keeps its promise. Only locales with a shipped label bundle apply. |
 
 The widget verifies any DPP, and the banner says exactly
 what was proven, in three identity tiers:
@@ -1072,10 +1072,12 @@ Two layers:
 
 The locale picker reads `availableLocales` from the
 DPP and shows native names from `src/i18n/index.ts`.
-Detection order: `localStorage` (the user's stored pick),
+Detection order: the user's stored pick when they made it
+on a page carrying the same `lang` the current one does,
 then the host page's `lang` attribute when it names an
-available locale, then `navigator.languages`, then the
-first available locale. The standalone `<dpp-verifier>`
+available locale, then that stored pick from any other
+context, then `navigator.languages`, then the first
+available locale. The standalone `<dpp-verifier>`
 has no DPP locales to draw on, so it resolves `lang`
 against the set of shipped label bundles instead.
 

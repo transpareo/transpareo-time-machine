@@ -8,12 +8,14 @@
  * The renderer does not derive its locale from the
  * URL. We pick on each load:
  *
- *   1. localStorage value (the user's last manual pick)
+ *   1. the user's last manual pick, when they made it while
+ *      this same host `lang` was in effect
  *   2. the host page's `lang` attribute, when it names an
  *      available locale (set via setHostLocale)
- *   3. first match of navigator.languages against the
+ *   3. that manual pick, made in some other context
+ *   4. first match of navigator.languages against the
  *      DPP's available locales (browser preference)
- *   4. first available locale (fallback)
+ *   5. first available locale (fallback)
  *
  * Components read the active locale and label bundle
  * via the `i18n` getter object: any reactive effect that
@@ -29,6 +31,12 @@ import * as host from '@/host'
 import { availableLocales } from '@/state'
 
 const STORAGE_KEY = 'tm.locale'
+
+// The host `lang` that was in effect when the stored pick was
+// made, so the next load can tell "the visitor overrode this
+// page" from "the visitor once picked something elsewhere".
+// Absent when they picked on a page that set no `lang`.
+const STORAGE_HOST_KEY = 'tm.locale.host'
 
 // Native names for every locale we ship a label bundle
 // for, in the locale's own script. The picker uses these
@@ -126,9 +134,13 @@ export const UI_LOCALES: ReadonlyArray<string> = [
 ]
 
 // Locale the embedding page hands us via the element's `lang`
-// attribute (e.g. `<dpp-verifier lang="de">`). Preferred over
-// the browser auto-detect below, but not over the user's
-// explicit in-widget pick. null until an element sets it.
+// attribute (e.g. `<dpp-verifier lang="de">`). A page that
+// pins `lang` is telling us to match its own chrome, and its
+// language picker reloads the page with a new `lang`, so this
+// outranks a pick the visitor made somewhere else. It does
+// not outrank one they made right here, on a page carrying
+// this same `lang` - see detectLocale. null on a page that
+// sets no `lang`, which either element may be.
 //
 // Module-global, like the `locale` signal it feeds: one
 // active locale per page. Two widgets with different `lang`s
@@ -156,17 +168,22 @@ export function detectLocale(
     return wantsHost ? hostLocale! : available[0]
   }
 
-  // 1. user's prior pick
-  try {
-    const stored = window.localStorage.getItem(STORAGE_KEY)
-    if (stored && available.includes(stored)) return stored
-  } catch { /* localStorage unavailable */ }
+  // 1. a pick the visitor made on a page carrying this same
+  //    `lang`: they overrode this page's chrome deliberately,
+  //    and the in-page picker has to keep its promise.
+  const stored = readStoredPick(available)
+  if (stored?.madeHere) return stored.code
 
-  // 2. host page locale (the `lang` attribute) - takes
-  //    precedence over the browser auto-detect below.
+  // 2. host page locale (the `lang` attribute), the one
+  //    instruction that comes from outside the widget.
   if (wantsHost) return hostLocale!
 
-  // 3. browser preference (first match against
+  // 3. that pick, made in some other context. Decides on
+  //    every page that sets no `lang`, so switching the
+  //    language there is still remembered.
+  if (stored) return stored.code
+
+  // 4. browser preference (first match against
   //    available; strips region, `de-AT` matches `de`).
   const candidates = navigator.languages?.length
     ? navigator.languages
@@ -176,14 +193,37 @@ export function detectLocale(
     if (available.includes(lang)) return lang
   }
 
-  // 4. fallback
+  // 5. fallback
   return available[0]
+}
+
+interface StoredPick {
+  readonly code: string
+
+  // The pick was made while this same host `lang` was in
+  // effect (both absent counts), so it speaks for this page
+  // rather than for whichever one the visitor made it on.
+  readonly madeHere: boolean
+}
+
+function readStoredPick(
+  available: ReadonlyArray<string>,
+): StoredPick | null {
+  try {
+    const code = window.localStorage.getItem(STORAGE_KEY)
+    if (!code || !available.includes(code)) return null
+    const host = window.localStorage.getItem(STORAGE_HOST_KEY)
+    return { code, madeHere: host === hostLocale }
+  } catch { /* localStorage unavailable */ }
+  return null
 }
 
 function persistLocale(code: string): void {
   if (typeof window === 'undefined') return
   try {
     window.localStorage.setItem(STORAGE_KEY, code)
+    if (hostLocale) window.localStorage.setItem(STORAGE_HOST_KEY, hostLocale)
+    else window.localStorage.removeItem(STORAGE_HOST_KEY)
   } catch { /* localStorage unavailable */ }
 }
 
