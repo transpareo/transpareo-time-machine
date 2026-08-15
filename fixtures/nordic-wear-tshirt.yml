@@ -191,6 +191,13 @@ product:
         de: Portugal
         fr: Portugal
       icon: globe
+    - key: sizes
+      label:
+        en: Available sizes
+        de: Verfügbare Größen
+        fr: Tailles disponibles
+      value: XS, S, M, L, XL, XXL
+      icon: sliders
   lists:
     - key: functions
       label:
@@ -208,19 +215,6 @@ product:
           de: Zum Kombinieren
           fr: Superposition
       icon: star
-    - key: sizes
-      label:
-        en: Available sizes
-        de: Verfügbare Größen
-        fr: Tailles disponibles
-      values:
-        - XS
-        - S
-        - M
-        - L
-        - XL
-        - XXL
-      icon: sliders
     - key: certifications
       label:
         en: Certifications
