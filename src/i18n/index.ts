@@ -203,7 +203,7 @@ let hostLocale: string | null = null
 //   locale="de"       pin, region stripped below
 //   locale="inherit"  whatever language surrounds the element
 //   locale="auto"     detect, ignoring any `lang` here
-//   absent or empty   detect
+//   absent or empty   the element's own `lang`, else detect
 //
 // So `locale="auto"` is how a page that templates `lang`
 // everywhere says "not that, ask the visitor's browser".
