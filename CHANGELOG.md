@@ -10,6 +10,35 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Fixed
+
+- A republished version URL no longer renders from the
+  browser's HTTP cache under a verification failure. A
+  publisher may re-emit a version under the URL it already
+  used, so a returning visitor's browser can replay the
+  previous publish: those bytes render, but they no longer
+  hash to the revalidated manifest's claim for that version
+  and no longer verify if the signing key changed with them.
+  The renderer now checks a version's bytes against the
+  manifest's `hashValue` before it accepts them, and re-reads
+  a rejected version - and the priors its chain walk needs -
+  past the HTTP cache before taking a second, final verdict.
+  A failed badge therefore always describes what the origin
+  serves now, never something the browser kept. A judging
+  pass re-reads each version at most once; the proof modal's
+  re-verify button asks the origin again and re-runs the
+  manifest signature check, so a transient key-host failure
+  clears on the click instead of outliving it.
+- The events sidecar is revalidated on boot like the manifest
+  it is named from. It is one mutable document under a stable
+  URL that grows with every event a publisher records, so a
+  replayed copy left the timeline showing an earlier state of
+  the passport's history.
+- The standalone verifier widget revalidates every artefact it
+  reads. It answers what the origin serves right now, so a
+  verdict taken from a copy the browser kept could describe an
+  earlier publish while naming the current URL.
+
 ## [2.9.0] - 2026-08-12
 
 ### Added

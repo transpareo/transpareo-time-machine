@@ -282,11 +282,18 @@ class DppVerifier extends BaseElement {
 // post-redirect URL alongside the body, so relative
 // references resolve against where the bytes actually
 // came from (share-link shorteners redirect).
+//
+// Every artefact is revalidated: this widget exists to say
+// what the origin serves right now, and a publisher may
+// republish an artefact under the URL it already used. A
+// verdict read off a copy the browser kept would describe an
+// earlier publish while naming the current URL.
 async function fetchText(
   url: string,
 ): Promise<{ body: string; url: string }> {
   const res = await fetch(url, {
     credentials: 'omit',
+    cache: 'no-cache',
     signal: AbortSignal.timeout(15_000),
   })
   if (!res.ok) {

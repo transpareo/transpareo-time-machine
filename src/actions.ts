@@ -41,8 +41,10 @@ import { describeError } from '@/errors'
 // share the result across every version's verdict. The
 // manifest signature authenticates the version list itself
 // (currentVersion, each version's url/hashValue, voidedAt),
-// which the per-snapshot proofs do not cover. Result is
-// cached for the page's lifetime (one manifest per boot).
+// which the per-snapshot proofs do not cover. The verdict is
+// cached until a reboot (one manifest per boot) or a
+// re-verify retry, which drops it so a transient key-host
+// failure does not outlive the click meant to clear it.
 let manifestVerifyPromise: Promise<ArtefactSignatureState> | null = null
 function verifyManifest(): Promise<ArtefactSignatureState> {
   if (manifestVerifyPromise) return manifestVerifyPromise
@@ -144,6 +146,8 @@ export function ensureEventsVerified(): void {
 export function resetVerifyCaches(): void {
   manifestVerifyPromise = null
   eventsVerifyPromise = null
+  freshlyRead.clear()
+  freshReads.clear()
   cancelReleaseAnim()
 }
 
@@ -253,6 +257,14 @@ export function armRevocationGuard(): void {
 // lazily via host.fetchSnapshot. The host module
 // resolves each version's URL relative to the manifest
 // the element was booted from.
+//
+// A publisher may republish a version URL - the demo
+// publisher is rebuilt hourly under a new signing key -
+// which leaves a returning visitor's HTTP cache holding the previous
+// publish. Those bytes render but no longer match the
+// revalidated manifest, so a verdict that rejects them is
+// re-taken on bytes refetched past the cache: a failed chip
+// always describes what the origin serves now.
 export function ensureVersionLoaded(n: number): void {
   if (versionStates.peek()[n]) return
   versionStates.update((m) => ({ ...m, [n]: { status: 'pending' } }))
@@ -263,77 +275,13 @@ export function ensureVersionLoaded(n: number): void {
   // numbers collide across DPPs).
   const epoch = host.currentBootEpoch()
 
-  const cached = host.snapshots.peek()[n]
-  const snapshotPromise = cached
-    ? Promise.resolve(cached)
-    : host.fetchSnapshot(n)
-
-  snapshotPromise
-    .then(async (snapshot) => {
-      if (!snapshot) {
-        throw new Error(`No snapshot available for version ${n}`)
-      }
-
-      // Verify the raw signed bytes, not the adapted render
-      // model: the proof and the priorVersionHash chain hash
-      // the snapshot exactly as it was published.
-      const raw = host.rawSnapshots.peek()[n]
-      if (!raw) {
-        throw new Error(`No raw snapshot available for version ${n}`)
-      }
-      const result = await verifySnapshotAnySuite(
-        raw as unknown as Record<string, unknown>, {
-          pinnedPlatformKeys: config.pinnedPlatformKeys,
-          pinnedIssuerKeys: config.pinnedIssuerKeys,
-        },
-      )
-      const chain = await verifyChainLink(n, raw)
-      const manifestEntry = await verifyManifest()
-      return { result, chain, manifestEntry }
-    })
-    .then(({ result, chain, manifestEntry }) => {
+  judgeVersion(n, false)
+    .then((verdict) => (
+      verdict.bytesRejected && refetchable() ? judgeVersion(n, true) : verdict
+    ))
+    .then((verdict) => {
       if (epoch !== host.currentBootEpoch()) return
-      const proofOk = result.verdict === 'authentic'
-      const chainOk = chain.status !== 'broken'
-
-      // When the host page pins platform and/or issuer
-      // keys, the chip requires a verified entry under
-      // each pinned set. Without pins (forks, offline
-      // kiosks), fall back to the signature-grouping rule
-      // from verify.ts.
-      const { pinOk, issuerPinOk } = pinGatesOk(result.entries)
-
-      // Manifest version-list signature gate (see
-      // signatureIsAcceptable): unpinned builds tolerate a
-      // missing signature or an unreachable key host and fail
-      // closed on a present-but-invalid one; a build that pins
-      // a platform key requires the manifest to have verified
-      // under that pinned key.
-      const manifestOk = signatureIsAcceptable(manifestEntry)
-
-      // Pinned root revoked, or its revocation list
-      // unreachable? The well-known fetch in
-      // revoked-roots.ts sets this flag at boot; once
-      // tripped, every snapshot is forced unauthenticated
-      // regardless of its proof.
-      const revocation = revocationStatus()
-      const revocationOk = !revocationGateBlocks(revocation)
-      const ok = proofOk && chainOk && pinOk && issuerPinOk
-        && revocationOk && manifestOk
-      versionStates.update((m) => ({
-        ...m,
-        [n]: ok
-          ? { status: 'verified', result, chain }
-          : {
-              status: 'failed',
-              result,
-              chain,
-              reason: failureReason({
-                revocation, manifestOk, manifestEntry,
-                pinOk, issuerPinOk, chain, result,
-              }),
-            },
-      }))
+      versionStates.update((m) => ({ ...m, [n]: verdict.state }))
     })
     .catch((err: unknown) => {
       if (epoch !== host.currentBootEpoch()) return
@@ -357,22 +305,199 @@ export function ensureVersionLoaded(n: number): void {
     })
 }
 
+// One version's verdict, plus whether the failure is one
+// that other bytes could fix. The artefact gates (the
+// manifest's hash claim for this version, the snapshot
+// proof, the chain link) all judge snapshot bytes, so
+// re-reading those can overturn the verdict; the revocation,
+// pin and manifest-signature gates judge the build's policy
+// and the version list, neither of which a snapshot refetch
+// touches.
+interface VersionVerdict {
+  readonly state: VersionState
+  readonly bytesRejected: boolean
+}
+
+// Judge one version end to end. `fresh` re-reads the snapshot
+// (and, through the chain walk, its priors) past the HTTP
+// cache first, so the verdict describes what the origin
+// serves rather than a publish the browser kept.
+async function judgeVersion(
+  n: number, fresh: boolean,
+): Promise<VersionVerdict> {
+  // Verify the raw signed bytes, not the adapted render
+  // model: the proof and the priorVersionHash chain hash
+  // the snapshot exactly as it was published.
+  const raw = await readRawSnapshot(n, fresh)
+  if (!raw) throw new Error(`No snapshot available for version ${n}`)
+
+  const bodyOk = await bodyMatchesManifest(n, raw)
+  const result = await verifySnapshotAnySuite(
+    raw as unknown as Record<string, unknown>, {
+      pinnedPlatformKeys: config.pinnedPlatformKeys,
+      pinnedIssuerKeys: config.pinnedIssuerKeys,
+    },
+  )
+  const chain = await verifyChainLink(n, raw, fresh)
+  const manifestEntry = await verifyManifest()
+
+  const proofOk = result.verdict === 'authentic'
+  const chainOk = chain.status !== 'broken'
+
+  // When the host page pins platform and/or issuer keys, the
+  // chip requires a verified entry under each pinned set.
+  // Without pins (forks, offline kiosks), fall back to the
+  // signature-grouping rule from verify.ts.
+  const { pinOk, issuerPinOk } = pinGatesOk(result.entries)
+
+  // Manifest version-list signature gate (see
+  // signatureIsAcceptable): unpinned builds tolerate a
+  // missing signature or an unreachable key host and fail
+  // closed on a present-but-invalid one; a build that pins
+  // a platform key requires the manifest to have verified
+  // under that pinned key.
+  const manifestOk = signatureIsAcceptable(manifestEntry)
+
+  // Pinned root revoked, or its revocation list unreachable?
+  // The well-known fetch in revoked-roots.ts sets this flag
+  // at boot; once tripped, every snapshot is forced
+  // unauthenticated regardless of its proof.
+  const revocation = revocationStatus()
+  const revocationOk = !revocationGateBlocks(revocation)
+
+  const ok = proofOk && chainOk && pinOk && issuerPinOk
+    && revocationOk && manifestOk && bodyOk
+  if (ok) {
+    return {
+      state: { status: 'verified', result, chain },
+      bytesRejected: false,
+    }
+  }
+  const reason = failureReason({
+    version: n, revocation, manifestOk, manifestEntry, bodyOk,
+    pinOk, issuerPinOk, chain, result,
+  })
+  return {
+    state: { status: 'failed', result, chain, reason },
+    bytesRejected: !bodyOk || !proofOk || !chainOk,
+  }
+}
+
+// Versions whose host cache holds bytes read from the origin
+// past the browser's HTTP cache. One honest read per version
+// serves every walk of a judging pass: after it the cache
+// holds what the origin serves, so a later fresh walk over
+// the same version would re-download for nothing. A version
+// is marked only once its read lands (a read that fails
+// leaves it eligible for another) and unmarked again by
+// retryFailedVersions when a failed verdict is retried.
+const freshlyRead = new Set<number>()
+
+// Fresh reads in flight, shared between concurrent walkers:
+// a version judging itself while another version's chain
+// walk is re-reading it must wait for the origin's bytes
+// rather than judge the copy that read is about to replace.
+const freshReads =
+  new Map<number, Promise<SignedSnapshot | undefined>>()
+
+// The proof modal's re-verify. A failed verdict may be
+// transient (key host briefly unreachable) or describe bytes
+// the origin has since replaced, so the retry forgets what
+// the failed pass concluded from - the fresh-read marks, the
+// memoized manifest signature verdict and the failed states
+// themselves - and judges every version again.
+export function retryFailedVersions(): void {
+  freshlyRead.clear()
+  manifestVerifyPromise = null
+  versionStates.update((states) => {
+    let changed = false
+    const next: Record<number, VersionState> = { ...states }
+    for (const key of Object.keys(next)) {
+      const n = Number(key)
+      if (next[n].status !== 'failed') continue
+      delete next[n]
+      changed = true
+    }
+    return changed ? next : states
+  })
+  const m = host.manifest.peek()
+  if (!m) return
+  for (const v of m.versions) ensureVersionLoaded(v.number)
+}
+
+// One version's raw bytes, from the host cache or the CDN.
+// `fresh` reads past the browser's HTTP cache even when a
+// copy is already cached, which is how a version stored at
+// boot gets a second, honest reading.
+async function readRawSnapshot(
+  n: number, fresh: boolean,
+): Promise<SignedSnapshot | undefined> {
+  if (fresh && !freshlyRead.has(n)) return freshRawSnapshot(n)
+  if (!host.rawSnapshots.peek()[n]) await host.fetchSnapshot(n)
+  return host.rawSnapshots.peek()[n]
+}
+
+// The origin read behind readRawSnapshot's fresh path.
+function freshRawSnapshot(
+  n: number,
+): Promise<SignedSnapshot | undefined> {
+  const inFlight = freshReads.get(n)
+  if (inFlight) return inFlight
+  const read = host.fetchSnapshot(n, { reload: true })
+    .then((snapshot) => {
+      // A null snapshot is a reboot that landed mid-flight;
+      // its bytes were discarded, so the version has not had
+      // its honest read yet.
+      if (snapshot) freshlyRead.add(n)
+      return host.rawSnapshots.peek()[n]
+    })
+    .finally(() => freshReads.delete(n))
+  freshReads.set(n, read)
+  return read
+}
+
+// Do these bytes still hash to what the manifest claims for
+// this version? The manifest is revalidated on every boot, so
+// its hashValue is the current claim about the version; bytes
+// that miss it are a different publish of the same URL (or
+// were tampered with) and must not paint under a green chip.
+// A version the manifest makes no claim about - the
+// single-snapshot boot, an entry without a hash - has nothing
+// to check against.
+async function bodyMatchesManifest(
+  n: number, raw: SignedSnapshot,
+): Promise<boolean> {
+  const entry = host.manifest.peek()?.versions.find((v) => v.number === n)
+  if (!entry?.hashValue) return true
+  const computed = await hexChainHashOfSnapshot(raw)
+  return computed === entry.hashValue
+}
+
+// Only manifest mode can re-read a version: a lone snapshot
+// has no version list to resolve a URL from, and its boot
+// fetch already revalidated it.
+function refetchable(): boolean {
+  return host.manifest.peek() !== null
+}
+
 // First failing gate, in priority order, as a human-readable
 // reason for the proof modal. The order mirrors the
-// conjunction in ensureVersionLoaded, so the message names
-// the strongest failure when several gates fail at once.
+// conjunction in judgeVersion, so the message names the
+// strongest failure when several gates fail at once.
 function failureReason(gates: {
+  version: number
   revocation: RevocationStatus
   manifestOk: boolean
   manifestEntry: ArtefactSignatureState
+  bodyOk: boolean
   pinOk: boolean
   issuerPinOk: boolean
   chain: ChainStatusResult
   result: VerificationResult
 }): string {
   const {
-    revocation, manifestOk, manifestEntry, pinOk,
-    issuerPinOk, chain, result,
+    version, revocation, manifestOk, manifestEntry, bodyOk,
+    pinOk, issuerPinOk, chain, result,
   } = gates
   if (revocationGateBlocks(revocation)) {
     return revocationReason(revocation)
@@ -380,6 +505,9 @@ function failureReason(gates: {
   if (!manifestOk) {
     return `${manifestGateReason(manifestEntry)}; `
       + 'the version list is unauthenticated'
+  }
+  if (!bodyOk) {
+    return `v${version} body does not hash to the manifest claim`
   }
   if (chain.status === 'broken') {
     return chain.reason ?? 'priorVersionHash does not match manifest'
@@ -442,7 +570,9 @@ function manifestGateReason(entry: ArtefactSignatureState): string {
 //
 // The walker fetches missing prior snapshots through the
 // same host cache as ensureVersionLoaded; subsequent
-// scrubs hit the cache instead of refetching. If the
+// scrubs hit the cache instead of refetching. `fresh`
+// re-reads every prior past the browser's HTTP cache, which
+// is what the verdict layer's retry pass sets. If the
 // manifest itself is unavailable (no entry to compare
 // against) the link is reported as 'unknown' so the
 // chip can render a "verification pending" state rather
@@ -463,6 +593,7 @@ function priorHashOf(snap: SignedSnapshot): string | undefined {
 export async function verifyChainLink(
   versionNumber: number,
   snapshot: SignedSnapshot,
+  fresh = false,
 ): Promise<ChainStatusResult> {
   if (versionNumber === 1) return { status: 'not-applicable' }
 
@@ -494,12 +625,12 @@ export async function verifyChainLink(
 
   // Recompute the prior body's hash and compare to both
   // claims. fetchSnapshot populates both caches; read the
-  // raw bytes here so the hash matches the signed body.
+  // raw bytes here so the hash matches the signed body. On a
+  // fresh walk the prior is re-read past the HTTP cache too:
+  // a link breaks on a republished prior just as readily as
+  // on a republished head.
   const priorVersion = versionNumber - 1
-  if (!host.rawSnapshots.peek()[priorVersion]) {
-    await host.fetchSnapshot(priorVersion)
-  }
-  const prior = host.rawSnapshots.peek()[priorVersion]
+  const prior = await readRawSnapshot(priorVersion, fresh)
   if (!prior) {
     return {
       status: 'unknown',
@@ -531,7 +662,7 @@ export async function verifyChainLink(
   // not be checked (prior snapshot unretrievable) must
   // not surface as a green "fully walked" tick.
   if (priorVersion === 1) return { status: 'ok' }
-  const deeper = await verifyChainLink(priorVersion, prior)
+  const deeper = await verifyChainLink(priorVersion, prior, fresh)
   if (deeper.status === 'ok' || deeper.status === 'not-applicable') {
     return { status: 'ok' }
   }

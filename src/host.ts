@@ -168,9 +168,13 @@ async function bootFromManifest(
     throw new Error('manifest is missing epcisUrl')
   }
 
+  // The events sidecar is one mutable document under a
+  // stable URL, like the manifest: it grows with every
+  // event the publisher records, so it is revalidated
+  // rather than replayed from the HTTP cache.
   const [current, epcis] = await Promise.all([
     fetchJson<SignedSnapshot>(currentVersionUrl),
-    fetchJson<EpcisDocument>(epcisUrl),
+    fetchJson<EpcisDocument>(epcisUrl, 'no-cache'),
   ])
   if (epoch !== bootEpoch) return
 
@@ -231,8 +235,9 @@ async function fetchSource(
   // trusting a stale HTTP-cache copy: the manifest is the
   // trust anchor for the whole version list, and a lingering
   // cached one widens the rollback window for free. Version
-  // snapshots fetched later (fetchJson) keep default caching;
-  // their bytes are pinned by hashValue anyway.
+  // snapshots fetched later keep default caching; their bytes
+  // are pinned by the manifest's hashValue, and the verdict
+  // layer refetches them past the cache when they miss it.
   const res = await fetch(url, {
     credentials: 'omit',
     cache: 'no-cache',
@@ -248,11 +253,22 @@ async function fetchSource(
   return readJsonResponse<DppManifest | SignedSnapshot>(res)
 }
 
+export interface SnapshotFetchOptions {
+  // Read the bytes from the origin instead of the browser's
+  // HTTP cache. A publisher that republishes a version URL
+  // leaves the visitor holding the previous publish, which
+  // renders but no longer matches the manifest; the verdict
+  // layer sets this to re-read those bytes before it judges
+  // them.
+  readonly reload?: boolean
+}
+
 // Pull a version's snapshot bytes from the CDN and
 // cache it. Called from actions.ensureVersionLoaded as
 // the visitor scrubs to a previously-unloaded version.
 export async function fetchSnapshot(
   versionNumber: number,
+  options: SnapshotFetchOptions = {},
 ): Promise<DppSnapshot | null> {
   const epoch = bootEpoch
   const m = manifest.peek()
@@ -262,12 +278,20 @@ export async function fetchSnapshot(
   const url = resolveAgainst(manifestUrl, entry.url)
   if (!url) return null
 
-  const raw = await fetchJson<SignedSnapshot>(url)
+  const mode = options.reload ? 'reload' : 'default'
+  const raw = await fetchJson<SignedSnapshot>(url, mode)
 
   // A reboot landed while this fetch was in flight: the
   // bytes belong to the previous DPP and must not enter
   // the fresh caches (version numbers collide across DPPs).
   if (epoch !== bootEpoch) return null
+
+  // A cache-busting read landed while this default read was
+  // in flight. Its bytes came from the origin; these came
+  // from the browser's HTTP cache and must not replace them.
+  if (!options.reload && rawSnapshots.peek()[versionNumber]) {
+    return snapshots.peek()[versionNumber] ?? null
+  }
   return storeSnapshot(raw)
 }
 
@@ -584,9 +608,12 @@ function resolveAgainst(base: string, relative: string | undefined): string | nu
   }
 }
 
-async function fetchJson<T>(url: string): Promise<T> {
+async function fetchJson<T>(
+  url: string, cache: RequestCache = 'default',
+): Promise<T> {
   const res = await fetch(url, {
     credentials: 'omit',
+    cache,
     headers: { accept: ACCEPT_JSON },
     signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
   })

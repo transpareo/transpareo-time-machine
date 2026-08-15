@@ -60,7 +60,9 @@ import {
   manifestProofState, eventsProofState, type SignatureProofState,
 } from '@/state'
 import * as host from '@/host'
-import { ensureVersionLoaded, signatureIsAcceptable } from '@/actions'
+import {
+  ensureVersionLoaded, retryFailedVersions, signatureIsAcceptable,
+} from '@/actions'
 import {
   attributeAuthorities, type AuthorityKind,
 } from '@/verifier-verdict'
@@ -677,19 +679,7 @@ function buildVerifyAllButton(
     (v) => states[v.number]?.status === 'verified',
   )
   if (anyPending || allVerified) btn.disabled = true
-  btn.addEventListener('click', () => {
-    versionStates.update((m) => {
-      let changed = false
-      const next: StatesMap = { ...m }
-      for (const [k, s] of Object.entries(next)) {
-        if (s.status !== 'failed') continue
-        delete next[Number(k)]
-        changed = true
-      }
-      return changed ? next : m
-    })
-    for (const v of manifest.versions) ensureVersionLoaded(v.number)
-  })
+  btn.addEventListener('click', () => retryFailedVersions())
   return btn
 }
 
