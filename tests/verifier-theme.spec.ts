@@ -26,6 +26,7 @@ const BRAND_BG = 'rgb(16, 24, 32)'
 const SURFACE_DEFAULT = 'rgb(255, 255, 255)'
 const APP_ACCENT = 'rgb(1, 2, 3)'
 const FONT_SM = '14px'
+const FONT_BASE = '16px'
 
 interface Probe {
   readonly hostFont: string
@@ -138,10 +139,10 @@ test('with no branding, the widget stands on its own defaults', async ({
   expect(stops(bare.submitBg)).toEqual([ACCENT_DEFAULT, ACCENT_DEFAULT])
   expect(bare.inputOutline).toBe(ACCENT_DEFAULT)
 
-  // The type scale is the renderer's, not the host page's:
-  // form copy sits at the small step, whatever body size
-  // the surrounding page inherits down.
-  expect(bare.labelSize).toBe(FONT_SM)
+  // The label sits at the body step so it reads with the
+  // page copy around the widget; input and submit keep the
+  // renderer's small step.
+  expect(bare.labelSize).toBe(FONT_BASE)
   expect(bare.inputSize).toBe(FONT_SM)
   expect(bare.submitSize).toBe(FONT_SM)
 })
@@ -154,6 +155,7 @@ test('the SPA token layer wins over the widget defaults', async ({ page }) => {
   // must keep resolving exactly as they do today.
   const inApp = await probe(page, {
     '--font-sans': "'Courier New', monospace",
+    '--font-base': '17px',
     '--font-sm': '20px',
     '--action-color': '#010203',
     '--color-muted': '#0a0b0c',
@@ -164,6 +166,9 @@ test('the SPA token layer wins over the widget defaults', async ({ page }) => {
   expect(stops(inApp.submitBg)).toEqual([APP_ACCENT, APP_ACCENT])
   expect(inApp.labelColor).toBe('rgb(10, 11, 12)')
   expect(inApp.submitRadius).toBe('6px')
-  expect(inApp.labelSize).toBe('20px')
+
+  // The label follows the app's body step (--font-base in
+  // app.css); the form controls follow the small step.
+  expect(inApp.labelSize).toBe('17px')
   expect(inApp.submitSize).toBe('20px')
 })
