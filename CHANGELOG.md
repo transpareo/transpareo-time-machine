@@ -10,6 +10,19 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Changed
+
+- The type scale carries its own sizes. Every size the
+  renderer's stylesheets name is a token the SPA stylesheet
+  declares, so a shadow root that stylesheet never reaches
+  had no size at all to apply and its text took whatever the
+  surrounding page inherited down: in the standalone verifier
+  widget the form and the proof rows all rendered at the host
+  page's body size. Each step now falls back to the value the
+  SPA sets it to, and to the publisher's own token first
+  where the SPA derives one, so the scale holds wherever the
+  stylesheets land.
+
 ### Fixed
 
 - A republished version URL no longer renders from the

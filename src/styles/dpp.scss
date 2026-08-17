@@ -31,18 +31,27 @@ $dpp-card-shadow: 0 1px 4px color-mix(in oklab, var(--font-color, #3D3C3B) 8%, t
 // {size}-{weight} convention (xs-bold, regular-bold, …)
 // so call sites read as English.
 //
+// Each fallback repeats the value app.css gives that
+// token, so the scale holds in a shadow root the app
+// stylesheet never reaches: the standalone verifier
+// widget ships its styles alone, and without a fallback
+// every one of these declarations is invalid there and
+// the text falls to the host page's body size. Where
+// app.css derives a step from a publisher token, the
+// fallback names that token first, in the same order.
+//
 // Eyebrow = the recurring uppercase tracked-letter
 // label used for dt cells, section sub-titles, the
 // disclosure label, etc. Colour is left to the call
 // site since a few callers (buttons, chips) override.
 
-@mixin xs       { font-size: var(--font-xs); }
-@mixin sm       { font-size: var(--font-sm); }
-@mixin regular  { font-size: var(--font-base); }
-@mixin lg       { font-size: var(--font-lg); }
-@mixin xl       { font-size: var(--font-xl); }
-@mixin h2       { font-size: var(--font-h2); }
-@mixin h1       { font-size: var(--font-h1); }
+@mixin xs       { font-size: var(--font-xs, 12px); }
+@mixin sm       { font-size: var(--font-sm, 14px); }
+@mixin regular  { font-size: var(--font-base, var(--font-size, 16px)); }
+@mixin lg       { font-size: var(--font-lg, 18px); }
+@mixin xl       { font-size: var(--font-xl, 22px); }
+@mixin h2       { font-size: var(--font-h2, var(--h2-size, 28px)); }
+@mixin h1       { font-size: var(--font-h1, var(--h1-size, 40px)); }
 
 @mixin xs-semibold      { @include xs;      font-weight: 600; }
 @mixin xs-bold          { @include xs;      font-weight: 700; }
