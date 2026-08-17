@@ -89,6 +89,17 @@
     var(--background-color, #fff));
 }
 
+// Unverifiable: a published snapshot that carries no
+// signature. The question mark and the same quiet palette
+// mark it unknowable rather than failed; the proof modal
+// explains it.
+.chip.state-unverifiable {
+  --chip-fg: var(--color-muted);
+  --chip-bg: color-mix(
+    in oklab, var(--color-muted) 12%,
+    var(--background-color, #fff));
+}
+
 .orb {
   position: relative;
   width: 20px;
@@ -123,7 +134,8 @@
 .chip.state-verifying .spinner,
 .chip.state-verified .check,
 .chip.state-failed .x,
-.chip.state-draft .info {
+.chip.state-draft .info,
+.chip.state-unverifiable .question {
   display: inline-block;
 }
 

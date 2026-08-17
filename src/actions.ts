@@ -377,8 +377,16 @@ async function judgeVersion(
     version: n, revocation, manifestOk, manifestEntry, bodyOk,
     pinOk, issuerPinOk, chain, result,
   })
+
+  // Zero judged entries means the dispatcher had nothing to
+  // check (no proof, or an unshipped cryptosuite): mark the
+  // state unverifiable so the UI shows a question mark
+  // rather than a failure.
+  const state: VersionState = result.totalEntryCount === 0
+    ? { status: 'failed', result, chain, reason, unverifiable: true }
+    : { status: 'failed', result, chain, reason }
   return {
-    state: { status: 'failed', result, chain, reason },
+    state,
     bytesRejected: !bodyOk || !proofOk || !chainOk,
   }
 }

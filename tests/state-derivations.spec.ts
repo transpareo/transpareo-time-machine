@@ -110,10 +110,32 @@ describe('verifyResult', () => {
   });
 
   it('does not short-circuit a published snapshot to draft', () => {
-    host.snapshots.set({ 2: snap(2, 'in_use') });
+    host.snapshots.set({ 2: snap(2, 'in_use', true) });
     expect(verifyResult()).toBe('pending');
     versionStates.set({ 2: { status: 'verified' } as VersionState });
     expect(verifyResult()).toBe('verified');
+  });
+
+  it('reads a published snapshot without proof as unverifiable', () => {
+    // Straight from the data, no pending phase: no verify
+    // outcome can change what a missing signature means.
+    host.snapshots.set({ 2: snap(2, 'in_use') });
+    expect(verifyResult()).toBe('unverifiable');
+    versionStates.set({ 2: { status: 'verified' } as VersionState });
+    expect(verifyResult()).toBe('unverifiable');
+  });
+
+  it('reads an unverifiable-flagged verdict as unverifiable', () => {
+    // Signed, but the verify judged nothing (an unshipped
+    // cryptosuite sets the flag); a thrown verify does not,
+    // and stays a real failure.
+    host.snapshots.set({ 2: snap(2, 'in_use', true) });
+    versionStates.set({
+      2: { status: 'failed', unverifiable: true } as VersionState,
+    });
+    expect(verifyResult()).toBe('unverifiable');
+    versionStates.set({ 2: { status: 'failed' } as VersionState });
+    expect(verifyResult()).toBe('failed');
   });
 
   // canonicalStatus falls back to 'draft' for an unknown

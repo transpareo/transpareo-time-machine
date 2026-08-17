@@ -19,6 +19,9 @@ const VIEW = {
   verified: { cls: 'verified', label: null },
   failed: { cls: 'failed', label: 'verificationFailed' as LabelKey },
   draft: { cls: 'draft', label: 'notPublished' as LabelKey },
+  unverifiable: {
+    cls: 'unverifiable', label: 'notVerifiable' as LabelKey,
+  },
 } as const
 
 class DppVerificationChip extends LightElement {
@@ -39,6 +42,9 @@ class DppVerificationChip extends LightElement {
             <svg class="icon icon--fn info" aria-hidden="true">
               <use href="#icon-info"/>
             </svg>
+            <svg class="icon icon--fn question" aria-hidden="true">
+              <use href="#icon-help"/>
+            </svg>
           </span>
           <span class="ripple" aria-hidden="true"></span>
         </span>
@@ -51,7 +57,9 @@ class DppVerificationChip extends LightElement {
 
     // A draft is unsigned by design, so there is no proof
     // chain to open: the chip stays inert (no pointer, no
-    // modal) in that state.
+    // modal) in that state. An unverifiable snapshot is
+    // clickable: the modal carries the explanation of why
+    // no verification is possible.
     btn.addEventListener('click', () => {
       if (verifyResult() === 'draft') return
       proofModalOpen.set(true)

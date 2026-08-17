@@ -56,7 +56,7 @@ import {
   manifest as manifestSignal,
   versionStates, events, focusedEventId, timelineState,
   activeVersionNumber, activeIssuer, activePlatform,
-  epcisDocument,
+  epcisDocument, verifyResult,
   manifestProofState, eventsProofState, type SignatureProofState,
 } from '@/state'
 import * as host from '@/host'
@@ -91,8 +91,12 @@ class DppVerificationModal extends LightElement {
   protected setup(): void {
     this.setAttribute('aria-labelledby', 'proof-title')
 
+    // In single-snapshot mode there is no manifest, but the
+    // chip still opens this modal: it renders the reduced
+    // body below (the active snapshot's chain, or the
+    // no-verification-possible note).
     bindModalChrome(this, this.effect.bind(this), {
-      isOpen: () => proofModalOpen() && manifestSignal() != null,
+      isOpen: () => proofModalOpen(),
       onClose: close,
     })
 
@@ -115,9 +119,13 @@ class DppVerificationModal extends LightElement {
   private render(): void {
     const open = proofModalOpen()
     const m = manifestSignal()
-    if (!open || !m) {
+    if (!open) {
       this.classList.remove('open')
       this.replaceChildren()
+      return
+    }
+    if (!m) {
+      this.renderSnapshotOnly()
       return
     }
 
@@ -165,6 +173,39 @@ class DppVerificationModal extends LightElement {
     this.replaceChildren(dialog)
     this.classList.add('open')
   }
+
+  // Single-snapshot mode: no manifest, so no version list,
+  // no manifest signature, no events sidecar. The body is
+  // the one thing there is to say: the lone snapshot's
+  // proof chain, or, when it carries no signature, the
+  // explanation that no verification is possible.
+  private renderSnapshotOnly(): void {
+    const body = document.createDocumentFragment()
+    if (verifyResult() === 'unverifiable') {
+      const state = versionStates()[activeVersionNumber()]
+      const note = state && state.status === 'failed'
+        ? unverifiableNote(state.result)
+        : tr('cryptoProof.noProof')
+      const section = el('section', 'proof-section')
+      section.appendChild(el('p', 'proof-note', note))
+      body.append(section)
+    } else {
+      const state = versionStates()[activeVersionNumber()]
+      body.append(
+        buildDisclosureSubtitle(activeVersionNumber(), state),
+        buildChainSection(state),
+      )
+    }
+
+    const dialog = buildModal({
+      title: tr('cryptoProof.title'),
+      titleId: 'proof-title',
+      body,
+      onClose: close,
+    })
+    this.replaceChildren(dialog)
+    this.classList.add('open')
+  }
 }
 
 function close(): void {
@@ -173,6 +214,17 @@ function close(): void {
 
 function tr(key: LabelKey): string {
   return t(i18n.labels, key)
+}
+
+// Why nothing on a version was judged: a proof in an
+// unshipped cryptosuite (named), or no signature at all.
+function unverifiableNote(result: VerificationResult): string {
+  if (result.unsupportedSuite) {
+    return t(i18n.labels, 'verifier.unsupportedSuite', {
+      suite: result.unsupportedSuite,
+    })
+  }
+  return tr('cryptoProof.noProof')
 }
 
 // ─── Summary ─────────────────────────────────────────
@@ -184,7 +236,7 @@ function buildSummary(
   activeVersion: number,
 ): HTMLElement {
   const counts = tally(manifest, states)
-  const { verified, failed, pending, untouched } = counts
+  const { verified, failed, pending, untouched, unverifiable } = counts
 
   // An events signature that fails the shared acceptance gate
   // counts against the headline so "all valid" can never sit
@@ -198,10 +250,15 @@ function buildSummary(
   const eventsBad = hasEvents
     && eventsState !== 'pending'
     && !signatureIsAcceptable(eventsState)
+  // An unverifiable version blocks "all valid" (nothing
+  // vouched for it) without counting as a mismatch, so the
+  // headline falls back to the neutral verified count.
   const allChecked = untouched === 0 && pending === 0
-  const allOk = allChecked && failed === 0 && verified > 0 && !eventsBad
+  const allOk = allChecked && failed === 0 && unverifiable === 0
+    && verified > 0 && !eventsBad
 
-  const positive = failed === 0 && verified > 0 && !eventsBad
+  const positive = failed === 0 && unverifiable === 0
+    && verified > 0 && !eventsBad
   const cls = `proof-summary${positive ? ' verified' : ''}`
     + `${failed > 0 || eventsBad ? ' failed' : ''}`
   const summary = el('section', cls)
@@ -401,6 +458,14 @@ export function buildChainSection(
     return section
   }
 
+  // Nothing was judged either way (no proof, or an
+  // unshipped cryptosuite): explain instead of rendering
+  // an empty chain.
+  if (state.status === 'failed' && state.unverifiable) {
+    section.appendChild(el('p', 'proof-note', unverifiableNote(state.result)))
+    return section
+  }
+
   const suite = state.result.cryptosuite
   if (suite) section.appendChild(buildChainSuite(suite))
 
@@ -503,12 +568,16 @@ function buildVerdictBadge(ok: boolean): HTMLElement {
 // 'not-applicable' is a check that cannot exist for the row
 // (v1 has no prior version to chain to, a snapshot that
 // carries no proof from one of the authorities).
-type CellState = 'ok' | 'failed' | 'unrun' | 'not-applicable'
+type CellState =
+  | 'ok' | 'failed' | 'unrun' | 'not-applicable' | 'unverifiable'
 
 function buildCell(state: CellState): HTMLElement {
   if (state === 'ok') return buildVerdictBadge(true)
   if (state === 'failed') return buildVerdictBadge(false)
   if (state === 'unrun') return el('span', 'col-authority-unrun', '…')
+  if (state === 'unverifiable') {
+    return el('span', 'col-authority-unknown', '?')
+  }
   return el('span', 'col-authority-na', '-')
 }
 
@@ -619,6 +688,10 @@ export function buildDisclosureSubtitle(
   const p = el('p', 'proof-disclosure-subtitle')
   if (!state || state.status === 'pending') {
     p.textContent = tr('cryptoProof.chainPending')
+    return p
+  }
+  if (state.status === 'failed' && state.unverifiable) {
+    p.textContent = unverifiableNote(state.result)
     return p
   }
 
@@ -744,8 +817,30 @@ export function buildVersionRow(
   manifest: DppManifest,
 ): HTMLTableRowElement {
   const row = el('tr')
+
+  // Nothing on this version was judged either way (no
+  // proof, or an unshipped cryptosuite): the authority
+  // columns carry question marks (and no failure tint)
+  // instead of red crosses. The chain column keeps its own
+  // verdict; the hash walk does not need the snapshot's
+  // signature.
+  const unsigned = s?.status === 'failed' && s.unverifiable === true
   if (s?.status === 'verified') row.classList.add('row-ok')
-  if (s?.status === 'failed') row.classList.add('row-bad')
+  if (s?.status === 'failed' && !unsigned) row.classList.add('row-bad')
+
+  if (unsigned && s.status === 'failed') {
+    const issuerTd = el('td', 'col-authority')
+    const platformTd = el('td', 'col-authority')
+    const chainTd = el('td', 'col-authority')
+    issuerTd.appendChild(buildCell('unverifiable'))
+    platformTd.appendChild(buildCell('unverifiable'))
+    chainTd.appendChild(buildCell(chainCellState(s.chain)))
+    row.append(
+      buildVersionCell(versionNumber, manifest),
+      issuerTd, platformTd, chainTd,
+    )
+    return row
+  }
 
   const issuerTd = el('td', 'col-authority')
   const platformTd = el('td', 'col-authority')
@@ -785,11 +880,12 @@ export function buildVersionRow(
 // so it reads as not applicable.
 //
 // `blind` says the row failed and nothing in it could be
-// attributed to either party: a verify that threw, a
-// snapshot carrying no proof, a cryptosuite this build
-// cannot read, or proofs under keys nothing identifies.
-// Both columns then take the red X, since a dash would read
-// as "nothing to check here" on a row that did fail.
+// attributed to either party: a verify that threw, or
+// proofs under keys nothing identifies (a snapshot with no
+// proof or an unreadable cryptosuite renders question-mark
+// cells before reaching this rule). Both columns then take
+// the red X, since a dash would read as "nothing to check
+// here" on a row that did fail.
 function authorityCellState(
   groups: ReadonlyArray<AuthorityGroup>,
   kind: 'issuer' | 'platform',
@@ -841,16 +937,28 @@ function navigateToVersion(versionNumber: number): void {
 
 function tally(
   manifest: DppManifest, states: StatesMap,
-): { verified: number; failed: number; pending: number; untouched: number } {
-  let verified = 0, failed = 0, pending = 0, untouched = 0
+): {
+  verified: number
+  failed: number
+  pending: number
+  untouched: number
+  unverifiable: number
+} {
+  let verified = 0, failed = 0, pending = 0
+  let untouched = 0, unverifiable = 0
   for (const v of manifest.versions) {
     const s = states[v.number]
     if (!s) untouched++
     else if (s.status === 'verified') verified++
+
+    // An unverifiable snapshot was judged neither way; keep
+    // it out of the failed bucket so the headline never
+    // calls a missing signature a mismatch.
+    else if (s.status === 'failed' && s.unverifiable) unverifiable++
     else if (s.status === 'failed') failed++
     else pending++
   }
-  return { verified, failed, pending, untouched }
+  return { verified, failed, pending, untouched, unverifiable }
 }
 
 // Re-export for tests / debugging interactions; not

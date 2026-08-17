@@ -92,6 +92,49 @@ describe('production ecdsa-sd specimen in the proof modal', () => {
     expect(names).toEqual(['Issuer', 'Transpareo'])
   })
 
+  it('marks an unverifiable version with question cells', () => {
+    // No proof (or an unshipped cryptosuite): the verify
+    // judged nothing, so the authority columns carry the
+    // question mark, no red X, and the row takes no
+    // failure tint. The chain column keeps its own verdict.
+    const state = {
+      status: 'failed',
+      result: { entries: [], totalEntryCount: 0 },
+      chain: { status: 'ok' },
+      reason: 'no proof',
+      unverifiable: true,
+    } as unknown as VersionState
+    const row = buildVersionRow(VERSION, state, MANIFEST)
+    expect(cells(row)).toEqual(['?', '?', 'ok'])
+    expect(row.classList.contains('row-bad')).toBe(false)
+  })
+
+  it('explains an unverifiable version instead of an empty chain', () => {
+    const state = {
+      status: 'failed',
+      result: { entries: [], totalEntryCount: 0 },
+      chain: { status: 'unknown' },
+      reason: 'no proof',
+      unverifiable: true,
+    } as unknown as VersionState
+    const note = buildChainSection(state).querySelector('.proof-note')
+    expect(note?.textContent).toContain('no signature')
+  })
+
+  it('names the suite when an unverifiable version declared one', () => {
+    const state = {
+      status: 'failed',
+      result: {
+        entries: [], totalEntryCount: 0, unsupportedSuite: 'bbs-2023',
+      },
+      chain: { status: 'unknown' },
+      reason: 'unsupported',
+      unverifiable: true,
+    } as unknown as VersionState
+    const note = buildChainSection(state).querySelector('.proof-note')
+    expect(note?.textContent).toContain('bbs-2023')
+  })
+
   it('reads the platform DID the passport declares', () => {
     // Guards the premise: the platform is identified outright,
     // which is what lets the issuer's group be named at all.

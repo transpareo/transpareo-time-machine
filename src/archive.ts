@@ -157,6 +157,13 @@ export type VersionState =
       result: VerificationResult
       chain: ChainStatusResult
       reason: string
+
+      // The verify judged nothing either way: the snapshot
+      // carries no proof, or its proof names a cryptosuite
+      // this build does not ship. The UI shows a question
+      // mark instead of a failure for these (a thrown
+      // verify never sets this, its failure is real).
+      unverifiable?: true
     }
 
 // Re-export so callers can grab the result types from

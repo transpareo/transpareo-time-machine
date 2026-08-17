@@ -287,11 +287,26 @@ export const activePlatform = computed(
 // empty proof set keeps the short-circuit to genuine,
 // unsigned previews.
 export const verifyResult = computed<
-  'pending' | 'verified' | 'failed' | 'draft'
+  'pending' | 'verified' | 'failed' | 'draft' | 'unverifiable'
 >(() => {
   const snap = activeSnapshot()
   if (snap.status === 'draft' && snap.proof.length === 0) return 'draft'
-  return versionStates()[activeVersionNumber()]?.status ?? 'pending'
+
+  // Published without a proof: nothing to verify, and no
+  // outcome of the verify machinery can change that, so
+  // the state derives straight from the data (no pending
+  // phase). The chip shows a question mark and the proof
+  // modal explains that no verification is possible.
+  if (snap.proof.length === 0) return 'unverifiable'
+
+  // A verify that judged nothing (an unshipped
+  // cryptosuite) reads the same way; the flag is never set
+  // by a thrown verify, whose failure is real.
+  const state = versionStates()[activeVersionNumber()]
+  if (state?.status === 'failed' && state.unverifiable) {
+    return 'unverifiable'
+  }
+  return state?.status ?? 'pending'
 })
 
 // ---- Available locales for the language picker. In

@@ -417,10 +417,17 @@ code {
 // The two neutral cell markers, muted so they never read as
 // a verdict next to the orbs. They stay distinguishable at a
 // glance: the ellipsis is a check that has not answered yet,
-// the dash a check that cannot apply to that row.
+// the dash a check that cannot apply to that row, the
+// question mark a snapshot nothing could judge (no proof,
+// or an unreadable cryptosuite).
 .col-authority-unrun,
-.col-authority-na {
+.col-authority-na,
+.col-authority-unknown {
   color: var(--color-muted, #777);
+}
+
+.col-authority-unknown {
+  font-weight: 700;
 }
 
 // Reuse the .orb element from dpp-verification-chip.
