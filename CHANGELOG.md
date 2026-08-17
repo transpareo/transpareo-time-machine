@@ -112,6 +112,12 @@ and this project adheres to
   SPA sets it to, and to the publisher's own token first
   where the SPA derives one, so the scale holds wherever the
   stylesheets land.
+- The canonical branding-token list in embed-example.html
+  now covers every branding token the renderer reads: the
+  typeface (`--font-family`), the brandbar surface and
+  logo tint, the five timeline surface tokens, and the
+  per-event-type colours, the derived-when-unset ones
+  annotated as such.
 
 ### Fixed
 

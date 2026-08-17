@@ -87,7 +87,10 @@
         --rating-good: #0a8340;
         --rating-very-good: #0a8340;
 
-        /* Typography */
+        /* Typography. The SPA bundles no webfont; a
+           non-system typeface needs its @font-face shipped
+           alongside this stylesheet. */
+        --font-family: system-ui, sans-serif;
         --font-size: 16px;              /* body base size */
         --h1-size: 200%; --h1-weight: 700; --h1-style: normal;
         --h2-size: 150%; --h2-weight: 700; --h2-style: normal;
@@ -100,6 +103,33 @@
         --content-max-width: 830px;     /* card width on wide viewports */
         --content-radius: 10px;         /* card corner radius */
         --frame-width: 10px;            /* gap from top to the card */
+
+        /* Header + logo extras. Unset, the brandbar stays
+           transparent and the logo keeps the SVG's own
+           colours. */
+        /* --header-color: #fff; */     /* brandbar surface */
+        /* --logo-color: #255dba; */    /* mask-tint the logo */
+
+        /* Timeline surfaces. Unset, each derives from the
+           base colours above. */
+        /* --timeline-background: #d6d5d4; */
+        /* --timeline-card-background: #fff; */
+        /* --timeline-card-text: #3d3c3b; */
+        /* --timeline-label-color: #828180; */
+        /* --timeline-line-color: #b5b4b3; */
+
+        /* Per-event-type colours on timeline dots, pills,
+           and the event modal header. Defaults are built
+           into the renderer; the Style Editor overrides
+           them per publisher. --timeline-event-text is the
+           pill label, legible on any of them. */
+        /* --timeline-event-published: #3b82f6; */
+        /* --timeline-event-use: #16a34a; */
+        /* --timeline-event-repair: #ea580c; */
+        /* --timeline-event-refurbished: #8b5cf6; */
+        /* --timeline-event-collected: #0ea5e9; */
+        /* --timeline-event-recycled: #059669; */
+        /* --timeline-event-text: #ffffff; */
 
         /* Exported by the Style Editor for theme completeness
            but not yet read by the SPA stylesheets: */
