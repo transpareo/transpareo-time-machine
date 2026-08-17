@@ -29,13 +29,25 @@ export interface DownloadJob {
 }
 
 export interface DownloadResult {
-  readonly path: string;     // public-relative, e.g. '/fixtures/<id>/<key>.jpg'
+  /**
+   * Asset URL as embedded in the artefacts:
+   * '/fixtures/<id>/<key>.jpg', absolute when
+   * TM_SEED_ASSET_BASE is set.
+   */
+  readonly path: string;
   readonly sha256: string;   // actual digest, useful for embedding
   readonly cached: boolean;
 }
 
 const ROOT = join(import.meta.dirname, '..', '..');
 const PUBLIC_FIXTURES = join(ROOT, 'public', 'fixtures');
+
+// Optional absolute base for the embedded asset URLs
+// (e.g. https://cdn.example). A real publisher embeds
+// absolute URLs in its passports; left unset, the seed
+// stays relative so a dev checkout is hermetic.
+const ASSET_BASE = (process.env.TM_SEED_ASSET_BASE ?? '')
+  .replace(/\/+$/, '');
 
 export async function downloadImage(
   job: DownloadJob,
@@ -44,7 +56,8 @@ export async function downloadImage(
   const subdir = job.subdir ? `${job.subdir}/` : '';
   const dir = join(PUBLIC_FIXTURES, job.fixtureId, job.subdir ?? '');
   const out = join(dir, `${job.key}.${ext}`);
-  const rel = `/fixtures/${job.fixtureId}/${subdir}${job.key}.${ext}`;
+  const rel =
+    `${ASSET_BASE}/fixtures/${job.fixtureId}/${subdir}${job.key}.${ext}`;
 
   if (await exists(out)) {
     return { path: rel, sha256: await sha256File(out), cached: true };
@@ -86,7 +99,8 @@ export async function copyAsset(
   const subdir = job.subdir ? `${job.subdir}/` : '';
   const dir = join(PUBLIC_FIXTURES, job.fixtureId, job.subdir ?? '');
   const out = join(dir, `${job.key}.${ext}`);
-  const rel = `/fixtures/${job.fixtureId}/${subdir}${job.key}.${ext}`;
+  const rel =
+    `${ASSET_BASE}/fixtures/${job.fixtureId}/${subdir}${job.key}.${ext}`;
   const src = job.source.startsWith('/')
     ? job.source
     : join(REPO_ROOT, job.source);
