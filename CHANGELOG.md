@@ -10,8 +10,75 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Added
+
+- A third seed fixture, `atelier-barro-vase`: an unsigned
+  single-snapshot DPP (a foreign artisan passport with no
+  manifest, no version history, and no proof), published
+  as one `snapshot.json`. The fixture schema grew the two
+  knobs behind it, `publication: single-snapshot` (exactly
+  one snapshot, no events, no manifest or EPCIS emitted)
+  and `proof_suite: none` (no signer, no keys emitted;
+  bound to single-snapshot publication). The new
+  `unsigned.html` dev shell renders it, showing the
+  question-mark verification chip live.
+- The verifier accepts a lone signed snapshot. A DPP
+  published without a manifest (the renderer's
+  single-snapshot mode) was rejected as "not a DPP
+  manifest"; the widget now classifies the fetched
+  artefact with the same shared rule the renderer boots
+  by, judges a lone snapshot on its own proof set, and
+  says so on the card: no version history was checked,
+  and without a manifest to bind an identity the verdict
+  stays at "signatures valid, signer identity
+  unconfirmed" unless a pinned key matches.
+
 ### Changed
 
+- The verification chip reads a snapshot nothing could
+  judge as its own state: a published snapshot without a
+  signature, or one whose proof names a cryptosuite this
+  build does not ship, shows a muted question mark ("Not
+  verifiable") instead of the red failure, and skips the
+  verifying phase entirely when the missing signature is
+  visible in the data alone. The proof modal explains it
+  ("This version carries no signature, so no verification
+  is possible", or naming the unsupported format), the
+  per-version table gives such versions question-mark
+  cells without the failure tint, and the summary counts
+  them as neither valid nor mismatched. In single-snapshot
+  mode the chip's modal now opens at all, rendering the
+  lone snapshot's proof chain or that explanation, where
+  clicking used to do nothing.
+- A lone snapshot with no proof hides the verification
+  chip entirely by default: the DPP never claimed
+  verifiability, so it is not badged for lacking it,
+  which lets the renderer serve as a neutral viewer for
+  unsigned passports. `show-verification-mark="true"`
+  forces the question-mark chip back, `false` still
+  always hides it, and under a manifest the question
+  mark always renders, since there a missing proof means
+  a signed publication was stripped. With neither a
+  themed logo nor a chip to show, the brandbar now
+  renders nothing at all instead of an empty sticky
+  header, and the card content keeps a padded top edge
+  (1.5x its vertical padding) in its place.
+- A pasted page that exposes nothing signed renders a
+  neutral notice, "This page exposes no signed data to
+  verify", in place of the red failure card: that is a
+  statement about the DPP, not a failed verification.
+  JSON that is no DPP artefact reads the same way, and
+  both messages are localized where the shape errors
+  were hardcoded English before. A snapshot whose proof
+  names a cryptosuite this build does not ship also gets
+  the notice, naming the format, and so does a manifest
+  whose snapshot carries no proof at all; both used to
+  render a red card reading "Only 0 of 0 entries
+  verified", which can no longer appear.
+- The verifier's input label reads "DPP link or manifest
+  URL" in every locale, naming the passport page link by
+  the artefact the visitor is verifying rather than by the
+  passport wording.
 - The standalone verifier widget renders on the publisher's
   branding tokens. Embedded on a page that loads nothing else
   of the renderer, the widget read an internal token layer

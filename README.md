@@ -384,7 +384,35 @@ The full passport renderer.
 | Properties | `state` (read-only): the same detail the `:state` event carries, or `null` before the manifest has loaded. |
 | CSS parts | None today. The element has an open shadow root, so host pages can reach inner DOM via `::shadow`-style selectors but doing so is unsupported and may break on any release. |
 | CSS custom properties | The publisher theming surface (see "Theming" below). Custom properties inherit through the shadow boundary, so any `--token` set on the host page applies inside. |
-| Attributes | `src` (DPP **manifest** URL, or a single signed **snapshot** URL; see "Single-snapshot mode" below), `icons-src` (decorative content sprite), `icon-map-src` (per-publisher JSON mapping each property's `propertyID` to a sprite symbol id; pairs with `icons-src`), `revoked-roots-src` (revocation endpoint; `''` disables the boot check), `show-verification-mark` (`false` hides the verification chip), `pinned-platform-key` (whitespace-separated Multikey set; the chip must see one of them among the verified entries; also keys the revoked-roots check), `pinned-issuer-key` (whitespace-separated Multikey set of the issuer's declared signing keys - under BYOK the customer's own registered keys; the chip requires a verified issuer entry under one of them), `verifier` (present: mount `<dpp-verifier>` in place of the renderer), `footer-copyright` + `footer-links` (footer chrome; `footer-links` is a JSON array of `{ label, url }`). Read once in the element's `setup()` (`src/config.ts`). `locale` states which language to render in: a tag (`locale="de"`), `inherit` to follow the language surrounding the element, or `auto` (the default, and what an absent attribute means) to detect from the visitor's browser. It outranks the standard `lang` attribute, which is still read where no `locale` is given, so `locale="auto"` is how a page that templates `lang` everywhere keeps detection. Either pins the UI locale ahead of the browser preference and of a locale the visitor picked on another page; see "Localization" below. |
+| Attributes | `src` (DPP **manifest** URL, or a single signed **snapshot** URL; see "Single-snapshot mode" below), `icons-src` (decorative content sprite), `icon-map-src` (per-publisher JSON mapping each property's `propertyID` to a sprite symbol id; pairs with `icons-src`), `revoked-roots-src` (revocation endpoint; `''` disables the boot check), `show-verification-mark` (`false` always hides the verification chip, `true` always shows it; absent, the chip hides itself for a lone snapshot that carries no proof), `pinned-platform-key` (whitespace-separated Multikey set; the chip must see one of them among the verified entries; also keys the revoked-roots check), `pinned-issuer-key` (whitespace-separated Multikey set of the issuer's declared signing keys - under BYOK the customer's own registered keys; the chip requires a verified issuer entry under one of them), `verifier` (present: mount `<dpp-verifier>` in place of the renderer), `footer-copyright` + `footer-links` (footer chrome; `footer-links` is a JSON array of `{ label, url }`). Read once in the element's `setup()` (`src/config.ts`). `locale` states which language to render in: a tag (`locale="de"`), `inherit` to follow the language surrounding the element, or `auto` (the default, and what an absent attribute means) to detect from the visitor's browser. It outranks the standard `lang` attribute, which is still read where no `locale` is given, so `locale="auto"` is how a page that templates `lang` everywhere keeps detection. Either pins the UI locale ahead of the browser preference and of a locale the visitor picked on another page; see "Localization" below. |
+
+#### The verification mark
+
+The chip in the brandbar surfaces the active version's
+verification state and opens the proof modal on click.
+Its states: a spinner while proofs verify, "Verified by
+<name>" (or the neutral "Verified" when no platform name
+is earned), "Verification failed", "Not yet published"
+(an unsigned draft; inert, no modal), and the muted
+question mark "Not verifiable" - nothing was judged
+either way, because the snapshot carries no proof or its
+proof names a cryptosuite this build does not ship; the
+modal states which.
+
+`show-verification-mark` controls whether the chip
+renders at all:
+
+| Value | Behaviour |
+|---|---|
+| absent | Auto. The chip shows, except for a lone snapshot carrying no proof: a DPP that never claimed verifiability is not badged for lacking it, so the renderer stays a neutral viewer for unsigned passports. Under a manifest the chip always shows, since a missing snapshot proof there means a signed publication was stripped, and the question mark must surface that. |
+| `"true"` | Always show, including the question mark on an unsigned lone snapshot. |
+| `"false"` | Never show. |
+
+When neither the chip nor a themed logo (`--logo-url`)
+renders, the brandbar is omitted entirely rather than
+left as an empty sticky header, and the card content
+keeps a padded top edge (1.5x its vertical padding) in
+its place.
 
 #### Single-snapshot mode
 
@@ -405,6 +433,25 @@ validly-signed snapshot. This is a weaker assurance than the
 manifest flow: with no signed version list and no
 cross-version chain, it proves the snapshot is authentic,
 not that it is the current version of a history.
+
+A snapshot that carries no proof at all is not treated as
+a failed verification - there is nothing to judge either
+way. By default such a lone snapshot renders with no
+verification chrome; "The verification mark" above has
+the full policy and the `show-verification-mark`
+overrides. Where the chip does render, it shows the
+muted question mark straight from the data, with no
+verifying phase, and its modal explains that no
+verification is possible, naming the cryptosuite when an
+unshipped proof format is the cause. The
+standalone `<dpp-verifier>` widget agrees on all of it:
+manifest-or-snapshot detection is one shared rule
+(`src/artefact-detect.ts`), a pasted snapshot URL is
+judged on its own proof set (the identity tier stays at
+"signer identity unconfirmed" without a manifest to bind
+a name to, unless a pinned key matches), and an unsigned
+or unreadable one gets the same neutral notice instead of
+a red failure card.
 
 #### Integration hook
 
@@ -670,23 +717,36 @@ hot-reloads on save.
 | `npm run preview` | Serve the built `dist/` locally. |
 | `npm run check` | `tsc` over the SPA + the seed scripts + tests. |
 | `npm test` | Vitest. Covers crypto (JCS, multibase, eddsa-jcs-sha256 aggregate verifier) and the reactive runtime. |
-| `npm run seed` | Walk every `fixtures/*.yml`, validate against the zod schema, download remote images, write `branding.css` under `/public/<id>/`, and write the published JSON artefacts (manifest, per-version snapshots, EPCIS document, key resolution docs) under `/public/<id>/dpp/<code>/`. Generates a fresh Ed25519 keypair per fixture on each run; the produced snapshots are signed with these keys. Idempotent on image cache; output JSON overwrites. Re-run after pulling a fixture change. |
+| `npm run seed` | Walk every `fixtures/*.yml`, validate against the zod schema, download remote images, write `branding.css` under `/public/<id>/`, and write the published JSON artefacts (manifest, per-version snapshots, EPCIS document, key resolution docs) under `/public/<id>/dpp/<code>/`. Generates a fresh Ed25519 keypair per fixture on each run; the produced snapshots are signed with these keys. A `publication: single-snapshot` fixture with `proof_suite: none` emits just one unsigned `snapshot.json` instead (no manifest, no keys). Idempotent on image cache; output JSON overwrites. Re-run after pulling a fixture change. |
 | `npm run check:fixtures` | Network-free Zod parse of every `fixtures/*.yml`. CI runs this on every push and PR to catch schema regressions without depending on third-party image hosts. |
 
 ## Fixtures
 
 Each demo product is a single YAML file under
-`fixtures/`, paired with a `fixtures/<id>/branding/`
-folder for non-text assets (CSS body, logo, favicon).
-The seed pipeline turns each YAML into the same shape
-the production issuer writes to S3: one manifest,
-one self-contained per-version snapshot, one EPCIS
-document (the public events feed, with renderer-
-specific fields carried as `transpareo:*` extensions),
-and a Multikey resolution doc per signing authority.
+`fixtures/`, optionally paired with a
+`fixtures/<id>/branding/` folder for non-text assets
+(CSS body, logo, favicon). The seed pipeline turns each
+YAML into the same shape the production issuer writes
+to S3: one manifest, one self-contained per-version
+snapshot, one EPCIS document (the public events feed,
+with renderer-specific fields carried as
+`transpareo:*` extensions), and a Multikey resolution
+doc per signing authority.
+
+The third fixture deviates on purpose:
+`atelier-barro-vase` declares
+`publication: single-snapshot` and `proof_suite: none`,
+so it emits one frozen, unsigned `snapshot.json` and
+nothing else - no manifest, no EPCIS, no keys, and no
+branding folder. That is the shape of a foreign DPP
+published without a version history, and it drives the
+renderer's question-mark "Not verifiable" chip and the
+verifier's nothing-to-judge notice.
 
 ```
 fixtures/
+  atelier-barro-vase.yml  # unsigned single snapshot,
+                          # no branding on purpose
   nordic-wear-tshirt.yml
   nordic-wear-tshirt/
     branding/
@@ -701,12 +761,13 @@ fixtures/
       favicon.ico
 ```
 
-The seed run produces, per fixture:
+The seed run produces, per manifest fixture:
 
 ```
 public/<id>/                              # gitignored
   branding.css                                # linked from the HTML shell
   branding/{logo.svg, favicon.ico}            # copied assets
+  icon-map.json                               # row key -> sprite symbol table
   <fixture-image>.jpg                         # downloaded images
   dpp/<code>/
     manifest.json                             # entry point: versions[].url
@@ -717,6 +778,16 @@ public/<id>/                              # gitignored
     epcis.json                                # EPCIS 2.0 events feed
                                                 (with transpareo:* extensions)
     keys/{issuer,platform}.json               # Ed25519 Multikey docs
+```
+
+A `publication: single-snapshot` fixture reduces to:
+
+```
+public/<id>/
+  icon-map.json
+  dpp/<code>/
+    snapshot.json                             # one frozen version; with
+                                                proof_suite: none, no proof
 ```
 
 The output tree is gitignored, every dev re-runs the
@@ -749,6 +820,11 @@ fixture it:
    docs under `/public/<id>/dpp/<code>/`
    (`scripts/seed/emit-artefacts.ts`).
 
+A `publication: single-snapshot` fixture skips the
+manifest and EPCIS artefacts; with `proof_suite: none`
+it also skips steps 2 and 3 entirely - no keypair, no
+signatures, one bare `snapshot.json`.
+
 Because the keypairs are fresh on every run, the
 signatures (and therefore the verification chip) are only
 valid against the artefacts from the same seed run. The
@@ -767,13 +843,16 @@ npm run dev:nordic     # SEED=nordic-wear-tshirt
 npm run dev:volturra   # SEED=volturra-pulse-2000
 ```
 
-`SEED=<fixture-id> vite` works for any `fixtures/*.yml`.
-The id and code are read from that YAML and substituted
-into the `__SEED_ID__` / `__SEED_CODE__` tokens in
-`index.html` and `verifier.html`, so both the branding
-stylesheet and the manifest `src` follow the seed.
-`snapshot.html` stays on nordic-wear: it pins one
+`SEED=<fixture-id> vite` works for any manifest-publishing
+`fixtures/*.yml`. The id and code are read from that YAML
+and substituted into the `__SEED_ID__` / `__SEED_CODE__`
+tokens in `index.html` and `verifier.html`, so both the
+branding stylesheet and the manifest `src` follow the
+seed. `snapshot.html` stays on nordic-wear: it pins one
 specific version (`v/6.json`) that only that fixture has.
+`atelier-barro-vase` is not a `SEED` target (it has no
+manifest for those tokens to point at); its own page is
+`unsigned.html`.
 
 There is no build-time fixture selection; every seeded
 DPP is still reachable from any dev session by its own
@@ -782,15 +861,17 @@ URL:
 ```
 /nordic-wear-tshirt/dpp/demo-2026-t001/manifest.json
 /volturra-pulse-2000/dpp/demo-2026-b001/manifest.json
+/atelier-barro-vase/dpp/demo-2026-c001/snapshot.json
 ```
 
-Both are served by Vite from `/public/` after `npm run
-seed`. Production hosts use the same shape but point at
+All are served by Vite from `/public/` after `npm run
+seed` (the third is a lone snapshot, not a manifest).
+Production hosts use the same shape but point at
 wherever the manifest is published.
 
 ## Dev pages
 
-Three HTML entry points live at the repo root for local
+Five HTML entry points live at the repo root for local
 work; none ship in the npm package:
 
 | Page | Loads | Use |
@@ -799,6 +880,7 @@ work; none ship in the npm package:
 | `verifier.html` | `/src/dpp-verifier.ts` | The standalone `<dpp-verifier>` widget (no passport chrome). Open `/verifier.html` while `npm run dev` is running. |
 | `embed-example.html` | `dist-embed/embed.js` | Reference host page for the single-file embed build, and the canonical inline list of branding tokens (see "Theming"). Run `npm run build:embed` first; see the file's header comment. |
 | `snapshot.html` | `/src/main.ts` | Single-snapshot mode: `src` points at one signed snapshot instead of a manifest, so the renderer shows that frozen version with no timeline/history. Open `/snapshot.html` while `npm run dev` is running. |
+| `unsigned.html` | `/src/main.ts` | The unsigned single snapshot (the `atelier-barro-vase` fixture): no manifest, no proof, no branding. By default it renders with no verification chrome and no brandbar at all; add `show-verification-mark="true"` to the element to see the question-mark "Not verifiable" chip and its modal explanation. Open `/unsigned.html` while `npm run dev` is running. |
 
 The embed delivery is also smoke-tested by
 `tests/embed-smoke.spec.ts` (run under `npm run browser`): it
