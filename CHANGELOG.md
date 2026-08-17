@@ -118,6 +118,10 @@ and this project adheres to
   logo tint, the five timeline surface tokens, and the
   per-event-type colours, the derived-when-unset ones
   annotated as such.
+- Modals shorter than the viewport now centre vertically
+  instead of hanging from the top; a dialog taller than
+  the viewport still starts at the top gap and scrolls,
+  with the sticky header pinning as before.
 
 ### Fixed
 

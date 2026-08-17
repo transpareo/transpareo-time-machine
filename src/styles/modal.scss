@@ -35,11 +35,13 @@
   align-items: flex-start;
   justify-content: center;
 
-  // The top padding is the dialog's gap at rest; the
-  // sticky header cancels the same token to pin flush
-  // once the body scrolls under it.
+  // The vertical padding is the dialog's minimum gap;
+  // the sticky header cancels the top token to pin
+  // flush once the body scrolls under it. Symmetric
+  // top/bottom so the auto-margin centering on .modal
+  // lands on the true middle.
   --modal-overlay-pad-top: 5vh;
-  padding: var(--modal-overlay-pad-top) 16px 16px;
+  padding: var(--modal-overlay-pad-top) 16px;
 
   // Always-dark overlay so it actually dims the page on
   // both themes. Mixing with `var(--font-color)` would
@@ -116,6 +118,13 @@ dpp-library-modal      { --modal-max-width: 560px; }
   // body round their own corners instead.
   display: flex;
   flex-direction: column;
+
+  // Centres a shorter-than-viewport dialog vertically.
+  // Auto margins (unlike align-items: center on the
+  // overlay) collapse to 0 when the dialog overflows,
+  // keeping its top reachable and the sticky header
+  // behaviour unchanged.
+  margin-block: auto;
 }
 
 .modal-header {
