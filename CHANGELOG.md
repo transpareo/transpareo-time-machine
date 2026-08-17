@@ -115,6 +115,11 @@ and this project adheres to
 
 ### Fixed
 
+- A property section heading's muted colour resolved to
+  nothing: it read `--color-text-muted`, a token no
+  stylesheet declares, with no fallback, so the heading
+  silently inherited the body colour. It reads the derived
+  `--color-muted` token now.
 - A republished version URL no longer renders from the
   browser's HTTP cache under a verification failure. A
   publisher may re-emit a version under the URL it already
