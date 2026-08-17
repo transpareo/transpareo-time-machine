@@ -33,11 +33,7 @@ class DppHero extends LightElement {
           </div>
           <div class="dpp-brand">${() => renderedProduct().brand}</div>
           <h1 class="dpp-product-name">${productName}</h1>
-          <div class="dpp-meta">
-            <span>${categoryText}</span>
-            <span>${gtinText}</span>
-            <span>${weightText}</span>
-          </div>
+          <div class="dpp-meta">${metaText}</div>
           <div class="dpp-historical-tag" style=${() => historicalDisplay()}>
             ${() => t(i18n.labels, 'historicalView')}
           </div>
@@ -83,14 +79,24 @@ function categoryText(): string {
 
 function gtinText(): string {
   const gtin = renderedProduct().gtin
-  return gtin ? `GTIN ${gtin}` : ''
+  return gtin ? `GTIN\u00a0${gtin}` : ''
 }
 
 function weightText(): string {
   const p = renderedProduct()
   if (!p.weight) return ''
   const unit = p.weightUnit ?? 'g'
-  return `${formatNumber(p.weight)} ${unit}`
+  return `${formatNumber(p.weight)}\u00a0${unit}`
+}
+
+// One joined line, absent segments dropped, so a product
+// without a GTIN (or weight) never renders a dangling
+// separator dot. NBSP inside a segment keeps line wraps
+// at the separators only.
+function metaText(): string {
+  return [categoryText(), gtinText(), weightText()]
+    .filter(Boolean)
+    .join(' · ')
 }
 
 function descriptionText(): string {

@@ -159,21 +159,14 @@ $dpp-card-shadow: 0 1px 4px color-mix(in oklab, var(--font-color, #3D3C3B) 8%, t
   color: $dpp-text;
 }
 
+// One pre-joined text line (see dpp-hero's metaText):
+// absent segments are dropped there, so no separator
+// logic lives here. NBSP inside each segment keeps line
+// wraps at the separators.
 .dpp-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 0;
   @include sm;
   color: $dpp-muted;
   margin-bottom: 16px;
-
-  span {
-    white-space: nowrap;
-    &:not(:last-child)::after {
-      content: '\00b7';
-      margin: 0 8px;
-    }
-  }
 }
 
 .dpp-description {
