@@ -100,6 +100,14 @@
   padding: 0 25px 16px;
 }
 
+/* With no brandbar rendered (no themed logo and no chip)
+ * the content would start flush at the card's top edge.
+ * Floor the top padding at 1.5x the content's vertical
+ * padding (16px) so the card keeps breathing room. */
+.card:not(:has(.brandbar)) .card-content {
+  padding-top: 24px;
+}
+
 /* Live-card transit blur during scrub, saturate
  * desaturates and `--card-blur` carries the live
  * card's blur signal from the deck. */

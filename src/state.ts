@@ -18,6 +18,7 @@
  * so consumers never see a null underneath.
  */
 import { signal, computed } from '@/reactive/signals'
+import { config } from '@/config'
 import type {
   DppEvent, DppProduct, DppSnapshot, EventType, LifecycleStatus,
   PropertyValue,
@@ -270,6 +271,23 @@ export const activeIssuer = computed(
 export const activePlatform = computed(
   () => activeSnapshot().platform,
 )
+
+// Whether the verification chip renders at all. An
+// explicit show-verification-mark attribute wins both
+// ways; without one, a lone snapshot that never claimed
+// verifiability (no manifest, no proof) renders with no
+// verification chrome, so an unsigned foreign DPP is not
+// badged for lacking what it never promised. A manifest
+// DPP always shows the chip: there an unverifiable
+// snapshot is a signed publication missing its proof,
+// which the question mark must surface. A plain function
+// rather than a computed: `config` is not a signal, and
+// the one caller (the brandbar) reads this once at mount.
+export function verificationMarkVisible(): boolean {
+  if (config.showVerificationMark === false) return false
+  if (config.showVerificationMark === true) return true
+  return manifest() != null || activeSnapshot().proof.length > 0
+}
 
 // The verification verdict for the active version, as the
 // chip reads it. A preview of a not-yet-published passport is

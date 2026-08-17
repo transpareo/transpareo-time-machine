@@ -16,14 +16,29 @@
  */
 
 import { LightElement } from '@/reactive/element'
-import { config } from '@/config'
+import { verificationMarkVisible } from '@/state'
 import './dpp-verification-chip'
 
 class DppBrandbar extends LightElement {
   protected setup(): void {
-    const chip = config.showVerificationMark === false
-      ? ''
-      : '<dpp-verification-chip></dpp-verification-chip>'
+    // Chip visibility policy lives in state.ts
+    // (verificationMarkVisible): explicit attribute wins,
+    // and a lone unsigned snapshot hides the chip by
+    // default. Read once; the publication shape cannot
+    // change within a mounted tree.
+    const chip = verificationMarkVisible()
+      ? '<dpp-verification-chip></dpp-verification-chip>'
+      : ''
+
+    // Nothing to show: the theme names no logo and the
+    // host suppressed the chip. Render no bar at all,
+    // since an empty sticky header is just whitespace.
+    const logoUrl = getComputedStyle(this)
+      .getPropertyValue('--logo-url')
+      .trim()
+    const hasLogo = logoUrl !== '' && logoUrl !== 'none'
+    if (!hasLogo && !chip) return
+
     this.innerHTML = `
       <div class="brandbar-sentinel"></div>
       <header class="brandbar">
