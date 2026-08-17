@@ -65,14 +65,12 @@ export async function emitFixture(
   fixture: Fixture,
   images: ImageMap,
   branding: BrandingAssets | null,
-  signer: SnapshotSigner,
+  signer: SnapshotSigner | undefined,
   ecdsaIssuer?: EcdsaSdIssuer,
 ): Promise<string> {
   const id = fixture.id;
   const code = fixture.code;
   const dir = join(PUBLIC_ROOT, id, 'dpp', code);
-  const versionsDir = join(dir, 'v');
-  await mkdir(versionsDir, { recursive: true });
 
   // Build per-version self-contained snapshots first;
   // the manifest reads each version's signed bytes for
@@ -80,28 +78,50 @@ export async function emitFixture(
   const snapshotDocs = await buildSnapshots(
     fixture, images, signer, ecdsaIssuer,
   );
-  await Promise.all(
-    snapshotDocs.map((s) =>
-      writeFile(
-        join(versionsDir, `${s.version}.json`),
-        JSON.stringify(s.doc, null, 2) + '\n',
+
+  const writes: Promise<unknown>[] = [];
+  if (fixture.publication === 'single-snapshot') {
+    // One frozen version, published as snapshot.json with
+    // no manifest and no EPCIS document: the shape a DPP
+    // without a version history has, and (with
+    // proof_suite: none) the unsigned foreign DPP the
+    // renderer presents as unverifiable.
+    await mkdir(dir, { recursive: true });
+    const [only] = snapshotDocs;
+    writes.push(writeFile(
+      join(dir, 'snapshot.json'),
+      JSON.stringify(only.doc, null, 2) + '\n',
+    ));
+  } else {
+    const versionsDir = join(dir, 'v');
+    await mkdir(versionsDir, { recursive: true });
+    await Promise.all(
+      snapshotDocs.map((s) =>
+        writeFile(
+          join(versionsDir, `${s.version}.json`),
+          JSON.stringify(s.doc, null, 2) + '\n',
+        ),
       ),
-    ),
-  );
+    );
 
-  const epcisDoc = buildEpcis(fixture, signer);
-  const manifestDoc = buildManifest(fixture, snapshotDocs, signer);
-
-  const writes: Promise<unknown>[] = [
-    writeFile(
-      join(dir, 'manifest.json'),
-      JSON.stringify(manifestDoc, null, 2) + '\n',
-    ),
-    writeFile(
-      join(dir, 'epcis.json'),
-      JSON.stringify(epcisDoc, null, 2) + '\n',
-    ),
-  ];
+    // The manifest + EPCIS signatures come from the
+    // platform signer, which every manifest fixture has
+    // (only proof_suite 'none' goes without, and the
+    // schema binds that to single-snapshot publication).
+    if (!signer) throw new Error('manifest publication needs a signer');
+    const epcisDoc = buildEpcis(fixture, signer);
+    const manifestDoc = buildManifest(fixture, snapshotDocs, signer);
+    writes.push(
+      writeFile(
+        join(dir, 'manifest.json'),
+        JSON.stringify(manifestDoc, null, 2) + '\n',
+      ),
+      writeFile(
+        join(dir, 'epcis.json'),
+        JSON.stringify(epcisDoc, null, 2) + '\n',
+      ),
+    );
+  }
 
   // Publisher-level branding stylesheet, referenced
   // from the embedding HTML shell as a static <link>.
@@ -333,7 +353,7 @@ function diffProperties(
 async function buildSnapshots(
   fixture: Fixture,
   images: ImageMap,
-  signer: SnapshotSigner,
+  signer: SnapshotSigner | undefined,
   ecdsaIssuer: EcdsaSdIssuer | undefined,
 ): Promise<SnapshotRecord[]> {
   const baseProduct = buildBaseProduct(fixture);
@@ -357,10 +377,14 @@ async function buildSnapshots(
       s, fixture, images, baseProduct, issuer, platform, priorHash, changed,
     );
     // eddsa-jcs appends a proof set to the flat body; ecdsa-sd
-    // wraps the body as a Verifiable Credential and signs that.
+    // wraps the body as a Verifiable Credential and signs
+    // that; an unsigned fixture (proof_suite: none, no
+    // signer) ships the bare body.
     const doc = ecdsaIssuer
       ? await ecdsaIssuer.issue(body)
-      : { ...body, proof: signer.signSnapshot(body) };
+      : signer
+        ? { ...body, proof: signer.signSnapshot(body) }
+        : body;
     // The chain hash the verifier will recompute from this
     // snapshot's bytes: RDFC statements for an ecdsa-sd VC, the
     // JCS body for a flat one. Shared with the verifier via

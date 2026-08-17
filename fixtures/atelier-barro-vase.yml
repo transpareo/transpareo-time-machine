@@ -1,0 +1,175 @@
+# Unsigned single-snapshot fixture: a foreign artisan DPP
+# published as one frozen snapshot.json with no manifest,
+# no version history, and no proof. Exercises the
+# unverifiable surfaces: the renderer's question-mark
+# verification chip and modal note (unsigned.html), and
+# the standalone verifier's nothing-to-judge notice.
+schema_version: 1
+id: atelier-barro-vase
+code: demo-2026-c001
+status: in_use
+published_at: 2025-06-10T09:00:00Z
+verified: false
+proof_suite: none
+publication: single-snapshot
+issuer:
+  name: Atelier Barro
+  did: did:web:atelier-barro.example
+platform:
+  name: Iberia Product Pass
+  did: did:web:iberia-pass.example
+available_locales:
+  - en
+  - de
+  - pt
+images:
+  vase:
+    thumbnail: https://images.unsplash.com/photo-1618722060945-b87f7326995b?w=800&q=80&fm=jpg&fit=crop&auto=format
+    large: https://images.unsplash.com/photo-1618722060945-b87f7326995b?w=1600&q=85&fm=jpg&fit=crop&auto=format
+product:
+  name:
+    en: Hand-Thrown Terracotta Vase
+    de: Handgedrehte Terrakotta-Vase
+    pt: Vaso de terracota feito à mão
+  brand: Atelier Barro
+  description:
+    en: Wheel-thrown vase in local terracotta clay, fired once and finished with a lead-free transparent glaze. Each piece is shaped by hand in a small studio in Alentejo, so no two are identical.
+    de: Auf der Töpferscheibe gedrehte Vase aus lokalem Terrakotta-Ton, einmal gebrannt und mit einer bleifreien transparenten Glasur veredelt. Jedes Stück wird von Hand in einer kleinen Werkstatt im Alentejo geformt, daher gleicht keines dem anderen.
+    pt: Vaso torneado em barro de terracota local, cozido uma vez e acabado com um vidrado transparente sem chumbo. Cada peça é moldada à mão num pequeno atelier no Alentejo, pelo que não há duas iguais.
+  category:
+    en: Ceramics
+    de: Keramik
+    pt: Cerâmica
+  weight: 1.4
+  weight_unit: kg
+  compositions:
+    - key: material
+      title:
+        en: Material
+        de: Material
+        pt: Material
+      entries:
+        - name:
+            en: Terracotta clay
+            de: Terrakotta-Ton
+            pt: Barro de terracota
+          percent: 92
+          color: "#B4653F"
+          country_code: PT
+        - name:
+            en: Lead-free glaze
+            de: Bleifreie Glasur
+            pt: Vidrado sem chumbo
+          percent: 8
+          color: "#E8D8C3"
+          country_code: ES
+  metrics:
+    - key: firing_temperature
+      label:
+        en: Firing temperature
+        de: Brenntemperatur
+        pt: Temperatura de cozedura
+      value: 1050
+      unit: "°C"
+    - key: kiln_energy
+      label:
+        en: Kiln energy per piece
+        de: Ofenenergie pro Stück
+        pt: Energia do forno por peça
+      value: 3.1
+      unit: kWh
+    - key: water_usage
+      label:
+        en: Water per piece
+        de: Wasser pro Stück
+        pt: Água por peça
+      value: 6
+      unit: L
+    - key: co2_footprint
+      label:
+        en: Carbon footprint
+        de: CO2-Fußabdruck
+        pt: Pegada de carbono
+      value: 1.9
+      unit: kg CO2e
+    - key: clay_origin
+      label:
+        en: Clay sourced within
+        de: Ton gewonnen im Umkreis von
+        pt: Barro extraído num raio de
+      value: 40
+      unit: km
+  lists:
+    - key: care
+      label:
+        en: Care
+        de: Pflege
+        pt: Cuidados
+      values:
+        - en: Wipe with a damp cloth
+          de: Mit einem feuchten Tuch abwischen
+          pt: Limpar com um pano húmido
+        - en: Not dishwasher safe
+          de: Nicht spülmaschinenfest
+          pt: Não lavar na máquina
+        - en: Frost-sensitive, keep indoors in winter
+          de: Frostempfindlich, im Winter drinnen aufbewahren
+          pt: Sensível ao gelo, manter no interior no inverno
+    - key: end_of_life
+      label:
+        en: End of life
+        de: Lebensende
+        pt: Fim de vida
+      values:
+        - en: Fully inert, safe as clean fill
+          de: Vollständig inert, unbedenklich als Füllmaterial
+          pt: Totalmente inerte, seguro como material de enchimento
+        - en: Broken pieces are taken back and crushed into grog for new batches
+          de: Bruchstücke werden zurückgenommen und zu Schamotte für neue Chargen gemahlen
+          pt: Peças partidas são recolhidas e trituradas em chamote para novos lotes
+  accordions:
+    - key: studio
+      label:
+        en: About the studio
+        de: Über die Werkstatt
+        pt: Sobre o atelier
+      body:
+        en: Atelier Barro is a two-person pottery studio working with clay dug within 40 km of the workshop. Seconds and offcuts are reclaimed into the next batch.
+        de: Atelier Barro ist eine Zwei-Personen-Töpferei, die mit Ton arbeitet, der im Umkreis von 40 km der Werkstatt gewonnen wird. Fehlbrände und Reste werden für die nächste Charge wiederaufbereitet.
+        pt: O Atelier Barro é uma olaria de duas pessoas que trabalha com barro extraído num raio de 40 km da oficina. Peças com defeito e aparas são recuperadas para o lote seguinte.
+    - key: glaze
+      label:
+        en: Firing and glaze
+        de: Brand und Glasur
+        pt: Cozedura e vidrado
+      body:
+        en: Single-fired at 1050 °C in an electric kiln powered by the studio's rooftop panels. The transparent glaze is mixed in-house from feldspar, quartz and chalk; it contains no lead and no cadmium.
+        de: Einmal gebrannt bei 1050 °C in einem Elektroofen, der von den Solarpaneelen der Werkstatt gespeist wird. Die transparente Glasur wird im Haus aus Feldspat, Quarz und Kreide angemischt; sie enthält weder Blei noch Cadmium.
+        pt: Cozido uma única vez a 1050 °C num forno elétrico alimentado pelos painéis solares do atelier. O vidrado transparente é preparado no próprio atelier a partir de feldspato, quartzo e cré; não contém chumbo nem cádmio.
+  manufacturer:
+    name: Atelier Barro Lda.
+    street: Rua do Forno 12
+    city: Évora
+    country: Portugal
+snapshots:
+  - version: 1
+    published_at: 2025-06-10T09:00:00Z
+    status: in_use
+    composition:
+      - name:
+          en: Terracotta clay
+          de: Terrakotta-Ton
+          pt: Barro de terracota
+        percent: 92
+        color: "#B4653F"
+        country_code: PT
+      - name:
+          en: Lead-free glaze
+          de: Bleifreie Glasur
+          pt: Vidrado sem chumbo
+        percent: 8
+        color: "#E8D8C3"
+        country_code: ES
+    images:
+      - vase
+events: []

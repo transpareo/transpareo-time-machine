@@ -53,12 +53,17 @@ async function main(): Promise<void> {
     const fixture = await load(path);
     const images = await fetchImages(fixture);
     const branding = await fetchBranding(fixture);
-    const signer = await buildSnapshotSigner(
-      PUBLIC_DIR,
-      fixture.id,
-      fixture.code,
-      fixture.published_at,
-    );
+
+    // An unsigned fixture gets no signer at all, so no
+    // keys/ documents land next to its artefacts either.
+    const signer = fixture.proof_suite === 'none'
+      ? undefined
+      : await buildSnapshotSigner(
+          PUBLIC_DIR,
+          fixture.id,
+          fixture.code,
+          fixture.published_at,
+        );
     // The manifest + EPCIS keep the platform's eddsa-jcs
     // signature; only ecdsa-sd fixtures also get a P-256
     // issuer that wraps each snapshot as a Verifiable

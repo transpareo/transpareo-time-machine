@@ -273,8 +273,19 @@ export const FixtureSchema = z.object({
   // default) is the whole-document Ed25519 proof set;
   // ecdsa-sd-2023 wraps each snapshot as a selective-
   // disclosure Verifiable Credential signed with P-256.
-  proof_suite: z.enum(['eddsa-jcs-2022', 'ecdsa-sd-2023'])
+  // 'none' emits the snapshot without any proof, the
+  // unsigned foreign DPP the renderer and the verifier
+  // present as unverifiable; it requires
+  // `publication: single-snapshot`.
+  proof_suite: z.enum(['eddsa-jcs-2022', 'ecdsa-sd-2023', 'none'])
     .default('eddsa-jcs-2022'),
+  // How the DPP is published. 'manifest' (the default)
+  // emits the full artefact set (manifest, per-version
+  // snapshots, EPCIS); 'single-snapshot' emits one frozen
+  // `snapshot.json` and nothing else, the shape a DPP
+  // published without a version history has.
+  publication: z.enum(['manifest', 'single-snapshot'])
+    .default('manifest'),
   // Optional. Omit for fixtures that aren't regulated
   // under one of the listed EU schemes. When set, the
   // codegen appends the matching ref.openepcis.io
@@ -296,6 +307,32 @@ export const FixtureSchema = z.object({
   snapshots: z.array(Snapshot).min(1),
   events: z.array(Event),
   epcis: z.array(EpcisEvent).default([]),
+}).superRefine((f, ctx) => {
+  if (f.publication === 'single-snapshot') {
+    if (f.snapshots.length !== 1) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['snapshots'],
+        message: 'single-snapshot publication carries exactly one snapshot',
+      });
+    }
+    if (f.events.length > 0 || f.epcis.length > 0) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['events'],
+        message: 'single-snapshot publication carries no events '
+          + '(there is no manifest to hang a timeline on)',
+      });
+    }
+  }
+  if (f.proof_suite === 'none' && f.publication !== 'single-snapshot') {
+    ctx.addIssue({
+      code: 'custom',
+      path: ['proof_suite'],
+      message: "proof_suite 'none' requires publication: single-snapshot "
+        + '(an unsigned manifest set is not a supported shape)',
+    });
+  }
 });
 
 export type Fixture = z.infer<typeof FixtureSchema>;
