@@ -137,6 +137,21 @@
   @include dpp.sm;
 }
 
+// Nothing-to-verify notice: a statement about the DPP (it
+// exposes no signed data), not a failed verification, so
+// muted with a question-mark orb instead of failure-red.
+.verifier-unverifiable {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid color-mix(
+    in oklab, var(--font-color, #1a1a1a) 15%, transparent);
+  border-radius: var(--verifier-radius);
+  color: var(--verifier-muted);
+  @include dpp.sm;
+}
+
 // ─── Result card ─────────────────────────────────
 
 .verifier-card {
@@ -178,6 +193,16 @@
 .verifier-version {
   @include dpp.xs;
   color: var(--verifier-muted);
+}
+
+// Single-snapshot note, between the banner and the meta
+// rows: this card judged one frozen version, not a
+// version history.
+.verifier-note {
+  margin: 0;
+  padding: 10px 18px 0;
+  color: var(--verifier-muted);
+  @include dpp.sm;
 }
 
 .verifier-meta {

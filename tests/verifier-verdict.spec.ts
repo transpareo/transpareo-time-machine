@@ -228,6 +228,15 @@ describe('combinedVerdict: manifest signature and chain gates', () => {
     expect(v.outcome).toBe('authentic');
   });
 
+  it('passes a lone snapshot with no manifest to gate', () => {
+    // Single-snapshot verification: a null signature state
+    // marks "no artefact at all", out of the gate's scope.
+    const v = combinedVerdict(
+      authentic(), null, { status: 'not-applicable' },
+    );
+    expect(v.outcome).toBe('authentic');
+  });
+
   it('flips on an invalid manifest signature', () => {
     const v = combinedVerdict(
       authentic(), entry({ status: 'invalid' }), { status: 'ok' },

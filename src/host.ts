@@ -41,6 +41,7 @@
 
 import { signal } from '@/reactive/signals'
 import { readJsonResponse } from '@/fetch-json'
+import { detectArtefact, snapshotBody } from '@/artefact-detect'
 import type { DppManifest, Organization, SignedSnapshot } from '@/archive'
 import type {
   DppSnapshot, DppProduct, DppManufacturer, SnapshotImage,
@@ -124,10 +125,10 @@ export async function bootFrom(src: string): Promise<void> {
   try {
     const data = await fetchSource(manifestUrl)
     if (epoch !== bootEpoch) return
-    if (isManifest(data)) {
-      await bootFromManifest(data, manifestUrl, epoch)
+    if (detectArtefact(data) === 'manifest') {
+      await bootFromManifest(data as DppManifest, manifestUrl, epoch)
     } else {
-      bootFromSnapshot(data)
+      bootFromSnapshot(data as SignedSnapshot)
     }
     if (epoch === bootEpoch) loadState.set('ready')
   } catch (err) {
@@ -137,17 +138,6 @@ export async function bootFrom(src: string): Promise<void> {
     loadError.set(message)
     loadState.set(err instanceof ManifestGoneError ? 'retired' : 'error')
   }
-}
-
-// `src` may resolve to a manifest (the full Time Machine)
-// or a single signed snapshot (one frozen version). A
-// manifest is tagged `@type: 'DppManifest'` and carries a
-// `versions` array; a snapshot has neither.
-function isManifest(
-  data: DppManifest | SignedSnapshot,
-): data is DppManifest {
-  return (data as DppManifest)['@type'] === 'DppManifest'
-    || Array.isArray((data as { versions?: unknown }).versions)
 }
 
 async function bootFromManifest(
@@ -227,7 +217,7 @@ const ACCEPT_JSON = 'application/ld+json, application/json'
 // Fetch the boot source, either a DPP manifest or a single
 // signed snapshot. 404/410 means the resource is gone (the
 // boot caller maps it to the 'retired' load state) for both
-// shapes; the shape is then detected by `isManifest`.
+// shapes; the shape is then detected by `detectArtefact`.
 async function fetchSource(
   url: string,
 ): Promise<DppManifest | SignedSnapshot> {
@@ -415,24 +405,16 @@ function adaptChangeSet(raw: unknown): ChangeSet | undefined {
   return set
 }
 
-// An ecdsa-sd snapshot is a Verifiable Credential: the DPP
-// body lives under `credentialSubject` and the proof is a
-// single DataIntegrityProof. Unwrap it to the same flat
-// shape the eddsa-jcs snapshot already has, so one adapter
-// serves both. The credentialSubject uses the same EN 18223
-// wire fields (language arrays, PropertyValue rows), so no
-// per-field translation is needed here.
+// An ecdsa-sd snapshot is a Verifiable Credential; the
+// shared snapshotBody unwraps it to the same flat shape
+// the eddsa-jcs snapshot already has, so one adapter
+// serves both. The credentialSubject uses the same EN
+// 18223 wire fields (language arrays, PropertyValue
+// rows), so no per-field translation is needed here.
 function unwrapCredential(raw: SignedSnapshot): WireSnapshot {
-  const r = raw as unknown as Record<string, unknown>
-  const subject = r.credentialSubject
-  if (subject === undefined || typeof subject !== 'object') {
-    return raw as unknown as WireSnapshot
-  }
-  const proof = r.proof
-  const proofs = Array.isArray(proof) ? proof : proof ? [proof] : []
-  return {
-    ...(subject as Record<string, unknown>), proof: proofs,
-  } as unknown as WireSnapshot
+  return snapshotBody(
+    raw as unknown as Record<string, unknown>,
+  ) as unknown as WireSnapshot
 }
 
 export function toRenderModel(raw: SignedSnapshot): DppSnapshot {

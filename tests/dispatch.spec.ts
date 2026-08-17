@@ -14,7 +14,9 @@
  */
 
 import { describe, expect, it, beforeAll } from 'vitest';
-import { verifyDpp, dppIsAuthentic } from '../src/crypto/dispatch';
+import {
+  verifyDpp, dppIsAuthentic, verifySnapshotAnySuite,
+} from '../src/crypto/dispatch';
 import type { ResolvedMultikey } from '../src/crypto/did-web';
 import { createSampleSigner, type SampleSigner } from './helpers/sd-signer';
 
@@ -145,7 +147,21 @@ describe('verifyDpp: unhandled inputs', () => {
     expect(dppIsAuthentic(v)).toBe(false);
     if (v.cryptosuite === 'unknown') {
       expect(v.reason).toMatch(/unsupported cryptosuite bbs-2023/);
+      expect(v.suite).toBe('bbs-2023');
     }
+  });
+
+  it('stamps the unsupported suite on the flat result', async () => {
+    // Consumers must be able to say "this proof format is
+    // not supported" instead of presenting the empty result
+    // as a failed verification.
+    const doc = {
+      '@context': [],
+      proof: { type: 'DataIntegrityProof', cryptosuite: 'bbs-2023' },
+    };
+    const r = await verifySnapshotAnySuite(doc);
+    expect(r.verdict).toBe('unauthenticated');
+    expect(r.unsupportedSuite).toBe('bbs-2023');
   });
 
   it('reports a document with no proof', async () => {

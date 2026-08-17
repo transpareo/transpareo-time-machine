@@ -6,14 +6,20 @@
  * <dpp-verifier>, standalone verification widget for a
  * marketing / verification surface. Renders a form whose
  * input takes a passport page link (what QR codes and
- * shared links carry) or a manifest URL; an HTML answer
- * is resolved to the manifest the page references (see
- * manifest-discovery.ts). The widget then fetches the
- * manifest + current snapshot and runs the same gates as
- * the SPA chip in the browser: the snapshot proof under
- * whichever cryptosuite it declares (strict), the manifest's
- * own platform signature, and the priorVersionHash chain
- * walk down to v1. Shows the proof chain plus the aggregate
+ * shared links carry) or a signed artefact URL; an HTML
+ * answer is resolved to the artefact the page references
+ * (see manifest-discovery.ts). The artefact is classified
+ * by the shared detector (artefact-detect.ts, the same
+ * rule the SPA host layer boots by). A manifest runs the
+ * same gates as the SPA chip in the browser: the snapshot
+ * proof under whichever cryptosuite it declares (strict),
+ * the manifest's own platform signature, and the
+ * priorVersionHash chain walk down to v1. A lone signed
+ * snapshot (a DPP published without a manifest, matching
+ * the SPA's single-snapshot mode) is judged on its own
+ * proof set alone. A page exposing nothing signed renders
+ * a neutral nothing-to-verify notice rather than a
+ * failure. Shows the proof chain plus the aggregate
  * verdict.
  *
  * Attributes:
@@ -85,6 +91,7 @@ import {
   verifyChainFromHead, type ChainCheckResult,
 } from '@/verifier-chain'
 import { readTextResponse } from '@/fetch-json'
+import { detectArtefact, snapshotBody } from '@/artefact-detect'
 import { looksLikeHtml, discoverManifestUrl } from '@/manifest-discovery'
 import { parseKeySet } from '@/config'
 import {
@@ -101,11 +108,17 @@ type WidgetState =
   | { status: 'idle' }
   | { status: 'loading'; url: string }
   | { status: 'error'; url: string; message: string }
+
+  // The URL led to something real but unsigned (a page
+  // with no signed reference, or JSON that is no DPP
+  // artefact): nothing to verify, which is a statement
+  // about the DPP, not a failed verification.
+  | { status: 'unverifiable'; url: string; message: string }
   | {
       status: 'ready'
       url: string
-      manifestUrl: string
-      manifest: DppManifest
+      artefactUrl: string
+      manifest: DppManifest | null
       snapshot: SignedSnapshot
       result: VerificationResult
       manifestSignature: ArtefactSignatureState
@@ -198,49 +211,22 @@ class DppVerifier extends BaseElement {
     const seq = ++this.runSeq
     this.state.set({ status: 'loading', url })
     try {
-      const { manifest, manifestUrl } = await loadManifest(
+      const { kind, artefact, artefactUrl } = await loadArtefact(
         new URL(url, window.location.href).toString(),
       )
-      const currentEntry = manifest.versions.find(
-        (v) => v.number === manifest.currentVersion,
-      )
-      if (!currentEntry?.url) {
-        throw new Error('manifest is missing the current version URL')
-      }
-      const snapUrl = new URL(currentEntry.url, manifestUrl).toString()
-      const snapshot = await fetchJson<SignedSnapshot>(snapUrl)
-
-      // Whichever cryptosuite the snapshot's proof declares:
-      // the widget verifies foreign DPPs, so it cannot assume
-      // the suite this platform happens to publish. Its pins
-      // travel as arguments rather than through the SPA's
-      // element config, which is unpopulated here.
-      const result = await verifySnapshotAnySuite(
-        snapshot as unknown as Record<string, unknown>,
-        { mode: 'strict', pinnedPlatformKeys: pins },
-      )
-
-      // The widget shows manifest-derived claims (version
-      // count, issuer/platform names), so it runs the same
-      // gates the SPA chip does: the manifest's own platform
-      // signature and the priorVersionHash chain walk down
-      // to v1.
-      const manifestSignature = await verifyManifestSignature(
-        manifest as unknown as Record<string, unknown>, pins,
-      ).then((res) => res ?? ('absent' as const))
-      const chain = await verifyChainFromHead(
-        manifest, manifestUrl, snapshot,
-        (u) => fetchJson<SignedSnapshot>(u),
-      )
+      const verified = kind === 'manifest'
+        ? await verifyFromManifest(artefact as DppManifest, artefactUrl, pins)
+        : await verifyLoneSnapshot(artefact as SignedSnapshot, pins)
       if (seq !== this.runSeq) return
-      this.state.set({
-        status: 'ready', url, manifestUrl, manifest, snapshot, result,
-        manifestSignature, chain,
-      })
+      this.state.set({ status: 'ready', url, artefactUrl, ...verified })
     } catch (err) {
       if (seq !== this.runSeq) return
       const message = err instanceof Error ? err.message : String(err)
-      this.state.set({ status: 'error', url, message })
+      if (err instanceof UnverifiableError) {
+        this.state.set({ status: 'unverifiable', url, message })
+      } else {
+        this.state.set({ status: 'error', url, message })
+      }
     }
   }
 
@@ -264,6 +250,14 @@ class DppVerifier extends BaseElement {
         buildOrb(false),
         el('span', undefined, tr('verifier.couldNotVerify', { message: s.message })),
       )
+      mount.replaceChildren(wrap)
+      return
+    }
+    if (s.status === 'unverifiable') {
+      const wrap = el('div', 'verifier-unverifiable')
+      const orb = el('span', 'orb')
+      orb.appendChild(icon('help'))
+      wrap.append(orb, el('span', undefined, s.message))
       mount.replaceChildren(wrap)
       return
     }
@@ -307,77 +301,236 @@ async function fetchJson<T>(url: string): Promise<T> {
   return JSON.parse(body) as T
 }
 
-// The pasted URL is either the manifest itself or the
-// passport page a QR code / shared link points at. Fetch
-// it once and sniff the body: JSON is taken as the
-// manifest, HTML as the page, whose declared manifest
-// reference is then followed.
-async function loadManifest(
-  url: string,
-): Promise<{ manifest: DppManifest; manifestUrl: string }> {
+// Routes to the neutral nothing-to-verify state instead
+// of the red failure card.
+class UnverifiableError extends Error {}
+
+interface LoadedArtefact {
+  readonly kind: 'manifest' | 'snapshot'
+  readonly artefact: DppManifest | SignedSnapshot
+  readonly artefactUrl: string
+}
+
+// The pasted URL is either a signed artefact itself (a
+// manifest or a lone snapshot) or the passport page a QR
+// code / shared link points at. Fetch it once and sniff
+// the body: JSON is classified by shape, HTML as the
+// page, whose declared reference is followed and
+// classified the same way (a foreign page may embed the
+// renderer in single-snapshot mode, so the reference is
+// not assumed to be a manifest either).
+async function loadArtefact(url: string): Promise<LoadedArtefact> {
   const { body, url: finalUrl } = await fetchText(url)
   if (!looksLikeHtml(body)) {
-    return { manifest: asManifest(JSON.parse(body)), manifestUrl: finalUrl }
+    return classify(JSON.parse(body), finalUrl)
   }
-  const manifestUrl = discoverManifestUrl(body, finalUrl)
-  if (!manifestUrl) {
-    throw new Error(tr('verifier.noManifestOnPage'))
+  const refUrl = discoverManifestUrl(body, finalUrl)
+  if (!refUrl) {
+    throw new UnverifiableError(tr('verifier.noSignedData'))
   }
-  return { manifest: asManifest(await fetchJson(manifestUrl)), manifestUrl }
+  return classify(await fetchJson(refUrl), refUrl)
 }
 
-// Minimal shape gate so a snapshot URL or arbitrary JSON
-// fails with a readable message instead of a TypeError
-// deeper in the run.
-function asManifest(data: unknown): DppManifest {
-  const m = data as DppManifest | null
-  if (!m || !Array.isArray(m.versions)) {
-    throw new Error('fetched JSON is not a DPP manifest')
+// Shape gate on the shared detector, so JSON that is no
+// DPP artefact lands in the nothing-to-verify state
+// instead of a TypeError deeper in the run.
+function classify(data: unknown, artefactUrl: string): LoadedArtefact {
+  const kind = detectArtefact(data)
+  if (kind === 'unknown') {
+    throw new UnverifiableError(tr('verifier.notSignedArtefact'))
   }
-  return m
+  return {
+    kind, artefact: data as DppManifest | SignedSnapshot, artefactUrl,
+  }
 }
 
-// ─── Result card ─────────────────────────────────
+// ─── Verification paths ───────────────────────────
 
-interface ReadyState {
-  readonly url: string
-  readonly manifestUrl: string
-  readonly manifest: DppManifest
+interface VerifiedArtefact {
+  readonly manifest: DppManifest | null
   readonly snapshot: SignedSnapshot
   readonly result: VerificationResult
   readonly manifestSignature: ArtefactSignatureState
   readonly chain: ChainCheckResult
 }
 
+async function verifyFromManifest(
+  manifest: DppManifest, manifestUrl: string,
+  pins: ReadonlyArray<string> | undefined,
+): Promise<VerifiedArtefact> {
+  const currentEntry = manifest.versions.find(
+    (v) => v.number === manifest.currentVersion,
+  )
+  if (!currentEntry?.url) {
+    throw new Error(tr('verifier.missingVersionUrl'))
+  }
+  const snapUrl = new URL(currentEntry.url, manifestUrl).toString()
+  const snapshot = await fetchJson<SignedSnapshot>(snapUrl)
+
+  // Whichever cryptosuite the snapshot's proof declares:
+  // the widget verifies foreign DPPs, so it cannot assume
+  // the suite this platform happens to publish. Its pins
+  // travel as arguments rather than through the SPA's
+  // element config, which is unpopulated here.
+  const result = await verifySnapshotAnySuite(
+    snapshot as unknown as Record<string, unknown>,
+    { mode: 'strict', pinnedPlatformKeys: pins },
+  )
+  requireVerifiableProof(result)
+
+  // The widget shows manifest-derived claims (version
+  // count, issuer/platform names), so it runs the same
+  // gates the SPA chip does: the manifest's own platform
+  // signature and the priorVersionHash chain walk down
+  // to v1.
+  const manifestSignature = await verifyManifestSignature(
+    manifest as unknown as Record<string, unknown>, pins,
+  ).then((res) => res ?? ('absent' as const))
+  const chain = await verifyChainFromHead(
+    manifest, manifestUrl, snapshot,
+    (u) => fetchJson<SignedSnapshot>(u),
+  )
+  return { manifest, snapshot, result, manifestSignature, chain }
+}
+
+// A lone snapshot has no manifest to gate and no version
+// list to walk: the verdict rests on the document's own
+// proof set, matching the SPA's single-snapshot mode. The
+// null manifest signature marks "no artefact to gate", so
+// combinedVerdict passes it, and the identity tier still
+// resolves from pins and the snapshot's own DIDs.
+async function verifyLoneSnapshot(
+  snapshot: SignedSnapshot,
+  pins: ReadonlyArray<string> | undefined,
+): Promise<VerifiedArtefact> {
+  const result = await verifySnapshotAnySuite(
+    snapshot as unknown as Record<string, unknown>,
+    { mode: 'strict', pinnedPlatformKeys: pins },
+  )
+  requireVerifiableProof(result)
+  return {
+    manifest: null, snapshot, result,
+    manifestSignature: null, chain: { status: 'not-applicable' },
+  }
+}
+
+// A result with nothing judged either way must not render
+// as a red unauthenticated card ("Only 0 of 0 entries
+// verified") - that would defame a possibly sound DPP.
+// Two ways to get one: the proof names a suite this build
+// does not ship, or a manifest's snapshot carries no
+// proof at all (a pasted snapshot always has one, the
+// detector requires it). Both route to the neutral
+// notice, so the verdict card only ever renders judged
+// entries.
+function requireVerifiableProof(result: VerificationResult): void {
+  if (result.unsupportedSuite) {
+    throw new UnverifiableError(
+      tr('verifier.unsupportedSuite', { suite: result.unsupportedSuite }),
+    )
+  }
+  if (result.totalEntryCount === 0) {
+    throw new UnverifiableError(tr('verifier.noProof'))
+  }
+}
+
+// ─── Result card ─────────────────────────────────
+
+interface ReadyState {
+  readonly url: string
+  readonly artefactUrl: string
+  readonly manifest: DppManifest | null
+  readonly snapshot: SignedSnapshot
+  readonly result: VerificationResult
+  readonly manifestSignature: ArtefactSignatureState
+  readonly chain: ChainCheckResult
+}
+
+// What the card prints, resolved once from whichever
+// artefact carries it: the manifest when there is one,
+// else the (unwrapped) snapshot body. A foreign lone
+// snapshot may omit any of these, so all but the version
+// label are optional and their rows drop out.
+interface CardFacts {
+  readonly issuerName?: string
+  readonly issuerDid?: string
+  readonly platformName?: string
+  readonly platformDid?: string
+  readonly code?: string
+  readonly publishedAt?: string
+  readonly versionLabel: string
+}
+
+function cardFacts(s: ReadyState): CardFacts {
+  const body = snapshotBody(s.snapshot as unknown as Record<string, unknown>)
+  const publishedAt = str(body.publishedAt)
+  if (s.manifest) {
+    return {
+      issuerName: s.manifest.issuer.name,
+      issuerDid: s.manifest.issuer.did,
+      platformName: s.manifest.platform.name,
+      platformDid: s.manifest.platform.did,
+      code: s.manifest.code,
+      publishedAt,
+      versionLabel:
+        `v${s.manifest.currentVersion} / ${s.manifest.versions.length}`,
+    }
+  }
+  const issuer = orgOf(body.issuer)
+  const platform = orgOf(body.platform)
+  const ids = body.identifiers as Record<string, unknown> | undefined
+  return {
+    issuerName: issuer.name,
+    issuerDid: issuer.did,
+    platformName: platform.name,
+    platformDid: platform.did,
+    code: str(body.passportAlias) ?? str(ids?.code) ?? str(body.code),
+    publishedAt,
+    versionLabel:
+      typeof body.version === 'number' ? `v${body.version}` : '',
+  }
+}
+
+function str(v: unknown): string | undefined {
+  return typeof v === 'string' ? v : undefined
+}
+
+function orgOf(v: unknown): { name?: string; did?: string } {
+  if (v === null || typeof v !== 'object') return {}
+  const o = v as Record<string, unknown>
+  return { name: str(o.name), did: str(o.did) }
+}
+
 function buildResultCard(
   s: ReadyState, pins: ReadonlyArray<string> | undefined,
 ): HTMLElement {
+  const facts = cardFacts(s)
   const verdict = combinedVerdict(s.result, s.manifestSignature, s.chain)
   const identity = verdictIdentity(
     s.result, pins, s.manifestSignature,
-    s.manifest.platform.did, s.manifestUrl,
+    facts.platformDid, s.artefactUrl,
   )
   const wrap = el('section',
     `verifier-card verdict-${verdict.outcome} identity-${identity}`)
 
-  wrap.appendChild(buildBanner(verdict, identity, s))
-  wrap.appendChild(buildMeta(s))
-  wrap.appendChild(buildChain(s))
+  wrap.appendChild(buildBanner(verdict, identity, facts))
+  if (!s.manifest) {
+    wrap.appendChild(el('p', 'verifier-note', tr('verifier.singleSnapshot')))
+  }
+  wrap.appendChild(buildMeta(facts))
+  wrap.appendChild(buildChain(s, facts))
   return wrap
 }
 
 function buildBanner(
-  verdict: AggregateVerdict, identity: VerdictIdentity, s: ReadyState,
+  verdict: AggregateVerdict, identity: VerdictIdentity, facts: CardFacts,
 ): HTMLElement {
   const banner = el('div', 'verifier-banner')
   banner.appendChild(buildOrb(verdict.outcome === 'authentic'))
   banner.appendChild(el(
-    'strong', 'verifier-verdict', bannerText(verdict, identity, s),
+    'strong', 'verifier-verdict', bannerText(verdict, identity, facts),
   ))
-  banner.appendChild(el(
-    'span', 'verifier-version',
-    `v${s.manifest.currentVersion} / ${s.manifest.versions.length}`,
-  ))
+  banner.appendChild(el('span', 'verifier-version', facts.versionLabel))
   return banner
 }
 
@@ -386,27 +539,32 @@ function buildBanner(
 // the caller's pin) or 'bound' (keys resolve from the
 // domain platform.did declares). 'unconfirmed' renders the
 // neutral signatures-valid wording, since the name in the
-// manifest is then just a claim.
+// artefact is then just a claim; so does an artefact that
+// declares no platform name at all (a foreign lone
+// snapshot may carry none).
 function bannerText(
-  verdict: AggregateVerdict, identity: VerdictIdentity, s: ReadyState,
+  verdict: AggregateVerdict, identity: VerdictIdentity, facts: CardFacts,
 ): string {
   if (verdict.outcome !== 'authentic') return verdictText(verdict)
-  if (identity === 'unconfirmed') {
+  if (identity === 'unconfirmed' || !facts.platformName) {
     return tr('verifier.verdict.consistentOnly')
   }
-  return tr('verifiedByPlatform', { name: s.manifest.platform.name })
+  return tr('verifiedByPlatform', { name: facts.platformName })
 }
 
-function buildMeta(s: ReadyState): HTMLElement {
+function buildMeta(facts: CardFacts): HTMLElement {
   const meta = el('dl', 'verifier-meta')
-  addRow(meta, tr('verifier.meta.issuer'), s.manifest.issuer.name)
-  addRow(meta, tr('verifier.meta.platform'), s.manifest.platform.name)
-  addRow(meta, tr('verifier.meta.dppCode'), s.manifest.code)
-  addRow(meta, tr('verifier.meta.published'), s.snapshot.publishedAt)
+  addRow(meta, tr('verifier.meta.issuer'), facts.issuerName)
+  addRow(meta, tr('verifier.meta.platform'), facts.platformName)
+  addRow(meta, tr('verifier.meta.dppCode'), facts.code)
+  addRow(meta, tr('verifier.meta.published'), facts.publishedAt)
   return meta
 }
 
-function addRow(dl: HTMLElement, key: string, value: string): void {
+function addRow(
+  dl: HTMLElement, key: string, value: string | undefined,
+): void {
+  if (!value) return
   dl.append(
     el('dt', undefined, key),
     el('dd', undefined, value),
@@ -415,12 +573,12 @@ function addRow(dl: HTMLElement, key: string, value: string): void {
 
 // ─── Proof chain (entries grouped by authority) ────
 
-function buildChain(s: ReadyState): HTMLElement {
-  const groups = groupEntries(s.result.entries, s.manifest)
+function buildChain(s: ReadyState, facts: CardFacts): HTMLElement {
+  const groups = groupEntries(s.result.entries, facts)
   const wrap = el('div', 'verifier-chain')
   wrap.appendChild(el('h3', 'verifier-section-title', tr('verifier.proofChain')))
   for (const g of groups) {
-    wrap.appendChild(buildGroup(g, s.manifest))
+    wrap.appendChild(buildGroup(g, facts))
   }
   return wrap
 }
@@ -435,10 +593,10 @@ interface AuthorityGroup {
 // own verificationMethod), then attribute the groups with the
 // shared rule, which reads a matching pin, an eddsa-jcs key
 // path, or an ecdsa-sd credential's did:web method against
-// the DIDs the manifest declares.
+// the DIDs the artefact declares.
 function groupEntries(
   entries: ReadonlyArray<ProofEntryResult>,
-  manifest: DppManifest,
+  facts: CardFacts,
 ): AuthorityGroup[] {
   const byAuthority = new Map<string, ProofEntryResult[]>()
   for (const e of entries) {
@@ -449,8 +607,8 @@ function groupEntries(
   }
   const buckets = [...byAuthority.values()]
   const kinds = attributeAuthorities(buckets, {
-    issuerDid: manifest.issuer.did,
-    platformDid: manifest.platform.did,
+    issuerDid: facts.issuerDid,
+    platformDid: facts.platformDid,
   })
   const groups = buckets.map((bucket, i): AuthorityGroup => (
     { label: kinds[i], entries: bucket }
@@ -466,14 +624,14 @@ function order(label: AuthorityKind): number {
 }
 
 function buildGroup(
-  g: AuthorityGroup, manifest: DppManifest,
+  g: AuthorityGroup, facts: CardFacts,
 ): HTMLElement {
   const ok = g.entries.some((e) => e.status === 'verified')
   const card = el('div', `verifier-authority is-${ok ? 'ok' : 'bad'}`)
   const head = el('div', 'verifier-authority-head')
-  const label = g.label === 'issuer' ? manifest.issuer.name
-    : g.label === 'platform' ? manifest.platform.name
-      : tr('verifier.authority')
+  const label = (g.label === 'issuer' ? facts.issuerName
+    : g.label === 'platform' ? facts.platformName
+      : undefined) ?? tr('verifier.authority')
   head.append(
     buildOrb(ok),
     el('span', 'verifier-authority-label', label),

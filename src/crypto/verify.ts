@@ -136,6 +136,13 @@ export interface VerificationResult {
   // suite the active snapshot was verified under. Absent
   // when a single-suite verifier is called directly.
   readonly cryptosuite?: string
+
+  // Set by the dispatcher when the document's proof names
+  // a cryptosuite this build does not ship: no entry was
+  // judged either way, so a consumer should present "this
+  // proof format is not supported" rather than a failed
+  // verification.
+  readonly unsupportedSuite?: string
 }
 
 export type VerificationMode = 'default' | 'strict'

@@ -102,9 +102,11 @@ function json(body: unknown): Response {
   return new Response(JSON.stringify(body), { status: 200 })
 }
 
-async function mountWidget(pins?: string): Promise<Element> {
+async function mountWidget(
+  pins?: string, src = MANIFEST_URL,
+): Promise<Element> {
   const widget = document.createElement('dpp-verifier')
-  widget.setAttribute('src', MANIFEST_URL)
+  widget.setAttribute('src', src)
   if (pins) widget.setAttribute('pinned-platform-key', pins)
   document.body.appendChild(widget)
   await settle()
@@ -130,7 +132,10 @@ async function settle(): Promise<void> {
   for (let i = 0; i < 200; i++) {
     await new Promise((r) => setTimeout(r, 5))
     const mount = document.querySelector('dpp-verifier')?.shadowRoot
-    if (mount?.querySelector('.verifier-card, .verifier-error')) return
+    const done = mount?.querySelector(
+      '.verifier-card, .verifier-error, .verifier-unverifiable',
+    )
+    if (done) return
   }
 }
 
@@ -207,5 +212,81 @@ describe('dpp-verifier: status icons', () => {
       const id = (use.getAttribute('href') ?? '').slice(1)
       expect(root.querySelector(`symbol#${id}`)).not.toBeNull()
     }
+  })
+})
+
+describe('dpp-verifier: lone snapshot input', () => {
+  const SNAPSHOT_URL = `${ORIGIN}/${HANDLE}/dpp/${CODE}/v/1.json`
+
+  it('verifies a pasted snapshot URL on its own proofs', async () => {
+    stubFetch()
+    const widget = await mountWidget(undefined, SNAPSHOT_URL)
+    const card = widget.shadowRoot?.querySelector('.verifier-card')
+    expect(card?.className).toContain('verdict-authentic')
+  })
+
+  it('marks the card single-snapshot, identity unconfirmed', async () => {
+    // No manifest means no platform attestation and no
+    // did:web binding to earn a named verdict from.
+    stubFetch()
+    const widget = await mountWidget(undefined, SNAPSHOT_URL)
+    expect(widget.shadowRoot?.querySelector('.verifier-note')).not.toBeNull()
+    expect(widget.shadowRoot?.querySelector('.verifier-card')?.className).
+      toContain('identity-unconfirmed')
+  })
+
+  it('renders the nothing-to-verify notice for non-DPP JSON', async () => {
+    vi.stubGlobal('fetch', async () => json({ hello: 1 }))
+    const widget = await mountWidget(undefined, `${ORIGIN}/whatever.json`)
+    expect(widget.shadowRoot?.querySelector('.verifier-unverifiable')).
+      not.toBeNull()
+    expect(widget.shadowRoot?.querySelector('.verifier-error')).toBeNull()
+  })
+
+  it('renders the notice for a page with no signed reference', async () => {
+    vi.stubGlobal('fetch', async () =>
+      new Response('<html><body>plain page</body></html>', { status: 200 }))
+    const widget = await mountWidget(undefined, `${ORIGIN}/page`)
+    const notice = widget.shadowRoot?.querySelector('.verifier-unverifiable')
+    expect(notice?.textContent).toContain('no signed data')
+  })
+
+  it('routes an unsupported proof format to the notice', async () => {
+    // Signed, but in a suite this build does not ship: the
+    // notice names the format instead of a red card reading
+    // "Only 0 of 0 entries verified".
+    const alien = {
+      version: 1,
+      publishedAt: '2026-05-01T12:00:00Z',
+      proof: [{
+        type: 'DataIntegrityProof',
+        cryptosuite: 'made-up-2026',
+        proofValue: 'z1'
+      }]
+    }
+    vi.stubGlobal('fetch', async () => json(alien))
+    const widget = await mountWidget(undefined, `${ORIGIN}/alien.json`)
+    const notice = widget.shadowRoot?.querySelector('.verifier-unverifiable')
+    expect(notice?.textContent).toContain('made-up-2026')
+    expect(widget.shadowRoot?.querySelector('.verifier-card')).toBeNull()
+  })
+
+  it('routes a manifest with an unsigned snapshot to the notice', async () => {
+    // The detector gates only the pasted artefact; a
+    // snapshot fetched via a manifest can still carry no
+    // proof, and used to render "Only 0 of 0 entries
+    // verified" in red.
+    vi.stubGlobal('fetch', async (input: string | URL): Promise<Response> => {
+      const url = typeof input === 'string' ? input : input.toString()
+      if (url.endsWith('/manifest.json')) return json(manifest())
+      if (url.endsWith('/v/1.json')) {
+        return json({ version: 1, publishedAt: '2026-05-01T12:00:00Z' })
+      }
+      return new Response('not found', { status: 404 })
+    })
+    const widget = await mountWidget()
+    const notice = widget.shadowRoot?.querySelector('.verifier-unverifiable')
+    expect(notice?.textContent).toContain('no proof')
+    expect(widget.shadowRoot?.textContent).not.toContain('0 of 0')
   })
 })

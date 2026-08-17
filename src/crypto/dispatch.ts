@@ -56,7 +56,14 @@ export type DppVerification =
       readonly cryptosuite: typeof ECDSA_SD_2023
       readonly results: ReadonlyArray<EcdsaProofResult>
     }
-  | { readonly cryptosuite: 'unknown', readonly reason: string }
+  | {
+      readonly cryptosuite: 'unknown'
+      readonly reason: string
+
+      // The suite name the proof declared, when it declared
+      // one; absent for a document with no proof at all.
+      readonly suite?: string
+    }
 
 export interface DispatchOptions {
   readonly verifyOptions?: VerifyOptions
@@ -87,6 +94,7 @@ export async function verifyDpp(
   return {
     cryptosuite: 'unknown',
     reason: `unsupported cryptosuite ${String(cryptosuite)}`,
+    suite: String(cryptosuite),
   }
 }
 
@@ -127,6 +135,7 @@ export async function verifySnapshotAnySuite(
     totalEntryCount: 0,
     verifiedEntryCount: 0,
     mode: opts.mode ?? 'default',
+    unsupportedSuite: v.suite,
   }
 }
 
