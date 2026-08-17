@@ -972,6 +972,14 @@ for a non-system typeface, ships the matching
 verifier surface) the renderer falls back to the system
 sans stack baked into `--font-sans`.
 
+The `<dpp-verifier>` widget carries that chain in its own
+shadow root, since a page that embeds the widget alone
+loads no SPA stylesheet to declare `--font-sans` for it.
+Every token it paints with resolves the same way: the
+branding token first (`--font-family`, `--action-color`,
+`--button-color-*`, `--background-color`), the renderer's
+internal token second, its own neutral default last.
+
 ## Icons
 
 Icons come in two tiers so the renderer's own controls

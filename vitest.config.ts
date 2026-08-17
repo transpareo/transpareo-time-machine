@@ -26,6 +26,7 @@ export default defineConfig({
       'tests/integration-hook.spec.ts',
       'tests/locale-picker.spec.ts',
       'tests/snapshot.spec.ts',
+      'tests/verifier-theme.spec.ts',
       'node_modules/**',
     ],
     environment: 'node',

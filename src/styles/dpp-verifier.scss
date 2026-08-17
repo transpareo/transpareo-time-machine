@@ -6,18 +6,50 @@
  * <dpp-verifier> standalone widget. Self-contained
  * styles (the element owns its shadow root) so the
  * widget can drop into any host page without
- * inheriting / leaking styles. Reads the same theme
- * tokens (--font-color, --action-color, etc.) the SPA
- * uses, falling back to neutral defaults when the
- * host page doesn't define them.
+ * inheriting / leaking styles. Reads the publisher's
+ * branding tokens (--font-family, --font-color,
+ * --action-color, --button-color-*) directly, so the
+ * widget carries the theme on a page that ships nothing
+ * else of the renderer; the :host block below states the
+ * fallback chain each one takes.
  */
 
 @use 'dpp';
 
 :host {
+  // Token chain, one place for the whole widget: the
+  // publisher's branding token first, the renderer's
+  // internal token second, the widget's own default last.
+  // Mounted inside the SPA the middle link is what app.css
+  // declares, so the widget resolves there as it always
+  // has; dropped on a publisher's own page that layer is
+  // absent and the branding tokens still land. Aliases
+  // rather than same-name redeclarations: a custom
+  // property that references itself is a cycle, and a
+  // cycle takes the inherited value down with it.
+  --verifier-font: var(--font-family, var(--font-sans,
+    system-ui, sans-serif));
+  --verifier-accent: var(--action-color, #255DBA);
+  --verifier-muted: var(--color-muted, #555);
+  --verifier-radius: var(--radius-sm, 4px);
+
+  // Primary button, the publisher's Button colours. Both
+  // stops fall back to the accent, so a theme that names
+  // no button pair paints the same gradient flat.
+  --verifier-btn-top: var(--button-color-top, var(--verifier-accent));
+  --verifier-btn-bottom: var(--button-color-bottom, var(--verifier-accent));
+  --verifier-btn-text: var(--button-color-text, #fff);
+
   display: block;
-  font-family: var(--font-sans, system-ui, sans-serif);
+  font-family: var(--verifier-font);
   color: var(--font-color, #1a1a1a);
+
+  // The widget paints its own surface. Left transparent,
+  // a dark host page that declares no theme tokens puts
+  // the near-black default text on its own dark ground;
+  // stating the theme's background here keeps the copy
+  // legible on any page.
+  background: var(--background-color, #fff);
 }
 
 .verifier {
@@ -35,7 +67,7 @@
 
 .verifier-label {
   @include dpp.sm-bold;
-  color: var(--color-muted, #555);
+  color: var(--verifier-muted);
 }
 
 .verifier-row {
@@ -48,7 +80,7 @@
   padding: 8px 10px;
   border: 1px solid color-mix(
     in oklab, var(--font-color, #1a1a1a) 25%, transparent);
-  border-radius: var(--radius-sm, 4px);
+  border-radius: var(--verifier-radius);
   background: var(--background-color, #fff);
   color: inherit;
   font-family: var(--font-mono, monospace);
@@ -56,7 +88,7 @@
   min-width: 0;
 
   &:focus {
-    outline: 2px solid var(--action-color, #5B8DEF);
+    outline: 2px solid var(--verifier-accent);
     outline-offset: 1px;
   }
 }
@@ -64,20 +96,31 @@
 .verifier-submit {
   padding: 8px 18px;
   border: 0;
-  border-radius: var(--radius-sm, 4px);
-  background: var(--action-color, #5B8DEF);
-  color: var(--button-color-text, #fff);
+  border-radius: var(--verifier-radius);
+  background: linear-gradient(
+    to bottom, var(--verifier-btn-top), var(--verifier-btn-bottom));
+  color: var(--verifier-btn-text);
+
+  // A shadow root gets no `button { font: inherit }` from
+  // the host page, so the label needs the widget's
+  // typeface named here to escape the UA default.
+  font-family: inherit;
   @include dpp.sm-bold;
   cursor: pointer;
 
   &:hover { filter: brightness(1.05); }
   &:active { filter: brightness(0.95); }
+
+  &:focus-visible {
+    outline: 2px solid var(--verifier-accent);
+    outline-offset: 2px;
+  }
 }
 
 .verifier-status {
   margin: 0;
   @include dpp.sm;
-  color: var(--color-muted, #555);
+  color: var(--verifier-muted);
 }
 
 .verifier-error {
@@ -85,7 +128,7 @@
   align-items: center;
   gap: 10px;
   padding: 12px 14px;
-  border-radius: var(--radius-sm, 4px);
+  border-radius: var(--verifier-radius);
   background: color-mix(
     in oklab, var(--color-verify-fail, #dc2626) 12%, transparent);
   color: var(--color-verify-fail, #dc2626);
@@ -132,7 +175,7 @@
 
 .verifier-version {
   @include dpp.xs;
-  color: var(--color-muted, #555);
+  color: var(--verifier-muted);
 }
 
 .verifier-meta {
@@ -146,7 +189,7 @@
   @include dpp.sm;
 
   dt {
-    color: var(--color-muted, #555);
+    color: var(--verifier-muted);
   }
 
   dd {
@@ -168,7 +211,7 @@
   margin: 0;
   @include dpp.eyebrow;
   font-weight: 800;
-  color: var(--color-muted, #555);
+  color: var(--verifier-muted);
 }
 
 .verifier-authority {
@@ -215,7 +258,7 @@
 
   .verifier-entry-status {
     grid-row: 1;
-    color: var(--color-muted, #555);
+    color: var(--verifier-muted);
     @include dpp.xs;
     white-space: nowrap;
   }
@@ -241,7 +284,7 @@
   border-radius: 50%;
   background: color-mix(
     in oklab, currentColor 18%, transparent);
-  color: var(--color-muted, #555);
+  color: var(--verifier-muted);
 
   .icon {
     margin: 0;
@@ -252,4 +295,4 @@
 
 .orb-verified { color: var(--color-verified, #16a34a); }
 .orb-failed { color: var(--color-verify-fail, #dc2626); }
-.orb-pending { color: var(--color-muted, #555); }
+.orb-pending { color: var(--verifier-muted); }

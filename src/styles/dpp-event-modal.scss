@@ -289,13 +289,15 @@
 }
 
 .epcis-copy {
-  // Publisher-themed primary button, the only surface in
-  // the SPA that consumes --button-color-*. Other
-  // buttons live inside the timeline frame and have
-  // their own scrubber-friendly styling. Local aliases
-  // keep the rule readable: each var either picks up
-  // the issuer's token or falls back to the pre-theme
-  // transparent + action-color look.
+  // Publisher-themed primary button on the publisher's
+  // --button-color-* pair; the standalone verifier
+  // widget's submit button reads the same pair in its
+  // own shadow root. Other buttons live inside the
+  // timeline frame and have their own scrubber-friendly
+  // styling. Local aliases keep the rule readable: each
+  // var either picks up the issuer's token or falls
+  // back to the pre-theme transparent + action-color
+  // look.
   --btn-bg-top: var(--button-color-top, transparent);
   --btn-bg-bottom: var(--button-color-bottom, transparent);
   --btn-text: var(--button-color-text, var(--action-color));

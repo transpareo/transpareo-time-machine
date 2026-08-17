@@ -12,6 +12,29 @@ and this project adheres to
 
 ### Changed
 
+- The standalone verifier widget renders on the publisher's
+  branding tokens. Embedded on a page that loads nothing else
+  of the renderer, the widget read an internal token layer
+  only the SPA stylesheet declares, so it fell back to a stock
+  typeface and a blue of its own instead of the theme
+  surrounding it. Each token it reads now takes the branding
+  token first, the renderer's internal token second, and its
+  own default last; the accent's default is now the blue
+  the SPA itself defaults to. Wherever the renderer hosts
+  the widget every internal token is declared, so it
+  resolves there exactly as before. The submit button
+  carries the publisher's button gradient and label
+  colour, painting the accent flat where a theme names no
+  button pair, and its label follows the branding
+  typeface: a shadow root inherits neither that nor the
+  focus ring from the host page's own button rules, so
+  the widget states both itself.
+- The standalone verifier widget paints its own surface.
+  Left transparent, a dark host page that declares no
+  theme tokens put the widget's near-black default text
+  on the page's own dark ground; the widget now states
+  the theme's background colour behind itself, white
+  where no theme names one.
 - The type scale carries its own sizes. Every size the
   renderer's stylesheets name is a token the SPA stylesheet
   declares, so a shadow root that stylesheet never reaches
