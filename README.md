@@ -14,10 +14,15 @@ instead of taken on trust from a server.
 
 **Demo:**
 [time-machine.transpareo.com](https://time-machine.transpareo.com)
-renders two sample passports end to end, a Nordic Wear
-t-shirt (signed with `eddsa-jcs-2022`) and a Volturra Pulse
-2000 (signed with the `ecdsa-sd-2023` selective-disclosure
-suite), so you can scrub the timeline and watch the
+renders three sample passports end to end: a Nordic Wear
+t-shirt (signed with `eddsa-jcs-2022`, minimally themed),
+a Volturra Pulse 2000 (signed with the `ecdsa-sd-2023`
+selective-disclosure suite, aggressively themed - the two
+together showcase how far the branding tokens stretch),
+and an Atelier Barro vase, an unsigned single-snapshot
+passport with no manifest, showing how the renderer
+presents a bare foreign DPP with no verification chrome
+or custom styling. Scrub the timeline and watch the
 verification chip in action on both proof types.
 
 Embedding it is one custom-element tag. The simplest
