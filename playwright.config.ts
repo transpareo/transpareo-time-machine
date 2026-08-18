@@ -24,8 +24,10 @@ const localChromium = process.env.PLAYWRIGHT_CHROMIUM_PATH
 
 export default defineConfig({
   testDir: './tests',
-  testMatch:
-    /(a11y|embed-smoke|icons|integration-hook|locale-picker|snapshot|verifier-theme)\.spec\.ts/,
+  testMatch: [
+    /(a11y|card-render|embed-smoke|icons)\.spec\.ts/,
+    /(integration-hook|locale-picker|snapshot|verifier-theme)\.spec\.ts/
+  ],
   fullyParallel: false,
   retries: 0,
   use: {
