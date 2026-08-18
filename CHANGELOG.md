@@ -156,6 +156,14 @@ and this project adheres to
   reads. It answers what the origin serves right now, so a
   verdict taken from a copy the browser kept could describe an
   earlier publish while naming the current URL.
+- A card at rest declares no filter. The live card passed a
+  zero-length blur through `filter` whenever it wasn't being
+  scrubbed, in the historical view on top of the desaturation
+  and on the current version on its own. That changes no
+  pixels, but it puts a card that isn't moving on the filter
+  path for nothing; the blur now enters the chain only while
+  a scrub is in flight, and leaves it again when the card
+  settles.
 
 ## [2.9.0] - 2026-08-12
 

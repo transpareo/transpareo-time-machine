@@ -108,11 +108,13 @@
   padding-top: 24px;
 }
 
-/* Live-card transit blur during scrub, saturate
- * desaturates and `--card-blur` carries the live
- * card's blur signal from the deck. */
+/* Historical view desaturates the live card, and
+ * `--card-blur` adds the deck's transit blur on top of
+ * that. The deck holds a whole `blur()` function there
+ * and drops it at rest: a zero length would change no
+ * pixels yet still put a blur on the filter path. */
 .stage.scrubbing .card {
-  filter: saturate(0.9) blur(var(--card-blur, 0));
+  filter: saturate(0.9) var(--card-blur, );
 }
 
 /* Pre-mount surface, shown while the host fetches the

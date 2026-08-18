@@ -319,7 +319,7 @@ class DppDeck extends LightElement {
       card.style.setProperty('--card-y', '0px')
       card.style.setProperty('--card-scale', '1')
       card.style.setProperty('--card-opacity', '1')
-      card.style.setProperty('--card-blur', '0px')
+      setCardBlur(card, 0)
       return
     }
 
@@ -329,7 +329,7 @@ class DppDeck extends LightElement {
     card.style.setProperty('--card-y', `${s.y}px`)
     card.style.setProperty('--card-scale', String(s.scale))
     card.style.setProperty('--card-opacity', String(s.opacity))
-    card.style.setProperty('--card-blur', `${s.blur}px`)
+    setCardBlur(card, s.blur)
   }
 
   // ─── Mobile overlay ─────────────────────────────
@@ -481,6 +481,18 @@ function liveSlotStyle(slot: number): SlotStyle {
   const blur = abs === 0 ? 0 : Math.max(Math.sqrt(abs) * 1.8, 0.8)
 
   return { x, y, scale, opacity, blur, z: 0 }
+}
+
+// The live card's blur travels as a whole `blur()` function
+// so the stylesheet can leave it out of the filter chain
+// entirely while the card rests. A zero length would change
+// no pixels yet still put the card on the filter path.
+function setCardBlur(card: HTMLElement, blur: number): void {
+  if (blur <= 0) {
+    card.style.removeProperty('--card-blur')
+    return
+  }
+  card.style.setProperty('--card-blur', `blur(${blur}px)`)
 }
 
 function applyShadowVars(el: HTMLElement, s: SlotStyle): void {

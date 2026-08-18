@@ -53,7 +53,12 @@ dpp-deck > .card {
     translate(var(--card-x, 0), var(--card-y, 0))
     scale(var(--card-scale, 1));
   opacity: var(--card-opacity, 1);
-  filter: blur(var(--card-blur, 0));
+
+  /* `--card-blur` holds a whole `blur()` function and goes
+   * away while the card rests, which leaves this filter
+   * empty and so `none`. A zero length instead would change
+   * no pixels yet still put the card on the filter path. */
+  filter: var(--card-blur, );
 
   /* Non-overshooting curve on the live card. The spring
    * (cubic-bezier(0.34, 1.56, ...)) intentionally
