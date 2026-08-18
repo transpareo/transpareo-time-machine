@@ -164,6 +164,10 @@ and this project adheres to
   path for nothing; the blur now enters the chain only while
   a scrub is in flight, and leaves it again when the card
   settles.
+- The verification chip's label sits on the orb's axis. It
+  carried a 2px downward nudge as an optical correction,
+  which overshot: the flex centring already lands the cap
+  band on the axis, so the label read visibly low.
 
 ## [2.9.0] - 2026-08-12
 
