@@ -94,8 +94,12 @@ test('a scrub in flight blurs the card', async ({ page }) => {
   await page.mouse.move(deck.x, deck.y)
   await page.mouse.wheel(40, 0)
 
-  const inFlight = await cardFilter(page)
-  expect(inFlight).toMatch(/blur\(\d*\.?\d+px\)/)
+  // liveSlotStyle floors the transit blur clear of zero, so a
+  // zero length here is a regression rather than a rounding
+  // artefact: read the radius instead of matching any blur().
+  const blur = /blur\(([\d.]+)px\)/.exec(await cardFilter(page))
+  expect(blur).not.toBeNull()
+  expect(Number(blur![1])).toBeGreaterThan(0)
 
   // One tick is under the commit distance, so the deck eases
   // back and the blur leaves the chain again.
