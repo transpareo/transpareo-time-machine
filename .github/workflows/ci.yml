@@ -1,6 +1,6 @@
 # Continuous integration: type-check, run the test
 # suite, and build the lib bundle. Runs on every push
-# to master and on every pull request.
+# to main and on every pull request.
 #
 # `npm run seed` is intentionally NOT in this workflow.
 # It downloads fixture images from upstream CDNs
@@ -13,7 +13,7 @@ name: ci
 
 on:
   push:
-    branches: [master]
+    branches: [main]
   pull_request:
 
 # CI only reads the repo; nothing here may write. Actions
