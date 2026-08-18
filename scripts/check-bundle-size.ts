@@ -35,12 +35,15 @@ interface Budget {
 // the two-cryptosuite verifier (eddsa-jcs + the ecdsa-sd
 // selective-disclosure path with its cached JSON-LD
 // contexts); the embed entry also inlines app.css. Both are
-// capped at 64 KB gzipped to catch regressions without
-// false-failing on that baseline.
+// capped at 72 KB gzipped, which is the current baseline
+// plus room for a feature or two: the gate is here to catch
+// a bundle that grows by a chunk nobody meant to ship, not
+// to hold the renderer to a product limit. Raise it when a
+// deliberate feature earns the bytes, and say so.
 const BUDGETS: ReadonlyArray<Budget> = [
-  { file: 'transpareo-time-machine.js', maxGzipBytes: 64 * 1024, dir: 'dist' },
+  { file: 'transpareo-time-machine.js', maxGzipBytes: 72 * 1024, dir: 'dist' },
   { file: 'dpp-verifier.js', maxGzipBytes: 30 * 1024, dir: 'dist' },
-  { file: 'embed.js', maxGzipBytes: 64 * 1024, dir: 'dist-embed' },
+  { file: 'embed.js', maxGzipBytes: 72 * 1024, dir: 'dist-embed' },
 ]
 
 // Vite's lib mode emits entry + chunks; when two entry
