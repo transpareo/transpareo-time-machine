@@ -94,12 +94,22 @@ test('a scrub in flight blurs the card', async ({ page }) => {
   await page.mouse.move(deck.x, deck.y)
   await page.mouse.wheel(40, 0)
 
+  // Wait for the blur rather than reading the frame straight
+  // after the gesture: the wheel handler and the filter
+  // transition both land a tick later, and how much later
+  // depends on how loaded the machine is.
+  const blur = await page.waitForFunction(() => {
+    const root = document.querySelector('transpareo-time-machine')!.shadowRoot!
+    const card = root.querySelector('dpp-deck > .card')!
+    const m = /blur\(([\d.]+)px\)/.exec(getComputedStyle(card).filter)
+    return m ? { radius: Number(m[1]) } : null
+  })
+
   // liveSlotStyle floors the transit blur clear of zero, so a
-  // zero length here is a regression rather than a rounding
-  // artefact: read the radius instead of matching any blur().
-  const blur = /blur\(([\d.]+)px\)/.exec(await cardFilter(page))
-  expect(blur).not.toBeNull()
-  expect(Number(blur![1])).toBeGreaterThan(0)
+  // zero radius is a regression rather than a rounding
+  // artefact. The wait above accepts blur(0px) so that it
+  // fails here, with the radius, instead of timing out.
+  expect((await blur.jsonValue())!.radius).toBeGreaterThan(0)
 
   // One tick is under the commit distance, so the deck eases
   // back and the blur leaves the chain again.
