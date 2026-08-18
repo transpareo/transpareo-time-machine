@@ -892,12 +892,15 @@ The embed delivery is also smoke-tested by
 loads the built bundle and asserts it registers the custom
 element and inlines its CSS.
 
-The browser suite runs on two engines and a release gates on
-both: `npm run browser` drives Chromium,
+The browser suite runs on all three engines and a release
+gates on each: `npm run browser` drives Chromium,
+`npm run browser:firefox` drives Gecko, and
 `npm run browser:webkit` drives Safari's. WebKit's Linux
 build links against `libicu74` and `libflite`, so on a distro
 shipping neither, `npm run browser:webkit:docker` runs the
-same suite inside the Playwright container image instead.
+same suite inside the Playwright container image instead;
+`npm run browser:firefox:docker` does the same for a checkout
+that would rather not download Firefox.
 `npm run a11y` remains as an alias for `npm run browser`.
 
 ## What the SPA does on first paint

@@ -85,6 +85,11 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - run: npm run seed
       - run: npm run browser
+      # Gecko, gating like Chromium. It resolves the
+      # renderer's CSS on a third engine, so a rule the other
+      # two agree on can still land wrong here.
+      - run: npx playwright install --with-deps firefox
+      - run: npm run browser:firefox
       # Safari's engine, gating like Chromium. It is as
       # likely as anything to be what a phone scanning a DPP
       # code runs, and it passes the same suite.

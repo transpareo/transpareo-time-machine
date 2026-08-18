@@ -34,14 +34,17 @@ export default defineConfig({
     baseURL: 'http://localhost:5173',
   },
 
-  // Both browsers gate a release. Chromium is what
-  // `npm run browser` runs; WebKit is Safari's engine, as
-  // likely as anything to be what a phone scanning a DPP
+  // All three engines gate a release, because the renderer
+  // ships CSS that each one resolves its own way. Chromium is
+  // what `npm run browser` runs. Gecko is the second, driven
+  // by `npm run browser:firefox`. WebKit is Safari's engine,
+  // as likely as anything to be what a phone scanning a DPP
   // code runs, and `npm run browser:webkit` drives it. Its
   // Linux build links against libicu74 and libflite, so on a
   // distro shipping neither, `npm run browser:webkit:docker`
   // runs the same suite inside the Playwright container
-  // image.
+  // image, and `npm run browser:firefox:docker` is there for
+  // a checkout with no Firefox download.
   projects: [
     {
       name: 'chromium',
@@ -49,6 +52,10 @@ export default defineConfig({
         ...devices['Desktop Chrome'],
         launchOptions: localChromium ? { executablePath: localChromium } : {},
       },
+    },
+    {
+      name: 'firefox',
+      use: { ...devices['Desktop Firefox'] },
     },
     {
       name: 'webkit',
