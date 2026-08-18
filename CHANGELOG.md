@@ -10,6 +10,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.10.0] - 2026-08-18
+
 ### Added
 
 - A third seed fixture, `atelier-barro-vase`: an unsigned
