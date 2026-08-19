@@ -10,6 +10,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.12.2] - 2026-08-19
+
 ### Fixed
 
 - A cached key document that carries no key for the method
