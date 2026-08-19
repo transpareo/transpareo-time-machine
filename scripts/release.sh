@@ -87,7 +87,19 @@ run npm test
 # Bump package.json + package-lock.json.
 [ "$KEEP" = true ] || run npm version "$BUMP" --no-git-tag-version
 
-VERSION="$(node -p "require('./package.json').version")"
+# A dry run bumped nothing, so package.json still holds the
+# released version and reading it back would name the tag
+# that already exists. Work out what the bump would have
+# produced instead.
+if [ "$DRY" = true ] && [ "$KEEP" = false ]; then
+  VERSION="$(BUMP="$BUMP" node -p '
+    const v = require("./package.json").version.split(".")
+    const [a, b, c] = v.map(Number)
+    const next = { major: [a + 1, 0, 0], minor: [a, b + 1, 0] }
+    ;(next[process.env.BUMP] || [a, b, c + 1]).join(".")')"
+else
+  VERSION="$(node -p "require('./package.json').version")"
+fi
 TAG="v${VERSION}"
 echo "Releasing ${TAG}"
 git rev-parse "$TAG" >/dev/null 2>&1 && {
