@@ -10,6 +10,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.12.1] - 2026-08-19
+
 ### Fixed
 
 - A key document served from a cache no longer fails every
