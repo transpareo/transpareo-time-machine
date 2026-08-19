@@ -9,7 +9,8 @@
  * change no pixels yet still put it on the filter path, while
  * a scrub in flight still gets its transit blur. And the
  * verification chip's label sits on the orb's axis on its
- * own, with no optical nudge on top of the flex centring.
+ * own, with no optical nudge on top of the flex centring,
+ * as does a gallery page number in its circle.
  */
 import { test, expect } from '@playwright/test'
 import type { Page } from '@playwright/test'
@@ -146,4 +147,30 @@ test('the verification chip label centres on the orb', async ({ page }) => {
   // fractional line box leaves, far short of the 2px nudge
   // the label used to carry.
   expect(Math.abs(axis.orb - axis.label)).toBeLessThan(0.5)
+})
+
+test('a gallery page number centres in its circle', async ({ page }) => {
+  await mount(page)
+  await page.waitForFunction(() => {
+    const root = document.querySelector('transpareo-time-machine')?.shadowRoot
+    return !!root?.querySelector('.navigation .btn[data-page]')
+  })
+
+  const axis = await page.evaluate(() => {
+    const root = document.querySelector('transpareo-time-machine')!.shadowRoot!
+    const btn = root.querySelector('.navigation .btn[data-page]')!
+    const digit = document.createRange()
+    digit.selectNodeContents(btn.firstChild!)
+    const mid = (b: DOMRect): number => b.top + b.height / 2
+    return {
+      circle: mid(btn.getBoundingClientRect()),
+      digit: mid(digit.getBoundingClientRect())
+    }
+  })
+
+  // A quarter pixel of tolerance: the flex centring lands
+  // the digit's line box dead on the axis in every engine,
+  // while the line box the buttons used to carry hung half a
+  // pixel low in Blink and a full pixel low in Gecko.
+  expect(Math.abs(axis.circle - axis.digit)).toBeLessThan(0.25)
 })

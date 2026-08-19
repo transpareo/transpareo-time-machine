@@ -36,19 +36,25 @@
   flex-shrink: 0;
 }
 
-// Each btn is a 25px-square circle with a 1px ring.
-// `border-box` brings the border inside the 25px, so the
-// content area is 23px tall. The line-height exceeds it
-// by 2px on purpose: geometric centring (23px) leaves
-// the digits sitting optically high in the circle, so
-// the oversized line box nudges them 1px down.
+// Each btn is a 25px-square circle with a 1px ring, its
+// content centred by flex on both axes so a digit and a
+// chevron land on the same axis. The line box is trimmed
+// to the type size, so a large publisher scale doesn't pad
+// the circle with leading. No optical nudge on top: what
+// separates the centred line box from the cap band the eye
+// reads is the font's ascent/descent asymmetry, and each
+// engine reads that off its own metrics, so a fixed offset
+// would only ever be right in one of them.
 .navigation .btn {
   @include dpp.sm-bold;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   color: var(--nav-fg);
   border: 1px solid var(--nav-fg);
   border-radius: 100%;
   box-sizing: border-box;
-  line-height: 25px;
+  line-height: 1;
   cursor: pointer;
   background: transparent;
   padding: 0;
@@ -64,24 +70,12 @@
   }
 }
 
-
 // Prev/next chevrons: rotate the shared chevron-down
-// sprite glyph to point left and right respectively.
-// Tuning the icon size + a tiny inline padding keeps the
-// stroke optically centred inside the 25px circle.
-// Prev/next opt into flex centring so the chevron sits
-// dead-centre in the 25px circle. The inline approach
-// the numbered buttons use can't centre an svg cleanly:
-// the global `.icon { margin-right: 5px }` pulls it left
-// and inline vertical-align doesn't pixel-match the box.
-.navigation .prev,
-.navigation .next {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 1;
-}
-
+// sprite glyph to point left and right respectively. The
+// icon size is tuned so the stroke reads at the weight of
+// the digits beside it, and zeroing the global
+// `.icon { margin-right: 5px }` keeps it on the axis the
+// flex centring puts it on.
 .navigation .prev .icon,
 .navigation .next .icon {
   width: 17px;
@@ -89,15 +83,32 @@
   margin: 0;
   stroke: currentColor;
   fill: none;
-  vertical-align: baseline;
 }
 
 .navigation .prev .icon { transform: rotate(90deg); }
 .navigation .next .icon { transform: rotate(-90deg); }
 
+// The skipped-pages marker draws its three dots rather
+// than setting them: an ellipsis glyph sits on the
+// baseline, and no centring lifts a baseline onto the axis
+// the digits hold. The character stays in the markup for
+// anything reading the strip as text, at no type size so
+// it claims no width beside the dots.
 .navigation .ellipsis {
-  padding: 0 1px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0;
   color: var(--nav-fg);
+}
+
+.navigation .ellipsis::after {
+  content: '';
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: -6px 0 currentColor, 6px 0 currentColor;
 }
 
 .navigation .inactive {

@@ -10,6 +10,23 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Fixed
+
+- The page numbers in the gallery and lightbox pagination
+  sit on their circle's axis. Each button carried a line
+  box 2px taller than its content area as an optical
+  correction, which hung the digit half a pixel low in
+  Blink and a full pixel low in Gecko, visible as a whole
+  pixel once a screen renders it at 2x. The flex centring
+  the chevrons already used now holds every button, so a
+  digit and a chevron land on the same axis unaided.
+- The pagination's skipped-pages marker sits on that axis
+  too. Its dots were an ellipsis character, which sits on
+  the baseline and so hung some five pixels under the
+  circles' centre line, drifting further with a larger
+  publisher type size. They are drawn now, at a fixed size
+  beside the fixed-size circles.
+
 ## [2.10.0] - 2026-08-18
 
 ### Added
