@@ -10,6 +10,15 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Changed
+
+- The time axis under the strip reads in month names. A
+  DPP whose events fall inside a single season used to
+  get a mark every week with the date written on it
+  ("Sep 18", "Sep 25", "Oct 2"); the axis now names the
+  months, each at the position its month begins, and
+  leaves the day to the dot and the card it opens.
+
 ### Fixed
 
 - The page numbers in the gallery and lightbox pagination
@@ -26,6 +35,20 @@ and this project adheres to
   circles' centre line, drifting further with a larger
   publisher type size. They are drawn now, at a fixed size
   beside the fixed-size circles.
+- The time axis resolves against the width it is given.
+  The step came from the span alone, so a strip 1270px
+  wide and one 380px wide both got the same eight marks,
+  and on the narrow one they landed 29px apart and
+  printed over each other. The step now falls to
+  quarters, then years, until the marks clear their
+  labels, and it re-resolves on a resize or a rotation
+  without a reload.
+- The last axis label stays with the stretch it names.
+  Its slot was only as wide as the label itself, so
+  scrolling to the end of a strip slid it out of the
+  pane: on a phone, where the history opens scrolled to
+  the newest version, the axis arrived carrying no label
+  at all.
 
 ## [2.10.0] - 2026-08-18
 

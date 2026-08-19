@@ -26,7 +26,8 @@ export default defineConfig({
   testDir: './tests',
   testMatch: [
     /(a11y|card-render|embed-smoke|icons)\.spec\.ts/,
-    /(integration-hook|locale-picker|snapshot|verifier-theme)\.spec\.ts/
+    /(integration-hook|locale-picker|snapshot|verifier-theme)\.spec\.ts/,
+    /timeline-axis\.spec\.ts/
   ],
   fullyParallel: false,
   retries: 0,

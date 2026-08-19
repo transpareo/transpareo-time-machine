@@ -3,83 +3,118 @@
  * Copyright (C) 2026 Transpareo AG
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
- * Time-axis tick computation for <dpp-timeline>. Picks
- * a granularity (day / week / month / quarter / year)
- * suited to the visible span, walks the range to emit
- * one timestamp per tick, and decides which ticks carry
- * a visible label.
+ * Time-axis resolution for <dpp-timeline>. Picks the
+ * finest step (month / quarter / year) whose marks clear
+ * a minimum pixel pitch on the band of canvas the events
+ * span, walks that range on calendar boundaries, and
+ * names each mark. The names are month names: a mark says
+ * which month the strip has reached, never which day, so
+ * the axis reads the same whatever the span. The width
+ * comes in as an argument, so a narrower strip resolves
+ * to a coarser step rather than to crowded marks.
  */
 
-export type Granularity =
-  | 'day' | 'week' | 'month' | 'quarter' | 'year'
+export type Granularity = 'month' | 'quarter' | 'year'
 
-// Pick a tick granularity that lands a comfortable
-// number of marks across the span. Returns timestamps
-// + the granularity (used to format labels).
-export function computeTicks(
-  min: number, max: number,
-): { granularity: Granularity; ticks: number[] } {
-  const span = max - min
-  const day = 86_400_000
-  const granularity: Granularity = (() => {
-    if (span <= day * 7) return 'day'
-    if (span <= day * 60) return 'week'
-    if (span <= day * 365 * 1.5) return 'month'
-    if (span <= day * 365 * 5) return 'quarter'
-    return 'year'
-  })()
+export interface AxisMark {
+  ts: number
+  text: string
+}
 
-  const ticks: number[] = []
+export interface Axis {
+  granularity: Granularity
+  stride: number
+  marks: AxisMark[]
+}
+
+// Pixels a step must span before the axis will use it.
+// The widest label the axis writes is a January in a long
+// locale ("Okt 2026", 62px at the label's type), and a
+// slot gives up part of its width so the label lets go of
+// the pane edge before the next mark arrives. 120px
+// leaves that label its width, the handover its share,
+// and enough left over that a pinned label reads as
+// pinned rather than as passing through.
+export const MIN_PITCH = 120
+
+// Nominal step lengths, for reading a step off a span.
+// Only their ratio to the span matters here; the marks
+// themselves are walked on real calendar boundaries, so
+// the drift of a 30.44-day month never reaches the DOM.
+const STEP_MS: Record<Granularity, number> = {
+  month: 2_629_800_000,
+  quarter: 7_889_400_000,
+  year: 31_557_600_000
+}
+
+const LADDER: Granularity[] = ['month', 'quarter', 'year']
+
+// Steps in months, so one cursor walks every
+// granularity.
+const STEP_MONTHS: Record<Granularity, number> = {
+  month: 1, quarter: 3, year: 12
+}
+
+// Strides for a span so long that even yearly marks
+// crowd. Decades and quarter-centuries read as intended
+// where 3 or 7 years would look arbitrary.
+const STRIDES = [1, 2, 5, 10, 25, 50, 100, 250, 500, 1000]
+
+export function computeAxis(
+  min: number, max: number, width: number, locale: string
+): Axis {
+  const span = Math.max(max - min, 1)
+  const usable = Math.max(width, 1)
+  const pitch = (g: Granularity, stride: number): number =>
+    (usable * STEP_MS[g] * stride) / span
+
+  const granularity = LADDER.find((g) => pitch(g, 1) >= MIN_PITCH)
+    ?? 'year'
+  const stride = granularity === 'year'
+    ? STRIDES.find((s) => pitch('year', s) >= MIN_PITCH)
+      ?? STRIDES[STRIDES.length - 1]
+    : 1
+
+  // The walk starts at the top of the period the first
+  // event falls inside, so the first mark sits at or
+  // before that event. That mark is what names the left
+  // edge of the strip: its label has nowhere to sit but
+  // the start, and rides there until the next one
+  // arrives.
+  const marks: AxisMark[] = []
   const cursor = new Date(min)
-  const end = new Date(max)
-  const stepUp = STEP_BY[granularity]
-
-  alignCursor(cursor, granularity)
-  while (cursor.getTime() <= end.getTime()) {
-    ticks.push(cursor.getTime())
-    stepUp(cursor)
+  alignCursor(cursor, granularity, stride)
+  while (cursor.getTime() <= max) {
+    marks.push({
+      ts: cursor.getTime(),
+      text: labelFor(cursor, granularity, locale)
+    })
+    cursor.setMonth(cursor.getMonth() + STEP_MONTHS[granularity] * stride)
   }
-  return { granularity, ticks }
+  return { granularity, stride, marks }
 }
 
-const STEP_BY: Record<Granularity, (d: Date) => void> = {
-  day: (d) => d.setDate(d.getDate() + 1),
-  week: (d) => d.setDate(d.getDate() + 7),
-  month: (d) => d.setMonth(d.getMonth() + 1),
-  quarter: (d) => d.setMonth(d.getMonth() + 3),
-  year: (d) => d.setFullYear(d.getFullYear() + 1),
-}
-
-function alignCursor(d: Date, g: Granularity): void {
+function alignCursor(d: Date, g: Granularity, stride: number): void {
   d.setHours(0, 0, 0, 0)
-  if (g === 'month' || g === 'quarter' || g === 'year') d.setDate(1)
+  d.setDate(1)
   if (g === 'quarter') d.setMonth(Math.floor(d.getMonth() / 3) * 3)
-  if (g === 'year') d.setMonth(0)
+  if (g === 'year') {
+    d.setMonth(0)
+    d.setFullYear(Math.floor(d.getFullYear() / stride) * stride)
+  }
 }
 
-// Year shows on yearly ticks and on the January tick of
-// quarter / month granularities. Other ticks stay
-// unlabelled, the strip would otherwise get cluttered.
 // The locale comes in explicitly (the caller passes the
 // SPA's active locale) so a visitor who switched language
-// doesn't get tick labels in the browser's locale while
+// doesn't get axis labels in the browser's locale while
 // every other date on the page follows the picker.
-export function labelFor(
-  ts: number, g: Granularity, locale: string,
-): string {
-  const d = new Date(ts)
+function labelFor(d: Date, g: Granularity, locale: string): string {
   const year = String(d.getFullYear())
   if (g === 'year') return year
-  if ((g === 'quarter' || g === 'month') && d.getMonth() === 0) {
-    return year
-  }
-  if (g === 'week') {
-    return d.toLocaleDateString(locale, {
-      month: 'short', day: 'numeric',
-    })
-  }
-  if (g === 'day') {
-    return d.toLocaleDateString(locale, { day: 'numeric' })
-  }
-  return ''
+  const month = d.toLocaleDateString(locale, { month: 'short' })
+
+  // January carries its year, so a strip crossing a turn
+  // says which year it moved into without spelling a
+  // date on every other mark.
+  return d.getMonth() === 0 ? `${month} ${year}` : month
 }

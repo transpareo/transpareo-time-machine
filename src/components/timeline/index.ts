@@ -9,7 +9,7 @@
  *
  * Pure math lives in sibling modules:
  *   - ./layout    constants, Projection, layOut, etc.
- *   - ./ticks     time-axis tick computation
+ *   - ./ticks     time-axis resolution and its labels
  *   - ./connectors  full-state SVG connector lines
  * This file keeps the class itself (DOM wiring, effect
  * scopes, render passes) plus the small DOM builders
@@ -44,7 +44,7 @@ import {
   buildLinearProjection, type LayoutItem, layOut,
   stageHeight, topYForLevel,
 } from './layout'
-import { computeTicks, labelFor } from './ticks'
+import { computeAxis } from './ticks'
 import { buildConnectorLayer } from './connectors'
 
 const DOT_FADE_MS = 220
@@ -52,6 +52,19 @@ const DOT_FADE_MS = 220
 // Mouse-drag distance before a press on the trough becomes
 // a pan instead of a dot / card click.
 const DRAG_SCROLL_PX = 5
+
+// How far ahead of the next mark an axis label lets go of
+// the pane's left edge. Caps the handover on a sparse
+// axis, where the marks are far enough apart that a
+// proportional inset would hold the label back for
+// hundreds of pixels.
+const LABEL_LOOKAHEAD_PX = 100
+
+// The widest label any shipped locale writes, a Vietnamese
+// January ("Tháng 1 2026") at 89px. A slot narrower than
+// its own label has no travel left to pin it, so the
+// handover never takes a slot below this.
+const LABEL_WIDEST_PX = 90
 
 class DppTimeline extends LightElement {
   private containerWidth = signal(800)
@@ -482,70 +495,79 @@ class DppTimeline extends LightElement {
       return
     }
 
-    const { xFor, isInGap } = this.makeProjection()
+    const { xFor } = this.makeProjection()
     const min = eventTime(list[0].occurredAt)
     const max = eventTime(list[list.length - 1].occurredAt)
-    const { granularity, ticks } = computeTicks(min, max)
 
-    // Skip ticks that fall inside a compressed gap so the
-    // year label doesn't render under the gap marker.
-    const labelled = ticks
-      .map((ts) => ({ ts, text: labelFor(ts, granularity, i18n.locale) }))
-      .filter((t) => t.text && !isInGap(t.ts))
+    // The marks are spaced across the band the events
+    // occupy, which is narrower than the canvas by the
+    // insets the projection reserves for the end cards.
+    // Handing that width over is what lets a narrower
+    // strip resolve to a coarser step.
+    const usable = Math.max(xFor(max) - xFor(min), 1)
+    const { marks } = computeAxis(min, max, usable, i18n.locale)
 
-    const tickEls = labelled.map(({ ts }) => {
+    const tickEls = marks.map(({ ts }) => {
       const span = el('span', 'tick')
       span.style.left = `${xFor(ts)}px`
       return span
     })
     ticksHost.replaceChildren(...tickEls)
 
-    // Each year's label lives inside a slot sized to the
-    // year's span. The slots flow inline left-to-right
-    // (with a leading spacer so the first slot starts at
-    // its tick's x). The label itself is
+    // Each mark's label lives inside a slot that covers
+    // the ground up to the next mark. The slots flow
+    // inline left to right, spacers filling whatever a
+    // slot gives up. The label itself is
     // `position: sticky`, so the browser pins it to the
-    // viewport's left edge while the slot is in view and
-    // lets it slide off naturally as the next slot
-    // scrolls in. No per-frame JS bookkeeping, only the
-    // widths are written here, on render.
+    // pane's left edge while its slot is in view and lets
+    // it slide off naturally as the next slot scrolls in.
+    // No per-frame JS bookkeeping, only the widths are
+    // written here, on render.
+    const canvas = this.contentWidth()
     const out: HTMLElement[] = []
-    const firstX = xFor(labelled[0].ts)
-    if (firstX > 0) {
-      const spacer = el('span', 'tick-label-spacer')
-      spacer.style.width = `${firstX}px`
-      out.push(spacer)
-    }
+    let filled = 0
 
-    // Shorten each slot by LABEL_LOOKAHEAD so the current
-    // year's label scrolls out of view before the next
-    // year's tick reaches the corner. The remaining gap
-    // is filled by the next slot, which starts where this
-    // one ends. Net effect: only one label is ever pinned
-    // at the left edge at a time.
-    const lookahead = 100
-    for (let i = 0; i < labelled.length; i++) {
-      const t = labelled[i]
-      const x = xFor(t.ts)
-      const nextX = i + 1 < labelled.length
-        ? xFor(labelled[i + 1].ts)
-        : null
+    for (let i = 0; i < marks.length; i++) {
+      // A first mark that opens before the first event
+      // sits left of the canvas. Its label still names
+      // the strip's left edge, so its slot starts there
+      // instead of off-screen, and the slots after it
+      // still begin at their own mark's x.
+      const x = Math.max(xFor(marks[i].ts), 0)
+      const last = i + 1 === marks.length
+      const nextX = last ? canvas : Math.max(xFor(marks[i + 1].ts), 0)
 
-      const slot = el('span', 'tick-label-slot')
-      if (nextX !== null) {
-        slot.style.width = `${Math.max(nextX - x - lookahead, 0)}px`
+      if (x > filled) {
+        const spacer = el('span', 'tick-label-spacer')
+        spacer.style.width = `${x - filled}px`
+        out.push(spacer)
+        filled = x
       }
 
-      slot.appendChild(el('span', 'tick-label', t.text))
-      out.push(slot)
+      // The slot stops short of the next mark, so a label
+      // lets go of the edge before that mark reaches it
+      // and only one label is ever pinned. What it gives
+      // up bends to the gap: a flat inset would take a
+      // dense axis below the width of its own labels,
+      // leaving them nothing to be pinned in. The last
+      // slot runs to the end of the canvas, so its label
+      // stays pinned for the stretch it names.
+      const gap = Math.max(nextX - x, 0)
+      const lookahead = last
+        ? 0
+        : Math.min(LABEL_LOOKAHEAD_PX, Math.max(gap - LABEL_WIDEST_PX, 0))
 
-      // Filler that occupies the lookahead gap between
-      // this slot and the next, so the next slot still
-      // starts at its tick's x position.
-      if (nextX !== null) {
+      const slot = el('span', 'tick-label-slot')
+      slot.style.width = `${gap - lookahead}px`
+      slot.appendChild(el('span', 'tick-label', marks[i].text))
+      out.push(slot)
+      filled += gap - lookahead
+
+      if (lookahead > 0) {
         const filler = el('span', 'tick-label-spacer')
-        filler.style.width = `${Math.min(nextX - x, lookahead)}px`
+        filler.style.width = `${lookahead}px`
         out.push(filler)
+        filled += lookahead
       }
     }
     labelsHost.replaceChildren(...out)

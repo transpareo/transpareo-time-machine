@@ -5,7 +5,7 @@
  *
  * Timeline strip. State `hidden` shows just the
  * "Show DPP history" toggle link inside the trough;
- * `expanded` brings in the year labels, ticks, dot
+ * `expanded` brings in the axis labels, ticks, dot
  * strip, and the closing toggle link. State drives
  * what's rendered via the [data-state] attribute on
  * the host element.
@@ -284,14 +284,15 @@ dpp-timeline[data-fade-left] .timeline::before { opacity: 1; }
   text-align: start;
 }
 
-// Each year label lives inside a slot the width of
-// its year span. The slot is absolute-positioned at
-// the year's tick; the label inside is `sticky`, so
-// the browser pins it to the viewport-left while the
-// slot is in view and lets it slide off as the next
-// year's slot scrolls in. Falls back to JS only if
-// the 100px-lookahead behaviour ever needs more
-// nuance than CSS sticky provides.
+// Each axis label lives inside a slot that reaches
+// the mark after it. The slots flow inline, spacers
+// filling what a slot gives up, and timeline/index.ts
+// writes the widths. The label inside is `sticky`, so
+// the browser pins it to the pane's left edge while
+// its slot is in view and lets it slide off as the
+// next slot scrolls in. Falls back to JS only if the
+// handover ever needs more nuance than CSS sticky
+// provides.
 .tick-label-spacer,
 .tick-label-slot {
   display: inline-block;
