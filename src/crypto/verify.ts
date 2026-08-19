@@ -57,7 +57,9 @@
 import { canonicalize } from './jcs'
 import { decodeMultibaseBase58 } from './multibase'
 import { proofConfig, joinHashes } from './eddsa-jcs'
-import { resolveMultikey } from './did-web'
+import {
+  resolveMultikey, warnKeyChangedPastCaches
+} from './did-web'
 import { asBuffer } from './buffer'
 import { hashDocument, sha256Utf8 } from './chain-hash'
 import type { ManifestSignature } from '@/archive'
@@ -364,8 +366,26 @@ async function verifyEntry(
     }
   }
 
+  // A signature that does not verify is as often a stale key
+  // document as a bad signature: a cache anywhere between
+  // here and the key host can answer with a copy from before
+  // a rotation, and every proof signed under the new key
+  // fails against it. Re-resolve past those caches once, and
+  // only call it a mismatch when the key the origin serves
+  // now fails too.
   if (!ok) {
-    return { ...base, status: 'invalid', reason: 'signature does not verify' }
+    const fresh = await refetchedKey(proof.verificationMethod, resolved)
+    ok = fresh != null && await fresh.verify(signature, hashData)
+    if (fresh && ok) resolved = fresh
+    if (!ok) {
+      return {
+        ...base,
+        status: 'invalid',
+        reason: fresh
+          ? 'signature verifies under no key the host publishes'
+          : 'signature does not verify under the published key',
+      }
+    }
   }
   // Pins are only meaningful when the signature actually
   // verified; otherwise an attacker could control the
@@ -403,10 +423,15 @@ interface ResolvedKey {
 
 const keyCache = new Map<string, Promise<ResolvedKey>>()
 
-function resolveVerificationKey(method: string): Promise<ResolvedKey> {
-  let pending = keyCache.get(method)
+function resolveVerificationKey(
+  method: string, bypassCache = false
+): Promise<ResolvedKey> {
+  let pending = bypassCache ? undefined : keyCache.get(method)
   if (pending) return pending
-  pending = fetchAndImportKey(method)
+  pending = fetchAndImportKey(method, bypassCache)
+
+  // A bypass replaces the memo: whatever the origin says
+  // now is what the rest of the page should verify against.
   keyCache.set(method, pending)
   // If the fetch fails, evict so a retry can attempt
   // again. Without this a transient failure poisons the
@@ -415,8 +440,29 @@ function resolveVerificationKey(method: string): Promise<ResolvedKey> {
   return pending
 }
 
-async function fetchAndImportKey(method: string): Promise<ResolvedKey> {
-  const { multibase, bytes } = await resolveMultikey(method)
+// Re-resolve a verificationMethod past every cache after a
+// proof failed under what the caches served. Answers with
+// the fresh key only when it differs from the one already
+// tried: an identical key means the caches were honest and
+// there is nothing new to verify against.
+async function refetchedKey(
+  method: string, tried: ResolvedKey
+): Promise<ResolvedKey | undefined> {
+  let fresh: ResolvedKey
+  try {
+    fresh = await resolveVerificationKey(method, true)
+  } catch {
+    return undefined
+  }
+  if (fresh.multibase === tried.multibase) return undefined
+  warnKeyChangedPastCaches(method)
+  return fresh
+}
+
+async function fetchAndImportKey(
+  method: string, bypassCache = false
+): Promise<ResolvedKey> {
+  const { multibase, bytes } = await resolveMultikey(method, { bypassCache })
   // Multikey for Ed25519: 0xed 0x01 prefix + 32-byte raw
   // key, then base58. Strip the two-byte prefix to get the
   // 32 raw public-key bytes.

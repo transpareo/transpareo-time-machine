@@ -916,3 +916,64 @@ describe('verifyManifestSignature', () => {
     expect(res).toBeNull();
   });
 });
+
+describe('a key document served from a cache', () => {
+  it('verifies against what the origin serves when a cache is stale',
+    async () => {
+      const setup = await buildSignedSnapshot();
+      const current = fullResolverMap(setup);
+      const stale = await makeAuthority();
+
+      // Every plain request answers with a key from before a
+      // rotation, the way a CDN holding an old copy does;
+      // only a request carrying the bypass reaches the origin.
+      vi.stubGlobal('fetch', async (input: string | URL): Promise<Response> => {
+        const url = typeof input === 'string' ? input : input.toString();
+        const fresh = url.includes('tm-fresh');
+        const plain = url.replace(/[?&]tm-fresh=[^&#]*/, '');
+        const key = fresh
+          ? current.get(plain)
+          : stale.publicKeyMultibase;
+        if (!key) return new Response('not found', { status: 404 });
+        return new Response(
+          JSON.stringify({
+            id: plain, type: 'Multikey', publicKeyMultibase: key,
+          }),
+          { status: 200, headers: { 'content-type': 'application/json' } },
+        );
+      });
+
+      const verifySnapshot = await freshVerifier();
+      const result = await verifySnapshot(setup.snapshot);
+
+      expect(result.verdict).toBe('authentic');
+      expect(result.entries.every((e) => e.status === 'verified')).toBe(true);
+    });
+
+  it('calls a signature that fails under the origin key a mismatch',
+    async () => {
+      const setup = await buildSignedSnapshot();
+      const other = await makeAuthority();
+
+      // Cache and origin agree; the key simply is not the one
+      // that signed. Nothing to heal, so the entry fails.
+      vi.stubGlobal('fetch', async (input: string | URL): Promise<Response> => {
+        const url = typeof input === 'string' ? input : input.toString();
+        return new Response(
+          JSON.stringify({
+            id: url,
+            type: 'Multikey',
+            publicKeyMultibase: other.publicKeyMultibase,
+          }),
+          { status: 200, headers: { 'content-type': 'application/json' } },
+        );
+      });
+
+      const verifySnapshot = await freshVerifier();
+      const result = await verifySnapshot(setup.snapshot);
+
+      expect(result.verdict).not.toBe('authentic');
+      expect(result.entries[0].reason)
+        .toBe('signature does not verify under the published key');
+    });
+});

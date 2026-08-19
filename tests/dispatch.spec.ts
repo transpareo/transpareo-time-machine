@@ -172,3 +172,51 @@ describe('verifyDpp: unhandled inputs', () => {
     }
   });
 });
+
+describe('verifyDpp: a key document served from a cache', () => {
+  it('verifies against the origin key when a cache answers stale',
+    async () => {
+      const doc = await signer.makeDerived(['recycled']);
+      const calls: Array<boolean> = [];
+
+      // The plain resolution answers with a key from before a
+      // rotation, as a CDN holding an old copy does; the
+      // bypass reaches the origin and answers with the key
+      // that signed.
+      const resolve = (m: string, options?: { bypassCache?: boolean }) => {
+        calls.push(options?.bypassCache === true);
+        return Promise.resolve(options?.bypassCache
+          ? { multibase: ISSUER_MULTIBASE, bytes: signer.issuer.multikey }
+          : { multibase: 'zDnaeStaleKey', bytes: new Uint8Array(35) });
+      };
+
+      const v = await verifyDpp(doc, { resolveIssuerKey: resolve });
+
+      expect(dppIsAuthentic(v)).toBe(true);
+      expect(calls).toEqual([false, true]);
+      if (v.cryptosuite !== 'ecdsa-sd-2023') {
+        throw new Error('expected ecdsa-sd routing');
+      }
+      expect(v.results[0]?.keyMultibase).toBe(ISSUER_MULTIBASE);
+    });
+
+  it('retries once and stops when the origin key is the same',
+    async () => {
+      const doc = await signer.makeDerived(['recycled']);
+      const calls: Array<boolean> = [];
+
+      // Cache and origin agree on a key that did not sign, so
+      // there is nothing to heal and no third attempt.
+      const resolve = (m: string, options?: { bypassCache?: boolean }) => {
+        calls.push(options?.bypassCache === true);
+        return Promise.resolve({
+          multibase: 'zDnaeWrongKey', bytes: new Uint8Array(35),
+        });
+      };
+
+      const v = await verifyDpp(doc, { resolveIssuerKey: resolve });
+
+      expect(dppIsAuthentic(v)).toBe(false);
+      expect(calls).toEqual([false, true]);
+    });
+});

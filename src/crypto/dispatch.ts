@@ -25,14 +25,20 @@ import {
   verifyDerivedProof, type DerivedVerifyResult, ECDSA_SD_2023,
 } from './ecdsa-sd'
 import { EDDSA_JCS_2022 } from './eddsa-jcs'
-import { resolveMultikey, type ResolvedMultikey } from './did-web'
+import {
+  resolveMultikey, warnKeyChangedPastCaches,
+  type ResolvedMultikey, type ResolveOptions
+} from './did-web'
 import { describeError } from '@/errors'
 
 // Resolves a proof's verificationMethod to the issuer's
 // P-256 Multikey (the string for pin comparison, the bytes
 // for the signature check). Injectable so the dispatch is
-// testable without a network fetch.
-export type IssuerKeyResolver = (method: string) => Promise<ResolvedMultikey>
+// testable without a network fetch. The options carry the
+// cache bypass a failed proof retries with.
+export type IssuerKeyResolver = (
+  method: string, options?: ResolveOptions
+) => Promise<ResolvedMultikey>
 
 // One ecdsa-sd derived proof's outcome: the verify result plus
 // the key it named, kept so the renderer can show one row per
@@ -247,11 +253,40 @@ async function verifyOneProof(
     const reason = `issuer key resolution failed: ${describeError(err)}`
     return { ...named, result: failResult(reason) }
   }
-  return {
-    ...named,
-    keyMultibase: key.multibase,
-    result: await verifyDerivedProof({ ...document, proof }, key.bytes),
+
+  const document_ = { ...document, proof }
+  let result = await verifyDerivedProof(document_, key.bytes)
+
+  // A proof that fails is as often a stale key document as a
+  // bad signature, so re-resolve past every cache once and
+  // judge on what the origin serves now. Mirrors the retry
+  // the eddsa-jcs path makes in verify.ts.
+  if (!result.verified) {
+    const fresh = await refetchedKey(method, key, resolve)
+    if (fresh) {
+      key = fresh
+      result = await verifyDerivedProof(document_, fresh.bytes)
+    }
   }
+  return { ...named, keyMultibase: key.multibase, result }
+}
+
+// The key a verificationMethod resolves to past every cache,
+// when that differs from the one a proof just failed under.
+// An identical key means the caches were honest and there is
+// nothing new to verify against.
+async function refetchedKey(
+  method: string, tried: ResolvedMultikey, resolve: IssuerKeyResolver
+): Promise<ResolvedMultikey | undefined> {
+  let fresh: ResolvedMultikey
+  try {
+    fresh = await resolve(method, { bypassCache: true })
+  } catch {
+    return undefined
+  }
+  if (fresh.multibase === tried.multibase) return undefined
+  warnKeyChangedPastCaches(method)
+  return fresh
 }
 
 // The ecdsa-sd proofs to verify: the whole `proof` array (a
@@ -265,9 +300,9 @@ function ecdsaProofs(
 }
 
 async function resolveIssuerP256Key(
-  method: string,
+  method: string, options?: ResolveOptions
 ): Promise<ResolvedMultikey> {
-  const resolved = await resolveMultikey(method)
+  const resolved = await resolveMultikey(method, options)
   const { bytes } = resolved
 
   // P-256 Multikey: multicodec 0x8024 (p256-pub) prefix +

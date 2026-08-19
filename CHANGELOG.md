@@ -10,6 +10,29 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Fixed
+
+- A key document served from a cache no longer fails every
+  proof under it. `no-cache` revalidates the browser's own
+  store and says nothing to a CDN, which answers such a
+  request from its own copy: an edge holding a key document
+  from before a rotation failed every signature made with
+  the new key, and the chip read "Verification failed" for
+  an artefact that was correctly signed and correctly
+  published. A proof that fails now re-resolves its key past
+  every cache, on both the eddsa-jcs and the ecdsa-sd path,
+  and is judged on the key the origin serves.
+- A signature that fails names what it failed against.
+  "signature does not verify" covered a bad signature and a
+  stale key document alike, which sent a real incident to
+  the signer rather than to the cache in front of the key
+  host. An entry now reads "signature does not verify under
+  the published key" when cache and origin agree on the key,
+  and "signature verifies under no key the host publishes"
+  when they disagree and neither key verifies; a resolution
+  that changes past the caches is logged with the method it
+  came from.
+
 ## [2.12.0] - 2026-08-19
 
 ### Fixed
