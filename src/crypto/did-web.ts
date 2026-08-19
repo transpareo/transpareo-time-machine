@@ -82,12 +82,31 @@ export async function resolveMultikey(
   return { multibase, bytes: decodeMultibaseBase58(multibase) }
 }
 
+// A resolution that reached a document but could not take a
+// key out of it: the fragment names no entry, the entry
+// carries no Multikey, or the key is not the curve the
+// caller needs. Told apart from a fetch that failed because
+// only this shape can be a cache answering with a document
+// from before a key was added or rotated - a query string
+// cannot fix a host that is down, and retrying one costs a
+// second timeout for nothing. Carried on the name so the
+// check survives a module re-instantiation.
+export function keyDocumentError(message: string): Error {
+  const err = new Error(message)
+  err.name = 'KeyDocumentError'
+  return err
+}
+
+export function isKeyDocumentError(err: unknown): boolean {
+  return err instanceof Error && err.name === 'KeyDocumentError'
+}
+
 // Both proof paths retry past the caches and both report the
 // same event, so the wording lives here rather than drifting
 // between them.
 export function warnKeyChangedPastCaches(method: string): void {
   console.warn(
-    `[verify] ${method} answers with a different key past the caches; `
+    `[verify] ${method} answers differently past the caches; `
     + 'one of them holds a copy from before a key rotation'
   )
 }
@@ -169,12 +188,12 @@ function selectMultibase(
       : doc.verificationMethod[0]
     const mb = entry?.publicKeyMultibase
     if (mb && mb.startsWith('z')) return mb
-    throw new Error('DID document has no matching verificationMethod')
+    throw keyDocumentError('DID document has no matching verificationMethod')
   }
   if (doc.publicKeyMultibase && doc.publicKeyMultibase.startsWith('z')) {
     return doc.publicKeyMultibase
   }
-  throw new Error('resolution doc missing publicKeyMultibase')
+  throw keyDocumentError('resolution doc missing publicKeyMultibase')
 }
 
 function fragmentMatches(

@@ -27,6 +27,7 @@ import {
 import { EDDSA_JCS_2022 } from './eddsa-jcs'
 import {
   resolveMultikey, warnKeyChangedPastCaches,
+  keyDocumentError, isKeyDocumentError,
   type ResolvedMultikey, type ResolveOptions
 } from './did-web'
 import { describeError } from '@/errors'
@@ -250,8 +251,17 @@ async function verifyOneProof(
   try {
     key = await resolve(method)
   } catch (err) {
-    const reason = `issuer key resolution failed: ${describeError(err)}`
-    return { ...named, result: failResult(reason) }
+    // Same reasoning as the eddsa path: a document carrying
+    // no key for this method is worth one look past the
+    // caches, a host that never answered is not.
+    const retry = isKeyDocumentError(err)
+      ? await freshKey(method, resolve)
+      : undefined
+    if (!retry) {
+      const reason = `issuer key resolution failed: ${describeError(err)}`
+      return { ...named, result: failResult(reason) }
+    }
+    key = retry
   }
 
   const document_ = { ...document, proof }
@@ -269,6 +279,20 @@ async function verifyOneProof(
     }
   }
   return { ...named, keyMultibase: key.multibase, result }
+}
+
+// The key a method resolves to past every cache, or nothing
+// when the origin cannot answer either.
+async function freshKey(
+  method: string, resolve: IssuerKeyResolver
+): Promise<ResolvedMultikey | undefined> {
+  try {
+    const fresh = await resolve(method, { bypassCache: true })
+    warnKeyChangedPastCaches(method)
+    return fresh
+  } catch {
+    return undefined
+  }
 }
 
 // The key a verificationMethod resolves to past every cache,
@@ -308,7 +332,7 @@ async function resolveIssuerP256Key(
   // P-256 Multikey: multicodec 0x8024 (p256-pub) prefix +
   // 33-byte compressed point.
   if (bytes.length !== 35 || bytes[0] !== 0x80 || bytes[1] !== 0x24) {
-    throw new Error('verificationMethod is not a P-256 Multikey')
+    throw keyDocumentError('verificationMethod is not a P-256 Multikey')
   }
   return resolved
 }

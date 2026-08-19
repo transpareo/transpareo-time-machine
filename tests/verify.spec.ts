@@ -977,3 +977,54 @@ describe('a key document served from a cache', () => {
         .toBe('signature does not verify under the published key');
     });
 });
+
+describe('a key document that carries no key for the method', () => {
+  it('resolves past the caches when only the cached copy lacks it',
+    async () => {
+      const setup = await buildSignedSnapshot();
+      const current = fullResolverMap(setup);
+
+      // The cached copy predates the key being added: it
+      // answers, but with no entry the fragment matches.
+      vi.stubGlobal('fetch', async (input: string | URL): Promise<Response> => {
+        const url = typeof input === 'string' ? input : input.toString();
+        const plain = url.replace(/[?&]tm-fresh=[^&#]*/, '');
+        const [addr, fragment] = plain.split('#');
+        const key = current.get(plain);
+        if (!key) return new Response('not found', { status: 404 });
+        const doc = url.includes('tm-fresh')
+          ? {
+              id: addr,
+              verificationMethod: [
+                { id: `#${fragment ?? 'key-1'}`, publicKeyMultibase: key },
+              ],
+            }
+          : { id: addr, verificationMethod: [] };
+        return new Response(JSON.stringify(doc), { status: 200 });
+      });
+
+      const verifySnapshot = await freshVerifier();
+      const result = await verifySnapshot(setup.snapshot);
+
+      expect(result.verdict).toBe('authentic');
+    });
+
+  it('does not spend a second timeout on a host that never answered',
+    async () => {
+      const setup = await buildSignedSnapshot();
+      let calls = 0;
+
+      // A dead key host: a query string cannot fix it, so the
+      // retry must not run and double the wait.
+      vi.stubGlobal('fetch', async (): Promise<Response> => {
+        calls += 1;
+        throw new TypeError('Failed to fetch');
+      });
+
+      const verifySnapshot = await freshVerifier();
+      const result = await verifySnapshot(setup.snapshot);
+
+      expect(result.entries.every((e) => e.status === 'unreachable')).toBe(true);
+      expect(calls).toBe(setup.snapshot.proof.length);
+    });
+});

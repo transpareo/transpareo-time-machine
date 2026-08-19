@@ -17,7 +17,9 @@ import { describe, expect, it, beforeAll } from 'vitest';
 import {
   verifyDpp, dppIsAuthentic, verifySnapshotAnySuite,
 } from '../src/crypto/dispatch';
-import type { ResolvedMultikey } from '../src/crypto/did-web';
+import {
+  keyDocumentError, type ResolvedMultikey
+} from '../src/crypto/did-web';
 import { createSampleSigner, type SampleSigner } from './helpers/sd-signer';
 
 const ISSUER_MULTIBASE = 'zDnaeSampleIssuerP256Key';
@@ -40,7 +42,7 @@ function stubResolver(): {
     resolve: (method: string) => {
       calls.push(method);
       return Promise.resolve({
-        multibase: ISSUER_MULTIBASE, bytes: signer.issuer.multikey,
+        multibase: ISSUER_MULTIBASE, bytes: signer.issuer.multikey
       });
     },
   };
@@ -219,4 +221,45 @@ describe('verifyDpp: a key document served from a cache', () => {
       expect(dppIsAuthentic(v)).toBe(false);
       expect(calls).toEqual([false, true]);
     });
+});
+
+describe('verifyDpp: a key document with no key for the method', () => {
+  it('re-resolves past the caches and verifies', async () => {
+    const doc = await signer.makeDerived(['recycled']);
+    const calls: Array<boolean> = [];
+
+    // The cached copy predates the key being added, so the
+    // plain resolution reaches a document and finds nothing.
+    const resolve = (m: string, options?: { bypassCache?: boolean }) => {
+      calls.push(options?.bypassCache === true);
+      if (!options?.bypassCache) {
+        return Promise.reject(
+          keyDocumentError('DID document has no matching verificationMethod')
+        );
+      }
+      return Promise.resolve({
+        multibase: ISSUER_MULTIBASE, bytes: signer.issuer.multikey,
+      });
+    };
+
+    const v = await verifyDpp(doc, { resolveIssuerKey: resolve });
+
+    expect(dppIsAuthentic(v)).toBe(true);
+    expect(calls).toEqual([false, true]);
+  });
+
+  it('does not retry a host that never answered', async () => {
+    const doc = await signer.makeDerived(['recycled']);
+    const calls: Array<boolean> = [];
+
+    const resolve = (m: string, options?: { bypassCache?: boolean }) => {
+      calls.push(options?.bypassCache === true);
+      return Promise.reject(new TypeError('Failed to fetch'));
+    };
+
+    const v = await verifyDpp(doc, { resolveIssuerKey: resolve });
+
+    expect(dppIsAuthentic(v)).toBe(false);
+    expect(calls).toEqual([false]);
+  });
 });

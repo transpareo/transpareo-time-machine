@@ -10,6 +10,19 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Fixed
+
+- A cached key document that carries no key for the method
+  at all gets the same second look as one carrying the wrong
+  key. The retry ran only where a signature verified false,
+  so a copy from before a key was added, where the fragment
+  matches no entry, failed at resolution and was never
+  re-read past the caches. A resolution that reached a
+  document but could take no key out of it now retries; one
+  that never reached a document does not, since a query
+  string cannot revive a host that is down and the retry
+  would only spend a second timeout.
+
 ## [2.12.1] - 2026-08-19
 
 ### Fixed

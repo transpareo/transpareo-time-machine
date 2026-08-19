@@ -58,7 +58,8 @@ import { canonicalize } from './jcs'
 import { decodeMultibaseBase58 } from './multibase'
 import { proofConfig, joinHashes } from './eddsa-jcs'
 import {
-  resolveMultikey, warnKeyChangedPastCaches
+  resolveMultikey, warnKeyChangedPastCaches,
+  keyDocumentError, isKeyDocumentError
 } from './did-web'
 import { asBuffer } from './buffer'
 import { hashDocument, sha256Utf8 } from './chain-hash'
@@ -337,11 +338,21 @@ async function verifyEntry(
   try {
     resolved = await resolveVerificationKey(proof.verificationMethod)
   } catch (err) {
-    return {
-      ...base,
-      status: 'unreachable',
-      reason: describeError(err),
+    // A document that carries no key for this method can be a
+    // cache answering from before the key was added, so it is
+    // worth one look past them. A host that did not answer at
+    // all is not: the retry would only spend a second timeout.
+    const retry = isKeyDocumentError(err)
+      ? await freshKey(proof.verificationMethod)
+      : undefined
+    if (!retry) {
+      return {
+        ...base,
+        status: 'unreachable',
+        reason: describeError(err)
+      }
     }
+    resolved = retry
   }
 
   let hashData: Uint8Array
@@ -440,6 +451,18 @@ function resolveVerificationKey(
   return pending
 }
 
+// The key a method resolves to past every cache, or nothing
+// when the origin cannot answer either.
+async function freshKey(method: string): Promise<ResolvedKey | undefined> {
+  try {
+    const fresh = await resolveVerificationKey(method, true)
+    warnKeyChangedPastCaches(method)
+    return fresh
+  } catch {
+    return undefined
+  }
+}
+
 // Re-resolve a verificationMethod past every cache after a
 // proof failed under what the caches served. Answers with
 // the fresh key only when it differs from the one already
@@ -467,7 +490,7 @@ async function fetchAndImportKey(
   // key, then base58. Strip the two-byte prefix to get the
   // 32 raw public-key bytes.
   if (bytes.length !== 34 || bytes[0] !== 0xed || bytes[1] !== 0x01) {
-    throw new Error('publicKeyMultibase is not an Ed25519 multikey')
+    throw keyDocumentError('publicKeyMultibase is not an Ed25519 multikey')
   }
   const rawKey = bytes.slice(2)
   return { verify: await buildVerifier(rawKey), multibase }
