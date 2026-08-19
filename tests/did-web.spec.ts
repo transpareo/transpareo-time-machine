@@ -6,7 +6,9 @@
  * Coverage for src/crypto/did-web.ts: the verificationMethod
  * splitter's fail-closed scheme rules, and resolveMultikey's
  * fetch behaviour (a timeout signal is attached; aborting it
- * rejects rather than hanging forever).
+ * rejects rather than hanging forever), and the cache bypass
+ * a failed proof re-resolves with, which has to reach the
+ * origin past a CDN rather than only past the browser.
  */
 
 import { describe, expect, it, vi, afterEach } from 'vitest';
@@ -15,6 +17,10 @@ import { splitVerificationMethod, resolveMultikey } from '../src/crypto/did-web'
 afterEach(() => {
   vi.unstubAllGlobals();
 });
+
+// Any well-formed Ed25519 Multikey; these cases read the
+// fetch, not the key.
+const KEY = 'z6MkkXFYBvMjeXkh4xBubXGz3n8ByWLZmVu9me6zXqZJSZF4';
 
 describe('splitVerificationMethod', () => {
   it('maps a did:web method to its well-known did.json', () => {
@@ -66,5 +72,59 @@ describe('resolveMultikey', () => {
     (capturedSignal as unknown as { dispatchEvent: (e: Event) => void })
       .dispatchEvent(new Event('abort'));
     await expect(pending).rejects.toThrow('aborted');
+  });
+  it('revalidates the browser cache on an ordinary resolution', async () => {
+    const fetchMock = vi.fn(() => Promise.resolve({
+      ok: true,
+      json: () => Promise.resolve({ publicKeyMultibase: KEY }),
+    }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await resolveMultikey('https://example.com/keys/v1.pub');
+
+    const [url, init] = fetchMock.mock.calls[0] as unknown as
+      [string, RequestInit];
+    expect(url).toBe('https://example.com/keys/v1.pub');
+    expect(init.cache).toBe('no-cache');
+  });
+
+  it('reaches past a CDN when the bypass is asked for', async () => {
+    const fetchMock = vi.fn(() => Promise.resolve({
+      ok: true,
+      json: () => Promise.resolve({ publicKeyMultibase: KEY }),
+    }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await resolveMultikey('https://example.com/keys/v1.pub', {
+      bypassCache: true,
+    });
+    await resolveMultikey('https://example.com/keys/v1.pub', {
+      bypassCache: true,
+    });
+
+    const first = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
+    const second = fetchMock.mock.calls[1] as unknown as [string, RequestInit];
+
+    // A request header is advisory to a CDN and most ignore
+    // it, so the query is what actually reaches the origin,
+    // and it differs per call so no cache can answer twice.
+    expect(first[0]).toMatch(/\?tm-fresh=/);
+    expect(first[1].cache).toBe('no-store');
+    expect(second[0]).not.toBe(first[0]);
+  });
+
+  it('keeps a relative key path relative, fragment last', async () => {
+    const fetchMock = vi.fn(() => Promise.resolve({
+      ok: true,
+      json: () => Promise.resolve({ publicKeyMultibase: KEY }),
+    }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    // The demo signer names its keys by path, which URL()
+    // cannot parse without a base.
+    await resolveMultikey('/keys/v1.pub#key-1', { bypassCache: true });
+
+    const [url] = fetchMock.mock.calls[0] as unknown as [string];
+    expect(url).toMatch(/^\/keys\/v1\.pub\?tm-fresh=[^#]+#key-1$/);
   });
 });

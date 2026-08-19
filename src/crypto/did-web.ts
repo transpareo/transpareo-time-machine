@@ -39,25 +39,76 @@ export interface ResolvedMultikey {
 // on the verify path.
 const KEY_FETCH_TIMEOUT_MS = 15_000
 
+export interface ResolveOptions {
+  // Fetch the key document past every cache between here
+  // and the origin, not just the browser's own. A key
+  // document is the one verifier input that cannot be
+  // sanity-checked against anything else: a cache holding a
+  // copy from before a key rotation fails every proof
+  // signed under the new key, and the failure reads as a
+  // bad signature rather than as a stale key. Callers turn
+  // this on to re-resolve a key a proof just failed under.
+  readonly bypassCache?: boolean
+}
+
+// Distinguishes one page's bypass fetches from the next's,
+// so a cache that keyed an entry off a previous load's
+// query cannot answer this one either.
+const CACHE_BUSTER = Math.floor(Math.random() * 1e9).toString(36)
+let bypassCounter = 0
+
 // Fetch the verificationMethod's key document and return
 // the selected Multikey (string + decoded bytes). The
 // caller checks the multicodec prefix for its curve.
 export async function resolveMultikey(
-  method: string,
+  method: string, options: ResolveOptions = {}
 ): Promise<ResolvedMultikey> {
   const { url, fragment } = splitVerificationMethod(method)
 
-  // 'no-cache' revalidates the key document instead of
-  // trusting a stale HTTP-cache copy; a rotated or fixed
-  // key should take effect on the next page load.
-  const res = await fetch(url, {
-    credentials: 'omit', cache: 'no-cache',
-    signal: AbortSignal.timeout(KEY_FETCH_TIMEOUT_MS),
+  // 'no-cache' revalidates against the browser's own store,
+  // which is all a first resolution needs; a rotated or
+  // fixed key takes effect on the next page load. It says
+  // nothing to a CDN, which answers such a request from its
+  // own copy, so the bypass adds a query no intermediary
+  // holds an entry for and refuses its store outright.
+  const res = await fetch(bypassUrl(url, options.bypassCache), {
+    credentials: 'omit',
+    cache: options.bypassCache ? 'no-store' : 'no-cache',
+    signal: AbortSignal.timeout(KEY_FETCH_TIMEOUT_MS)
   })
   if (!res.ok) throw new Error(`HTTP ${res.status} fetching ${url}`)
   const doc = await res.json() as ResolutionDoc
   const multibase = selectMultibase(doc, fragment)
   return { multibase, bytes: decodeMultibaseBase58(multibase) }
+}
+
+// Both proof paths retry past the caches and both report the
+// same event, so the wording lives here rather than drifting
+// between them.
+export function warnKeyChangedPastCaches(method: string): void {
+  console.warn(
+    `[verify] ${method} answers with a different key past the caches; `
+    + 'one of them holds a copy from before a key rotation'
+  )
+}
+
+// The URL to fetch a key document from. A bypass adds a
+// query no cache between here and the origin holds an entry
+// for, which is what actually reaches the origin: request
+// cache-control headers are advisory to a CDN and most
+// ignore them.
+function bypassUrl(url: string, bypass: boolean | undefined): string {
+  if (!bypass) return url
+
+  // Appended textually rather than through URL, which needs a
+  // base for the relative key paths a method may carry. The
+  // fragment stays last, where it is not sent over the wire.
+  const hash = url.indexOf('#')
+  const address = hash < 0 ? url : url.slice(0, hash)
+  const fragment = hash < 0 ? '' : url.slice(hash)
+  const separator = address.includes('?') ? '&' : '?'
+  const param = `tm-fresh=${CACHE_BUSTER}${bypassCounter++}`
+  return `${address}${separator}${param}${fragment}`
 }
 
 // Matches a URL scheme prefix (RFC 3986 alpha + alnum/+-.).
