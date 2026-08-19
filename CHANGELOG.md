@@ -10,6 +10,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.11.0] - 2026-08-18
+
 ### Changed
 
 - The time axis under the strip reads in month names. A
