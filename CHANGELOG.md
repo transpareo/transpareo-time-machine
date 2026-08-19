@@ -10,6 +10,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.12.0] - 2026-08-19
+
 ### Fixed
 
 - Every control in the renderer reads in the publisher's
