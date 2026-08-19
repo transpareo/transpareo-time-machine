@@ -20,6 +20,14 @@ and this project adheres to
   default face while the text beside them followed the
   theme. The components that noticed said so one at a time;
   the renderer now says it once, for all of them.
+- The verification chip's label sits on the orb's axis in
+  Blink too. The flex centring aligned a line box carrying
+  the typeface's ascent and descent, which Blink and Gecko
+  read off different tables, so the label hung about a pixel
+  high in Blink at 1x where Gecko placed it correctly. The
+  line box is now trimmed to the cap band, which is what the
+  eye reads; an engine without `text-box` keeps the previous
+  centring.
 
 ## [2.11.0] - 2026-08-18
 

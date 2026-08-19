@@ -189,12 +189,20 @@
 }
 
 // Line box trimmed to the type size, so a large publisher
-// scale doesn't pad the chip with leading. No optical nudge
-// on top: the line box the flex centring aligns and the cap
-// band the eye reads share a midpoint for a normal sans, so
-// the label lands on the orb's axis unaided.
+// scale doesn't pad the chip with leading, and trimmed
+// again to the cap band, so what the flex centring aligns
+// is the band the eye reads rather than a line box carrying
+// the typeface's ascent and descent with it. Blink and
+// Gecko read those two metrics off different tables and
+// disagree by a pixel about where an untrimmed label sits;
+// the trim takes that pixel out of Blink's placement. An
+// engine without `text-box` keeps the line-box centring,
+// which is where every engine used to be. No nudge on top:
+// what remains is the ascenders standing above the cap
+// band, which is the typeface drawing, not the box.
 .label-text {
   line-height: 1;
+  text-box: trim-both cap alphabetic;
 }
 
 @media (prefers-reduced-motion: reduce) {
