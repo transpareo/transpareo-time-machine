@@ -68,14 +68,35 @@ while [ "$#" -gt 0 ]; do
 done
 
 # Echo every mutating step; run it only when not a dry run.
-run() { echo "+ $*"; [ "$DRY" = true ] || "$@"; }
+# A dry run says "would run" rather than the "+" a shell
+# trace uses, so no line of the output reads as something
+# that happened.
+run() {
+  if [ "$DRY" = true ]; then
+    echo "would run: $*"
+    return
+  fi
+  echo "+ $*"
+  "$@"
+}
+
+[ "$DRY" = false ] || echo "DRY RUN: nothing below is executed."
 
 # Release from a clean main only.
 branch="$(git rev-parse --abbrev-ref HEAD)"
 [ "$branch" = "main" ] || { echo "Not on main (on $branch)." >&2; exit 1; }
-git diff --quiet && git diff --cached --quiet || {
-  echo "Working tree not clean; commit or stash first." >&2; exit 1
-}
+
+# A dry run changes nothing, so a dirty tree only earns a
+# warning there; it still stops a real release, which is
+# what the warning names.
+if ! git diff --quiet || ! git diff --cached --quiet; then
+  if [ "$DRY" = true ]; then
+    echo "Note: working tree not clean; a real release stops here."
+  else
+    echo "Working tree not clean; commit or stash first." >&2
+    exit 1
+  fi
+fi
 
 # Catch a broken release before it becomes a dangling tag.
 # release.yml gates publish on these too, but failing locally
@@ -101,7 +122,11 @@ else
   VERSION="$(node -p "require('./package.json').version")"
 fi
 TAG="v${VERSION}"
-echo "Releasing ${TAG}"
+if [ "$DRY" = true ]; then
+  echo "Would release ${TAG}"
+else
+  echo "Releasing ${TAG}"
+fi
 git rev-parse "$TAG" >/dev/null 2>&1 && {
   echo "Tag ${TAG} already exists." >&2; exit 1
 } || true
@@ -128,8 +153,14 @@ run git tag "$TAG"
 run git push origin "$branch"
 run git push origin "$TAG"
 
+if [ "$DRY" = true ]; then
+  echo "DRY RUN: nothing changed, nothing pushed."
+  echo "Re-run without -n to release ${TAG}."
+  exit 0
+fi
+
 echo "Pushed ${TAG}; release.yml is building, testing, and publishing."
-if [ "$DRY" = false ] && command -v gh >/dev/null 2>&1; then
+if command -v gh >/dev/null 2>&1; then
   sleep 4
   gh run watch --exit-status 2>/dev/null \
     || echo "(could not attach automatically; try: gh run list)"
