@@ -10,7 +10,8 @@
  * a scrub in flight still gets its transit blur. And the
  * verification chip's label sits on the orb's axis on its
  * own, with no optical nudge on top of the flex centring,
- * as does a gallery page number in its circle.
+ * as does a gallery page number in its circle, and every
+ * control reads in the page's own typeface.
  */
 import { test, expect } from '@playwright/test'
 import type { Page } from '@playwright/test'
@@ -173,4 +174,23 @@ test('a gallery page number centres in its circle', async ({ page }) => {
   // while the line box the buttons used to carry hung half a
   // pixel low in Blink and a full pixel low in Gecko.
   expect(Math.abs(axis.circle - axis.digit)).toBeLessThan(0.25)
+})
+
+test('every control reads in the page typeface', async ({ page }) => {
+  await mount(page)
+
+  // A form control takes its font from the UA stylesheet
+  // rather than from the page, so any control that does not
+  // say otherwise renders in the browser's own face beside
+  // text in the publisher's.
+  const odd = await page.evaluate(() => {
+    const root = document.querySelector('transpareo-time-machine')!.shadowRoot!
+    const face = getComputedStyle(root.host).fontFamily
+    const controls = root.querySelectorAll('button, input, select, textarea')
+    return [...controls]
+      .filter((c) => getComputedStyle(c).fontFamily !== face)
+      .map((c) => c.className || c.tagName)
+  })
+
+  expect(odd).toEqual([])
 })

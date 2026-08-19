@@ -10,6 +10,17 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Fixed
+
+- Every control in the renderer reads in the publisher's
+  typeface. A form control takes its font from the browser's
+  own stylesheet rather than from the page around it, so the
+  verification chip, the accordion headers, the timeline's
+  event cards and its arrows all rendered in the browser's
+  default face while the text beside them followed the
+  theme. The components that noticed said so one at a time;
+  the renderer now says it once, for all of them.
+
 ## [2.11.0] - 2026-08-18
 
 ### Changed

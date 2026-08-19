@@ -37,6 +37,16 @@
   background: var(--body-background, #f5f5f5);
 }
 
+// A form control takes its typeface from the UA stylesheet,
+// not from the page around it, so every button in the
+// renderer read in the browser's own font while the text
+// beside it read in the publisher's. Each control that
+// noticed used to state `font: inherit` for itself; this
+// says it once, for the controls that never noticed.
+button, input, select, textarea {
+  font-family: inherit;
+}
+
 .stage {
   min-height: 100vh;
   display: flex;
