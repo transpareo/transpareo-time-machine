@@ -358,6 +358,48 @@ npm run build:all
 The build is reproducible from source; no network calls
 at runtime beyond fetching the DPP artefacts themselves.
 
+### Content Security Policy on the host page
+
+A page that sets a CSP has to allow what verification
+reads, and one of those hosts is not visible anywhere in
+the page's own markup: a proof names its key by
+`verificationMethod`, and the renderer resolves that to
+whatever host the artefact points at. A key the page
+cannot fetch is a key its proof cannot be judged under,
+so once every alias of an authority sits on a blocked
+host, the chip reads "Verification failed" rather than
+anything about a blocked request. The browser logs the
+real cause as a CSP report.
+
+`connect-src` needs:
+
+- the origin serving the manifest, the snapshots and the
+  EPCIS events, wherever `src` points;
+- **every host a `verificationMethod` resolves to** - the
+  issuer's key host and the platform's, including the
+  `did:web` hosts, which resolve to
+  `https://<host>/.well-known/did.json`. Read them off a
+  snapshot's `proof[].verificationMethod`;
+- the revocation endpoint when the page pins a platform
+  key: `https://transpareo.com` by default, or whatever
+  `revoked-roots-src` names (`revoked-roots-src=""`
+  disables the check and the fetch with it);
+- the hosts serving `icons-src` and `icon-map-src`, when
+  those are set.
+
+The rest follows the assets a passport renders with:
+`img-src` for product imagery and the brandbar logo,
+`style-src` and `font-src` for the publisher's branding
+stylesheet and the typeface it declares, `script-src` for
+wherever the bundle is served from.
+
+A passport page needs no sockets and no payment SDK, so a
+policy inherited from a wider application is usually both
+too permissive in what it grants and too narrow where it
+counts. The example policy in `embed-example.html` is
+deliberately loose (`connect-src 'self' https:`); tighten
+it host by host, and keep the key hosts in.
+
 ## Public API
 
 The package ships two custom elements; both register

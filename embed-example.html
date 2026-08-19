@@ -10,6 +10,14 @@
       artefacts). Tighten the https: sources to your CDN
       host(s); add the script origin if you serve embed.js
       from a CDN instead of your own host.
+
+      When tightening connect-src, keep every host a proof's
+      verificationMethod resolves to: the issuer's key host
+      and the platform's, which nothing in this markup names
+      because they come out of the artefact. A key host left
+      out reads as "Verification failed" on the chip, not as
+      a blocked request. See "Content Security Policy on the
+      host page" in the README.
     -->
     <meta
       http-equiv="Content-Security-Policy"
