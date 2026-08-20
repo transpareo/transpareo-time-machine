@@ -29,11 +29,15 @@ dist-ssr
 # fixture branding icons under fixtures/<id>/branding/
 # are still tracked. `test-results/` + `playwright-
 # report/` are emitted by `npm run a11y` (Playwright's
-# default output dirs).
+# default output dirs); `/tmp/` is the repo's own
+# scratch folder for captures and extracted frames,
+# anchored so it never matches a `tmp/` deeper in the
+# tree.
 /*.png
 .playwright-mcp/
 /test-results/
 /playwright-report/
+/tmp/
 
 # Seeded artefacts (`npm run seed`). Every dev
 # re-runs the seed after pulling a fixture change;
