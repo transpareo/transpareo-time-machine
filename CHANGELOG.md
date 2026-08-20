@@ -16,26 +16,24 @@ and this project adheres to
 
 - Country values render as country names. A property whose
   value is an ISO 3166-1 alpha-2 code carries the datatype
-  `iso3166-1:alpha2` on its typed literal
-  (`{"@value": "PT", "@type": "iso3166-1:alpha2"}`), and the
-  renderer resolves the code to what the viewer's locale
-  calls that country, in all 40 locales, at no payload cost.
-  The code stays the signed value, so a regulator or an
-  aggregator still gets the thing they act on. Resolution
-  happens at render time, so the name follows a locale
-  switch, and it covers every surface a value reaches:
-  tiles, the detail table, badge lists. A code the platform
-  cannot name, and the ISO "unknown" placeholder ZZ, fall
-  back to the code itself rather than to a blank or to
-  "Unknown Region". The datatype is written as an absolute
-  IRI,
-  `https://transpareo.com/vocab/transpareo/v1#iso3166-1-alpha2`,
-  never a compact one: a compact IRI resolves through the
-  document's context, JSON-LD is strict about when a term
-  may act as a prefix, and two processors that read it
-  differently produce different signed statements. That
-  breaks the signature rather than the render, and an
-  absolute IRI leaves nothing to expand.
+  `https://transpareo.com/vocab/transpareo/v1#iso3166-1-alpha2`
+  on its typed literal, and the renderer resolves the code
+  to what the viewer's locale calls that country, in all 40
+  locales, at no payload cost. The code stays the signed
+  value, so a regulator or an aggregator still gets the
+  thing they act on. Resolution happens at render time, so
+  the name follows a locale switch, and it covers every
+  surface a value reaches: tiles, the detail table, badge
+  lists. A code the platform cannot name, and the ISO
+  "unknown" placeholder ZZ, fall back to the code itself
+  rather than to a blank or to "Unknown Region".
+
+  The datatype is absolute, never a compact IRI: a compact
+  one resolves through the document's context, JSON-LD is
+  strict about when a term may act as a prefix, and two
+  processors that read it differently produce different
+  signed statements. That breaks the signature rather than
+  the render, and an absolute IRI leaves nothing to expand.
 
   The literal's `@type` is the only country signal the
   renderer reads. A row's `valueDataType` stays an XSD type
