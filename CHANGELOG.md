@@ -10,6 +10,15 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Fixed
+
+- The footer's language filter carries an id. A control with
+  neither id nor name draws a console warning in Blink and is
+  a field the browser offers to autofill from unrelated
+  history. The id is scoped to the shadow root, so a host
+  page keeps its own, and the input declines autofill
+  outright: a filter box has nothing to fill in.
+
 ## [2.12.2] - 2026-08-19
 
 ### Fixed

@@ -109,6 +109,15 @@ class DppFooter extends LightElement {
       const filterLabel = t(i18n.labels, 'locale.filter')
       filterInput.setAttribute('aria-label', filterLabel)
       filterInput.placeholder = filterLabel
+
+      // A control with neither id nor name draws a console
+      // warning in Blink and is a field the browser offers
+      // to autofill from unrelated history. An id answers
+      // both and is scoped to this shadow root; a name would
+      // only claim form semantics this input does not have,
+      // since it is submitted with nothing.
+      filterInput.id = 'locale-filter'
+      filterInput.autocomplete = 'off'
     }
     const emptyEl = wrap.querySelector('.locale-empty') as HTMLElement
     emptyEl.textContent = t(i18n.labels, 'locale.noMatches')
