@@ -15,6 +15,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { verifyDerivedProof } from '../src/crypto/ecdsa-sd';
+import { canonicalize } from '../src/crypto/rdfc';
 import { hexChainHashOfSnapshot } from '../src/crypto/verify';
 import type { ProofCarrier } from '../src/crypto/verify';
 
@@ -39,14 +40,36 @@ describe('ecdsa-sd: real production specimen', () => {
     }
   });
 
+  // The specimen ships the issuing implementation's own
+  // canonical statements beside the document, so the two
+  // toolchains can be compared statement by statement rather
+  // than only through a signature. A proof failure says
+  // "these bytes are not those bytes"; this says which
+  // statement moved, which is the difference between a
+  // morning of bisecting and a one-line read. Canonicalized
+  // against the contexts the specimen carries, so a failure
+  // means the algorithms disagree and never that our bundled
+  // copy of a context drifted.
+  it('agrees with the issuer statement for statement', async () => {
+    const spec = JSON.parse(readFileSync(SPECIMEN, 'utf8'));
+    const { proof: _proof, ...unsecured } = spec.view;
+    const ours = await canonicalize(unsecured, {
+      contexts: {
+        'https://transpareo.com/vocab/vc/v1': spec.vc_context,
+        'https://transpareo.com/vocab/transpareo/v1': spec.transpareo_context,
+      },
+    });
+    expect(ours).toEqual(spec.issuer_nquads);
+  });
+
   // The chain walker recomputes each prior public snapshot's
   // manifest hashValue from its bytes. For an ecdsa-sd
   // snapshot that hash is the SHA-256 over ALL its RDFC
-  // canonical statements (equal to the backend's mandatory
-  // hash, because the public view reveals exactly the
-  // mandatory statements) - never the JCS body hash the flat
+  // canonical statements (equal to the mandatory hash,
+  // because the public view reveals exactly the mandatory
+  // statements) - never the JCS body hash the flat
   // eddsa-jcs snapshots use.
-  it('recomputes the backend chain hash from the public view bytes', async () => {
+  it('recomputes the issued chain hash from the public bytes', async () => {
     const spec = JSON.parse(readFileSync(SPECIMEN, 'utf8'));
     const computed = await hexChainHashOfSnapshot(
       spec.public_view as ProofCarrier,

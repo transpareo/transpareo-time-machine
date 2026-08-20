@@ -15,8 +15,8 @@
       "@type": "dpp:DigitalProductPassport",
       "version": 3,
       "dppSchemaVersion": "EN 18223:2026",
-      "publishedAt": "2026-07-23T18:57:10Z",
-      "lastUpdated": "2026-07-23T18:57:10Z",
+      "publishedAt": "2026-08-20T04:12:31Z",
+      "lastUpdated": "2026-08-20T04:12:31Z",
       "identifiers": {
         "@id": "https://dpp.acme-corp.com/dpp/abc12345#identifiers",
         "code": "abc12345"
@@ -100,6 +100,22 @@
             ],
             "valueDataType": "xsd:string",
             "value": "Germany"
+          },
+          {
+            "@id": "https://dpp.acme-corp.com/dpp/abc12345#property/5",
+            "@type": "PropertyValue",
+            "propertyID": "5",
+            "name": [
+              {
+                "@value": "Country of origin",
+                "@language": "en"
+              }
+            ],
+            "valueDataType": "xsd:string",
+            "value": {
+              "@value": "PT",
+              "@type": "https://transpareo.com/vocab/transpareo/v1#iso3166-1-alpha2"
+            }
           },
           {
             "@id": "https://dpp.acme-corp.com/dpp/abc12345#property/transpareo-capacity",
@@ -176,7 +192,7 @@
         "created": "2026-05-01T12:00:00Z",
         "verificationMethod": "did:web:dpp.acme-corp.com#key-1",
         "proofPurpose": "assertionMethod",
-        "proofValue": "u2V0BhVhAOb-tBPnmAMIeHBa5CVUE-yPwucASpEr7gjKlqt54uZccLYeOBLHKRXKeIMV4SAZ32d6iQPfNI57fjEQGhu57UVgjgCQDzqNCptK-abpv0qCSswzSF5nZtbnHvEHoxiIM0JoSWkWHWECFdA7EiUBWgs5AORNsvGjT6bIjZcUGH4LFGGCkA036ijDi4uAXcL3lPnNNIT_hNFW7Alv2bslH9ahH_AQt_OQ8WEA5711Rk7oYKihq5EJ03ZFFFtUXRmwZywnjPK0x7oW6x0bbWMpOIr4BPwpLpDPPaAs1R-z_c9E-WElp0GhQYEnIWEBYjKoW7rfFXFZxiTeNVvcSBs6rW0ZfaKEvS5BD7ud-olEkia5yoeRIgtHV0a1ma2Ypw1Z0x9YImDn55R9zWQrVWECOjuroCbuUD_UwtDg7Fmy3Fc_K4p_z0vyqK9B-IbLJAWz5ffNM-vsa2A9Vsfa_m-dr-xiY6E7gqguYflxSNQp9WEAFSQS5TL2paEPlalOt2on6D3__zr4wxEyqWzEpRM__JY4O_uYz3B3Kq8GpDAyFeU9G7-CL3L3gPNc5oLMvt65IWEAG4_jelkHJ3T3kOzD1dpTFnUr3cCTyO4jabWzkyeKOg5JzpqYP_8rXaMQxrPq3W3B3f2xbeXTfwsvL4eKeXplmWEAsfHDTxKh7ZEvRFB1EHsuRJjlOHqhSzskTrJV6RRTIsqqjEetyOYBD8eRD0hNjucZc1Giog8QTCF3u-OeYPnAkoJhNAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBgYGRgaGBsYHBgdGB4YHxggGCEYIhgjGCQYJhgnGCgYKRgqGCsYLBgtGDQYNRg2GDcYOBg5GDoYOxg8GD0YPhg_GEAYQRhCGEMYRBhFGEYYRxhIGEkYShhLGEwYTRhOGE8YUBhRGFIYUw"
+        "proofValue": "u2V0BhVhA_CUSMP0ZzKu5i1hz_xGyE5eOT5cpitSEGKCF-iAEiFGee-DRqzUzutRSQy8r_Xnjuf-ShcqJT1c8SkBR6sG_j1gjgCQC0wev2KbXbf9XNBggERq4JNHtfcfVE4zD68zLN3KHczCHWEB_SsQBavi0Il9igVI6V84amXlUQ-oEysC4Xc1ITzXPUWUqWJpy01fDFKvZE3PnxW75zffg-ipoLJm_3C5hWXo0WEAulQJO7zEuH0Jevc7sQhv7whQxIMB73JaZjDLCikPUx871l4NnvbitD3JTdbGx_v2Y97cidQromopA8CBRk9FqWECDqnttsp0tpZwe5APZbB6Mta6wVTGMfVyUBayGzg8P6JwmoO2yRQQ5_pN95zZ21tJhUN4a3f2DxJVBxFtR7_mPWECFOVpALFB-ao5VkajG2TVtgT9MqhxTXTROGpTZJ74t3KRwrT3UnOKaNkFBo-oCh6iMTg_noss6eu-v90kXdDALWEDHYUrlbCb6-9ea_wUEc9CGF8MhLfzsG7IcWGpOnSX6_kYCwhp03WjDunIWwvgwaOk8rQPrbxyI147pXWDs1nXvWECl5uwgtt9INaUNdqixuyh7nIlECdd9XG_Sl5GJ6e9ocxDmUOxR9sdvRxpbk0VUeRLsv_Rvc6Xt23Nm3b7hfIF4WEBVZYG1c7WjIjwY8G6uEaEMy0K5QpY4JsIONBk_cASMSZYrhHF63lV5z0myqZOimcKXzsuZz4vbK2OJTRcBfJE3oJhTAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBgYGRgaGBsYHBgdGB4YHxggGCEYIhgjGCQYJhgnGCgYKRgqGCsYLBgtGC4YNRg2GDcYOBg5GDoYOxg8GD0YPhg_GEAYQRhCGEMYRBhFGEYYRxhIGEkYShhLGEwYTRhOGE8YUBhRGFIYUxhUGFUYVhhXGFgYWQ"
       },
       {
         "type": "DataIntegrityProof",
@@ -184,16 +200,16 @@
         "created": "2026-05-01T12:00:00Z",
         "verificationMethod": "did:web:transpareo.com#key-1",
         "proofPurpose": "assertionMethod",
-        "proofValue": "u2V0BhVhA3NJnXm1p8TEaF1hbfkBx_klJ4UbeE_ouu0fy1UO79pnr0GKiF8wtFzzmVt9xFYZTWr8l599LAg6swLP15De5ClgjgCQCUMkMBrcvz26cb6h_jNLYHCzyqsccheNbd7fxtosyS0qHWEAAuzLZVO0KcRZ1ejw1QE1w39-rRBSiN608l9t4kwu0xvM-BOD6_591sUJbpNWKtetFZS038xwD6LQ1iTXGGtgpWEAr1GKMW3S7UiD6Gjto7MsvGUwARWB-E7O5Ps2f-NAEkI48xlqVY3fKFH5yA4IBH5njD5riNpg5LrgaVBv3KI2aWEADrsDJN59wQTxIAYeHFakOuHIq7EA7eSr37ZWIjJzJhSxNm9OigWBAj5t4rTA8Rwv--LSupazCQApV8BIwAAykWEAutouC-KrOLoCr_fH-TWGfxgCMeLNAOY6Q88DXNoQuiQwHVtaUhAfRFV9Lu8DTdpY3UV1o1oHkdDViRBHn0elaWEBRqRYXklRYeYokoNreydcwExB8Vs-Y7RlU-rx72zpkPfAZh3CYRqLHKJpTZEVdIEz0sBWrnJxGleZ5zywjFQbuWEBQQ_23iC9YZXptXN-b-7hhIgDcUdPBk-v5ISxeXqLWMtb7QFfiYTJcxuJ3s7RIYomGQ3JmDrV8JK6kcO_wEJBbWEBNB1gr6pPzA79Vk1IJC0mwnMSllqfpQe5ADK_aVZ6B745TJnLjgZBjF2RfSDbklZk6LilOmSinKS_i3YHkPFU6oJhNAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBgYGRgaGBsYHBgdGB4YHxggGCEYIhgjGCQYJhgnGCgYKRgqGCsYLBgtGDQYNRg2GDcYOBg5GDoYOxg8GD0YPhg_GEAYQRhCGEMYRBhFGEYYRxhIGEkYShhLGEwYTRhOGE8YUBhRGFIYUw"
+        "proofValue": "u2V0BhVhA4b-ZxMAqYJ7Q8noJYVfjhPiSsiFKbq6-tWY5gHHJnwh69B8kHooyAZ_RzUGv5HN_q_vk7cPKjxD6uli0vs8LE1gjgCQD_9NtpK8bdesvKB5fpaWeYRgds2rZgWs7EddsyyVJKQqHWEBDq4lqXAdfSAmo8Wg2N5Nouf1QAqKcY9XBUbpXs2aGmEY1y1XkoAPEOfgwRgnF9IUHUiq7uIUK_6GjcFAa5WluWECcJN-74BaKA_iLIGGjqgLbwIEFcocZioRUffpiG2P4Je2HsfwCjyN54X15Ccp4a6IJLlLo2t_48nStN2kf8qoaWECHg1tkGgAlgcYhnq5JI-wfsHKenHpz8J_CtTOpPzgM4SSK8e_E52PG1lMcKr7uAdGTz9TulPXkZwHs2-WyuZKfWEDXeDpD5ZefiKaupao1PB0MwAlGDk1lZtSKIWpjfnPJaZku3DcYzutOI2e04ONqjMHc5rxKz1URqPU1YgUPJeqsWEATxGM0O0bNGThMRnRGUAq_oM32t5yz8A6x6maUcjvU1Gp5lhRuv3RgLYLhsFOAwmg-3DSevf8cQZ4GhHnIM77VWEAhFpJaExhUd1PBDbscqKBotQu4OIPxKmGLaDUFV9dyQXn1N-hKBHugDMGS-PT1zxjYesC4XgkJXSAKDXH3NwsIWECnEQQbfgAz1N1CfY3dFhshnFKNZjbTc0TKdc-Ay1-hjVZPrgQxP_7VOV33JKXQYeV04YwLEDPigjouGA6kJWUpoJhTAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBgYGRgaGBsYHBgdGB4YHxggGCEYIhgjGCQYJhgnGCgYKRgqGCsYLBgtGC4YNRg2GDcYOBg5GDoYOxg8GD0YPhg_GEAYQRhCGEMYRBhFGEYYRxhIGEkYShhLGEwYTRhOGE8YUBhRGFIYUxhUGFUYVhhXGFgYWQ"
       }
     ]
   },
   "issuer_multikeys_b64": [
-    "gCQDpDia5g6/bQuxjA2X33Qe1NqHAtMOfn/2cFc+FRa4jZs=",
-    "gCQCJCXNZr+SaAZMo9Z/s8AJZe7dt451nIVkm1jeRMg6etQ="
+    "gCQDTUsjxtZikqY5PmnLVwosm4xJzwfC6AZEp9KO4BOd4P8=",
+    "gCQDOGql44GUHAE3xdT2UmxwkQGwxDWIkOv0wsCKiTa8RLE="
   ],
-  "backend_ok": true,
-  "backend_nquads": [
+  "issuer_ok": true,
+  "issuer_nquads": [
     "<https://dpp.acme-corp.com/dpp/abc12345#4/1> <https://transpareo.com/vocab/vc/v1#elementId> \"4/1\" .\n",
     "<https://dpp.acme-corp.com/dpp/abc12345#4/1> <https://transpareo.com/vocab/vc/v1#name> \"LiPF6\" .\n",
     "<https://dpp.acme-corp.com/dpp/abc12345#4/1> <https://transpareo.com/vocab/vc/v1#weight_percent> \"3.5\"^^<http://www.w3.org/2001/XMLSchema#decimal> .\n",
@@ -233,6 +249,7 @@
     "<https://dpp.acme-corp.com/dpp/abc12345#product> <https://transpareo.com/vocab/vc/v1#properties> <https://dpp.acme-corp.com/dpp/abc12345#property/1> .\n",
     "<https://dpp.acme-corp.com/dpp/abc12345#product> <https://transpareo.com/vocab/vc/v1#properties> <https://dpp.acme-corp.com/dpp/abc12345#property/2> .\n",
     "<https://dpp.acme-corp.com/dpp/abc12345#product> <https://transpareo.com/vocab/vc/v1#properties> <https://dpp.acme-corp.com/dpp/abc12345#property/4> .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#product> <https://transpareo.com/vocab/vc/v1#properties> <https://dpp.acme-corp.com/dpp/abc12345#property/5> .\n",
     "<https://dpp.acme-corp.com/dpp/abc12345#product> <https://transpareo.com/vocab/vc/v1#properties> <https://dpp.acme-corp.com/dpp/abc12345#property/transpareo-capacity> .\n",
     "<https://dpp.acme-corp.com/dpp/abc12345#product> <https://transpareo.com/vocab/vc/v1#weight> <https://dpp.acme-corp.com/dpp/abc12345#product/weight> .\n",
     "<https://dpp.acme-corp.com/dpp/abc12345#property/1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://transpareo.com/vocab/vc/v1#PropertyValue> .\n",
@@ -251,6 +268,11 @@
     "<https://dpp.acme-corp.com/dpp/abc12345#property/4> <https://transpareo.com/vocab/vc/v1#propertyID> \"4\" .\n",
     "<https://dpp.acme-corp.com/dpp/abc12345#property/4> <https://transpareo.com/vocab/vc/v1#value> <https://dpp.acme-corp.com/dpp/abc12345#4/1> .\n",
     "<https://dpp.acme-corp.com/dpp/abc12345#property/4> <https://transpareo.com/vocab/vc/v1#value> <https://dpp.acme-corp.com/dpp/abc12345#4/2> .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#property/5> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://transpareo.com/vocab/vc/v1#PropertyValue> .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#property/5> <https://transpareo.com/vocab/vc/v1#name> \"Country of origin\"@en .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#property/5> <https://transpareo.com/vocab/vc/v1#propertyID> \"5\" .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#property/5> <https://transpareo.com/vocab/vc/v1#value> \"PT\"^^<https://transpareo.com/vocab/transpareo/v1#iso3166-1-alpha2> .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345#property/5> <https://transpareo.com/vocab/vc/v1#valueDataType> \"xsd:string\" .\n",
     "<https://dpp.acme-corp.com/dpp/abc12345#property/transpareo-capacity> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://transpareo.com/vocab/vc/v1#PropertyValue> .\n",
     "<https://dpp.acme-corp.com/dpp/abc12345#property/transpareo-capacity> <https://transpareo.com/vocab/vc/v1#dictionaryReference> \"https://transpareo.com/vocab/transpareo/v1#capacity\" .\n",
     "<https://dpp.acme-corp.com/dpp/abc12345#property/transpareo-capacity> <https://transpareo.com/vocab/vc/v1#name> \"Capacity\"@en .\n",
@@ -266,7 +288,7 @@
     "<https://dpp.acme-corp.com/dpp/abc12345> <https://transpareo.com/vocab/vc/v1#granularity> \"item\" .\n",
     "<https://dpp.acme-corp.com/dpp/abc12345> <https://transpareo.com/vocab/vc/v1#identifiers> <https://dpp.acme-corp.com/dpp/abc12345#identifiers> .\n",
     "<https://dpp.acme-corp.com/dpp/abc12345> <https://transpareo.com/vocab/vc/v1#identityCredentialUrl> \"https://dpp.acme-corp.com/.well-known/did.json\" .\n",
-    "<https://dpp.acme-corp.com/dpp/abc12345> <https://transpareo.com/vocab/vc/v1#lastUpdated> \"2026-07-23T18:57:10Z\" .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345> <https://transpareo.com/vocab/vc/v1#lastUpdated> \"2026-08-20T04:12:31Z\" .\n",
     "<https://dpp.acme-corp.com/dpp/abc12345> <https://transpareo.com/vocab/vc/v1#lifecycle> <https://dpp.acme-corp.com/dpp/abc12345#lifecycle> .\n",
     "<https://dpp.acme-corp.com/dpp/abc12345> <https://transpareo.com/vocab/vc/v1#passportAlias> \"abc12345\" .\n",
     "<https://dpp.acme-corp.com/dpp/abc12345> <https://transpareo.com/vocab/vc/v1#passportStatus> \"Active\" .\n",
@@ -274,7 +296,7 @@
     "<https://dpp.acme-corp.com/dpp/abc12345> <https://transpareo.com/vocab/vc/v1#platform> <https://dpp.acme-corp.com/dpp/abc12345#platform> .\n",
     "<https://dpp.acme-corp.com/dpp/abc12345> <https://transpareo.com/vocab/vc/v1#priorVersion> \"2\"^^<http://www.w3.org/2001/XMLSchema#integer> .\n",
     "<https://dpp.acme-corp.com/dpp/abc12345> <https://transpareo.com/vocab/vc/v1#product> <https://dpp.acme-corp.com/dpp/abc12345#product> .\n",
-    "<https://dpp.acme-corp.com/dpp/abc12345> <https://transpareo.com/vocab/vc/v1#publishedAt> \"2026-07-23T18:57:10Z\" .\n",
+    "<https://dpp.acme-corp.com/dpp/abc12345> <https://transpareo.com/vocab/vc/v1#publishedAt> \"2026-08-20T04:12:31Z\" .\n",
     "<https://dpp.acme-corp.com/dpp/abc12345> <https://transpareo.com/vocab/vc/v1#uniqueProductIdentifier> \"https://dpp.acme-corp.com/dpp/abc12345\" .\n",
     "<https://dpp.acme-corp.com/dpp/abc12345> <https://transpareo.com/vocab/vc/v1#version> \"3\"^^<http://www.w3.org/2001/XMLSchema#integer> .\n",
     "<https://dpp.acme-corp.com/dpp/abc12345> <https://www.w3.org/2018/credentials#issuer> <https://dpp.acme-corp.com/dpp/abc12345#issuer> .\n"
@@ -295,8 +317,8 @@
       "@type": "dpp:DigitalProductPassport",
       "version": 3,
       "dppSchemaVersion": "EN 18223:2026",
-      "publishedAt": "2026-07-23T18:57:10Z",
-      "lastUpdated": "2026-07-23T18:57:10Z",
+      "publishedAt": "2026-08-20T04:12:31Z",
+      "lastUpdated": "2026-08-20T04:12:31Z",
       "identifiers": {
         "@id": "https://dpp.acme-corp.com/dpp/abc12345#identifiers",
         "code": "abc12345"
@@ -382,6 +404,22 @@
             "value": "Germany"
           },
           {
+            "@id": "https://dpp.acme-corp.com/dpp/abc12345#property/5",
+            "@type": "PropertyValue",
+            "propertyID": "5",
+            "name": [
+              {
+                "@value": "Country of origin",
+                "@language": "en"
+              }
+            ],
+            "valueDataType": "xsd:string",
+            "value": {
+              "@value": "PT",
+              "@type": "https://transpareo.com/vocab/transpareo/v1#iso3166-1-alpha2"
+            }
+          },
+          {
             "@id": "https://dpp.acme-corp.com/dpp/abc12345#property/transpareo-capacity",
             "@type": "PropertyValue",
             "propertyID": "transpareo:capacity",
@@ -442,7 +480,7 @@
         "created": "2026-05-01T12:00:00Z",
         "verificationMethod": "did:web:dpp.acme-corp.com#key-1",
         "proofPurpose": "assertionMethod",
-        "proofValue": "u2V0BhVhAOb-tBPnmAMIeHBa5CVUE-yPwucASpEr7gjKlqt54uZccLYeOBLHKRXKeIMV4SAZ32d6iQPfNI57fjEQGhu57UVgjgCQDzqNCptK-abpv0qCSswzSF5nZtbnHvEHoxiIM0JoSWkWAoJhNAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBgYGRgaGBsYHBgdGB4YHxggGCEYIhgjGCQYJRgmGCcYKBgpGCoYKxgsGC0YLhgvGDAYMRgyGDMYNBg1GDYYNxg4GDkYOhg7GDwYPRg-GD8YQBhBGEIYQxhEGEUYRhhHGEgYSRhKGEsYTA"
+        "proofValue": "u2V0BhVhA_CUSMP0ZzKu5i1hz_xGyE5eOT5cpitSEGKCF-iAEiFGee-DRqzUzutRSQy8r_Xnjuf-ShcqJT1c8SkBR6sG_j1gjgCQC0wev2KbXbf9XNBggERq4JNHtfcfVE4zD68zLN3KHczCAoJhTAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBgYGRgaGBsYHBgdGB4YHxggGCEYIhgjGCQYJRgmGCcYKBgpGCoYKxgsGC0YLhgvGDAYMRgyGDMYNBg1GDYYNxg4GDkYOhg7GDwYPRg-GD8YQBhBGEIYQxhEGEUYRhhHGEgYSRhKGEsYTBhNGE4YTxhQGFEYUg"
       },
       {
         "type": "DataIntegrityProof",
@@ -450,11 +488,11 @@
         "created": "2026-05-01T12:00:00Z",
         "verificationMethod": "did:web:transpareo.com#key-1",
         "proofPurpose": "assertionMethod",
-        "proofValue": "u2V0BhVhA3NJnXm1p8TEaF1hbfkBx_klJ4UbeE_ouu0fy1UO79pnr0GKiF8wtFzzmVt9xFYZTWr8l599LAg6swLP15De5ClgjgCQCUMkMBrcvz26cb6h_jNLYHCzyqsccheNbd7fxtosyS0qAoJhNAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBgYGRgaGBsYHBgdGB4YHxggGCEYIhgjGCQYJRgmGCcYKBgpGCoYKxgsGC0YLhgvGDAYMRgyGDMYNBg1GDYYNxg4GDkYOhg7GDwYPRg-GD8YQBhBGEIYQxhEGEUYRhhHGEgYSRhKGEsYTA"
+        "proofValue": "u2V0BhVhA4b-ZxMAqYJ7Q8noJYVfjhPiSsiFKbq6-tWY5gHHJnwh69B8kHooyAZ_RzUGv5HN_q_vk7cPKjxD6uli0vs8LE1gjgCQD_9NtpK8bdesvKB5fpaWeYRgds2rZgWs7EddsyyVJKQqAoJhTAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBgYGRgaGBsYHBgdGB4YHxggGCEYIhgjGCQYJRgmGCcYKBgpGCoYKxgsGC0YLhgvGDAYMRgyGDMYNBg1GDYYNxg4GDkYOhg7GDwYPRg-GD8YQBhBGEIYQxhEGEUYRhhHGEgYSRhKGEsYTBhNGE4YTxhQGFEYUg"
       }
     ]
   },
-  "public_view_hash_hex": "7a27eb5d8f8fb37c64bdbb4f7029991a5eb8f8bca888b32dc03e0eb21090183b",
+  "public_view_hash_hex": "565c257ddae132dabf4b7179bc3128324e3180a5e6187404f350233e12dff68a",
   "vc_context": {
     "@context": {
       "@version": 1.1,

@@ -3,6 +3,9 @@
     "@version": 1.1,
     "transpareo": "https://transpareo.com/vocab/transpareo/v1#",
     "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "iso3166-1-alpha2": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#iso3166-1-alpha2"
+    },
     "dppEventId": {
       "@id": "https://transpareo.com/vocab/transpareo/v1#dppEventId",
       "@type": "xsd:string"

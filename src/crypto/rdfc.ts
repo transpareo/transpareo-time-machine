@@ -27,6 +27,18 @@
  * plus a datatype), and any blank-node graph whose nodes
  * do not separate under first-degree hashing.
  *
+ * Known deviation: a compact IRI here expands against any
+ * prefix the context defines. JSON-LD 1.1 gates that on a
+ * term definition's prefix flag, which a simple term
+ * definition earns only when its IRI mapping ends in a
+ * gen-delim character, so a prefix ending in anything else
+ * expands here and stays a compact IRI in a conformant
+ * processor. Every prefix our own documents use ends in
+ * '#', so the two agree on them; a signed document should
+ * still carry an absolute IRI in a value's `@type` rather
+ * than a compact one, since a datatype that expands two
+ * ways breaks the signature rather than the render.
+ *
  * The label-replacement variant (canonicalize with a
  * labelMap) emits the canonical N-Quads in canonical
  * order but with each blank-node label swapped for the

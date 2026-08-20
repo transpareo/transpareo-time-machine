@@ -73,6 +73,57 @@ describe('canonicalize: typed literals', () => {
   });
 });
 
+// A value's datatype is written as an absolute IRI, and
+// these cases are the reason. A compact one reads two ways:
+// this canonicalizer expands it against any prefix the
+// context defines, while a processor applying JSON-LD 1.1's
+// prefix rule leaves it standing, since a simple term
+// definition only acts as a prefix when its IRI ends in a
+// gen-delim character. The two readings produce different
+// statements out of identical bytes, which breaks the
+// signature rather than the render. An absolute IRI has
+// nothing left to expand, so every reader agrees.
+describe('canonicalize: value datatypes', () => {
+  const ABSOLUTE =
+    'https://transpareo.com/vocab/transpareo/v1#iso3166-1-alpha2';
+  const doc = (datatype: string, context: Record<string, unknown> = {}) => ({
+    '@context': { ...CTX, origin: 'ex:origin', ...context },
+    '@id': 'ex:s',
+    origin: { '@value': 'PT', '@type': datatype },
+  });
+  const quad = (datatype: string) =>
+    `<http://example.org/s> <http://example.org/origin> `
+    + `"PT"^^<${datatype}> .\n`;
+
+  it('carries an absolute datatype through untouched', async () => {
+    expect(await canonicalize(doc(ABSOLUTE))).toEqual([quad(ABSOLUTE)]);
+  });
+
+  // The same document, with and without a context that
+  // could act on the datatype: an absolute IRI is inert
+  // either way, which is the property the wire relies on.
+  it('reads an absolute datatype the same with or without a prefix',
+    async () => {
+      const withPrefix = await canonicalize(doc(ABSOLUTE, {
+        'iso3166-1': 'https://transpareo.com/vocab/transpareo/v1#iso3166-1-',
+      }));
+      expect(withPrefix).toEqual(await canonicalize(doc(ABSOLUTE)));
+    });
+
+  it('expands a compact datatype against a defined prefix', async () => {
+    const lines = await canonicalize(doc('iso3166-1:alpha2', {
+      'iso3166-1': 'https://transpareo.com/vocab/transpareo/v1#iso3166-1-',
+    }));
+    expect(lines).toEqual([quad(ABSOLUTE)]);
+  });
+
+  it('leaves a compact datatype standing when no prefix defines it',
+    async () => {
+      const lines = await canonicalize(doc('iso3166-1:alpha2'));
+      expect(lines).toEqual([quad('iso3166-1:alpha2')]);
+    });
+});
+
 describe('canonicalize: IRI references and nested nodes', () => {
   it('coerces @type:@id and recurses into nested nodes', async () => {
     const doc = {
