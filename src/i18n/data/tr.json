@@ -5,6 +5,7 @@
   "notVerifiable": "Doğrulanamaz",
   "digitalProductPassport": "Dijital ürün pasaportu",
   "historicalView": "Geçmiş görünüm",
+  "brandbar.home": "Ana sayfa",
   "cryptoProof.title": "Kriptografik kanıt",
   "cryptoProof.allValid": "Tüm imzalar geçerli",
   "cryptoProof.mismatch": "İmza uyumsuzluğu",

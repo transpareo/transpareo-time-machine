@@ -5,6 +5,7 @@
   "notVerifiable": "Kan ikke verifiseres",
   "digitalProductPassport": "Digitalt produktpass",
   "historicalView": "Historisk visning",
+  "brandbar.home": "Forside",
   "cryptoProof.title": "Kryptografisk bevis",
   "cryptoProof.allValid": "Alle signaturer gyldige",
   "cryptoProof.mismatch": "Signaturuoverensstemmelse",

@@ -10,6 +10,22 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Added
+
+- The brandbar logo can carry a link. A host that sets
+  `logo-href` on the element renders the publisher's logo
+  as an anchor to that address, typically the publisher's
+  own home page; without the attribute the logo stays
+  plain artwork, as it was. The link only appears where
+  there is a logo to click, so a theme that names no
+  `--logo-url` keeps its chip-only bar untouched and gains
+  no invisible click target. The URL passes the same
+  scheme guard the footer links use: a `javascript:` value
+  leaves the logo unlinked instead of arming it. Because
+  the artwork carries no text, the anchor gets a localized
+  accessible name ("Home page", translated across all 40
+  locales) rather than announcing its own URL.
+
 ## [2.13.0] - 2026-08-19
 
 ### Added

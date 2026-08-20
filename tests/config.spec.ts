@@ -65,6 +65,20 @@ describe('pinned-platform-key parsing', () => {
   });
 });
 
+describe('logo-href parsing', () => {
+  it('carries the attribute through verbatim', () => {
+    mod.initConfigFromElement(fakeElement({
+      'logo-href': 'https://nordic-wear.example/',
+    }));
+    expect(mod.config.logoHref).toBe('https://nordic-wear.example/');
+  });
+
+  it('is undefined when the attribute is absent', () => {
+    mod.initConfigFromElement(fakeElement({}));
+    expect(mod.config.logoHref).toBeUndefined();
+  });
+});
+
 describe('pinned-issuer-key parsing', () => {
   it('parses the issuer key set the same way', () => {
     mod.initConfigFromElement(fakeElement({

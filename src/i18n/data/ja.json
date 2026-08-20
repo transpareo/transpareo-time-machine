@@ -5,6 +5,7 @@
   "notVerifiable": "検証不可",
   "digitalProductPassport": "デジタル製品パスポート",
   "historicalView": "履歴ビュー",
+  "brandbar.home": "ホーム",
   "cryptoProof.title": "暗号証明",
   "cryptoProof.allValid": "すべての署名が有効",
   "cryptoProof.mismatch": "署名の不一致",

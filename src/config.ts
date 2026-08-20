@@ -9,7 +9,7 @@
  * Every option is an attribute on the element
  * (icons-src, revoked-roots-src, show-verification-mark,
  * pinned-platform-key, pinned-issuer-key, verifier,
- * footer-copyright, footer-links).
+ * logo-href, footer-copyright, footer-links).
  * initConfigFromElement reads them once in the element's
  * setup(), before its subtree mounts, so the consumers
  * below (read at render time) see populated values.
@@ -46,6 +46,15 @@ export interface TimeMachineConfig {
     readonly copyright?: string
     readonly links?: ReadonlyArray<FooterLink>
   }
+
+  // From `logo-href`. Where the brandbar logo links to,
+  // typically the publisher's home page. Absent, the logo
+  // renders as plain artwork, which is what it did before
+  // this option existed. Only a logo the theme actually
+  // supplies (--logo-url) is ever linked, and only through
+  // the scheme guard: the value rides in host page markup
+  // the same way the footer links do.
+  readonly logoHref?: string
 
   // URL for the decorative content sprite (the publisher's
   // icon vocabulary, addressed by name from snapshot data).
@@ -150,6 +159,7 @@ export function initConfigFromElement(el: Element): void {
     iconsUrl: str('icons-src'),
     iconMapUrl: str('icon-map-src'),
     revokedRootsUrl: str('revoked-roots-src'),
+    logoHref: str('logo-href'),
     pinnedPlatformKeys: parseKeySet(el, 'pinned-platform-key'),
     pinnedIssuerKeys: parseKeySet(el, 'pinned-issuer-key'),
     verifier: el.hasAttribute('verifier') || undefined,

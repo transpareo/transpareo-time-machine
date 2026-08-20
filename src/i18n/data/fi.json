@@ -5,6 +5,7 @@
   "notVerifiable": "Ei vahvistettavissa",
   "digitalProductPassport": "Digitaalinen tuotepassi",
   "historicalView": "Historiallinen näkymä",
+  "brandbar.home": "Etusivu",
   "cryptoProof.title": "Kryptografinen todiste",
   "cryptoProof.allValid": "Kaikki allekirjoitukset kelvollisia",
   "cryptoProof.mismatch": "Allekirjoitus ei täsmää",

@@ -431,7 +431,7 @@ The full passport renderer.
 | Properties | `state` (read-only): the same detail the `:state` event carries, or `null` before the manifest has loaded. |
 | CSS parts | None today. The element has an open shadow root, so host pages can reach inner DOM via `::shadow`-style selectors but doing so is unsupported and may break on any release. |
 | CSS custom properties | The publisher theming surface (see "Theming" below). Custom properties inherit through the shadow boundary, so any `--token` set on the host page applies inside. |
-| Attributes | `src` (DPP **manifest** URL, or a single signed **snapshot** URL; see "Single-snapshot mode" below), `icons-src` (decorative content sprite), `icon-map-src` (per-publisher JSON mapping each property's `propertyID` to a sprite symbol id; pairs with `icons-src`), `revoked-roots-src` (revocation endpoint; `''` disables the boot check), `show-verification-mark` (`false` always hides the verification chip, `true` always shows it; absent, the chip hides itself for a lone snapshot that carries no proof), `pinned-platform-key` (whitespace-separated Multikey set; the chip must see one of them among the verified entries; also keys the revoked-roots check), `pinned-issuer-key` (whitespace-separated Multikey set of the issuer's declared signing keys - under BYOK the customer's own registered keys; the chip requires a verified issuer entry under one of them), `verifier` (present: mount `<dpp-verifier>` in place of the renderer), `footer-copyright` + `footer-links` (footer chrome; `footer-links` is a JSON array of `{ label, url }`). Read once in the element's `setup()` (`src/config.ts`). `locale` states which language to render in: a tag (`locale="de"`), `inherit` to follow the language surrounding the element, or `auto` (the default, and what an absent attribute means) to detect from the visitor's browser. It outranks the standard `lang` attribute, which is still read where no `locale` is given, so `locale="auto"` is how a page that templates `lang` everywhere keeps detection. Either pins the UI locale ahead of the browser preference and of a locale the visitor picked on another page; see "Localization" below. |
+| Attributes | `src` (DPP **manifest** URL, or a single signed **snapshot** URL; see "Single-snapshot mode" below), `icons-src` (decorative content sprite), `icon-map-src` (per-publisher JSON mapping each property's `propertyID` to a sprite symbol id; pairs with `icons-src`), `revoked-roots-src` (revocation endpoint; `''` disables the boot check), `show-verification-mark` (`false` always hides the verification chip, `true` always shows it; absent, the chip hides itself for a lone snapshot that carries no proof), `pinned-platform-key` (whitespace-separated Multikey set; the chip must see one of them among the verified entries; also keys the revoked-roots check), `pinned-issuer-key` (whitespace-separated Multikey set of the issuer's declared signing keys - under BYOK the customer's own registered keys; the chip requires a verified issuer entry under one of them), `verifier` (present: mount `<dpp-verifier>` in place of the renderer), `logo-href` (where the brandbar logo links to, typically the publisher's home page; absent, the logo stays plain artwork), `footer-copyright` + `footer-links` (footer chrome; `footer-links` is a JSON array of `{ label, url }`). Read once in the element's `setup()` (`src/config.ts`). `locale` states which language to render in: a tag (`locale="de"`), `inherit` to follow the language surrounding the element, or `auto` (the default, and what an absent attribute means) to detect from the visitor's browser. It outranks the standard `lang` attribute, which is still read where no `locale` is given, so `locale="auto"` is how a page that templates `lang` everywhere keeps detection. Either pins the UI locale ahead of the browser preference and of a locale the visitor picked on another page; see "Localization" below. |
 
 #### The verification mark
 
@@ -460,6 +460,16 @@ renders, the brandbar is omitted entirely rather than
 left as an empty sticky header, and the card content
 keeps a padded top edge (1.5x its vertical padding) in
 its place.
+
+The logo is plain artwork unless `logo-href` names a
+destination, typically the publisher's own home page; with
+it, the logo renders as a link there. Only a logo the theme
+actually supplies is linked, so a chip-only bar gains no
+invisible click target, and the URL passes the same scheme
+guard as the footer links: a `javascript:` value leaves the
+logo unlinked rather than armed. The artwork carries no
+text, so the link takes a localized accessible name
+("Home page") instead of announcing its own URL.
 
 #### Single-snapshot mode
 

@@ -53,6 +53,15 @@ dpp-brandbar {
   background-repeat: no-repeat;
   background-position: left center;
   background-size: contain;
+
+  // Focusable only where `logo-href` turned the logo into
+  // an anchor. The artwork carries no text, so the ring is
+  // the only thing a keyboard visitor sees; the offset
+  // keeps it clear of the glyphs.
+  &:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 4px;
+  }
 }
 
 // Host opted into a tinted logo via --logo-color: swap

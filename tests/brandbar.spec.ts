@@ -10,6 +10,9 @@
  * neither a themed logo nor the chip renders, the bar
  * itself renders nothing: an empty sticky header would be
  * nothing but whitespace above the hero.
+ *
+ * The logo links to the host's `logo-href` when there is
+ * a logo to click and the URL clears the scheme guard.
  */
 import { describe, it, expect, afterEach } from 'vitest'
 import { config } from '@/config'
@@ -18,7 +21,10 @@ import type { DppSnapshot } from '@/types'
 import type { DppManifest } from '@/archive'
 import '@/components/dpp-brandbar'
 
-type MutableConfig = { showVerificationMark?: boolean }
+type MutableConfig = {
+  showVerificationMark?: boolean
+  logoHref?: string
+}
 
 function seedSnapshot(signed: boolean): void {
   const proof = signed ? [{ proofValue: 'z1' }] : []
@@ -37,6 +43,7 @@ function mount(logoUrl?: string): HTMLElement {
 
 afterEach(() => {
   delete (config as MutableConfig).showVerificationMark
+  delete (config as MutableConfig).logoHref
   host.manifest.set(null)
   document.body.replaceChildren()
 })
@@ -63,6 +70,47 @@ describe('dpp-brandbar', () => {
     const el = mount('url(/logo.svg)')
     expect(el.querySelector('.brandbar')).not.toBeNull()
     expect(el.querySelector('dpp-verification-chip')).toBeNull()
+  })
+
+  it('links the logo when the host names a destination', () => {
+    ;(config as MutableConfig).showVerificationMark = false
+    ;(config as MutableConfig).logoHref = 'https://nordic-wear.example/'
+    seedSnapshot(true)
+    const el = mount('url(/logo.svg)')
+    const a = el.querySelector('a.brand-logo') as HTMLAnchorElement
+    expect(a).not.toBeNull()
+    expect(a.getAttribute('href')).toBe('https://nordic-wear.example/')
+
+    // The artwork carries no text; without a name the link
+    // announces as its own URL (and trips the axe gate).
+    expect(a.getAttribute('aria-label')).toBe('Home page')
+  })
+
+  it('leaves the logo unlinked without a destination', () => {
+    ;(config as MutableConfig).showVerificationMark = false
+    seedSnapshot(true)
+    const el = mount('url(/logo.svg)')
+    expect(el.querySelector('a.brand-logo')).toBeNull()
+    expect(el.querySelector('span.brand-logo')).not.toBeNull()
+  })
+
+  it('refuses a script-bearing destination', () => {
+    ;(config as MutableConfig).showVerificationMark = false
+    ;(config as MutableConfig).logoHref = 'javascript:alert(1)'
+    seedSnapshot(true)
+    const el = mount('url(/logo.svg)')
+    expect(el.querySelector('a.brand-logo')).toBeNull()
+    expect(el.querySelector('span.brand-logo')).not.toBeNull()
+  })
+
+  it('skips the link with no themed logo to click', () => {
+    // Chip-only bar: linking the empty logo box would put
+    // an invisible click target beside the chip.
+    ;(config as MutableConfig).logoHref = 'https://nordic-wear.example/'
+    seedSnapshot(true)
+    const el = mount()
+    expect(el.querySelector('.brandbar')).not.toBeNull()
+    expect(el.querySelector('a.brand-logo')).toBeNull()
   })
 
   it('hides the chip for a lone unsigned snapshot by default', () => {

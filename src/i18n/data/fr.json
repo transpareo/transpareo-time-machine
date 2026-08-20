@@ -7,6 +7,7 @@
   "notVerifiable": "Non vérifiable",
   "digitalProductPassport": "Passeport numérique de produit",
   "historicalView": "Vue historique",
+  "brandbar.home": "Page d'accueil",
   "cryptoProof.title": "Preuve cryptographique",
   "cryptoProof.allValid": "Toutes les signatures sont valides",
   "cryptoProof.mismatch": "Signature non concordante",
