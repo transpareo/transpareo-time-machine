@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 #
 # Release helper. Bumps the version, stamps the CHANGELOG,
-# commits, tags v<version>, and pushes. Pushing the tag IS
+# repins the README's CDN snippets, commits, tags v<version>,
+# and pushes. Pushing the tag IS
 # the release: .github/workflows/release.yml fires on the tag
 # and does the real work, so nothing is built or published
 # here.
@@ -146,8 +147,21 @@ if [ "$KEEP" = false ] && grep -q '^## \[Unreleased\]' CHANGELOG.md; then
   fi
 fi
 
+# The README's CDN snippets carry a pinned version, and they
+# tell a host to pin rather than track latest, so a stale one
+# there hands out an old build to anyone copying the block.
+# Nothing else rewrites them. Both forms are keyed to the
+# package name or to a backticked @<semver>, so no other
+# version-shaped string in the prose is touched.
+run sed -i \
+  "s/\(transpareo-time-machine@\)[0-9]\+\.[0-9]\+\.[0-9]\+/\1${VERSION}/g" \
+  README.md
+run sed -i \
+  "s/\`@[0-9]\+\.[0-9]\+\.[0-9]\+\`/\`@${VERSION}\`/g" \
+  README.md
+
 # Commit, tag, push. The pushed tag triggers release.yml.
-run git add package.json package-lock.json CHANGELOG.md
+run git add package.json package-lock.json CHANGELOG.md README.md
 run git commit -m "Release ${VERSION}"
 run git tag "$TAG"
 run git push origin "$branch"
