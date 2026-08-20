@@ -22,7 +22,10 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { tx, regionLiteral, isRegionLiteral } from '../src/types';
+import {
+  tx, regionLiteral, isRegionLiteral, propertyIsKind,
+  type SnapshotLocalizedText,
+} from '../src/types';
 import { toRenderModel } from '../src/host';
 import type { SignedSnapshot } from '../src/archive';
 
@@ -124,6 +127,52 @@ describe('regionLiteral / isRegionLiteral', () => {
     expect(isRegionLiteral({ '@type': DT })).toBe(false);
     expect(isRegionLiteral({ '@value': 'PT', '@type': 'xsd:string' }))
       .toBe(false);
+  });
+});
+
+// A property row as a publisher emits it after republishing
+// a country property: `valueDataType` stays the XSD type EN
+// 18223 requires there, `value` stops being a string and
+// becomes a typed literal, and the country-ness rides on the
+// inner `@type` alone. Pinned at the wire row rather than at
+// the classifier, because the thing worth guarding is that
+// the row survives the adapter with its literal intact and
+// that the sibling field changes nothing.
+describe('toRenderModel: a republished country property', () => {
+  const row = {
+    propertyID: 'origin',
+    name: [{ '@value': 'Country of origin', '@language': 'en' }],
+    valueDataType: 'xsd:string',
+    value: { '@value': 'PT', '@type': DT }
+  };
+  const wire = {
+    version: 4,
+    publishedAt: '2026-08-20T00:00:00Z',
+    dppStatus: 'inUse',
+    issuer: { '@type': 'Organization', name: 'I', did: 'did:web:i' },
+    platform: { '@type': 'Organization', name: 'P', did: 'did:web:p' },
+    product: {
+      '@type': 'Product', name: { en: 'X' }, brand: 'B',
+      properties: [row]
+    },
+    proof: []
+  } as unknown as SignedSnapshot;
+
+  const value = (): SnapshotLocalizedText => {
+    const scalar = toRenderModel(wire).properties
+      .find(propertyIsKind('scalar'));
+    return scalar ? scalar.value.value : '';
+  };
+
+  it('reads the row as a scalar rather than a blank tile', () => {
+    expect(value()).toEqual({ '@value': 'PT', '@type': DT });
+  });
+
+  it('names the country in every locale the reader may pick', () => {
+    expect(tx(value(), 'en')).toBe('Portugal');
+    expect(tx(value(), 'de')).toBe('Portugal');
+    expect(tx(value(), 'ro')).toBe('Portugalia');
+    expect(tx(value(), 'zh')).toBe('葡萄牙');
   });
 });
 
