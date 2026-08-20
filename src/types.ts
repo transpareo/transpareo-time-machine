@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 import type { Organization } from './archive'
+import { regionName } from './i18n/display-names'
 
 // Translatable scalar. Either a single string (one
 // locale, codes, proper nouns, etc.) or a record keyed
@@ -14,8 +15,8 @@ import type { Organization } from './archive'
 // on:
 //
 //   SnapshotLocalizedText - signed bytes from the
-//     publisher's per-version snapshot. The backend's
-//     serializer declares only a small set of fields
+//     publisher's per-version snapshot. The wire
+//     serialization declares only a small set of fields
 //     with `@container: @language` (name, description,
 //     reason, category). Every snapshot-derived field
 //     that may legitimately carry a per-locale hash
@@ -48,6 +49,49 @@ export type SpaLocalizedText =
   | Readonly<Record<string, string>>
 export type LocalizedText = SnapshotLocalizedText | SpaLocalizedText
 
+// The datatype a signed value carries when its lexical
+// form is an ISO 3166-1 alpha-2 country code. Nothing else
+// on the wire says a two-letter string is a country, so
+// without the literal "PT" renders as "PT". The code stays
+// in the signed bytes (it is what a regulator or an
+// aggregator acts on) and the renderer names the country
+// in the viewer's language.
+//
+// Absolute, never a compact IRI. A compact one expands
+// through the document's own context, and JSON-LD is strict
+// about when a term may act as a prefix, so two processors
+// can legitimately expand the same datatype two ways. That
+// breaks the signature rather than the render, and an
+// absolute IRI has nothing left to expand.
+//
+// The datatype's published lexical space is exactly two
+// upper-case letters. Lower-case, three-letter and numeric
+// values do not conform; this renderer accepts a lower-case
+// code on read anyway, and shows any code it cannot resolve
+// as the code rather than guessing at it.
+export const REGION_DATATYPE =
+  'https://transpareo.com/vocab/transpareo/v1#iso3166-1-alpha2'
+
+export function isRegionLiteral(
+  v: unknown,
+): v is { readonly '@value': string; readonly '@type': string } {
+  if (!v || typeof v !== 'object' || Array.isArray(v)) return false
+  const obj = v as Record<string, unknown>
+  return obj['@type'] === REGION_DATATYPE && typeof obj['@value'] === 'string'
+}
+
+// Wrap a country code in that literal so a field the wire
+// models as a bare code (the manufacturer address) resolves
+// through the same path as a country-typed property value.
+// Undefined in, undefined out, so a caller can chain it
+// behind a plain-text country name.
+export function regionLiteral(
+  code: string | undefined,
+): SnapshotLocalizedText | undefined {
+  if (!code) return undefined
+  return { '@value': code, '@type': REGION_DATATYPE }
+}
+
 export function tx(
   text: LocalizedText | undefined | null,
   locale: string,
@@ -55,6 +99,16 @@ export function tx(
 ): string {
   if (text == null) return ''
   if (typeof text === 'string') return text
+
+  // A country code resolves to what the viewer's locale
+  // calls that country, falling back to the bare code.
+  // Every render surface reaches values through tx(), so
+  // this one branch covers tiles, the detail table, badge
+  // lists and the address strip alike.
+  if (isRegionLiteral(text)) {
+    return regionName(text['@value'], locale) ?? text['@value']
+  }
+
   // A signed typed literal ({'@value', '@type'} - numeric
   // structured-composition cells arrive this way) renders as
   // its lexical value, guaranteed rather than left to the
@@ -132,7 +186,7 @@ export type Rating =
   | 'good'
   | 'veryGood'
 
-// Backend serializer historically emitted snake_case
+// Snapshots historically carried snake_case
 // rating tokens (`very_bad`, `very_good`); the SPA
 // renders the camelCase form (`veryBad`, `veryGood`)
 // because the i18n bundles and sprite map use that.
@@ -391,7 +445,7 @@ export interface SnapshotImage {
 // active version's snapshot directly; there is no
 // separate "base Dpp" that snapshots diff against.
 // Per-version property delta against the prior version: the
-// `dpp:ChangeSet` the backend emits on v2+. Each array is a
+// `dpp:ChangeSet` a publisher emits on v2+. Each array is a
 // set of `propertyID`s; the renderer resolves them to labels
 // (added / modified from this version's rows, removed from
 // the prior version's). An absent block means "no delta
@@ -501,7 +555,12 @@ export interface DppManufacturer {
   readonly name: string
   readonly street: string
   readonly city: string
-  readonly country: string
+
+  // A plain string when the wire spells the country out,
+  // a region literal when it carries only the ISO code.
+  // Both resolve through tx() at render time, so the
+  // address strip follows the viewer's language.
+  readonly country: SnapshotLocalizedText
 }
 
 // Identity block on the snapshot: name, brand, images,

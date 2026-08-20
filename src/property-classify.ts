@@ -15,6 +15,12 @@
  *   array of texts          -> list        (badge group)
  *   array of substances     -> composition (donut)
  *
+ * A value's datatype is data, not a render hint, so the
+ * one discriminator the classifier does read is the
+ * JSON-LD `@type` on a typed literal: it says what the
+ * lexical form means (a decimal, an ISO 3166-1 country
+ * code), never which surface to paint it on.
+ *
  * A localized scalar arrives in the JSON-LD expanded form
  * `[{ '@value', '@language' }, ...]`; it is folded back to a
  * `{ locale: text }` hash at the boundary here so every
@@ -37,7 +43,9 @@
 import type {
   PropertyValueKind, CompositionEntry, SnapshotLocalizedText,
 } from '@/types'
-import { canonicalRating, isLanguageArray, foldLocale } from '@/types'
+import {
+  canonicalRating, isLanguageArray, foldLocale, isRegionLiteral,
+} from '@/types'
 
 export const LONG_TEXT_GATE = 60
 
@@ -154,6 +162,15 @@ export function classifyWireValue(
   if (numeric != null) {
     const value = isTypedLiteral(raw) ? raw['@value'] : String(raw)
     return { type: 'scalar', value, numeric, ...(unit ? { unit } : {}) }
+  }
+
+  // A country keeps its literal intact through the model:
+  // the code is the signed value, and tx() names the
+  // country at render time, so the tile follows a locale
+  // switch. Bypasses the length gate - a country name is
+  // never an accordion.
+  if (isRegionLiteral(raw)) {
+    return { type: 'scalar', value: raw, ...(unit ? { unit } : {}) }
   }
   if (isTypedLiteral(raw)) {
     return scalarOrLongText(raw['@value'], unit)

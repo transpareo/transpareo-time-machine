@@ -48,7 +48,9 @@ import type {
   PropertyValue, PropertyValueKind, SnapshotLocalizedText, SnapshotProof,
   ChangeSet,
 } from '@/types'
-import { canonicalRating, canonicalStatus, foldLocale } from '@/types'
+import {
+  canonicalRating, canonicalStatus, foldLocale, regionLiteral,
+} from '@/types'
 import {
   classifyWireValue, bridgeLongTextGroups, numericWireValue,
 } from '@/property-classify'
@@ -484,7 +486,7 @@ function adaptManufacturer(
     name: m?.name ?? '',
     street: m?.street ?? '',
     city: m?.city ?? '',
-    country: m?.country ?? m?.countryCode ?? '',
+    country: m?.country ?? regionLiteral(m?.countryCode) ?? '',
   }
 }
 

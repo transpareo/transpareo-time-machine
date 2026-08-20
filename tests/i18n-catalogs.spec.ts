@@ -20,6 +20,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
+import { regionName } from '../src/i18n/display-names';
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -76,5 +77,33 @@ describe('locale catalogs', () => {
       expect(value, `${file} ${key}`).not.toMatch(/[<>"]/);
       expect(value, `${file} ${key}`).not.toMatch(/javascript:/i);
     }
+  });
+
+  // Country values are rendered from their code by Intl, and
+  // a locale the platform holds no region data for falls
+  // back to the code itself. That fallback is quiet: adding
+  // a catalog for a language CLDR does not cover would ship
+  // "PT" to those readers with nothing to report it, which
+  // is how the wrong-language name went unnoticed on the
+  // publishing side. This turns that into a red suite.
+  //
+  // It proves the data on the runtime the suite runs on, not
+  // in every browser. Engines ship full CLDR, so a locale
+  // failing here is a locale to think twice about rather
+  // than one browsers would quietly handle.
+  it('names a country in every locale a catalog exists for', () => {
+    // Every country code the fixtures actually carry, not
+    // one representative: CLDR is per-locale data, so
+    // "this locale has region names" and "this locale has
+    // THIS region's name" are different claims.
+    const codes = ['PT', 'IT', 'KR', 'CN', 'PL', 'IN', 'TR'];
+    const missing = files
+      .flatMap((f) => {
+        const locale = f.replace('.json', '');
+        return codes
+          .filter((code) => !regionName(code, locale))
+          .map((code) => `${locale}/${code}`);
+      });
+    expect(missing, 'locale/code pairs with no Intl data').toEqual([]);
   });
 });

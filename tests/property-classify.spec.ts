@@ -54,10 +54,9 @@ describe('classifyWireValue: scalars', () => {
 
 describe('classifyWireValue: typed literal values', () => {
   // The signed wire form for a non-string PropertyValue/
-  // QuantitativeValue scalar: {'@value', '@type'} (see the
-  // backend's typed_literal), never a bare JSON number/
-  // boolean - so decimal/integer/boolean/date all arrive
-  // this way, not as the JS-native type.
+  // QuantitativeValue scalar: {'@value', '@type'}, never a
+  // bare JSON number/boolean - so decimal/integer/boolean/
+  // date all arrive this way, not as the JS-native type.
   it('reads a decimal typed literal as a numeric scalar', () => {
     const v = { '@value': '30.0', '@type': 'xsd:decimal' };
     expect(classifyWireValue(v, 'kg')).toEqual({
@@ -90,6 +89,35 @@ describe('classifyWireValue: typed literal values', () => {
     const v = { '@value': '30.0', '@type': 'xsd:decimal' };
     const k = classifyWireValue(v, undefined);
     expect(k).not.toEqual({ type: 'scalar', value: v });
+  });
+});
+
+describe('classifyWireValue: country codes', () => {
+  const DT = 'https://transpareo.com/vocab/transpareo/v1#iso3166-1-alpha2';
+  const PT = { '@value': 'PT', '@type': DT };
+
+  // The country literal is the one typed literal that stays
+  // whole in the model: the code is the signed value and
+  // tx() names the country at render time, so the tile
+  // follows a locale switch instead of freezing one
+  // language into the model at adapt time.
+  it('keeps the literal intact on the scalar', () => {
+    expect(classifyWireValue(PT, undefined)).toEqual({
+      type: 'scalar', value: PT,
+    });
+  });
+
+  it('carries a unit like any other scalar', () => {
+    expect(classifyWireValue(PT, 'kg')).toEqual({
+      type: 'scalar', value: PT, unit: 'kg',
+    });
+  });
+
+  it('keeps a country list a list, one literal per item', () => {
+    const v = [PT, { '@value': 'IT', '@type': DT }];
+    expect(classifyWireValue(v, undefined)).toEqual({
+      type: 'list', items: v,
+    });
   });
 });
 

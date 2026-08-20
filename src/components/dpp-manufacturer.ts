@@ -5,13 +5,18 @@
  *
  * <dpp-manufacturer>, single-line address strip with a
  * building icon, sourced from the rendered product's
- * manufacturer fields.
+ * manufacturer fields. The country arrives as an ISO
+ * 3166-1 code whenever the wire carries no spelled-out
+ * name, so it is resolved through tx() like every other
+ * localized field and re-renders on a locale switch.
  */
 
 import { LightElement } from '@/reactive/element'
 import { el } from '@/reactive/dom'
 import { icon } from '@/icons'
 import { renderedProduct } from '@/state'
+import { i18n } from '@/i18n'
+import { tx } from '@/types'
 
 class DppManufacturer extends LightElement {
   protected setup(): void {
@@ -20,7 +25,7 @@ class DppManufacturer extends LightElement {
 
     this.effect(() => {
       const m = renderedProduct().manufacturer
-      const fields = [m.name, m.street, m.city, m.country]
+      const fields = [m.name, m.street, m.city, tx(m.country, i18n.locale)]
       const parts = fields.filter(Boolean)
       wrap.style.display = parts.length ? '' : 'none'
 

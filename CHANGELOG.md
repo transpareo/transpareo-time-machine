@@ -10,7 +10,47 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Added
+
+- Country values render as country names. A property whose
+  value is an ISO 3166-1 alpha-2 code carries the datatype
+  `iso3166-1:alpha2` on its typed literal
+  (`{"@value": "PT", "@type": "iso3166-1:alpha2"}`), and the
+  renderer resolves the code to what the viewer's locale
+  calls that country, in all 40 locales, at no payload cost.
+  The code stays the signed value, so a regulator or an
+  aggregator still gets the thing they act on. Resolution
+  happens at render time, so the name follows a locale
+  switch, and it covers every surface a value reaches:
+  tiles, the detail table, badge lists. A code the platform
+  cannot name, and the ISO "unknown" placeholder ZZ, fall
+  back to the code itself rather than to a blank or to
+  "Unknown Region". The datatype is written as an absolute
+  IRI,
+  `https://transpareo.com/vocab/transpareo/v1#iso3166-1-alpha2`,
+  never a compact one: a compact IRI resolves through the
+  document's context, JSON-LD is strict about when a term
+  may act as a prefix, and two processors that read it
+  differently produce different signed statements. That
+  breaks the signature rather than the render, and an
+  absolute IRI leaves nothing to expand.
+
+  The literal's `@type` is the only country signal the
+  renderer reads. A row's `valueDataType` stays an XSD type
+  per EN 18223 Table 7, and a `dictionaryReference` points
+  at a code list for the data points that have one; both are
+  metadata for a consumer, not inputs to rendering, so a
+  publisher-defined country property renders the same as a
+  standardised one.
+
 ### Fixed
+
+- The manufacturer address strip printed a country code.
+  The wire carries the manufacturer country as
+  `countryCode` and the strip rendered it verbatim, so the
+  address ended in "PT" instead of "Portugal". It resolves
+  through the same path as a country-valued property now,
+  and re-renders on a locale switch.
 
 - The footer's language filter carries an id. A control with
   neither id nor name draws a console warning in Blink and is
@@ -311,7 +351,7 @@ and this project adheres to
   login page. It now carries the active locale as `locale`,
   the name this platform uses for it elsewhere. A login URL
   that already names a locale is left untouched, whichever
-  spelling it uses, which is how a backend opts out.
+  spelling it uses, which is how an issuer opts out.
 
 ## [2.8.1] - 2026-08-12
 
@@ -713,8 +753,8 @@ and this project adheres to
   conformant Data Integrity verifier interoperates. The
   "Verified" verdict counts authorities by resolved key
   rather than by shared signature. Lockstep with the
-  publisher backend: a renderer on this version rejects
-  snapshots still signed with the old profile, so the backend
+  issuing side: a renderer on this version rejects
+  snapshots still signed with the old profile, so a publisher
   must emit eddsa-jcs-2022 proofs together with this release.
 - **BREAKING:** `SnapshotProof.type`, `cryptosuite`,
   `created`, and `proofPurpose` are now required (the suite

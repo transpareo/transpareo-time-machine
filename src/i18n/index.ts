@@ -27,6 +27,7 @@ import { signal, effect } from '@/reactive/signals'
 import {
   englishLabels, loadLabels, bundledLocales, type Labels,
 } from './labels'
+import { displayNamesFor } from './display-names'
 import * as host from '@/host'
 import { availableLocales } from '@/state'
 
@@ -102,28 +103,15 @@ export function nativeName(code: string): string {
 // What the viewer's locale calls a language ("German" for
 // `de` while browsing in English); the picker leads every
 // row with it and keeps the native name as the hint.
-// Backed by Intl.DisplayNames, cached per viewer locale
-// since the picker calls this once per option row on
-// every menu render. Returns null when it would add
-// nothing over the native name: the platform can't
-// resolve either tag (both ride in untrusted manifest
-// data and an invalid one throws RangeError, hence the
-// try/catch pair), or the answer merely repeats the
+// Returns null when it would add nothing over the native
+// name: the platform can't resolve the tag (display-names
+// carries the guards), or the answer merely repeats the
 // native name (compared case-insensitively, since the two
 // sources disagree about case).
-const displayNames = new Map<string, Intl.DisplayNames | null>()
-
 export function localizedName(
   code: string, viewerLocale: string,
 ): string | null {
-  let dn = displayNames.get(viewerLocale)
-  if (dn === undefined) {
-    try {
-      const made = new Intl.DisplayNames([viewerLocale], { type: 'language' })
-      dn = answersIn(made, viewerLocale) ? made : null
-    } catch { dn = null }
-    displayNames.set(viewerLocale, dn)
-  }
+  const dn = displayNamesFor(viewerLocale, 'language')
   if (!dn) return null
 
   let name: string | undefined
@@ -131,21 +119,6 @@ export function localizedName(
   if (!name || name === code) return null
   const isEcho = name.toLowerCase() === nativeName(code).toLowerCase()
   return isEcho ? null : menuCase(name, viewerLocale)
-}
-
-// True when the platform answers in the language we asked
-// for. An engine carrying no data for a locale does not
-// throw: it resolves to a fallback and answers in that
-// instead, so a Maltese viewer would read English language
-// names beside correct Maltese native ones, and nothing
-// downstream could tell. Rejecting the mismatch drops that
-// viewer to the names we ship ourselves.
-//
-// Only the language subtag is compared: a request for `pt`
-// answered as `pt-BR` is still Portuguese.
-function answersIn(dn: Intl.DisplayNames, requested: string): boolean {
-  const got = dn.resolvedOptions().locale.split('-')[0].toLowerCase()
-  return got === requested.split('-')[0].toLowerCase()
 }
 
 // Intl.DisplayNames answers in the form a sentence would
