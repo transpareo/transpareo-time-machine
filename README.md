@@ -213,7 +213,7 @@ Field notes:
   language the visitor is reading the passport in, as
   the passport declares it). A login URL that already
   names a locale is passed through untouched, which is
-  how a backend opts out.
+  how an issuer opts out.
 - `versions[].registeredAt` / `registrationProof`
   (optional) - EU-registry round-trip metadata,
   surfaced in the proof modal when present.
@@ -1187,9 +1187,12 @@ markup, reference a symbol with the bare fragment:
 
 ## Dev wiring
 
-`vite.config.ts` proxies these paths to
-`https://backend.dev` (override with
-`DPP_ARCHIVE_ORIGIN=...`):
+`npm run seed` writes every artefact the renderer fetches
+into `public/`, so the dev server needs no upstream. To
+develop against a live resolver instead, set
+`DPP_ARCHIVE_ORIGIN=https://your-host` and `vite.config.ts`
+proxies these paths to it. With the variable unset there is
+no proxy at all:
 
 | Path | What it serves |
 |---|---|

@@ -3,29 +3,51 @@ import { fileURLToPath, URL } from 'node:url';
 import { readdirSync, readFileSync } from 'node:fs';
 import { parse as parseYaml } from 'yaml';
 
-// In dev the SPA proxies all DPP archive calls to the
-// Rails resolver host (backend.dev). The Rails endpoint
-// streams the archive bytes directly when storage is
+// Dev can proxy DPP archive calls to a live resolver host,
+// which streams the archive bytes directly when storage is
 // disk-backed and 302-redirects to the public CDN URL
-// otherwise, same SPA code works against both.
+// otherwise; the same SPA code works against both.
 //
-// Self-signed certs are normal on dev hosts (the
-// default `https://backend.dev`), so we skip TLS
-// verification on those, but only on those. Real-cert
-// staging / production hosts get full verification by
-// default; opt out by setting `DPP_ARCHIVE_INSECURE=1`.
-const archiveOrigin = process.env.DPP_ARCHIVE_ORIGIN
-  ?? 'https://backend.dev';
-const insecure =
+// Opt in per machine with `DPP_ARCHIVE_ORIGIN=https://...`.
+// There is no default host: `npm run seed` writes every
+// artefact the renderer fetches into `public/`, so the dev
+// server needs nothing else, and a default would send a
+// contributor's requests to a domain this project does not
+// control.
+//
+// Self-signed certs are normal on a development host, so
+// TLS verification is skipped for `.dev` / `.test` /
+// `.local` / localhost origins, and only for those.
+// Real-cert staging and production hosts get full
+// verification by default; opt out by setting
+// `DPP_ARCHIVE_INSECURE=1`.
+const archiveOrigin = process.env.DPP_ARCHIVE_ORIGIN;
+const insecure = !!archiveOrigin && (
   process.env.DPP_ARCHIVE_INSECURE === '1'
   || /\.(dev|test|local|localhost)(:|$|\/)/.test(archiveOrigin)
-  || /\/\/(localhost|127\.0\.0\.1)(:|$|\/)/.test(archiveOrigin);
+  || /\/\/(localhost|127\.0\.0\.1)(:|$|\/)/.test(archiveOrigin)
+);
 
-const proxyOpts = {
-  target: archiveOrigin,
-  changeOrigin: true,
-  secure: !insecure,
-};
+const proxyOpts = archiveOrigin
+  ? { target: archiveOrigin, changeOrigin: true, secure: !insecure }
+  : undefined;
+
+// Paths a resolver host serves when one is configured: the
+// archive itself, the revocation feed, the asset hosts the
+// SPA reuses (proxied by specific path so Vite's own
+// /assets handling is not shadowed), and the publisher
+// branding stylesheet, which is proxied so live Style-
+// Editor changes reach the SPA without a redeploy. With no
+// origin configured the map is empty and every one of these
+// falls through to the seeded files under `public/`.
+const proxyPaths = [
+  '/dpp', '/.well-known', '/admin/fonts', '/app', '/media',
+  '/branding.css'
+];
+
+const proxy = proxyOpts
+  ? Object.fromEntries(proxyPaths.map((p) => [p, proxyOpts]))
+  : {};
 
 // Dev-only fixture selection for the seeded demo pages.
 // `npm run dev` serves the nordic-wear demo; `npm run
@@ -180,23 +202,5 @@ export default defineConfig({
       },
     },
   },
-  server: {
-    proxy: {
-      '/dpp': proxyOpts,
-      '/.well-known': proxyOpts,
-
-      // Resolver-side asset hosts the icon font + the
-      // issuer mediafile bucket + the headline font the
-      // SPA reuses; proxy only specific paths so we
-      // don't shadow Vite's own /assets handling.
-      '/admin/fonts': proxyOpts,
-      '/app': proxyOpts,
-      '/media': proxyOpts,
-
-      // Publisher branding stylesheet; proxied so live
-      // Style-Editor changes reach the SPA without a
-      // redeploy.
-      '/branding.css': proxyOpts,
-    },
-  },
+  server: { proxy },
 });
