@@ -10,6 +10,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.13.0] - 2026-08-19
+
 ### Added
 
 - Country values render as country names. A property whose
