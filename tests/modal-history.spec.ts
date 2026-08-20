@@ -166,4 +166,38 @@ describe('bindModalChrome back-button dismissal', () => {
     for (const d of disposers) d()
     host.remove()
   })
-})
+
+  // A host that drives navigation itself (Turbo, a
+  // client-side router) leaves its own state on the entry.
+  // Traversing off an entry it owns is a popstate it reads as
+  // a navigation, so it re-renders the page and closing a
+  // modal looks like a reload. Measured on a Turbo host: a
+  // bare push-then-back with no modal reproduces it, so the
+  // traversal is the trigger and the gesture is not ours to
+  // take there.
+  it('takes no history entry when a host owns the current one', () => {
+    window.history.replaceState({ turbo: { restorationIndex: 1 } }, '');
+
+    const m = bindModal(false);
+    m.open.set(true);
+    expect(pushState).not.toHaveBeenCalled();
+
+    m.open.set(null);
+    expect(back).not.toHaveBeenCalled();
+
+    m.dispose();
+    window.history.replaceState(null, '');
+  });
+
+  // The same page with nothing on the entry is ours to move,
+  // which is the path the gesture exists for.
+  it('still takes the entry when the state is ours to take', () => {
+    window.history.replaceState(null, '');
+
+    const m = bindModal(false);
+    m.open.set(true);
+    expect(pushState).toHaveBeenCalledTimes(1);
+
+    m.dispose();
+  });
+});

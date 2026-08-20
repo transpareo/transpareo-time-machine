@@ -188,6 +188,24 @@ function isModalHistoryState(state: unknown): boolean {
       .transpareoTimeMachineModal === true
 }
 
+// A host that drives navigation itself (Turbo, a
+// client-side router) leaves its own state object on the
+// entry we are sitting on. Taking the Back gesture there
+// means pushing an entry and traversing back off it, and
+// that traversal is a popstate the host reads as a
+// navigation: it re-renders the page under us, so closing a
+// modal visibly reloads the host's page. Measured on a
+// Turbo-driven host, where a bare push-then-back with no
+// modal involved reproduces it, so the trigger is the
+// traversal rather than anything about our entry.
+//
+// Where the entry is not ours to move, we leave it alone
+// and Back means what the host means by Back.
+function foreignHistoryState(): boolean {
+  const state = window.history.state
+  return state != null && !isModalHistoryState(state)
+}
+
 // Back-button / swipe-back dismissal. While the modal is
 // open one extra entry sits on the history stack, so the
 // platform Back gesture pops that entry and closes the
@@ -234,6 +252,7 @@ function bindHistoryBack(effect: Effect, opts: ModalChrome): void {
   effect(() => {
     const open = opts.isOpen()
     if (open && !pushed) {
+      if (foreignHistoryState()) return
       pushed = true
       dismissedByPop = false
       window.history.pushState(MODAL_HISTORY_STATE, '')
