@@ -89,7 +89,7 @@ instead:
 
 - Computes the verification verdict **client-side**,
   in the visitor's browser, from the signed snapshot's
-  embedded `eddsa-jcs-sha256` proof set, never from a
+  embedded `eddsa-jcs-2022` proof set, never from a
   server's "verified" flag. How much that verdict is
   worth depends on the surface it runs on. On a renderer
   the visitor trusts (e.g. the standalone verifier page)
@@ -763,7 +763,7 @@ hot-reloads on save.
 | `npm run build` | Type-check + bundle into `dist/`. |
 | `npm run preview` | Serve the built `dist/` locally. |
 | `npm run check` | `tsc` over the SPA + the seed scripts + tests. |
-| `npm test` | Vitest. Covers crypto (JCS, multibase, eddsa-jcs-sha256 aggregate verifier) and the reactive runtime. |
+| `npm test` | Vitest. Covers crypto (JCS, multibase, eddsa-jcs-2022 aggregate verifier) and the reactive runtime. |
 | `npm run seed` | Walk every `fixtures/*.yml`, validate against the zod schema, download remote images, write `branding.css` under `/public/<id>/`, and write the published JSON artefacts (manifest, per-version snapshots, EPCIS document, key resolution docs) under `/public/<id>/dpp/<code>/`. Generates a fresh Ed25519 keypair per fixture on each run; the produced snapshots are signed with these keys. A `publication: single-snapshot` fixture with `proof_suite: none` emits just one unsigned `snapshot.json` instead (no manifest, no keys). Idempotent on image cache; output JSON overwrites. Re-run after pulling a fixture change. |
 | `npm run check:fixtures` | Network-free Zod parse of every `fixtures/*.yml`. CI runs this on every push and PR to catch schema regressions without depending on third-party image hosts. |
 
@@ -1015,7 +1015,7 @@ src/
   crypto/
     jcs.ts                    RFC 8785 canonicalizer
     multibase.ts              z-base-58 encode/decode
-    verify.ts                 eddsa-jcs-sha256 verifier + aggregate verdict
+    verify.ts                 eddsa-jcs-2022 verifier + aggregate verdict
     dispatch.ts               routes a proof to its cryptosuite verifier
     ecdsa-sd.ts               ecdsa-sd-2023 derived-proof verifier
     rdfc.ts                   JSON-LD to N-Quads (RDFC-1.0) for ecdsa-sd

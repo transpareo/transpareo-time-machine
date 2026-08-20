@@ -12,7 +12,7 @@ will save round-trips on review:
   `check:fixtures` parses every `fixtures/*.yml`
   through the Zod schema without hitting the network.
   `test` runs Vitest over the crypto layer
-  (JCS canonicalization, multibase, eddsa-jcs-sha256
+  (JCS canonicalization, multibase, eddsa-jcs-2022
   verifier) and the reactive runtime. CI runs all
   three on every push and PR.
 - Keep commit titles under 80 characters and write
