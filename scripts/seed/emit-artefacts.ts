@@ -179,21 +179,36 @@ export async function emitFixture(
 async function emitLibrary(
   fixtureId: string, dppDir: string,
 ): Promise<void> {
+  // Clear the published tree before checking for a source,
+  // not after. Returning early on a missing source left the
+  // previous run's entries in the bucket forever: files no
+  // fixture defined, that no re-seed could regenerate or
+  // correct, serving happily on the machine that had them
+  // and absent on every other. A fixture with no library
+  // now publishes no components, which is the honest
+  // reading of "no library".
   const src = join(FIXTURES_ROOT, fixtureId, 'library');
-  const exists = await stat(src).then(() => true).catch(() => false);
-  if (!exists) return;
   const dest = join(dppDir, 'component');
   await rm(dest, { recursive: true, force: true });
+  const exists = await stat(src).then(() => true).catch(() => false);
+  if (!exists) return;
   await copyTree(src, dest);
 }
 
+// Mirror the authored tree, JSON only. A published bucket
+// holds entries and nothing else, so notes that live beside
+// the fixtures (a README explaining what they deliberately
+// omit) stay out of it rather than becoming an artefact no
+// publisher would serve.
 async function copyTree(src: string, dest: string): Promise<void> {
   await mkdir(dest, { recursive: true });
   for (const entry of await readdir(src, { withFileTypes: true })) {
     const s = join(src, entry.name);
     const d = join(dest, entry.name);
     if (entry.isDirectory()) await copyTree(s, d);
-    else await writeFile(d, await readFile(s));
+    else if (entry.name.endsWith('.json')) {
+      await writeFile(d, await readFile(s));
+    }
   }
 }
 

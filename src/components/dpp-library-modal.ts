@@ -10,8 +10,10 @@
  * lock) is wired by `bindModalChrome` + `buildModal`.
  *
  * The frozen lead (percent + rating + locale-resolved
- * name + flag) comes straight from the snapshot, so it
- * renders synchronously when the modal opens. Live
+ * name) comes straight from the snapshot, so it renders
+ * synchronously when the modal opens. A substance's
+ * `countryCode` is deliberately not part of it: origin was
+ * dropped from the composition surface as a whole. Live
  * library data (properties, references, free-text name
  * overrides) is fetched lazily from the public bucket
  * and slots in below, with a loading state while it
@@ -32,8 +34,10 @@ import {
   type ComponentPropertyListItem,
   type CompositionEntry,
   tx,
+  REGION_DATATYPE,
 } from '@/types'
 import { i18n, formatNumber } from '@/i18n'
+import { regionName } from '@/i18n/display-names'
 import { t, type LabelKey } from '@/i18n/labels'
 import { lookupLibrary } from '@/library-lookup'
 import { buildRatingRow, buildKvRow, ratingIcon } from '@/rating'
@@ -255,8 +259,74 @@ function formatScalarValue(
         ? `${formatNumber(value.value)} ${value.unit}`
         : formatNumber(value.value)
     case 'enum':
-      return tx(value.label, i18n.locale)
+      return enumLabel(value)
   }
+}
+
+// A library artefact bakes an enum's label per locale at
+// publish time, so a locale the publisher's map missed
+// falls back to English, or to nothing when the map is
+// empty. For a country the renderer can do better than the
+// map: an ISO 3166-1 code names itself in the viewer's
+// language through Intl, which also covers artefacts
+// published before a gap in the map was noticed.
+//
+// The baked label wins wherever it carries the active
+// locale, since a publisher may have worded it deliberately.
+export function enumLabel(
+  value: Extract<ComponentPropertyValue, { type: 'enum' }>,
+): string {
+  // A declared country resolves before the baked label is
+  // consulted, because the datatype's own definition puts
+  // the naming on the reader, in the reader's language, and
+  // because a name frozen at publish time goes stale in a
+  // way a code does not: Türkiye, Czechia and Eswatini all
+  // changed inside one decade and their codes did not. A
+  // publisher that wants particular wording wants a text
+  // row, not a code-list value.
+  if (value.dataType === REGION_DATATYPE) {
+    const declared = regionName(value.value, i18n.locale)
+    if (declared) return declared
+  }
+
+  const label = value.label
+  const exact = typeof label === 'string' ? label : label?.[i18n.locale]
+  if (exact) return exact
+
+  const named = countryNameFromLabel(value)
+  if (named) return named
+
+  // tx() answers '' for a map with nothing in it, so the
+  // code itself is the last resort rather than a blank cell.
+  return tx(label, i18n.locale) || value.value
+}
+
+// The viewer's name for an undeclared enum that is a
+// country anyway, or null for one that merely looks like a
+// country code.
+//
+// A row carrying the datatype never reaches this: it is
+// resolved above, on the artefact's own word. This is the
+// path for rows that predate the field, and library entries
+// republish lazily, so those keep arriving for as long as a
+// component goes untouched. Here the code alone has to
+// carry it, and the code alone is not enough: plenty of
+// two-letter values a publisher might enumerate are also
+// assigned regions, and "NO" for a boolean, "ID" for an
+// identifier kind or "IS" for a class would render as
+// Norway, Indonesia and Iceland. Confidently wrong in the
+// reader's own language is worse than untranslated English.
+// So the publisher's own English label has to agree that the
+// code means that country; deliberate wording ("Portugal
+// (EU)") and a map with no English entry both fail that and
+// keep the existing fallback, which is the safe direction.
+function countryNameFromLabel(
+  value: Extract<ComponentPropertyValue, { type: 'enum' }>,
+): string | null {
+  const label = value.label
+  const english = typeof label === 'string' ? label : label?.en
+  if (!english || english !== regionName(value.value, 'en')) return null
+  return regionName(value.value, i18n.locale)
 }
 
 customElements.define('dpp-library-modal', DppLibraryModal)

@@ -1,0 +1,126 @@
+{
+  "id": "component/ac-inverter",
+  "version": 1,
+  "name": {
+    "en": "AC Inverter Components",
+    "de": "Wechselrichter-Komponenten",
+    "fr": "Composants de l'onduleur CA"
+  },
+  "properties": [
+    {
+      "key": "function",
+      "label": {
+        "en": "Function",
+        "de": "Funktion",
+        "fr": "Fonction"
+      },
+      "value": {
+        "type": "text",
+        "value": {
+          "en": "Converts the DC stored in the battery to grid-quality 230 V AC and back again; silicon carbide switches keep losses below 3%.",
+          "de": "Wandelt den gespeicherten Gleichstrom in netzkonformen 230 V Wechselstrom und zurück um; Siliziumkarbid-Schalter halten die Verluste unter 3 %.",
+          "fr": "Convertit le courant continu stocké en alternatif 230 V de qualité réseau et inversement; les commutateurs en carbure de silicium maintiennent les pertes sous 3 %."
+        }
+      }
+    },
+    {
+      "key": "origin",
+      "label": {
+        "en": "Origin",
+        "de": "Herkunft",
+        "fr": "Origine"
+      },
+      "value": {
+        "type": "text",
+        "value": {
+          "en": "Manufactured in Vimercate, Italy.",
+          "de": "Hergestellt in Vimercate, Italien.",
+          "fr": "Fabriqué à Vimercate, Italie."
+        }
+      }
+    },
+    {
+      "key": "hazardLevel",
+      "label": {
+        "en": "Hazard level",
+        "de": "Gefahrenstufe",
+        "fr": "Niveau de risque"
+      },
+      "value": {
+        "type": "enum",
+        "value": "low",
+        "label": {
+          "en": "Low",
+          "de": "Gering",
+          "fr": "Faible"
+        }
+      }
+    },
+    {
+      "key": "certifications",
+      "label": {
+        "en": "Certifications",
+        "de": "Zertifizierungen",
+        "fr": "Certifications"
+      },
+      "value": {
+        "type": "text",
+        "value": {
+          "en": "CE, VDE-AR-N 4105 grid code, IEC 62109 inverter safety.",
+          "de": "CE, VDE-AR-N 4105 Anwendungsregel, IEC 62109 Wechselrichter-Sicherheit.",
+          "fr": "CE, code de réseau VDE-AR-N 4105, sécurité onduleur IEC 62109."
+        }
+      }
+    },
+    {
+      "key": "endOfLife",
+      "label": {
+        "en": "End of life",
+        "de": "Lebensende",
+        "fr": "Fin de vie"
+      },
+      "value": {
+        "type": "text",
+        "value": {
+          "en": "Returned as WEEE; the heatsink aluminum and copper windings carry most of the recyclable value.",
+          "de": "Wird als Elektroaltgerät zurückgenommen; Kühlkörper-Aluminium und Kupferwicklungen tragen den größten Recyclingwert.",
+          "fr": "Repris en DEEE; le dissipateur en aluminium et les bobinages en cuivre concentrent l'essentiel de la valeur recyclable."
+        }
+      }
+    },
+    {
+      "key": "notes",
+      "label": {
+        "en": "Notes",
+        "de": "Anmerkungen",
+        "fr": "Notes"
+      },
+      "value": {
+        "type": "text",
+        "value": {
+          "en": "Designed as a swappable module so the inverter can be replaced without retiring the battery pack itself.",
+          "de": "Als austauschbares Modul ausgelegt, sodass der Wechselrichter ersetzt werden kann, ohne das Batteriepack stillzulegen.",
+          "fr": "Conçu comme un module échangeable: l'onduleur peut être remplacé sans mettre le pack batterie hors service."
+        }
+      }
+    }
+  ],
+  "references": [
+    {
+      "label": {
+        "en": "Material datasheet",
+        "de": "Materialdatenblatt",
+        "fr": "Fiche matière"
+      },
+      "href": "https://components.transpareo.example/ac-inverter"
+    },
+    {
+      "label": {
+        "en": "IEC 62109 inverter safety",
+        "de": "IEC 62109 Wechselrichter-Sicherheit",
+        "fr": "Sécurité onduleur IEC 62109"
+      },
+      "href": "https://webstore.iec.ch/publication/6470"
+    }
+  ]
+}

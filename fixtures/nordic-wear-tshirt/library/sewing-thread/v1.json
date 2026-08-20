@@ -1,4 +1,9 @@
 {
+  "@context": [
+    "https://schema.org",
+    "https://transpareo.com/vocab/component-library/v1"
+  ],
+  "@type": "ComponentLibraryEntry",
   "id": "component/sewing-thread",
   "version": 1,
   "name": {
@@ -6,6 +11,9 @@
     "de": "Nähgarn",
     "fr": "Fil à coudre"
   },
+  "permalink": "component/sewing-thread",
+  "points": 0,
+  "rating": "neutral",
   "properties": [
     {
       "key": "alternativeNames",

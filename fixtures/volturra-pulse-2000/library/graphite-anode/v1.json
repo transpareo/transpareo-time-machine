@@ -1,0 +1,123 @@
+{
+  "id": "component/graphite-anode",
+  "version": 1,
+  "name": {
+    "en": "Synthetic Graphite Anode",
+    "de": "Synthetische Graphitanode",
+    "fr": "Anode en graphite synthétique"
+  },
+  "properties": [
+    {
+      "key": "function",
+      "label": {
+        "en": "Function",
+        "de": "Funktion",
+        "fr": "Fonction"
+      },
+      "value": {
+        "type": "text",
+        "value": {
+          "en": "Hosts lithium ions when the cell is charged; layered graphite structure releases them cleanly on discharge.",
+          "de": "Nimmt Lithium-Ionen im geladenen Zustand auf; die Schichtstruktur des Graphits gibt sie beim Entladen sauber wieder ab.",
+          "fr": "Accueille les ions lithium à l'état chargé; la structure lamellaire du graphite les libère proprement à la décharge."
+        }
+      }
+    },
+    {
+      "key": "origin",
+      "label": {
+        "en": "Origin",
+        "de": "Herkunft",
+        "fr": "Origine"
+      },
+      "value": {
+        "type": "text",
+        "value": {
+          "en": "Manufactured in Kristiansand, Norway using hydroelectric power.",
+          "de": "Hergestellt in Kristiansand, Norwegen mit Wasserkraft.",
+          "fr": "Fabriqué à Kristiansand, Norvège, à l'électricité hydraulique."
+        }
+      }
+    },
+    {
+      "key": "sourcing",
+      "label": {
+        "en": "Sourcing",
+        "de": "Gewinnung",
+        "fr": "Approvisionnement"
+      },
+      "value": {
+        "type": "text",
+        "value": {
+          "en": "Petroleum coke precursor graphitised at 3000 C; no natural graphite from conflict regions.",
+          "de": "Petrolkoks-Vorläufer bei 3000 °C graphitiert; kein Naturgrafit aus Konfliktregionen.",
+          "fr": "Précurseur en coke de pétrole graphitisé à 3000 °C; pas de graphite naturel issu de zones de conflit."
+        }
+      }
+    },
+    {
+      "key": "hazardLevel",
+      "label": {
+        "en": "Hazard level",
+        "de": "Gefahrenstufe",
+        "fr": "Niveau de risque"
+      },
+      "value": {
+        "type": "enum",
+        "value": "low",
+        "label": {
+          "en": "Low",
+          "de": "Gering",
+          "fr": "Faible"
+        }
+      }
+    },
+    {
+      "key": "carbonFootprint",
+      "label": {
+        "en": "Carbon footprint",
+        "de": "CO2-Fußabdruck",
+        "fr": "Empreinte carbone"
+      },
+      "value": {
+        "type": "decimal",
+        "value": 4.8,
+        "unit": "kg CO2e/kg"
+      }
+    },
+    {
+      "key": "endOfLife",
+      "label": {
+        "en": "End of life",
+        "de": "Lebensende",
+        "fr": "Fin de vie"
+      },
+      "value": {
+        "type": "text",
+        "value": {
+          "en": "Reclaimed as graphite powder for re-use in new anodes or, where contaminated, as a steelmaking carbon source.",
+          "de": "Wird als Graphitpulver für neue Anoden zurückgewonnen oder, falls verunreinigt, als Kohlenstoffträger in der Stahlherstellung verwertet.",
+          "fr": "Récupéré sous forme de poudre de graphite pour de nouvelles anodes ou, si contaminé, comme source de carbone en sidérurgie."
+        }
+      }
+    }
+  ],
+  "references": [
+    {
+      "label": {
+        "en": "Material datasheet",
+        "de": "Materialdatenblatt",
+        "fr": "Fiche matière"
+      },
+      "href": "https://components.transpareo.example/graphite-anode"
+    },
+    {
+      "label": {
+        "en": "IEC 62660 lithium-ion safety standard",
+        "de": "IEC 62660 Sicherheitsnorm für Lithium-Ionen-Zellen",
+        "fr": "Norme de sécurité IEC 62660 pour cellules lithium-ion"
+      },
+      "href": "https://webstore.iec.ch/publication/63273"
+    }
+  ]
+}

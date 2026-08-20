@@ -1,0 +1,126 @@
+{
+  "id": "component/lipf6-electrolyte",
+  "version": 1,
+  "name": {
+    "en": "Lithium Hexafluorophosphate Electrolyte",
+    "de": "Lithiumhexafluorophosphat-Elektrolyt",
+    "fr": "Électrolyte hexafluorophosphate de lithium"
+  },
+  "properties": [
+    {
+      "key": "function",
+      "label": {
+        "en": "Function",
+        "de": "Funktion",
+        "fr": "Fonction"
+      },
+      "value": {
+        "type": "text",
+        "value": {
+          "en": "Carries lithium ions between cathode and anode; the conductive medium that makes the cell work.",
+          "de": "Transportiert Lithium-Ionen zwischen Kathode und Anode; das leitfähige Medium, das die Zelle funktionieren lässt.",
+          "fr": "Transporte les ions lithium entre la cathode et l'anode; le milieu conducteur qui fait fonctionner la cellule."
+        }
+      }
+    },
+    {
+      "key": "origin",
+      "label": {
+        "en": "Origin",
+        "de": "Herkunft",
+        "fr": "Origine"
+      },
+      "value": {
+        "type": "text",
+        "value": {
+          "en": "Formulated in Antwerp, Belgium under sealed, moisture-free conditions.",
+          "de": "In Antwerpen, Belgien unter feuchtigkeitsfreien, geschlossenen Bedingungen formuliert.",
+          "fr": "Formulé à Anvers, Belgique, en conditions scellées et exemptes d'humidité."
+        }
+      }
+    },
+    {
+      "key": "hazardLevel",
+      "label": {
+        "en": "Hazard level",
+        "de": "Gefahrenstufe",
+        "fr": "Niveau de risque"
+      },
+      "value": {
+        "type": "enum",
+        "value": "high",
+        "label": {
+          "en": "High",
+          "de": "Hoch",
+          "fr": "Élevé"
+        }
+      }
+    },
+    {
+      "key": "certifications",
+      "label": {
+        "en": "Certifications",
+        "de": "Zertifizierungen",
+        "fr": "Certifications"
+      },
+      "value": {
+        "type": "text",
+        "value": {
+          "en": "REACH registered; UN 38.3 transport approval; CLP H314 corrosive labelling.",
+          "de": "REACH-registriert; UN-38.3-Transportzulassung; CLP-Kennzeichnung H314 ätzend.",
+          "fr": "Enregistré REACH; agrément transport UN 38.3; étiquetage CLP H314 corrosif."
+        }
+      }
+    },
+    {
+      "key": "endOfLife",
+      "label": {
+        "en": "End of life",
+        "de": "Lebensende",
+        "fr": "Fin de vie"
+      },
+      "value": {
+        "type": "text",
+        "value": {
+          "en": "Hazardous waste. Must be deactivated in a licensed battery recycler; never breach the cell at home.",
+          "de": "Gefährlicher Abfall. Muss in einem zugelassenen Batterierecycler deaktiviert werden; Zelle niemals zu Hause öffnen.",
+          "fr": "Déchet dangereux. Doit être neutralisé chez un recycleur de batteries agréé; ne jamais ouvrir la cellule chez soi."
+        }
+      }
+    },
+    {
+      "key": "notes",
+      "label": {
+        "en": "Notes",
+        "de": "Anmerkungen",
+        "fr": "Notes"
+      },
+      "value": {
+        "type": "text",
+        "value": {
+          "en": "Reacts with moisture to form hydrofluoric acid; the cell is hermetically sealed so users never come into contact with it.",
+          "de": "Reagiert mit Feuchtigkeit zu Flusssäure; die Zelle ist hermetisch verschlossen, sodass Nutzer niemals damit in Kontakt kommen.",
+          "fr": "Réagit à l'humidité en formant de l'acide fluorhydrique; la cellule est hermétiquement scellée, l'utilisateur n'entre jamais en contact avec lui."
+        }
+      }
+    }
+  ],
+  "references": [
+    {
+      "label": {
+        "en": "Material datasheet",
+        "de": "Materialdatenblatt",
+        "fr": "Fiche matière"
+      },
+      "href": "https://components.transpareo.example/lipf6-electrolyte"
+    },
+    {
+      "label": {
+        "en": "ECHA substance profile",
+        "de": "ECHA-Stoffprofil",
+        "fr": "Profil ECHA de la substance"
+      },
+      "href": "https://echa.europa.eu/substance-information/-/substanceinfo/100.040.563"
+    }
+  ]
+}

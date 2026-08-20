@@ -1,0 +1,122 @@
+{
+  "id": "component/polymer-separator",
+  "version": 1,
+  "name": {
+    "en": "Polymer Separator & BMS Housing",
+    "de": "Polymerseparator & BMS-Gehäuse",
+    "fr": "Séparateur polymère & boîtier BMS"
+  },
+  "properties": [
+    {
+      "key": "function",
+      "label": {
+        "en": "Function",
+        "de": "Funktion",
+        "fr": "Fonction"
+      },
+      "value": {
+        "type": "text",
+        "value": {
+          "en": "Microporous film that keeps anode and cathode apart while allowing lithium ions through; the polycarbonate enclosure also shields the BMS board.",
+          "de": "Mikroporöser Film, der Anode und Kathode trennt, aber Lithium-Ionen passieren lässt; das Polycarbonatgehäuse schützt zusätzlich die BMS-Platine.",
+          "fr": "Film microporeux qui sépare anode et cathode tout en laissant passer les ions lithium; le boîtier en polycarbonate protège également la carte BMS."
+        }
+      }
+    },
+    {
+      "key": "origin",
+      "label": {
+        "en": "Origin",
+        "de": "Herkunft",
+        "fr": "Origine"
+      },
+      "value": {
+        "type": "text",
+        "value": {
+          "en": "Extruded in Linz, Austria from polyethylene and polypropylene compounds.",
+          "de": "In Linz, Österreich aus Polyethylen- und Polypropylen-Compounds extrudiert.",
+          "fr": "Extrudé à Linz, Autriche, à partir de composés polyéthylène et polypropylène."
+        }
+      }
+    },
+    {
+      "key": "recycledContent",
+      "label": {
+        "en": "Recycled content",
+        "de": "Recyclinganteil",
+        "fr": "Contenu recyclé"
+      },
+      "value": {
+        "type": "percent",
+        "value": 30
+      }
+    },
+    {
+      "key": "hazardLevel",
+      "label": {
+        "en": "Hazard level",
+        "de": "Gefahrenstufe",
+        "fr": "Niveau de risque"
+      },
+      "value": {
+        "type": "enum",
+        "value": "low",
+        "label": {
+          "en": "Low",
+          "de": "Gering",
+          "fr": "Faible"
+        }
+      }
+    },
+    {
+      "key": "endOfLife",
+      "label": {
+        "en": "End of life",
+        "de": "Lebensende",
+        "fr": "Fin de vie"
+      },
+      "value": {
+        "type": "text",
+        "value": {
+          "en": "Mechanically recycled after cell shredding; clean polymer fractions go back into housing and tray parts.",
+          "de": "Nach dem Zellshreddern mechanisch recycelt; saubere Polymerfraktionen gehen in Gehäuse- und Träger-Teile zurück.",
+          "fr": "Recyclé mécaniquement après broyage des cellules; les fractions polymères propres retournent dans des boîtiers et plateaux."
+        }
+      }
+    },
+    {
+      "key": "notes",
+      "label": {
+        "en": "Notes",
+        "de": "Anmerkungen",
+        "fr": "Notes"
+      },
+      "value": {
+        "type": "text",
+        "value": {
+          "en": "A ceramic-coated layer shuts down ion flow if a cell overheats, acting as a passive thermal-runaway safeguard.",
+          "de": "Eine keramisch beschichtete Lage unterbricht den Ionenfluss, wenn eine Zelle überhitzt, als passiver Schutz vor thermischem Durchgehen.",
+          "fr": "Une couche céramique stoppe le flux d'ions en cas de surchauffe d'une cellule, agissant comme garde-fou passif contre l'emballement thermique."
+        }
+      }
+    }
+  ],
+  "references": [
+    {
+      "label": {
+        "en": "Material datasheet",
+        "de": "Materialdatenblatt",
+        "fr": "Fiche matière"
+      },
+      "href": "https://components.transpareo.example/polymer-separator"
+    },
+    {
+      "label": {
+        "en": "UL 2580 battery safety standard",
+        "de": "UL 2580 Batteriesicherheitsstandard",
+        "fr": "Norme de sécurité batterie UL 2580"
+      },
+      "href": "https://www.ul.com/services/ul-2580-battery-safety-certification"
+    }
+  ]
+}

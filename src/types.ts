@@ -258,8 +258,23 @@ export interface CompositionEntry {
   // resolved against the manifest URL the same way
   // `epcisUrl` is). When present, the renderer fetches
   // the object lazily on click and opens it in the
-  // library modal. Not part of the proof chain; integrity
-  // is by path-versioning rather than a content hash.
+  // library modal.
+  //
+  // Nothing here proves what comes back. The ref sits
+  // outside the proof chain and carries no content hash,
+  // and it may name a version or a mutable pointer, so
+  // whether today's bytes are the ones the issuer signed
+  // against is a property of how a publisher stores them
+  // rather than anything this document states. A recycled
+  // version number and an ordinary edit both read as the
+  // original from this side.
+  //
+  // The claims are not what is at stake: a composition row
+  // signs its own name, country, rating, value and unit.
+  // The library object adds the editorial detail the modal
+  // renders on top of them, so an unpinned ref puts that
+  // detail outside the proof rather than the facts. It is
+  // still detail a reader has no way to date.
   readonly libraryRef?: string
 
   // Optional sustainability rating, five-step enum. Drives
@@ -392,6 +407,17 @@ export type ComponentPropertyValue =
       readonly type: 'enum'
       readonly value: string
       readonly label: SpaLocalizedText
+
+      // The code list `value` is drawn from, as an absolute
+      // IRI: REGION_DATATYPE marks a country. Named
+      // `dataType` rather than `valueDataType` because the
+      // snapshot's field of that name is the EN 18223 one
+      // and holds an XSD type; one name per meaning.
+      //
+      // Optional because library entries republish lazily,
+      // so rows written before the field existed keep
+      // arriving indefinitely.
+      readonly dataType?: string
     }
   | {
       readonly type: 'list'

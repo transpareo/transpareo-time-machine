@@ -1,0 +1,119 @@
+{
+  "id": "component/copper-collector",
+  "version": 1,
+  "name": {
+    "en": "Copper Current Collector",
+    "de": "Kupfer-Stromkollektor",
+    "fr": "Collecteur de courant en cuivre"
+  },
+  "properties": [
+    {
+      "key": "function",
+      "label": {
+        "en": "Function",
+        "de": "Funktion",
+        "fr": "Fonction"
+      },
+      "value": {
+        "type": "text",
+        "value": {
+          "en": "Thin foil that carries current from the graphite anode out of the cell; chosen for its low resistance.",
+          "de": "Dünne Folie, die den Strom von der Graphitanode aus der Zelle leitet; gewählt wegen des geringen Widerstands.",
+          "fr": "Feuille mince qui conduit le courant depuis l'anode en graphite vers l'extérieur de la cellule; choisie pour sa faible résistance."
+        }
+      }
+    },
+    {
+      "key": "origin",
+      "label": {
+        "en": "Origin",
+        "de": "Herkunft",
+        "fr": "Origine"
+      },
+      "value": {
+        "type": "text",
+        "value": {
+          "en": "Rolled in Legnica, Poland from KGHM-mined copper cathodes.",
+          "de": "In Legnica, Polen aus KGHM-Kupferkathoden gewalzt.",
+          "fr": "Laminé à Legnica, Pologne, à partir de cathodes de cuivre extraites par KGHM."
+        }
+      }
+    },
+    {
+      "key": "recycledContent",
+      "label": {
+        "en": "Recycled content",
+        "de": "Recyclinganteil",
+        "fr": "Contenu recyclé"
+      },
+      "value": {
+        "type": "percent",
+        "value": 40
+      }
+    },
+    {
+      "key": "hazardLevel",
+      "label": {
+        "en": "Hazard level",
+        "de": "Gefahrenstufe",
+        "fr": "Niveau de risque"
+      },
+      "value": {
+        "type": "enum",
+        "value": "low",
+        "label": {
+          "en": "Low",
+          "de": "Gering",
+          "fr": "Faible"
+        }
+      }
+    },
+    {
+      "key": "carbonFootprint",
+      "label": {
+        "en": "Carbon footprint",
+        "de": "CO2-Fußabdruck",
+        "fr": "Empreinte carbone"
+      },
+      "value": {
+        "type": "decimal",
+        "value": 3.6,
+        "unit": "kg CO2e/kg"
+      }
+    },
+    {
+      "key": "endOfLife",
+      "label": {
+        "en": "End of life",
+        "de": "Lebensende",
+        "fr": "Fin de vie"
+      },
+      "value": {
+        "type": "text",
+        "value": {
+          "en": "High-value recyclable; recovered by shredding and electrolytic refining at end of pack life.",
+          "de": "Hochwertig recycelbar; wird am Lebensende durch Schreddern und elektrolytische Raffination zurückgewonnen.",
+          "fr": "Recyclable à forte valeur; récupéré par broyage et raffinage électrolytique en fin de vie du pack."
+        }
+      }
+    }
+  ],
+  "references": [
+    {
+      "label": {
+        "en": "Material datasheet",
+        "de": "Materialdatenblatt",
+        "fr": "Fiche matière"
+      },
+      "href": "https://components.transpareo.example/copper-collector"
+    },
+    {
+      "label": {
+        "en": "Copper Mark responsible production",
+        "de": "Copper Mark für verantwortungsvolle Produktion",
+        "fr": "Copper Mark pour la production responsable"
+      },
+      "href": "https://coppermark.org"
+    }
+  ]
+}

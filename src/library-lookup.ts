@@ -10,13 +10,24 @@
  * `ComponentLookup` the modal renders below the snapshot-
  * frozen lead.
  *
- * The library object is NOT part of the signed payload:
- * it is served public-read off the same Public bucket as
- * the snapshot, with integrity guaranteed by path
- * versioning (e.g. `component/<slug>/v3.json`) rather than
- * by a hash carried on the snapshot. Issuers can correct
- * a typo on a component library file without re-signing
- * all DPPs that reference it.
+ * The library object is NOT part of the signed payload and
+ * nothing here establishes that it is the object the issuer
+ * signed against. The ref carries no hash, and it may name
+ * a version, a mutable pointer, or an absolute URL on a
+ * host chosen by the publisher rather than by the reader.
+ * That is deliberate rather than an oversight: an issuer can
+ * correct a typo on a component file without re-signing
+ * every DPP that references it, and the cost of that
+ * freedom is that the bytes are undatable from here.
+ *
+ * Two consequences worth keeping in view. The claims a
+ * composition makes are signed on the snapshot row itself
+ * (name, country, rating, value, unit); what this fetch
+ * adds is the editorial detail rendered beneath them. And
+ * because a ref may be absolute and off-origin, opening a
+ * passport can issue a request to a host the reader never
+ * chose, so the fetch omits credentials and every value
+ * reaches the DOM as text.
  */
 
 import type { ComponentLookup, ComponentProperty } from '@/types'

@@ -1,0 +1,119 @@
+{
+  "id": "component/steel-casings",
+  "version": 1,
+  "name": {
+    "en": "Steel Cell Casings",
+    "de": "Stahlzellengehäuse",
+    "fr": "Boîtiers de cellule en acier"
+  },
+  "properties": [
+    {
+      "key": "function",
+      "label": {
+        "en": "Function",
+        "de": "Funktion",
+        "fr": "Fonction"
+      },
+      "value": {
+        "type": "text",
+        "value": {
+          "en": "Encloses each prismatic cell; provides mechanical protection and the negative current contact.",
+          "de": "Umschließt jede prismatische Zelle; bietet mechanischen Schutz und den negativen Stromkontakt.",
+          "fr": "Enveloppe chaque cellule prismatique; assure la protection mécanique et le contact négatif."
+        }
+      }
+    },
+    {
+      "key": "origin",
+      "label": {
+        "en": "Origin",
+        "de": "Herkunft",
+        "fr": "Origine"
+      },
+      "value": {
+        "type": "text",
+        "value": {
+          "en": "Cold-rolled in Luleå, Sweden using fossil-free electric arc furnace steel.",
+          "de": "In Luleå, Schweden kaltgewalzt aus fossilfrei erzeugtem Elektrolichtbogenofen-Stahl.",
+          "fr": "Laminé à froid à Luleå, Suède, à partir d'acier issu d'un four à arc électrique sans combustibles fossiles."
+        }
+      }
+    },
+    {
+      "key": "recycledContent",
+      "label": {
+        "en": "Recycled content",
+        "de": "Recyclinganteil",
+        "fr": "Contenu recyclé"
+      },
+      "value": {
+        "type": "percent",
+        "value": 85
+      }
+    },
+    {
+      "key": "hazardLevel",
+      "label": {
+        "en": "Hazard level",
+        "de": "Gefahrenstufe",
+        "fr": "Niveau de risque"
+      },
+      "value": {
+        "type": "enum",
+        "value": "none",
+        "label": {
+          "en": "None",
+          "de": "Keine",
+          "fr": "Aucun"
+        }
+      }
+    },
+    {
+      "key": "carbonFootprint",
+      "label": {
+        "en": "Carbon footprint",
+        "de": "CO2-Fußabdruck",
+        "fr": "Empreinte carbone"
+      },
+      "value": {
+        "type": "decimal",
+        "value": 0.7,
+        "unit": "kg CO2e/kg"
+      }
+    },
+    {
+      "key": "endOfLife",
+      "label": {
+        "en": "End of life",
+        "de": "Lebensende",
+        "fr": "Fin de vie"
+      },
+      "value": {
+        "type": "text",
+        "value": {
+          "en": "Fully recyclable; recovered as scrap and re-smelted with no loss in quality.",
+          "de": "Vollständig recycelbar; wird als Schrott eingesammelt und ohne Qualitätsverlust eingeschmolzen.",
+          "fr": "Entièrement recyclable; récupéré comme ferraille et refondu sans perte de qualité."
+        }
+      }
+    }
+  ],
+  "references": [
+    {
+      "label": {
+        "en": "Material datasheet",
+        "de": "Materialdatenblatt",
+        "fr": "Fiche matière"
+      },
+      "href": "https://components.transpareo.example/steel-casings"
+    },
+    {
+      "label": {
+        "en": "ResponsibleSteel certification",
+        "de": "ResponsibleSteel-Zertifizierung",
+        "fr": "Certification ResponsibleSteel"
+      },
+      "href": "https://www.responsiblesteel.org"
+    }
+  ]
+}

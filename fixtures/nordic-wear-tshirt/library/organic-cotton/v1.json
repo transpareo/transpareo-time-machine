@@ -1,4 +1,9 @@
 {
+  "@context": [
+    "https://schema.org",
+    "https://transpareo.com/vocab/component-library/v1"
+  ],
+  "@type": "ComponentLibraryEntry",
   "id": "component/organic-cotton",
   "version": 1,
   "name": {
@@ -6,6 +11,9 @@
     "de": "Bio-Baumwolle",
     "fr": "Coton biologique"
   },
+  "permalink": "component/organic-cotton",
+  "points": 40,
+  "rating": "very_good",
   "properties": [
     {
       "key": "alternativeNames",

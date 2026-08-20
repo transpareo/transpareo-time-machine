@@ -1,0 +1,119 @@
+{
+  "id": "component/aluminum-collector",
+  "version": 1,
+  "name": {
+    "en": "Aluminum (Current Collector & Housing)",
+    "de": "Aluminium (Stromkollektor & Gehäuse)",
+    "fr": "Aluminium (collecteur de courant et boîtier)"
+  },
+  "properties": [
+    {
+      "key": "function",
+      "label": {
+        "en": "Function",
+        "de": "Funktion",
+        "fr": "Fonction"
+      },
+      "value": {
+        "type": "text",
+        "value": {
+          "en": "Carries current from the cathode coating and forms the outer pack housing; doubles as a heat spreader.",
+          "de": "Leitet den Strom von der Kathodenbeschichtung ab und bildet das äußere Pack-Gehäuse; dient zugleich als Wärmeleitfläche.",
+          "fr": "Transporte le courant depuis l'enduction cathodique et forme le boîtier extérieur du pack; sert aussi de dissipateur thermique."
+        }
+      }
+    },
+    {
+      "key": "origin",
+      "label": {
+        "en": "Origin",
+        "de": "Herkunft",
+        "fr": "Origine"
+      },
+      "value": {
+        "type": "text",
+        "value": {
+          "en": "Smelted in Sunndal, Norway using hydroelectric power.",
+          "de": "In Sunndal, Norwegen mit Wasserkraft erschmolzen.",
+          "fr": "Fondu à Sunndal, Norvège, à l'électricité hydraulique."
+        }
+      }
+    },
+    {
+      "key": "recycledContent",
+      "label": {
+        "en": "Recycled content",
+        "de": "Recyclinganteil",
+        "fr": "Contenu recyclé"
+      },
+      "value": {
+        "type": "percent",
+        "value": 65
+      }
+    },
+    {
+      "key": "hazardLevel",
+      "label": {
+        "en": "Hazard level",
+        "de": "Gefahrenstufe",
+        "fr": "Niveau de risque"
+      },
+      "value": {
+        "type": "enum",
+        "value": "none",
+        "label": {
+          "en": "None",
+          "de": "Keine",
+          "fr": "Aucun"
+        }
+      }
+    },
+    {
+      "key": "carbonFootprint",
+      "label": {
+        "en": "Carbon footprint",
+        "de": "CO2-Fußabdruck",
+        "fr": "Empreinte carbone"
+      },
+      "value": {
+        "type": "decimal",
+        "value": 4.0,
+        "unit": "kg CO2e/kg"
+      }
+    },
+    {
+      "key": "endOfLife",
+      "label": {
+        "en": "End of life",
+        "de": "Lebensende",
+        "fr": "Fin de vie"
+      },
+      "value": {
+        "type": "text",
+        "value": {
+          "en": "Recycled with only 5% of the energy needed for primary smelting; recovered alongside the steel scrap stream.",
+          "de": "Mit nur 5 % des Energiebedarfs der Primärerzeugung recycelbar; wird mit dem Stahlschrottstrom zurückgewonnen.",
+          "fr": "Recyclé avec seulement 5 % de l'énergie nécessaire à la production primaire; récupéré avec la filière acier."
+        }
+      }
+    }
+  ],
+  "references": [
+    {
+      "label": {
+        "en": "Material datasheet",
+        "de": "Materialdatenblatt",
+        "fr": "Fiche matière"
+      },
+      "href": "https://components.transpareo.example/aluminum-collector"
+    },
+    {
+      "label": {
+        "en": "Aluminium Stewardship Initiative",
+        "de": "Aluminium Stewardship Initiative",
+        "fr": "Aluminium Stewardship Initiative"
+      },
+      "href": "https://aluminium-stewardship.org"
+    }
+  ]
+}

@@ -1,0 +1,123 @@
+{
+  "id": "component/lfp-cathode-active",
+  "version": 1,
+  "name": {
+    "en": "LFP Cathode Active Material",
+    "de": "LFP-Kathodenaktivmaterial",
+    "fr": "Matériau actif cathodique LFP"
+  },
+  "properties": [
+    {
+      "key": "function",
+      "label": {
+        "en": "Function",
+        "de": "Funktion",
+        "fr": "Fonction"
+      },
+      "value": {
+        "type": "text",
+        "value": {
+          "en": "Stores lithium ions during charging; lithium iron phosphate gives the cell its long cycle life and high thermal stability.",
+          "de": "Speichert Lithium-Ionen beim Laden; Lithium-Eisen-Phosphat verleiht der Zelle hohe Zyklenfestigkeit und thermische Stabilität.",
+          "fr": "Stocke les ions lithium pendant la charge; le phosphate de fer et de lithium offre une longue durée de vie en cycles et une grande stabilité thermique."
+        }
+      }
+    },
+    {
+      "key": "origin",
+      "label": {
+        "en": "Origin",
+        "de": "Herkunft",
+        "fr": "Origine"
+      },
+      "value": {
+        "type": "text",
+        "value": {
+          "en": "Synthesised in Saxony, Germany from European lithium carbonate and Brazilian iron phosphate.",
+          "de": "In Sachsen, Deutschland aus europäischem Lithiumcarbonat und brasilianischem Eisenphosphat synthetisiert.",
+          "fr": "Synthétisé en Saxe, Allemagne, à partir de carbonate de lithium européen et de phosphate de fer brésilien."
+        }
+      }
+    },
+    {
+      "key": "hazardLevel",
+      "label": {
+        "en": "Hazard level",
+        "de": "Gefahrenstufe",
+        "fr": "Niveau de risque"
+      },
+      "value": {
+        "type": "enum",
+        "value": "low",
+        "label": {
+          "en": "Low",
+          "de": "Gering",
+          "fr": "Faible"
+        }
+      }
+    },
+    {
+      "key": "certifications",
+      "label": {
+        "en": "Certifications",
+        "de": "Zertifizierungen",
+        "fr": "Certifications"
+      },
+      "value": {
+        "type": "text",
+        "value": {
+          "en": "IEC 62619, GBA chain-of-custody, UN 38.3 transport safety.",
+          "de": "IEC 62619, GBA-Lieferkettennachweis, UN 38.3 Transportsicherheit.",
+          "fr": "IEC 62619, traçabilité GBA, sécurité transport UN 38.3."
+        }
+      }
+    },
+    {
+      "key": "carbonFootprint",
+      "label": {
+        "en": "Carbon footprint",
+        "de": "CO2-Fußabdruck",
+        "fr": "Empreinte carbone"
+      },
+      "value": {
+        "type": "decimal",
+        "value": 15.4,
+        "unit": "kg CO2e/kg"
+      }
+    },
+    {
+      "key": "endOfLife",
+      "label": {
+        "en": "End of life",
+        "de": "Lebensende",
+        "fr": "Fin de vie"
+      },
+      "value": {
+        "type": "text",
+        "value": {
+          "en": "Hydrometallurgical recycling recovers >95% of the lithium and iron for new cathode synthesis.",
+          "de": "Hydrometallurgisches Recycling gewinnt über 95 % des Lithiums und Eisens für neue Kathoden zurück.",
+          "fr": "Le recyclage hydrométallurgique récupère plus de 95 % du lithium et du fer pour de nouvelles cathodes."
+        }
+      }
+    }
+  ],
+  "references": [
+    {
+      "label": {
+        "en": "Material datasheet",
+        "de": "Materialdatenblatt",
+        "fr": "Fiche matière"
+      },
+      "href": "https://components.transpareo.example/lfp-cathode-active"
+    },
+    {
+      "label": {
+        "en": "Global Battery Alliance passport rulebook",
+        "de": "Global Battery Alliance Passport-Regelwerk",
+        "fr": "Règlement du passeport Global Battery Alliance"
+      },
+      "href": "https://www.globalbattery.org/battery-passport"
+    }
+  ]
+}

@@ -1,4 +1,9 @@
 {
+  "@context": [
+    "https://schema.org",
+    "https://transpareo.com/vocab/component-library/v1"
+  ],
+  "@type": "ComponentLibraryEntry",
   "id": "component/natural-indigo",
   "version": 1,
   "name": {
@@ -6,6 +11,9 @@
     "de": "Natürliches Indigo",
     "fr": "Teinture indigo naturelle"
   },
+  "permalink": "component/natural-indigo",
+  "points": 20,
+  "rating": "good",
   "properties": [
     {
       "key": "alternativeNames",

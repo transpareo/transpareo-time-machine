@@ -1,4 +1,9 @@
 {
+  "@context": [
+    "https://schema.org",
+    "https://transpareo.com/vocab/component-library/v1"
+  ],
+  "@type": "ComponentLibraryEntry",
   "id": "component/elastane",
   "version": 1,
   "name": {
@@ -6,6 +11,9 @@
     "de": "Elasthan",
     "fr": "Élasthanne"
   },
+  "permalink": "component/elastane",
+  "points": -20,
+  "rating": "bad",
   "properties": [
     {
       "key": "alternativeNames",
@@ -36,6 +44,23 @@
           "en": "Lombardy, Italy",
           "de": "Lombardei, Italien",
           "fr": "Lombardie, Italie"
+        }
+      }
+    },
+    {
+      "key": "originCountry",
+      "label": {
+        "en": "Country of origin",
+        "de": "Herkunftsland",
+        "fr": "Pays d'origine"
+      },
+      "value": {
+        "type": "enum",
+        "value": "IT",
+        "dataType": "https://transpareo.com/vocab/transpareo/v1#iso3166-1-alpha2",
+        "label": {
+          "en": "Italy",
+          "de": "Italien"
         }
       }
     },

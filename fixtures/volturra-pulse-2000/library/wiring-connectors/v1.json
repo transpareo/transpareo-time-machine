@@ -1,0 +1,122 @@
+{
+  "id": "component/wiring-connectors",
+  "version": 1,
+  "name": {
+    "en": "Wiring & Connectors",
+    "de": "Verkabelung & Steckverbinder",
+    "fr": "Câblage & connecteurs"
+  },
+  "properties": [
+    {
+      "key": "function",
+      "label": {
+        "en": "Function",
+        "de": "Funktion",
+        "fr": "Fonction"
+      },
+      "value": {
+        "type": "text",
+        "value": {
+          "en": "Carries power between cell modules, BMS, and the inverter; the connectors lock and disconnect under load for safe service.",
+          "de": "Führt Strom zwischen Zellmodulen, BMS und Wechselrichter; die Steckverbinder rasten ein und trennen unter Last für sicheren Service.",
+          "fr": "Transporte le courant entre les modules de cellules, le BMS et l'onduleur; les connecteurs se verrouillent et se déconnectent sous charge pour un entretien sûr."
+        }
+      }
+    },
+    {
+      "key": "origin",
+      "label": {
+        "en": "Origin",
+        "de": "Herkunft",
+        "fr": "Origine"
+      },
+      "value": {
+        "type": "text",
+        "value": {
+          "en": "Cables drawn in Stuttgart, Germany; connector bodies moulded in Munich.",
+          "de": "Kabel in Stuttgart, Deutschland gezogen; Steckverbindergehäuse in München gespritzt.",
+          "fr": "Câbles tréfilés à Stuttgart, Allemagne; corps de connecteurs moulés à Munich."
+        }
+      }
+    },
+    {
+      "key": "recycledContent",
+      "label": {
+        "en": "Recycled content",
+        "de": "Recyclinganteil",
+        "fr": "Contenu recyclé"
+      },
+      "value": {
+        "type": "percent",
+        "value": 35
+      }
+    },
+    {
+      "key": "hazardLevel",
+      "label": {
+        "en": "Hazard level",
+        "de": "Gefahrenstufe",
+        "fr": "Niveau de risque"
+      },
+      "value": {
+        "type": "enum",
+        "value": "low",
+        "label": {
+          "en": "Low",
+          "de": "Gering",
+          "fr": "Faible"
+        }
+      }
+    },
+    {
+      "key": "certifications",
+      "label": {
+        "en": "Certifications",
+        "de": "Zertifizierungen",
+        "fr": "Certifications"
+      },
+      "value": {
+        "type": "text",
+        "value": {
+          "en": "Halogen-free insulation per IEC 60754; RoHS 3 compliant.",
+          "de": "Halogenfreie Isolierung nach IEC 60754; RoHS 3-konform.",
+          "fr": "Isolation sans halogène selon IEC 60754; conforme RoHS 3."
+        }
+      }
+    },
+    {
+      "key": "endOfLife",
+      "label": {
+        "en": "End of life",
+        "de": "Lebensende",
+        "fr": "Fin de vie"
+      },
+      "value": {
+        "type": "text",
+        "value": {
+          "en": "Copper cores are recovered as scrap; the cross-linked polyethylene jacket is reused as a fuel-substitute in cement kilns.",
+          "de": "Kupferkerne werden als Schrott zurückgewonnen; der vernetzte Polyethylenmantel wird als Brennstoffersatz in Zementwerken verwertet.",
+          "fr": "Les âmes en cuivre sont récupérées comme ferraille; la gaine en polyéthylène réticulé est valorisée comme combustible de substitution en cimenterie."
+        }
+      }
+    }
+  ],
+  "references": [
+    {
+      "label": {
+        "en": "Material datasheet",
+        "de": "Materialdatenblatt",
+        "fr": "Fiche matière"
+      },
+      "href": "https://components.transpareo.example/wiring-connectors"
+    },
+    {
+      "label": {
+        "en": "IEC 60754 halogen test",
+        "de": "IEC 60754 Halogentest",
+        "fr": "Essai halogène IEC 60754"
+      },
+      "href": "https://webstore.iec.ch/publication/3367"
+    }
+  ]
+}

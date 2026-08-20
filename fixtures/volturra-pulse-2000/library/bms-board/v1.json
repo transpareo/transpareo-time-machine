@@ -1,0 +1,126 @@
+{
+  "id": "component/bms-board",
+  "version": 1,
+  "name": {
+    "en": "BMS Electronics Board",
+    "de": "BMS-Elektronikplatine",
+    "fr": "Carte électronique BMS"
+  },
+  "properties": [
+    {
+      "key": "function",
+      "label": {
+        "en": "Function",
+        "de": "Funktion",
+        "fr": "Fonction"
+      },
+      "value": {
+        "type": "text",
+        "value": {
+          "en": "Balances cell voltages, monitors temperature, and cuts off charging or discharging on fault; the safety brain of the pack.",
+          "de": "Gleicht die Zellspannungen aus, überwacht die Temperatur und schaltet bei Fehlern Laden oder Entladen ab; das Sicherheitsgehirn des Packs.",
+          "fr": "Équilibre les tensions des cellules, surveille la température et coupe la charge ou la décharge en cas de défaut; le cerveau de sécurité du pack."
+        }
+      }
+    },
+    {
+      "key": "origin",
+      "label": {
+        "en": "Origin",
+        "de": "Herkunft",
+        "fr": "Origine"
+      },
+      "value": {
+        "type": "text",
+        "value": {
+          "en": "Assembled in Eindhoven, Netherlands on halogen-free FR-4 substrate.",
+          "de": "In Eindhoven, Niederlande auf halogenfreiem FR-4-Substrat bestückt.",
+          "fr": "Assemblé à Eindhoven, Pays-Bas, sur substrat FR-4 sans halogène."
+        }
+      }
+    },
+    {
+      "key": "hazardLevel",
+      "label": {
+        "en": "Hazard level",
+        "de": "Gefahrenstufe",
+        "fr": "Niveau de risque"
+      },
+      "value": {
+        "type": "enum",
+        "value": "moderate",
+        "label": {
+          "en": "Moderate",
+          "de": "Mittel",
+          "fr": "Modéré"
+        }
+      }
+    },
+    {
+      "key": "certifications",
+      "label": {
+        "en": "Certifications",
+        "de": "Zertifizierungen",
+        "fr": "Certifications"
+      },
+      "value": {
+        "type": "text",
+        "value": {
+          "en": "RoHS 3, IECQ HSPM QC 080000, IEC 61508 SIL 2 functional safety.",
+          "de": "RoHS 3, IECQ HSPM QC 080000, IEC 61508 SIL 2 funktionale Sicherheit.",
+          "fr": "RoHS 3, IECQ HSPM QC 080000, sécurité fonctionnelle IEC 61508 SIL 2."
+        }
+      }
+    },
+    {
+      "key": "endOfLife",
+      "label": {
+        "en": "End of life",
+        "de": "Lebensende",
+        "fr": "Fin de vie"
+      },
+      "value": {
+        "type": "text",
+        "value": {
+          "en": "Handled as WEEE; gold and silver from contacts are recovered by certified e-waste processors.",
+          "de": "Wird als Elektroaltgerät behandelt; Gold und Silber aus Kontakten werden von zertifizierten Entsorgern zurückgewonnen.",
+          "fr": "Traité comme DEEE; l'or et l'argent des contacts sont récupérés par des opérateurs DEEE certifiés."
+        }
+      }
+    },
+    {
+      "key": "notes",
+      "label": {
+        "en": "Notes",
+        "de": "Anmerkungen",
+        "fr": "Notes"
+      },
+      "value": {
+        "type": "text",
+        "value": {
+          "en": "Firmware is signed and over-the-air upgradable, so the same board can keep gaining safety features over the battery's lifespan.",
+          "de": "Die Firmware ist signiert und over-the-air aktualisierbar, sodass die Platine über die Lebensdauer der Batterie neue Sicherheitsfunktionen erhalten kann.",
+          "fr": "Le firmware est signé et mis à jour à distance; la même carte peut donc gagner de nouvelles fonctions de sécurité tout au long de la vie de la batterie."
+        }
+      }
+    }
+  ],
+  "references": [
+    {
+      "label": {
+        "en": "Material datasheet",
+        "de": "Materialdatenblatt",
+        "fr": "Fiche matière"
+      },
+      "href": "https://components.transpareo.example/bms-board"
+    },
+    {
+      "label": {
+        "en": "IECQ HSPM scheme",
+        "de": "IECQ HSPM-Schema",
+        "fr": "Programme IECQ HSPM"
+      },
+      "href": "https://www.iecq.org/about/hspm.htm"
+    }
+  ]
+}
