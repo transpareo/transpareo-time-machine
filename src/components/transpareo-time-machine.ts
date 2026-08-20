@@ -183,9 +183,9 @@ class TranspareoTimeMachine extends BaseElement {
     container.className = 'tm-content'
     root.appendChild(container)
 
-    // Standalone verifier-mode. The backend's verifier
-    // shell route serves no `src` and sets the `verifier`
-    // attribute, so there is no manifest to fetch. We mount
+    // Standalone verifier-mode. A verifier shell page
+    // serves no `src` and sets the `verifier` attribute,
+    // so there is no manifest to fetch. We mount
     // the <dpp-verifier> widget inline instead, propagating
     // the same pinned platform keys the chip would use
     // (no issuer pin: the widget verifies foreign DPPs).

@@ -57,7 +57,7 @@ describe('signInUrl: a login URL that names its own locale', () => {
 
   it('treats locale= and lang= as the same statement', () => {
     // Whoever issued the URL has said what language it wants,
-    // and this is how a backend opts out of the parameter.
+    // and this is how an issuer opts out of the parameter.
     locale.set('de')
     expect(signInUrl('https://shop.example/login?locale=fr', BACK)).
       not.toContain('=de')

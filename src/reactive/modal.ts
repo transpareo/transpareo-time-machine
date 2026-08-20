@@ -3,9 +3,8 @@
  * Copyright (C) 2026 Transpareo AG
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
- * Shared chrome for modal-overlay components. Inspired
- * by backend/utils/modal.js, three duplications were
- * enough to justify the extraction.
+ * Shared chrome for modal-overlay components. Three
+ * duplications were enough to justify the extraction.
  *
  * The host element is its own overlay. The helper wires
  * Escape, the platform Back gesture, body-scroll-lock,
@@ -273,8 +272,8 @@ interface ModalOptions {
 // Build the standard modal dialog: `.modal > .modal-header
 // (h1.modal-title + button.modal-close) + .modal-body`.
 //
-// Mirrors backend/utils/modal.js's chrome shape so the
-// same CSS conventions apply across the codebase. The
+// One chrome shape for every modal here, so the same
+// CSS conventions apply across the codebase. The
 // caller is responsible for placing the returned element
 // inside its overlay host.
 export function buildModal(opts: ModalOptions): HTMLElement {

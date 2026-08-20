@@ -20,9 +20,9 @@
  *
  * The token list is set-union: a row matched by any
  * token in the list shows once. `?show=` also accepts
- * the bracketed form `?show[]=...&?show[]=...` (which
- * the backend's Vendor API parser already understands)
- * so a hand-typed URL works either way.
+ * the bracketed form `?show[]=...&?show[]=...` (the
+ * spelling a Rack or PHP query parser produces) so a
+ * hand-typed URL works either way.
  *
  * The signal updates on:
  *   - first read (module load picks up the initial

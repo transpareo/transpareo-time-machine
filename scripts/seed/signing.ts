@@ -37,8 +37,8 @@
  * resolution beyond the file path, and any of the
  * issuer's HTTPS host machinery. This module
  * generates fixture data so the renderer's verifier
- * can exercise the full code path end to end without a
- * backend.
+ * can exercise the full code path end to end with no
+ * server of any kind.
  */
 
 import {

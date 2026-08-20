@@ -105,8 +105,8 @@ async function fetchBranding(
   // CSS body: inline string is used verbatim; an object
   // with a `url:` triggers a fetch; an object with a
   // `file:` reads from disk. Result is what the SPA
-  // injects as a <style> tag when the backend isn't
-  // reachable.
+  // injects as a <style> tag when the hosted stylesheet
+  // isn't reachable.
   const cssBody = typeof b.css === 'string'
     ? b.css
     : 'url' in b.css

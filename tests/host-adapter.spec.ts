@@ -44,7 +44,7 @@ function wire(
 describe('toRenderModel: product weight', () => {
   // The wire weight is a QuantitativeValue whose own `value`
   // is now a typed literal ({'@value', '@type'}), not a bare
-  // JSON number - see the backend's typed_literal.
+  // JSON number, so its RDF datatype is explicit.
   it('reads a QuantitativeValue weight from a typed literal value', () => {
     const model = toRenderModel(wire([], {
       product: {

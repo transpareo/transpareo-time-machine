@@ -229,7 +229,7 @@ function buildNameCell(entry: CompositionEntry): HTMLDivElement {
   //
   // The two surfaces are deliberately *visually* distinct
   // (button picks up --action-color + underline-on-hover;
-  // plain text stays in --font-color). The DPP backend
+  // plain text stays in --font-color). The DPP data-model
   // doc describes them as "identical … but without a click
   // target", which would have us style the plain row to
   // mimic interactivity. We diverge intentionally: a row

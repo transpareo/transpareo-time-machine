@@ -25,8 +25,8 @@
  *   3. Each entry's fingerprint is compared against
  *      SHA-256(decoded multikey bytes) of every
  *      pinned key. The wire format prefixes the hex
- *      with `sha256:` per the backend's well_known
- *      controller; we strip it before comparing.
+ *      with `sha256:` as the well-known endpoint
+ *      serves it; we strip it before comparing.
  *   4. Any match -> revocationStatus = 'revoked', and
  *      every snapshot verdict downstream is forced
  *      to 'unauthenticated'. The shell drops
@@ -180,7 +180,7 @@ async function fingerprintOfMultikey(multibase: string): Promise<string> {
   return hex(new Uint8Array(digest))
 }
 
-// The backend ships entries like {"fingerprint":
+// A feed ships entries like {"fingerprint":
 // "sha256:abc123..."}; older or fork-specific feeds
 // may omit the algorithm prefix. We accept either,
 // lower-case the hex, and drop leading whitespace.

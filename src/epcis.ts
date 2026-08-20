@@ -78,7 +78,7 @@ export interface EpcisDocument {
   // EPCIS 2.0 schema, whose document propertyNames reject a
   // bare `signature`. Same single-signature scheme as the
   // manifest, so the SPA verifies it with
-  // verifyManifestSignature. The backend also signs each
+  // verifyManifestSignature. The issuer also signs each
   // ObjectEvent individually (a `proof` array per event) for
   // consumers pulling one event out of the bundle; the
   // renderer reads the whole document, so the document-level

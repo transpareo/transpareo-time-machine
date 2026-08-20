@@ -97,7 +97,7 @@ function verifyManifest(): Promise<ArtefactSignatureState> {
 // resolved platform key. A genuinely unsigned feed resolves
 // to 'absent' (tolerated); a present-but-invalid signature
 // is surfaced for the proof modal's events badge. Per-event
-// proofs are a backend convenience for single-event pulls
+// proofs are a publisher convenience for single-event pulls
 // and are not re-checked here; they ride inside the signed
 // document body, so the document signature already covers
 // them. Idempotent: the first call kicks the verify off and

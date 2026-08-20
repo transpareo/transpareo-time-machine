@@ -88,8 +88,8 @@ export function signInUrl(loginUrl: string, returnTo: string): string {
 //
 // A login URL that already names a locale is left alone,
 // whichever of the usual spellings it uses: the system that
-// issued it has said what it wants, which is also how a
-// backend opts out of the parameter.
+// issued it has said what it wants, which is also how an
+// issuer opts out of the parameter.
 function localeParam(loginUrl: string): string {
   if (/[?&](locale|lang|ui_locales)=/i.test(loginUrl)) return ''
   return `&locale=${encodeURIComponent(i18n.locale)}`

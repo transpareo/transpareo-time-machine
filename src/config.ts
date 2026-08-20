@@ -34,7 +34,7 @@ export interface FooterLink {
   readonly url?: string
   readonly href?: string
 
-  // Stable identifier the backend tags links with
+  // Stable identifier a host tags links with
   // (e.g. 'imprint', 'privacy'). The renderer
   // doesn't use it today but ships it through so a
   // host page hook can theme by key.
@@ -80,7 +80,7 @@ export interface TimeMachineConfig {
   // <transpareo-time-machine> element skips its manifest
   // fetch and mounts <dpp-verifier> in its place so the
   // visitor can paste a manifest URL and run the proof check
-  // manually. Set by the backend's verifier shell route.
+  // manually. Set by a host's verifier shell page.
   readonly verifier?: boolean
 
   // From `pinned-platform-key`: a whitespace-separated set

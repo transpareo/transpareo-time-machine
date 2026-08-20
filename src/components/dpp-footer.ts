@@ -55,12 +55,12 @@ class DppFooter extends LightElement {
     }
 
     for (const link of cfg.links ?? []) {
-      // Backend ships `url`; the hand-written dev shells
-      // and older embed snippets shipped `href`. Either
-      // is accepted; missing both, or a script-bearing
-      // scheme (the config rides in tamperable backend
-      // data), skips the entry (better than rendering a
-      // dead anchor).
+      // A published config ships `url`; the hand-written
+      // dev shells and older embed snippets shipped
+      // `href`. Either is accepted; missing both, or a
+      // script-bearing scheme (the config rides in
+      // tamperable host data), skips the entry (better
+      // than rendering a dead anchor).
       const target = safeLinkHref(link.url ?? link.href ?? '')
       if (!target) continue
       if (left.children.length) {

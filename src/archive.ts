@@ -4,9 +4,9 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-// Per-DPP signed manifest. Emitted by the backend's
-// `ManifestPublisher` and the only artefact the SPA
-// needs to know about at boot time: it names every
+// Per-DPP signed manifest. Emitted by the publishing
+// side and the only artefact the SPA needs to know
+// about at boot time: it names every
 // other artefact (each version's snapshot at
 // `versions[].url`, the EPCIS events sidecar at
 // `epcisUrl`) so the renderer doesn't have to assume
@@ -39,9 +39,9 @@ export interface ManifestVersion {
 
   // Publisher-hosted endpoint that returns the category-3
   // (private) property rows the current user is
-  // authorised to read for this version. Emitted by the
-  // backend's ManifestPublisher when the version has at
-  // least one private row and the publisher is active;
+  // authorised to read for this version. Emitted when
+  // the version has at least one private row and the
+  // publisher is active;
   // absent on versions without private rows and on every
   // version after the publisher has been cancelled. The SPA
   // fetches the URL unconditionally when present and

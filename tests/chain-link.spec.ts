@@ -118,11 +118,11 @@ describe('verifyChainLink', () => {
   // The prior version's chain hash follows ITS OWN format:
   // an ecdsa-sd credential's manifest hashValue is the
   // SHA-256 over its RDFC canonical statements (the
-  // backend's mandatory hash), not the JCS body hash the
-  // flat snapshots chain on. Recomputing every prior with
+  // mandatory hash), not the JCS body hash the flat
+  // snapshots chain on. Recomputing every prior with
   // JCS reported 'broken' from the second ecdsa-sd version
   // onward. The specimen supplies the real public view and
-  // the backend-computed hash, so this walks the exact
+  // the hash its issuer computed, so this walks the exact
   // cross-language bytes.
   describe('with an ecdsa-sd credential as the prior version', () => {
     const spec = JSON.parse(readFileSync(fileURLToPath(

@@ -68,14 +68,13 @@ export const epcisByEventId = computed<
 })
 
 // ---- Event list, derived from the EPCIS document.
-// The backend publishes a single events sidecar (the
+// A publisher serves a single events sidecar (the
 // EPCIS file, served at `manifest.epcisUrl`), with the
 // renderer-specific fields carried as `transpareo:*`
 // extensions on each ObjectEvent. The public artefact
 // is PII-clean: actorLabel and description are absent
 // in production and overlaid only in the authority-
-// tool embed via a separate authenticated fetch (see
-// docs/backend/authority-events.md).
+// tool embed via a separate authenticated fetch.
 //
 // Filter on `private` is defensive against an issuer
 // mis-publishing a regulator-only event into the
@@ -300,7 +299,7 @@ export function verificationMarkVisible(): boolean {
 // published snapshot always carries a proof, and
 // canonicalStatus falls back to 'draft' for an absent or
 // unrecognised dppStatus, so a status check alone would hide
-// a real verdict behind "draft" the moment the backend grows
+// a real verdict behind "draft" the moment a publisher adds
 // a lifecycle token this build doesn't know. Gating on the
 // empty proof set keeps the short-circuit to genuine,
 // unsigned previews.
