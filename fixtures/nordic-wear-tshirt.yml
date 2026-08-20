@@ -186,10 +186,7 @@ product:
         en: Country of origin
         de: Herkunftsland
         fr: Pays d'origine
-      value:
-        en: Portugal
-        de: Portugal
-        fr: Portugal
+      country_code: PT
       icon: globe
     - key: sizes
       label:

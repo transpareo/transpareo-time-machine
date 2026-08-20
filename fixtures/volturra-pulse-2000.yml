@@ -452,10 +452,7 @@ product:
         en: Country of origin
         de: Herkunftsland
         fr: Pays d'origine
-      value:
-        en: Italy
-        de: Italien
-        fr: Italie
+      country_code: IT
       icon: globe
     - key: bms_firmware
       label:
@@ -465,6 +462,13 @@ product:
       value: v1.4.2
       icon: cog
   lists:
+    - key: cell_sourcing
+      label:
+        en: Cell sourcing countries
+        de: Herkunftsländer der Zellen
+        fr: Pays d'origine des cellules
+      country_codes: [KR, CN, PL]
+      icon: globe
     - key: certifications
       label:
         en: Compliance certifications

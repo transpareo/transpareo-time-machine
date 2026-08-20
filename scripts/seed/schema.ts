@@ -72,7 +72,12 @@ const DppMetric = z.object({
   // A bare number renders locale-aware (87.3 -> "87,3" in
   // de-DE) with `unit` shown beside it; a string / locale
   // hash passes through verbatim.
-  value: z.union([LocalizedText, z.number()]),
+  value: z.union([LocalizedText, z.number()]).optional(),
+  // A country-valued metric, authored as an ISO 3166-1
+  // alpha-2 code instead of a `value`. The code is what
+  // ships in the signed bytes; the renderer names the
+  // country in the viewer's language.
+  country_code: z.string().regex(/^[A-Z]{2}$/).optional(),
   unit: z.string().optional(),
   icon: z.string().optional(),
   // A private row is dropped from the public snapshot and
@@ -80,14 +85,25 @@ const DppMetric = z.object({
   // endpoint (authorised viewers). Its presence is what makes
   // the manifest carry that endpoint URL.
   private: z.boolean().optional(),
-});
+}).refine(
+  (m) => (m.value === undefined) !== (m.country_code === undefined),
+  { message: 'metric needs exactly one of value / country_code' }
+);
 
 const DppList = z.object({
   key: z.string(),
   label: LocalizedText,
-  values: z.array(LocalizedText),
+  values: z.array(LocalizedText).optional(),
+  // A country-valued list, authored as ISO 3166-1 alpha-2
+  // codes instead of `values`. Each code ships as a typed
+  // literal, so the renderer names every entry in the
+  // viewer's language off one set of signed bytes.
+  country_codes: z.array(z.string().regex(/^[A-Z]{2}$/)).optional(),
   icon: z.string().optional(),
-});
+}).refine(
+  (l) => (l.values === undefined) !== (l.country_codes === undefined),
+  { message: 'list needs exactly one of values / country_codes' }
+);
 
 const DppAccordion = z.object({
   key: z.string(),

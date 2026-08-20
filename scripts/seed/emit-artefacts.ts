@@ -319,8 +319,8 @@ function accessRightsOf(
 
 // Property-level delta between two versions' wire rows,
 // keyed by `propertyID`: added / removed by presence,
-// modified when the row's value changed. Mirrors the
-// backend's `dpp:ChangeSet`; undefined when nothing moved,
+// modified when the row's value changed. Mirrors the wire
+// `dpp:ChangeSet`; undefined when nothing moved,
 // so v1 and unchanged versions carry no block.
 function diffProperties(
   prior: ReadonlyArray<Record<string, unknown>>,
@@ -598,8 +598,8 @@ function buildProperties(
   return [
     ...p.metrics
       .filter((m) => !m.private)
-      .map((m) => propertyRow(m.key, m.label, m.value, m.unit)),
-    ...p.lists.map((l) => propertyRow(l.key, l.label, l.values)),
+      .map((m) => propertyRow(m.key, m.label, metricValue(m), m.unit)),
+    ...p.lists.map((l) => propertyRow(l.key, l.label, listValue(l))),
     ...p.accordions.map((a) => propertyRow(a.key, a.label, a.body)),
 
     // First composition takes the version diff; the rest
@@ -639,10 +639,14 @@ function buildIconMap(fixture: Fixture): Record<string, string> {
 // A `{ locale: text }` hash: a plain object whose values
 // are all strings. The property label and structural values
 // (list arrays, substance arrays) are not converted - only a
-// localized scalar value.
+// localized scalar value. A JSON-LD keyword object (a typed
+// literal such as a country code) is all-strings too, so
+// keys are checked as well: `@value` is not a locale.
 function isLocaleHash(v: unknown): v is Record<string, string> {
   if (!v || typeof v !== 'object' || Array.isArray(v)) return false;
-  return Object.values(v).every((x) => typeof x === 'string');
+  return Object.entries(v).every(
+    ([locale, text]) => typeof text === 'string' && !locale.startsWith('@'),
+  );
 }
 
 // Serialize a localized literal in the JSON-LD expanded form
@@ -655,6 +659,36 @@ function toWireLocalized(v: unknown): unknown {
   return Object.entries(v)
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([lang, text]) => ({ '@value': text, '@language': lang }));
+}
+
+// A country-valued metric ships its ISO 3166-1 alpha-2
+// code as a JSON-LD typed literal, the same mechanism the
+// wire already uses to pin a decimal's datatype. The code
+// stays in the signed bytes for a regulator or aggregator
+// to act on, and the `@type` is what tells a renderer the
+// two-letter string is a country at all. Written absolute:
+// a compact IRI would depend on the reader expanding the
+// document's context the same way the signer did.
+const COUNTRY_DATATYPE =
+  'https://transpareo.com/vocab/transpareo/v1#iso3166-1-alpha2';
+
+function countryLiteral(code: string): Record<string, string> {
+  return { '@value': code, '@type': COUNTRY_DATATYPE };
+}
+
+function metricValue(
+  metric: Fixture['product']['metrics'][number],
+): unknown {
+  if (metric.country_code) return countryLiteral(metric.country_code);
+  return metric.value;
+}
+
+// A country-valued list carries one typed literal per code,
+// so a badge group of countries reads in the viewer's
+// language from the same bytes a single country tile does.
+function listValue(list: Fixture['product']['lists'][number]): unknown {
+  if (list.country_codes) return list.country_codes.map(countryLiteral);
+  return list.values;
 }
 
 function propertyRow(
@@ -773,8 +807,8 @@ function buildManifest(
 
   // The body is everything the manifest signature covers;
   // signManifest hashes it (minus the signature it returns)
-  // with the platform key, mirroring the backend's
-  // sign_manifest so the SPA verifies the version list.
+  // with the platform key, matching the published
+  // manifest signature so the SPA verifies the version list.
   const body = {
     '@context': [
       'https://www.w3.org/ns/credentials/v2',
@@ -882,8 +916,8 @@ function buildEpcis(
 }
 
 // Build the `transpareo:*` extensions the SPA reads off
-// each ObjectEvent. Mirrors the backend's
-// `EpcisProjection` shape exactly: eventType,
+// each ObjectEvent. Mirrors the published projection
+// shape exactly: eventType,
 // versionNumber, statusFrom/To are emitted in
 // production (decision γ); actorLabel and description
 // are PII and stay behind the authority-tool fetch, so

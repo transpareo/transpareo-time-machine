@@ -174,6 +174,10 @@ function buildCredential(
   ) as Record<string, unknown>;
   assignIds(subject, subjectIri, undefined);
   return {
+    // Two context URLs and nothing inline: every datatype a
+    // signed value carries is written absolute, so there is
+    // nothing here for one processor to expand and another
+    // to leave alone.
     '@context': [VC_CONTEXT_URL, TRANSPAREO_CONTEXT_URL],
     '@id': `${subjectIri}#credential`,
     type: ['VerifiableCredential', 'dpp:DigitalProductPassport'],
