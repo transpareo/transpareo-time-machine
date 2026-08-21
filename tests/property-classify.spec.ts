@@ -16,7 +16,9 @@ import {
   classifyWireValue,
   bridgeLongTextGroups,
   LONG_TEXT_GATE,
+  COMPACT_GATE,
 } from '../src/property-classify';
+import { REGION_DATATYPE } from '../src/types';
 import type { PropertyValueKind } from '../src/types';
 
 describe('classifyWireValue: scalars', () => {
@@ -178,12 +180,15 @@ describe('classifyWireValue: scalar vs longText gate', () => {
 describe('classifyWireValue: lists', () => {
   it('classifies an array of plain strings as a list', () => {
     const k = classifyWireValue(['XS', 'S', 'M'], undefined);
-    expect(k).toEqual({ type: 'list', items: ['XS', 'S', 'M'] });
+    expect(k).toEqual({
+      type: 'list', items: ['XS', 'S', 'M'], compact: true,
+    });
   });
 
   it('classifies an array of locale-hashes as a list', () => {
     const items = [{ en: 'Daily wear', de: 'Alltag' }];
-    expect(classifyWireValue(items, undefined)).toEqual({ type: 'list', items });
+    expect(classifyWireValue(items, undefined))
+      .toEqual({ type: 'list', items, compact: true });
   });
 });
 
@@ -347,6 +352,7 @@ describe('classifyWireValue: multi-entry language arrays', () => {
     expect(classifyWireValue(v, undefined)).toEqual({
       type: 'list',
       items: [{ de: 'Ski alpin' }, { de: 'Snowboarden' }],
+      compact: true,
     });
   });
 
@@ -365,5 +371,60 @@ describe('classifyWireValue: multi-entry language arrays', () => {
         { de: 'Snowboarden', en: 'Snowboarding' },
       ],
     });
+  });
+});
+
+// Short entries flow inline as pills, longer ones keep one
+// line each. The gate reads the longest entry across every
+// locale, not the one the viewer happens to be reading, so
+// a card cannot change shape on a language switch.
+describe('classifyWireValue: the compact list gate', () => {
+  it('marks a list of token-length entries compact', () => {
+    const items = ['S', 'M', 'L', 'XL'];
+    expect(classifyWireValue(items, undefined)).toEqual({
+      type: 'list', items, compact: true,
+    });
+  });
+
+  it('leaves a list of phrases stacked', () => {
+    const items = ['GOTS Organic', 'OEKO-TEX Standard 100'];
+    expect(classifyWireValue(items, undefined))
+      .toEqual({ type: 'list', items });
+  });
+
+  it('holds the gate at its own boundary', () => {
+    const at = ['x'.repeat(COMPACT_GATE)];
+    const over = ['x'.repeat(COMPACT_GATE + 1)];
+    expect(classifyWireValue(at, undefined)).toHaveProperty('compact', true);
+    expect(classifyWireValue(over, undefined))
+      .not.toHaveProperty('compact');
+  });
+
+  // The English reader must not get pills where the German
+  // reader gets lines: one card, one shape, whoever reads it.
+  it('measures the longest locale, not the served one', () => {
+    const items = [
+      { en: 'Layering', de: 'Zum Kombinieren bei kaltem Wetter' },
+    ];
+    expect(classifyWireValue(items, undefined))
+      .toEqual({ type: 'list', items });
+  });
+
+  // A two-letter code would sail under the gate, but the
+  // reader never sees the code: they see a country name in
+  // their own language, and those run long.
+  it('never marks a country list compact', () => {
+    const items = [
+      { '@value': 'KR', '@type': REGION_DATATYPE },
+      { '@value': 'CN', '@type': REGION_DATATYPE },
+    ];
+    expect(classifyWireValue(items, undefined))
+      .not.toHaveProperty('compact');
+  });
+
+  it('lets one long entry stack a card of otherwise short ones', () => {
+    const items = ['S', 'M', 'Extra extra large'];
+    expect(classifyWireValue(items, undefined))
+      .toEqual({ type: 'list', items });
   });
 });

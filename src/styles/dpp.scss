@@ -355,6 +355,28 @@ button.dpp-comp-name-trigger {
   list-style: none;
 
   li { padding: 3px 0; }
+
+  // Token-length entries (sizes, codes) flow inline as
+  // pills rather than stacking four lines for four
+  // characters. The classifier sets the flag from the
+  // longest entry across every locale, so the shape holds
+  // through a language switch. Radius and the tint mixed
+  // against the surface follow .chip, so a publisher
+  // palette carries through with no new tokens.
+  &.compact {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+
+    li {
+      padding: 4px 12px;
+      border: 1px solid $dpp-border;
+      border-radius: 999px;
+      background: color-mix(
+        in oklab, var(--font-color, #3D3C3B) 4%,
+        var(--background-color, #fff));
+    }
+  }
 }
 
 // ─── Accordion Sections ─────────────────────

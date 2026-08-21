@@ -31,7 +31,7 @@ class DppBadgeLists extends LightElement {
 
 function buildCard(row: List): HTMLElement {
   const card = el('div', 'dpp-list-card')
-  const ul = el('ul', 'dpp-list')
+  const ul = el('ul', row.value.compact ? 'dpp-list compact' : 'dpp-list')
   for (const v of row.value.items) {
     const text = tx(v, i18n.locale)
     ul.appendChild(el('li', undefined, text))

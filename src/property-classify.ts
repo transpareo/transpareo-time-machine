@@ -50,6 +50,13 @@ import {
 
 export const LONG_TEXT_GATE = 60
 
+// Longest entry a list may carry and still flow inline as
+// pills. Real data separates widely: sizes run 2 to 3
+// characters, certifications 21 to 25, an intended-use
+// phrase 42 in German, so the line sits in open space and
+// still admits token sets like 'IP67' or '2 Jahre'.
+export const COMPACT_GATE = 12
+
 // A locale-hash maps locale codes to plain strings
 // (`{ en: '...', de: '...' }`). Distinct from a substance
 // row, whose values are not all strings (`value` is a
@@ -146,6 +153,29 @@ function languageEntries(
     Object.fromEntries(complete.map(([lang, l]) => [lang, l[i]])))
 }
 
+// A list of short tokens (sizes, codes) flows inline as
+// pills; anything longer stays one entry per line. The
+// longest entry decides for the whole card, so a single
+// phrase among tokens does not leave one wide pill beside
+// several tiny ones. Measured across every locale, like the
+// long-text gate, so switching language never reflows the
+// card.
+// A country literal is not measurable here: it carries a
+// code and a datatype IRI, while the reader sees a name
+// resolved per locale, and "Vereinigte Arabische Emirate"
+// is no token. Such a list never claims the compact shape.
+function listKind(
+  items: ReadonlyArray<SnapshotLocalizedText>,
+): PropertyValueKind {
+  const longest = items.reduce((n, i) => Math.max(n, maxTextLength(i)), 0)
+  const compact = !items.some(isRegionLiteral) && longest <= COMPACT_GATE
+  return {
+    type: 'list',
+    items,
+    ...(compact ? { compact: true } : {}),
+  }
+}
+
 function scalarOrLongText(
   v: SnapshotLocalizedText, unit: string | undefined,
 ): PropertyValueKind {
@@ -212,7 +242,7 @@ export function classifyWireValue(
   if (Array.isArray(raw)) {
     if (isLanguageArray(raw)) {
       const entries = languageEntries(raw)
-      if (entries.length > 1) return { type: 'list', items: entries }
+      if (entries.length > 1) return listKind(entries)
       return scalarOrLongText(foldLocale(raw), unit)
     }
     if (raw.length > 0 && isSubstanceLike(raw[0])) {
@@ -222,7 +252,7 @@ export function classifyWireValue(
         ...(unit ? { unit } : {}),
       }
     }
-    return { type: 'list', items: raw as ReadonlyArray<SnapshotLocalizedText> }
+    return listKind(raw as ReadonlyArray<SnapshotLocalizedText>)
   }
   if (isLocaleHash(raw)) {
     return scalarOrLongText(raw, unit)
