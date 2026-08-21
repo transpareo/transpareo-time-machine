@@ -10,6 +10,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.14.1] - 2026-08-20
+
 ### Fixed
 
 - The renderer declares the language it settled on, so a
