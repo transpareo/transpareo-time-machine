@@ -357,12 +357,17 @@ button.dpp-comp-name-trigger {
   li { padding: 3px 0; }
 
   // Token-length entries (sizes, codes) flow inline as
-  // pills rather than stacking four lines for four
+  // badges rather than stacking four lines for four
   // characters. The classifier sets the flag from the
   // longest entry across every locale, so the shape holds
-  // through a language switch. Radius and the tint mixed
-  // against the surface follow .chip, so a publisher
-  // palette carries through with no new tokens.
+  // through a language switch. The tint mixed against the
+  // surface follows .chip, so a publisher palette carries
+  // through with no new tokens.
+  //
+  // A fully round radius would size itself off each
+  // badge's height, turning 'S' into a circle beside an
+  // oval 'XL'. The fixed corner keeps one shape across the
+  // row, with width the only thing that varies.
   &.compact {
     display: flex;
     flex-wrap: wrap;
@@ -371,7 +376,7 @@ button.dpp-comp-name-trigger {
     li {
       padding: 4px 12px;
       border: 1px solid $dpp-border;
-      border-radius: 999px;
+      border-radius: var(--radius-sm, 6px);
       background: color-mix(
         in oklab, var(--font-color, #3D3C3B) 4%,
         var(--background-color, #fff));
