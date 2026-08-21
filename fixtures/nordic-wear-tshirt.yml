@@ -188,14 +188,20 @@ product:
         fr: Pays d'origine
       country_code: PT
       icon: globe
+  lists:
     - key: sizes
       label:
         en: Available sizes
         de: Verfügbare Größen
         fr: Tailles disponibles
-      value: XS, S, M, L, XL, XXL
+      values:
+        - XS
+        - S
+        - M
+        - L
+        - XL
+        - XXL
       icon: sliders
-  lists:
     - key: functions
       label:
         en: Intended use
