@@ -129,3 +129,31 @@ describe('hostLocaleOf: inherit', () => {
     expect(hostLocaleOf(element({ locale: 'inherit' }))).toBeNull()
   })
 })
+
+// The renderer declares the language it settled on, so a
+// screen reader reads the passport with the right phonemes
+// even where the document around it says otherwise. It
+// declares it inside its own shadow tree, never on the
+// element or the document, and this pins that boundary:
+// hostLocaleOf falls through to `lang`, so a value written
+// where it can see it would come back as if the page had
+// instructed it.
+describe('the language the renderer declares', () => {
+  it('cannot read back a lang written inside the widget', () => {
+    const el = element({})
+    const shadowish = document.createElement('div')
+    shadowish.className = 'tm-content'
+    shadowish.lang = 'de'
+    el.appendChild(shadowish)
+    expect(hostLocaleOf(el)).toBeNull()
+  })
+
+  it('still reads a lang the page put on the element', () => {
+    const el = element({ lang: 'fr' })
+    const shadowish = document.createElement('div')
+    shadowish.className = 'tm-content'
+    shadowish.lang = 'de'
+    el.appendChild(shadowish)
+    expect(hostLocaleOf(el)).toBe('fr')
+  })
+})

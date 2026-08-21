@@ -154,6 +154,14 @@ class DppVerifier extends BaseElement {
     wrap.appendChild(this.resultMount)
     root.appendChild(wrap)
 
+    // Declare the language settled on above, the same way
+    // the passport renderer does: inside the widget's own
+    // tree, never on the element hostLocaleOf reads back or
+    // on a document the embedding page owns.
+    this.effect(() => {
+      wrap.lang = i18n.locale
+    })
+
     const pins = parseKeySet(this, 'pinned-platform-key')
     const initial = this.getAttribute('src')
     if (initial) {

@@ -183,6 +183,26 @@ class TranspareoTimeMachine extends BaseElement {
     container.className = 'tm-content'
     root.appendChild(container)
 
+    // Declare the language we actually settled on, so a
+    // screen reader speaks the passport with the right
+    // phonemes even where the surrounding document says
+    // otherwise: the host resolves its `lang` against the
+    // site's languages, we resolve against the passport's,
+    // and a stored pick only we can see outranks both.
+    //
+    // On this container rather than on the element or the
+    // document. The document belongs to the embedding page
+    // and relabelling it would silently retag content the
+    // widget does not own. The element is read back by
+    // hostLocaleOf, which falls through to `lang`, so
+    // writing there would feed our own answer in as if the
+    // page had instructed it. A shadow-internal node is
+    // visible to neither, and HTML carries the language
+    // down to everything we render.
+    this.effect(() => {
+      container.lang = i18n.locale
+    })
+
     // Standalone verifier-mode. A verifier shell page
     // serves no `src` and sets the `verifier` attribute,
     // so there is no manifest to fetch. We mount

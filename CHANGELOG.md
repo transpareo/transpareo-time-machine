@@ -10,6 +10,25 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Fixed
+
+- The renderer declares the language it settled on, so a
+  screen reader reads the passport with the right phonemes
+  where the surrounding document says otherwise. The two
+  can legitimately disagree: a host resolves its `lang`
+  against the languages its site publishes, the renderer
+  resolves against the ones the passport publishes, and a
+  pick the visitor made earlier is visible only to the
+  renderer. The declaration sits inside the widget's own
+  tree, never on the element or on the document. A host
+  page owns its document, and relabelling it would retag
+  content the widget did not render; the element itself is
+  read back as a host instruction, so writing there would
+  feed the renderer's own answer in as if the page had
+  asked for it. It follows an in-page language switch, and
+  the standalone verifier widget declares its language the
+  same way.
+
 ## [2.14.0] - 2026-08-20
 
 ### Added
