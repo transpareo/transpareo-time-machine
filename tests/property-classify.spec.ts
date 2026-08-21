@@ -311,3 +311,59 @@ describe('bridgeLongTextGroups', () => {
     expect(bridgeLongTextGroups(input)).toBe(input);
   });
 });
+
+// A list property freezes one entry per row, and the wire
+// tags each entry in every locale it carries. Grouped by
+// language the entries line up in row order, so entry i of
+// one language is entry i of the next.
+describe('classifyWireValue: multi-entry language arrays', () => {
+  it('reads repeated languages as a list, one item per entry', () => {
+    const v = [
+      { '@value': 'Ski alpin', '@language': 'de' },
+      { '@value': 'Alpine skiing', '@language': 'en' },
+      { '@value': 'Snowboarden', '@language': 'de' },
+      { '@value': 'Snowboarding', '@language': 'en' },
+    ];
+    expect(classifyWireValue(v, undefined)).toEqual({
+      type: 'list',
+      items: [
+        { de: 'Ski alpin', en: 'Alpine skiing' },
+        { de: 'Snowboarden', en: 'Snowboarding' },
+      ],
+    });
+  });
+
+  // Pairing by position is only sound for a locale that
+  // carries every entry. A short one names no entries it
+  // skipped, so pairing it anyway would put its value on
+  // the wrong row: "Ski alpin" reading as "Snowboarding"
+  // one language over.
+  it('drops a short locale rather than pairing it wrongly', () => {
+    const v = [
+      { '@value': 'Ski alpin', '@language': 'de' },
+      { '@value': 'Snowboarden', '@language': 'de' },
+      { '@value': 'Snowboarding', '@language': 'en' },
+    ];
+    expect(classifyWireValue(v, undefined)).toEqual({
+      type: 'list',
+      items: [{ de: 'Ski alpin' }, { de: 'Snowboarden' }],
+    });
+  });
+
+  it('keeps every locale that carries the full set', () => {
+    const v = [
+      { '@value': 'Ski alpin', '@language': 'de' },
+      { '@value': 'Alpine skiing', '@language': 'en' },
+      { '@value': 'Ski', '@language': 'fr' },
+      { '@value': 'Snowboarden', '@language': 'de' },
+      { '@value': 'Snowboarding', '@language': 'en' },
+    ];
+    expect(classifyWireValue(v, undefined)).toEqual({
+      type: 'list',
+      items: [
+        { de: 'Ski alpin', en: 'Alpine skiing' },
+        { de: 'Snowboarden', en: 'Snowboarding' },
+      ],
+    });
+  });
+});

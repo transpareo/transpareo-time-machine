@@ -123,7 +123,7 @@ export function tx(
 
 // A localized literal in the wire's JSON-LD expanded form:
 // `[{ '@value': 'Zwei Jahre', '@language': 'de' }, ...]`.
-interface WireLangValue {
+export interface WireLangValue {
   readonly '@value': string
   readonly '@language': string
 }

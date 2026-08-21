@@ -1237,6 +1237,21 @@ Two layers:
   under `src/i18n/data/`, one per locale, lazy-loaded
   via Vite. All 40 bundled locales ship.
 
+A property carrying several values (an intended-use list,
+a certifications list) tags each value in every locale it
+ships, and JSON-LD reads those values as an unordered set:
+nothing in the data pairs one locale's second value with
+another's. The renderer pairs them by the order the served
+document lists them in, per locale, so a publisher emitting
+a multi-value property has to keep that order stable across
+locales. A locale shipping fewer values than the longest
+one is left out of the pairing rather than risking a row
+that reads "Ski alpin" in German and "Snowboarding" in
+English; `tx()` then falls back to a locale that is there.
+That order lives in the served document, not in the RDF:
+ecdsa-sd canonicalization sorts quads, so anything that
+rebuilds a snapshot from N-Quads loses the pairing.
+
 The locale picker reads `availableLocales` from the
 DPP and shows native names from `src/i18n/index.ts`.
 Each row leads with what the viewer's locale calls the

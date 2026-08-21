@@ -42,6 +42,7 @@
 
 import type {
   PropertyValueKind, CompositionEntry, SnapshotLocalizedText,
+  WireLangValue,
 } from '@/types'
 import {
   canonicalRating, isLanguageArray, foldLocale, isRegionLiteral,
@@ -115,6 +116,36 @@ function isLongText(v: SnapshotLocalizedText): boolean {
   return maxTextLength(v) > LONG_TEXT_GATE || hasLineBreak(v)
 }
 
+// Split a language-tagged array back into the entries it
+// carries. A property with several values tags each of them
+// in every locale, and nothing in the data pairs one
+// locale's second value with another's: JSON-LD reads
+// multiple values as an unordered set. What does line them
+// up is the order the served document lists them in, per
+// locale, so entry i of German is entry i of English.
+//
+// A locale carrying fewer values than the longest one
+// cannot be placed, since nothing says which entries it
+// skipped. It stays out of the pairing rather than landing
+// a value on the wrong row, and tx() falls back to a locale
+// that is there. One entry per locale means a plain
+// localized scalar, which the caller folds as before.
+function languageEntries(
+  raw: ReadonlyArray<WireLangValue>,
+): ReadonlyArray<Readonly<Record<string, string>>> {
+  const byLanguage = new Map<string, string[]>()
+  for (const e of raw) {
+    const list = byLanguage.get(e['@language'])
+    if (list) list.push(e['@value'])
+    else byLanguage.set(e['@language'], [e['@value']])
+  }
+  const counts = [...byLanguage.values()].map((l) => l.length)
+  const count = Math.max(...counts)
+  const complete = [...byLanguage].filter(([, l]) => l.length === count)
+  return Array.from({ length: count }, (_, i) =>
+    Object.fromEntries(complete.map(([lang, l]) => [lang, l[i]])))
+}
+
 function scalarOrLongText(
   v: SnapshotLocalizedText, unit: string | undefined,
 ): PropertyValueKind {
@@ -180,6 +211,8 @@ export function classifyWireValue(
   }
   if (Array.isArray(raw)) {
     if (isLanguageArray(raw)) {
+      const entries = languageEntries(raw)
+      if (entries.length > 1) return { type: 'list', items: entries }
       return scalarOrLongText(foldLocale(raw), unit)
     }
     if (raw.length > 0 && isSubstanceLike(raw[0])) {
