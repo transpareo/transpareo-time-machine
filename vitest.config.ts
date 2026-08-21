@@ -26,6 +26,7 @@ export default defineConfig({
       'tests/icons.spec.ts',
       'tests/integration-hook.spec.ts',
       'tests/locale-picker.spec.ts',
+      'tests/logo-link.spec.ts',
       'tests/snapshot.spec.ts',
       'tests/timeline-axis.spec.ts',
       'tests/verifier-theme.spec.ts',
