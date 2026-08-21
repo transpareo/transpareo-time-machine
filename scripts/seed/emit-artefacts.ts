@@ -668,9 +668,26 @@ function isLocaleHash(v: unknown): v is Record<string, string> {
 // `[{ '@value', '@language' }, ...]` the wire uses under EN
 // 18223 (product / property / substance names and values),
 // locale-sorted. Strings, numbers, and structural arrays
-// pass through; only a locale hash is converted.
-function toWireLocalized(v: unknown): unknown {
-  if (!isLocaleHash(v)) return v;
+// pass through; a locale hash is converted, and so is a
+// list of them.
+//
+// A multi-value localized property (an intended-use list)
+// flattens to one tagged entry per value per locale, in
+// entry order. JSON-LD reads those as an unordered set, so
+// that per-locale order is the only thing pairing one
+// locale's second value with another's; emitting entry by
+// entry is what keeps the orders aligned.
+export function toWireLocalized(v: unknown): unknown {
+  if (isLocaleHash(v)) return expandLocaleHash(v);
+  if (Array.isArray(v) && v.length > 0 && v.every(isLocaleHash)) {
+    return v.flatMap(expandLocaleHash);
+  }
+  return v;
+}
+
+function expandLocaleHash(
+  v: Record<string, string>,
+): Record<string, string>[] {
   return Object.entries(v)
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([lang, text]) => ({ '@value': text, '@language': lang }));
