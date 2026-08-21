@@ -10,6 +10,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.14.0] - 2026-08-20
+
 ### Added
 
 - The brandbar logo can carry a link. A host that sets
