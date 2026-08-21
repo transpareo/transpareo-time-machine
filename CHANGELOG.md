@@ -26,6 +26,50 @@ and this project adheres to
   accessible name ("Home page", translated across all 40
   locales) rather than announcing its own URL.
 
+- A list of short values renders as inline badges rather
+  than one line per entry. Sizes took four stacked lines
+  for four characters; where every entry fits in twelve
+  characters the card now flows them inline. Longer lists,
+  certifications or an intended-use phrase, keep one entry
+  per line as before. The longest entry decides for the
+  whole card, so a phrase among tokens never leaves one
+  wide badge beside several narrow ones, and the
+  measurement runs across every locale the value carries,
+  so a German reader and an English one see the same card
+  rather than lines against badges. A list of country
+  codes never takes the shape: the reader sees a country
+  name resolved in their own language, and those run long.
+
+### Fixed
+
+- A property carrying several localized values renders
+  every one of them. The wire tags each value in every
+  locale it ships, and the renderer folded that into a
+  single locale hash where each language's last value
+  overwrote the ones before it, so a four-value list
+  showed one item and the rest were gone. Values now group
+  by locale and pair by the order the served document
+  lists them in, so every entry survives and each row
+  still follows a locale switch.
+
+  A locale carrying fewer values than the longest one is
+  left out of the pairing rather than landing a value on
+  the wrong row. Nothing in the data says which entries it
+  skipped, and a wrong pair is unreportable because it
+  looks like ordinary content: one row reading "Ski alpin"
+  in German and "Snowboarding" in English. The row falls
+  back to a locale that is there, which is visibly a
+  fallback.
+
+- Closing a modal no longer reloads the page on a host
+  that drives navigation itself. The modal took the Back
+  gesture by pushing a history entry and traversing back
+  off it on close, and on a host with its own router that
+  traversal is a popstate the host reads as a navigation,
+  so the page re-rendered under the reader. The gesture is
+  now taken only where the entry carries no foreign state;
+  elsewhere Back means what the host means by Back.
+
 ## [2.13.0] - 2026-08-19
 
 ### Added
