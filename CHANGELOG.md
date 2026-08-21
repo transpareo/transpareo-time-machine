@@ -10,6 +10,19 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Fixed
+
+- The `<dpp-verifier>` widget fills the box the embedding
+  page gives it, instead of stopping at a 640px measure of
+  its own. A host that sized its own container wider got a
+  form row and result card that ended short of the copy
+  around them, and the cap sat inside the shadow root where
+  the page's stylesheet could neither see nor override it.
+  Mounted in the renderer's verifier mode, where there is
+  no host container to speak of, the shell hands it the
+  measure the passport card uses and centres it the same
+  way.
+
 ## [2.14.1] - 2026-08-20
 
 ### Fixed

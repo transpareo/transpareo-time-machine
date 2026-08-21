@@ -52,11 +52,14 @@
   background: var(--background-color, #fff);
 }
 
+// No measure of its own: the widget fills the box the
+// embedding page gives it. A cap in here would be a
+// second, narrower measure the page can neither see nor
+// override, its rules stopping at this shadow root.
 .verifier {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  max-width: 640px;
 }
 
 .verifier-form {

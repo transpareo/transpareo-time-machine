@@ -29,6 +29,7 @@ export default defineConfig({
       'tests/logo-link.spec.ts',
       'tests/snapshot.spec.ts',
       'tests/timeline-axis.spec.ts',
+      'tests/verifier-measure.spec.ts',
       'tests/verifier-theme.spec.ts',
       'node_modules/**',
     ],

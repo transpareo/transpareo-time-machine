@@ -669,7 +669,10 @@ manifest signature fail the verdict outright in every
 tier.
 
 Same surface notes as `<transpareo-time-machine>` (open
-shadow root, CSS custom properties, no events).
+shadow root, CSS custom properties, no events). The widget
+states no width of its own and fills the element's box, so
+the page sets the measure by sizing the container it drops
+the element into.
 
 ## Proof cryptosuites
 

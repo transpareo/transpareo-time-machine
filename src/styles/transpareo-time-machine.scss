@@ -106,6 +106,21 @@ button, input, select, textarea {
   }
 }
 
+/* Verifier mode mounts the standalone widget in place of
+ * the passport tree. The widget carries no measure of its
+ * own, so the shell states the content card's and centres
+ * it the same way. Below that width it keeps a gutter
+ * where the card goes flush: the widget has no padding
+ * of its own, so its input would sit on the screen edge. */
+dpp-verifier {
+  max-width: var(--content-max-width, 830px);
+  margin: var(--frame-width, 24px) auto 0;
+
+  @media (max-width: 830px) {
+    margin: 16px;
+  }
+}
+
 .card-content {
   padding: 0 25px 16px;
 }
