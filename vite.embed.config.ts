@@ -28,8 +28,20 @@ import { fileURLToPath, URL } from 'node:url';
 // dynamically and language switches don't pay for
 // every locale upfront.
 //
-// Same source tree, same custom element registration,
-// same shared chunks - only the CSS delivery differs.
+// Each script-tag deliverable is one self-contained file.
+// Built together, the SPA embed and the <dpp-verifier>
+// widget would share a chunk for their common code, and a
+// host page could only discover that chunk after the entry
+// had parsed: a second round trip on the critical path
+// before anything else can start. So the two entries build
+// one after the other (`--mode` picks the entry) into the
+// same output tree, each carrying its own copy of the
+// shared code.
+//
+// Whitespace is minified too. Vite keeps it for an ES lib
+// build so a consuming bundler can still read the output,
+// but a script tag is the consumer here, and the bytes go
+// straight to the visitor.
 //
 // Run: npm run build:embed
 
@@ -37,7 +49,19 @@ import { fileURLToPath, URL } from 'node:url';
 const NOBLE_BANNER =
   '/*! noble-ed25519 - MIT License (c) 2019 Paul Miller (paulmillr.com) */';
 
-export default defineConfig({
+const ENTRIES = {
+  'embed': './src/embed.ts',
+  'dpp-verifier': './src/dpp-verifier.ts',
+} as const
+
+type EntryName = keyof typeof ENTRIES
+
+function entryFor(mode: string): EntryName {
+  if (mode in ENTRIES) return mode as EntryName
+  throw new Error(`embed build: unknown entry "${mode}"`)
+}
+
+export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
@@ -46,7 +70,11 @@ export default defineConfig({
 
   build: {
     outDir: 'dist-embed',
-    emptyOutDir: true,
+
+    // The first entry clears the tree; the second lands
+    // next to it.
+    emptyOutDir: entryFor(mode) === 'embed',
+    minify: 'terser',
 
     // Mirror vite.config.ts: the public/ tree holds the
     // seeded fixture artefacts (manifest, snapshots,
@@ -59,12 +87,12 @@ export default defineConfig({
       // Two script-tag deliverables: the full SPA embed
       // and the standalone <dpp-verifier> widget (its
       // component inlines its own shadow-DOM CSS, so it
-      // is single-file by construction). Shared code
-      // splits into common chunks next to them; ES module
-      // imports resolve those relative to the CDN dir.
+      // is single-file by construction). One per build,
+      // see above.
       entry: {
-        'embed': fileURLToPath(new URL('./src/embed.ts', import.meta.url)),
-        'dpp-verifier': fileURLToPath(new URL('./src/dpp-verifier.ts', import.meta.url)),
+        [entryFor(mode)]: fileURLToPath(
+          new URL(ENTRIES[entryFor(mode)], import.meta.url),
+        ),
       },
       formats: ['es'],
       fileName: (_format, entryName) => `${entryName}.js`,
@@ -72,16 +100,8 @@ export default defineConfig({
     rollupOptions: {
       output: {
         // Locale chunks land alongside the main bundle
-        // so a single CDN path serves everything. The
-        // <dpp-verifier> component chunk (shared by both
-        // entries) would collide with the dpp-verifier.js
-        // entry file, so it gets an explicit name instead
-        // of Rollup's dedupe counter (dpp-verifier2.js).
-        chunkFileNames: (chunk) => (
-          chunk.name === 'dpp-verifier'
-            ? 'dpp-verifier-core.js'
-            : '[name].js'
-        ),
+        // so a single CDN path serves everything.
+        chunkFileNames: '[name].js',
         assetFileNames: '[name].[ext]',
 
         // The vendored noble-ed25519 chunk ships under MIT,
@@ -96,4 +116,4 @@ export default defineConfig({
       },
     },
   },
-});
+}));

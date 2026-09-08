@@ -62,6 +62,20 @@ of public specifications, not imported code:
 - **Cost of removal:** no bundle output; the lib, verifier,
   and embed entry points could not be produced.
 
+### terser
+
+- **What:** the minifier the embed build runs its output
+  through (`vite.embed.config.ts`, `build.minify`).
+- **Why:** Vite's built-in esbuild minifier leaves the
+  whitespace in an ES library build on purpose, so a
+  consuming bundler can still read the output. The embed
+  files have no bundler downstream: a script tag hands them
+  to the visitor as they are, and the whitespace was a fifth
+  of the main file. Terser takes the lib-mode rule out of
+  the picture.
+- **Cost of removal:** the embed bundles grow by roughly
+  9 KiB before compression; nothing breaks.
+
 ### sass
 
 - **What:** Dart Sass compiler for the SCSS in `src/styles/`.

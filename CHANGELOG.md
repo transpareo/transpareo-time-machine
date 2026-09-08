@@ -35,6 +35,19 @@ and this project adheres to
   measure the passport card uses and centres it the same
   way.
 
+### Changed
+
+- The embed bundles are self-contained. The SPA embed and the
+  standalone verifier widget used to share a chunk that a
+  host page could only discover after the entry had parsed,
+  one more round trip before anything else could start. Each
+  entry now builds on its own with its own copy of the shared
+  code; a host that loads both downloads that code twice.
+- The embed bundles are minified in full. Vite keeps the
+  whitespace in an ES library build so a consuming bundler
+  can read it, which the script-tag delivery never has; the
+  embed build now runs through terser, a new dev dependency.
+
 ## [2.14.1] - 2026-08-20
 
 ### Fixed
