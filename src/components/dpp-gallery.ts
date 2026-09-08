@@ -31,7 +31,7 @@ class DppGallery extends LightElement {
     this.innerHTML = `
       <div class="gallery">
         <ul class="images">
-          <li><img class="gallery-image" alt=""/></li>
+          <li><img class="gallery-image" alt="" fetchpriority="high"/></li>
         </ul>
         <div class="navigation"></div>
       </div>
@@ -40,6 +40,11 @@ class DppGallery extends LightElement {
     const wrap = this.querySelector('.gallery') as HTMLDivElement
     const img = this.querySelector('.gallery-image') as HTMLImageElement
     const nav = this.querySelector('.navigation') as HTMLDivElement
+
+    // The hero is the page's largest paint and only becomes
+    // known once the snapshot is in, late in the load; the
+    // high priority keeps it ahead of the key and locale
+    // requests that start at the same moment.
 
     // The image is the lightbox trigger, so it must be
     // keyboard-operable, not click-only.

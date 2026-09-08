@@ -42,6 +42,11 @@ and this project adheres to
   methods that differ only by fragment, and each was fetched
   on its own. The reads now share one request per document,
   and a cache bypass still reaches the origin.
+- The hero image asks for high fetch priority, so it is not
+  queued behind the key and locale requests that start at
+  the same moment. It remains the page's largest paint and
+  can only be discovered once the snapshot is in; the README
+  shows the preload a host page can add to start it earlier.
 - Small text clears the WCAG AA 4.5:1 contrast floor. Search
   Console flagged the verified chip, the footer copyright and
   the locale switch. The verification accents, the six
