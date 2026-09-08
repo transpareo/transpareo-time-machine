@@ -286,20 +286,23 @@ Lib vs embed is a CSS-delivery choice; both expose the
 same `<transpareo-time-machine>` element with identical
 behaviour.
 
-The renderer learns the manifest URL from its attribute
-and the hero image URL from the snapshot, so on its own
-it can only request them once the bundle has parsed and
-the first snapshot is in. A host page that knows both
-ahead of time can hand them to the browser up front, and
-the largest paint starts at the first round trip instead
-of the fifth:
+The renderer learns the hero image URL from the snapshot,
+so on its own it can only request it once the bundle has
+parsed, the manifest is in and the first snapshot has
+followed. A host page that knows the current version's
+first gallery thumbnail can hand it to the browser up
+front, and the largest paint starts at the first round
+trip instead of the fifth:
 
 ```html
-<link rel="preload" as="fetch" crossorigin
-      href="https://cdn.example.com/acme/01/09524000059109/manifest.json">
 <link rel="preload" as="image" fetchpriority="high"
       href="https://cdn.example.com/acme/media/hero-800.jpg">
 ```
+
+The manifest cannot be preloaded the same way: the
+renderer fetches it without credentials, and a preload
+link has no setting for that mode, so the browser would
+fetch it twice rather than reuse the preload.
 
 ### 2. npm + a bundler (Vite, Next, webpack, etc.)
 
