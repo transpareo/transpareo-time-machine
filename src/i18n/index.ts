@@ -295,6 +295,21 @@ function persistLocale(code: string): void {
 export const locale = signal('en')
 export const labelSet = signal<Labels>(englishLabels)
 
+// Flips once the labels for the locale the bootstrap picked
+// are in. The shell holds its first paint on this, so the
+// page never opens in the English fallback and then swaps.
+export const labelsReady = signal(false)
+
+// Start the label chunk for the locale the visitor will most
+// likely get, alongside the manifest fetch rather than after
+// it. The final pick waits for the manifest's available list,
+// but the host pin, the stored pick and the browser preference
+// are known now, so the bootstrap usually finds its chunk
+// already cached.
+export function warmLabels(): Promise<Labels> {
+  return loadLabels(detectLocale(bundledLocales))
+}
+
 // Run once on first data load: pick the right locale
 // from the now-available list and persist nothing yet
 // (the user hasn't made an explicit choice). After this
@@ -308,8 +323,19 @@ effect(() => {
   // derives from the loaded snapshot, which is only safe to
   // read once the host reports ready.
   if (host.loadState() !== 'ready') return
-  locale.set(detectLocale(availableLocales()))
+  const code = detectLocale(availableLocales())
+  locale.set(code)
   localeBootstrapped = true
+
+  // Apply the bundle here as well as in the load effect
+  // below, so the ready flag can only follow the labels it
+  // vouches for. A cached chunk resolves within the same
+  // task, before anything paints.
+  loadLabels(code).then((l) => {
+    if (locale.peek() !== code) return
+    labelSet.set(l)
+    labelsReady.set(true)
+  })
 })
 
 // Getter object so any effect reading `i18n.locale` /
@@ -320,6 +346,7 @@ effect(() => {
 export const i18n = {
   get locale(): string { return locale(); },
   get labels(): Labels { return labelSet(); },
+  get labelsReady(): boolean { return labelsReady(); },
 }
 
 // Load the label bundle whenever the active locale

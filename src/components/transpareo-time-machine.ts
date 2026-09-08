@@ -33,7 +33,9 @@ import {
   activeVersionNumber, isOnCurrent, resetBootState,
 } from '@/state'
 import * as host from '@/host'
-import { i18n, hostLocaleOf, setHostLocale } from '@/i18n'
+import {
+  i18n, hostLocaleOf, setHostLocale, warmLabels,
+} from '@/i18n'
 import { t } from '@/i18n/labels'
 import { bootstrapVerify, bootstrapHash } from '@/bootstrap'
 import { ensureEventsVerified, resetVerifyCaches } from '@/actions'
@@ -87,7 +89,11 @@ export interface TimeMachineStateDetail {
 function currentState(): TimeMachineStateDetail | null {
   const state = host.loadState()
   const m = host.manifest()
-  if (state !== 'ready' || !m) return null
+
+  // Null until the tree is up, which also waits for the
+  // labels: a listener that queries the DOM on this event
+  // must find the passport, not the boot shell.
+  if (state !== 'ready' || !m || !i18n.labelsReady) return null
   return {
     code: m.code,
     locale: i18n.locale,
@@ -168,6 +174,7 @@ class TranspareoTimeMachine extends BaseElement {
     // over the browser auto-detect once the snapshot's
     // locales are known.
     setHostLocale(hostLocaleOf(this))
+    void warmLabels()
 
     this.addStyle(css)
 
@@ -258,10 +265,13 @@ class TranspareoTimeMachine extends BaseElement {
     // issuer's stylesheet can theme. Every transition
     // into 'ready' mounts a fresh tree; the previous
     // tree's bindings are disposed first so they stop
-    // writing to detached nodes.
+    // writing to detached nodes. The first mount also
+    // waits for the picked locale's labels, so the page
+    // opens in the visitor's language rather than in the
+    // English fallback that would then swap out.
     this.effect(() => {
       const state = host.loadState()
-      if (state === 'ready') {
+      if (state === 'ready' && i18n.labelsReady) {
         this.dropTree()
         container.replaceChildren()
         this.mountReady(container)

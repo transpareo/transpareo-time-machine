@@ -3,18 +3,17 @@
  * Copyright (C) 2026 Transpareo AG
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
- * UI labels, one JSON per locale in `data/`. Vite
- * code-splits each into its own chunk so a visitor only
- * pays for the active locale; English is the
- * synchronous fallback used while another locale loads.
+ * UI labels, one JSON per locale in `data/`. English is
+ * bundled into the main chunk, since it is the synchronous
+ * fallback every other locale leans on; the rest are
+ * code-split so a visitor only pays for the active locale.
  *
  * The product / event content lives in the snapshot
  * JSON-LD (see `@/types`, `LocalizedText`); this module
  * covers SPA-version-locked UI strings only.
  */
 
-const enModule = await import('./data/en.json')
-const enLabels = enModule.default
+import enLabels from './data/en.json'
 
 export type Labels = typeof enLabels
 export type LabelKey = keyof Labels
@@ -23,16 +22,19 @@ export const englishLabels: Labels = enLabels
 // All bundled label files, registered at build time.
 // `import.meta.glob` lets Vite split each .json into
 // its own chunk so the visitor only fetches the locale
-// they're using.
+// they're using. English is left out: it is already in
+// the main chunk through the static import above.
 const loaders = import.meta.glob<{ default: Labels }>(
-  './data/*.json',
+  ['./data/*.json', '!./data/en.json'],
 )
 
-// Locale codes we ship a bundle for, derived from the
+// Locale codes we ship a bundle for: English, then the
 // globbed filenames (`./data/de.json` -> `de`). The verifier
 // resolves a host-page locale against this set.
-export const bundledLocales: ReadonlyArray<string> =
-  Object.keys(loaders).map((p) => p.replace(/^.*\/|\.json$/g, ''))
+export const bundledLocales: ReadonlyArray<string> = [
+  'en',
+  ...Object.keys(loaders).map((p) => p.replace(/^.*\/|\.json$/g, '')),
+]
 
 const cache = new Map<string, Labels>([['en', enLabels]])
 

@@ -342,12 +342,14 @@ npm run build:all
 # Lib delivery (separate JS + CSS, bundler-friendly):
 #   dist/transpareo-time-machine.{js,css}
 #   dist/dpp-verifier.{js,css}
-#   dist/locales/<lc>.js          (lazy locale chunks)
+#   dist/locales/<lc>.js          (lazy locale chunks;
+#                                  English is in the main file)
 #
 # Embed delivery (one JS file, CSS inlined, script-tag
 # friendly):
 #   dist-embed/embed.js
-#   dist-embed/<lc>.js            (lazy locale chunks)
+#   dist-embed/<lc>.js            (lazy locale chunks;
+#                                  English is in the main file)
 #
 # Copy whichever delivery matches your host's CSS
 # pipeline to your static host. The lib delivery
@@ -980,8 +982,14 @@ that would rather not download Firefox.
    that `src/state.ts` derives the renderer's view
    model from (active snapshot, events list, EPCIS
    lookup). The element only mounts its inner SPA tree
-   once `host.loadState === 'ready'`; until then it
-   shows a minimal loading shell.
+   once `host.loadState === 'ready'` and the labels for
+   the locale it settled on are in; until then it shows
+   a minimal loading shell. English ships in the main
+   bundle, and the chunk for the likely locale (the
+   host pin, the stored pick, the browser preference)
+   is fetched alongside the manifest, so the first paint
+   is already in the visitor's language rather than
+   opening in English and swapping.
 4. `src/actions.ensureVersionLoaded` runs
    `verifySnapshot` from `src/crypto/verify.ts` against
    the current snapshot:

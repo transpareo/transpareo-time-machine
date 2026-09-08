@@ -27,7 +27,8 @@ export default defineConfig({
   testMatch: [
     /(a11y|card-render|embed-smoke|icons)\.spec\.ts/,
     /(integration-hook|locale-picker|snapshot|verifier-theme)\.spec\.ts/,
-    /(logo-link|timeline-axis|verifier-measure)\.spec\.ts/
+    /(logo-link|timeline-axis|verifier-measure)\.spec\.ts/,
+    /first-paint-locale\.spec\.ts/
   ],
   fullyParallel: false,
   retries: 0,

@@ -23,6 +23,7 @@ export default defineConfig({
       'tests/a11y.spec.ts',
       'tests/card-render.spec.ts',
       'tests/embed-smoke.spec.ts',
+      'tests/first-paint-locale.spec.ts',
       'tests/icons.spec.ts',
       'tests/integration-hook.spec.ts',
       'tests/locale-picker.spec.ts',

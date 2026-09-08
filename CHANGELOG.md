@@ -12,6 +12,24 @@ and this project adheres to
 
 ### Fixed
 
+- The first paint is in the visitor's language. The renderer
+  used to mount with the English labels and swap the picked
+  locale in once its chunk arrived, a visible flash for every
+  non-English visitor. The label chunk for the likely locale
+  (the host pin, the stored pick, the browser preference) now
+  starts alongside the manifest fetch, and the shell holds
+  its first mount until the labels for the locale it settled
+  on are in.
+- English no longer costs a round trip. The fallback labels
+  were split into their own chunk behind a dynamic import
+  that the browser could only request after the main bundle
+  had parsed. They ship inside the main bundle now.
+- The `transpareo-time-machine:state` event and the `state`
+  property answer only once the passport is on screen. With
+  the first paint now waiting for the labels, the event
+  would otherwise have fired while the boot shell was still
+  up, and a listener querying the DOM on it would have found
+  no passport.
 - Small text clears the WCAG AA 4.5:1 contrast floor. Search
   Console flagged the verified chip, the footer copyright and
   the locale switch. The verification accents, the six
