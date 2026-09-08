@@ -998,7 +998,9 @@ that would rather not download Firefox.
    - For each of the 5 proof entries: fetch the
      verificationMethod's Multikey doc, import the
      Ed25519 public key, `crypto.subtle.verify` the
-     signature against the document hash.
+     signature against the document hash. Entries that
+     name the same document under different fragments
+     share one read.
    - Apply the any-issuer-and-any-platform rule
      (default) or all-five (`{ mode: 'strict' }`) to
      produce the aggregate verdict.

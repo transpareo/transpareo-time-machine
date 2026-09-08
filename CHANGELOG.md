@@ -37,6 +37,11 @@ and this project adheres to
   would otherwise have fired while the boot shell was still
   up, and a listener querying the DOM on it would have found
   no passport.
+- Key documents are read once per page load. A snapshot's
+  proofs name the same document under several verification
+  methods that differ only by fragment, and each was fetched
+  on its own. The reads now share one request per document,
+  and a cache bypass still reaches the origin.
 - Small text clears the WCAG AA 4.5:1 contrast floor. Search
   Console flagged the verified chip, the footer copyright and
   the locale switch. The verification accents, the six

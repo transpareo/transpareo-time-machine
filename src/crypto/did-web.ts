@@ -57,6 +57,19 @@ export interface ResolveOptions {
 const CACHE_BUSTER = Math.floor(Math.random() * 1e9).toString(36)
 let bypassCounter = 0
 
+// Key documents read on this page load, by URL. A snapshot's
+// proofs name one document under several verification
+// methods (the fragments differ, the file does not), and
+// every version of a chain names it again, so one read
+// serves them all. A bypass read replaces the entry.
+const documents = new Map<string, Promise<ResolutionDoc>>()
+
+// Drops the documents read so far. The renderer never needs
+// this; specs that serve different documents from one URL do.
+export function forgetKeyDocuments(): void {
+  documents.clear()
+}
+
 // Fetch the verificationMethod's key document and return
 // the selected Multikey (string + decoded bytes). The
 // caller checks the multicodec prefix for its curve.
@@ -64,6 +77,19 @@ export async function resolveMultikey(
   method: string, options: ResolveOptions = {}
 ): Promise<ResolvedMultikey> {
   const { url, fragment } = splitVerificationMethod(method)
+  const doc = await readDocument(url, options.bypassCache === true)
+  const multibase = selectMultibase(doc, fragment)
+  return { multibase, bytes: decodeMultibaseBase58(multibase) }
+}
+
+function readDocument(
+  url: string, bypassCache: boolean,
+): Promise<ResolutionDoc> {
+  // An https method keeps its fragment in the URL; the wire
+  // never sees it, so neither does the key.
+  const key = url.split('#')[0]
+  const known = documents.get(key)
+  if (known && !bypassCache) return known
 
   // 'no-cache' revalidates against the browser's own store,
   // which is all a first resolution needs; a rotated or
@@ -71,15 +97,22 @@ export async function resolveMultikey(
   // nothing to a CDN, which answers such a request from its
   // own copy, so the bypass adds a query no intermediary
   // holds an entry for and refuses its store outright.
-  const res = await fetch(bypassUrl(url, options.bypassCache), {
+  const read = fetch(bypassUrl(url, bypassCache), {
     credentials: 'omit',
-    cache: options.bypassCache ? 'no-store' : 'no-cache',
+    cache: bypassCache ? 'no-store' : 'no-cache',
     signal: AbortSignal.timeout(KEY_FETCH_TIMEOUT_MS)
+  }).then((res) => {
+    if (!res.ok) throw new Error(`HTTP ${res.status} fetching ${url}`)
+    return res.json() as Promise<ResolutionDoc>
   })
-  if (!res.ok) throw new Error(`HTTP ${res.status} fetching ${url}`)
-  const doc = await res.json() as ResolutionDoc
-  const multibase = selectMultibase(doc, fragment)
-  return { multibase, bytes: decodeMultibaseBase58(multibase) }
+
+  // A read that fails is not kept: the next resolution
+  // asks again rather than inheriting the failure.
+  documents.set(key, read)
+  read.catch(() => {
+    if (documents.get(key) === read) documents.delete(key)
+  })
+  return read
 }
 
 // A resolution that reached a document but could not take a

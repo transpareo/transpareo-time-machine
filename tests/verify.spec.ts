@@ -367,13 +367,17 @@ describe('verifySnapshot: partial reachability', () => {
   it('tolerates one issuer alias 404 (still authentic)', async () => {
     const setup = await buildSignedSnapshot();
     const map = fullResolverMap(setup);
-    map.delete(ISSUER_URLS[1]);
+
+    // The CDN alias is the one that lives on its own host;
+    // the did-web alias is the origin document under another
+    // name, and on the wire the two are one request.
+    map.delete(ISSUER_URLS[2]);
     const result = await run(setup, map);
     expect(result.verdict).toBe('authentic');
     expect(result.verifiedAuthorityCount).toBe(2);
     expect(result.verifiedEntryCount).toBe(4);
     const downEntry = result.entries.find(
-      (e) => e.verificationMethod === ISSUER_URLS[1],
+      (e) => e.verificationMethod === ISSUER_URLS[2],
     );
     expect(downEntry?.status).toBe('unreachable');
   });
@@ -1025,6 +1029,12 @@ describe('a key document that carries no key for the method', () => {
       const result = await verifySnapshot(setup.snapshot);
 
       expect(result.entries.every((e) => e.status === 'unreachable')).toBe(true);
-      expect(calls).toBe(setup.snapshot.proof.length);
+
+      // One request per key document, not per proof: the
+      // aliases that differ only by fragment share a read.
+      const documents = new Set(
+        setup.snapshot.proof.map((p) => p.verificationMethod.split('#')[0]),
+      );
+      expect(calls).toBe(documents.size);
     });
 });

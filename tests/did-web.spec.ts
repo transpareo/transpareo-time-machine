@@ -12,10 +12,13 @@
  */
 
 import { describe, expect, it, vi, afterEach } from 'vitest';
-import { splitVerificationMethod, resolveMultikey } from '../src/crypto/did-web';
+import {
+  splitVerificationMethod, resolveMultikey, forgetKeyDocuments,
+} from '../src/crypto/did-web';
 
 afterEach(() => {
   vi.unstubAllGlobals();
+  forgetKeyDocuments();
 });
 
 // Any well-formed Ed25519 Multikey; these cases read the
@@ -111,6 +114,51 @@ describe('resolveMultikey', () => {
     expect(first[0]).toMatch(/\?tm-fresh=/);
     expect(first[1].cache).toBe('no-store');
     expect(second[0]).not.toBe(first[0]);
+  });
+
+  it('reads a document once for every method that names it', async () => {
+    const fetchMock = vi.fn(() => Promise.resolve({
+      ok: true,
+      json: () => Promise.resolve({
+        verificationMethod: [
+          { id: 'https://example.com/keys.json#a', publicKeyMultibase: KEY },
+          { id: 'https://example.com/keys.json#b', publicKeyMultibase: KEY },
+        ],
+      }),
+    }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    // Two methods, one file, asked for at the same moment as
+    // a snapshot's proofs are: the second joins the first.
+    await Promise.all([
+      resolveMultikey('https://example.com/keys.json#a'),
+      resolveMultikey('https://example.com/keys.json#b'),
+    ]);
+    await resolveMultikey('https://example.com/keys.json#a');
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+
+    // A bypass reaches the origin again and replaces what
+    // the next ordinary resolution reads.
+    await resolveMultikey('https://example.com/keys.json#a', {
+      bypassCache: true,
+    });
+    await resolveMultikey('https://example.com/keys.json#b');
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('asks again after a read that failed', async () => {
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce({ ok: false, status: 503 })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ publicKeyMultibase: KEY }),
+      });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(resolveMultikey('https://example.com/keys.json')).
+      rejects.toThrow('HTTP 503');
+    await resolveMultikey('https://example.com/keys.json');
+    expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
   it('keeps a relative key path relative, fragment last', async () => {
