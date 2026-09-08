@@ -24,6 +24,13 @@ and this project adheres to
   were split into their own chunk behind a dynamic import
   that the browser could only request after the main bundle
   had parsed. They ship inside the main bundle now.
+- The chain walk runs in one round trip. Judging a version
+  walked back to v1 one prior at a time, each fetch waiting
+  for the previous link, which on a mobile link put the
+  verified chip seconds behind the page. Every prior is now
+  requested the moment judging starts and the walk joins
+  those reads, at low fetch priority so they queue behind
+  the hero image and the key documents.
 - The `transpareo-time-machine:state` event and the `state`
   property answer only once the passport is on screen. With
   the first paint now waiting for the labels, the event

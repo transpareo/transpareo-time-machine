@@ -253,6 +253,11 @@ export interface SnapshotFetchOptions {
   // layer sets this to re-read those bytes before it judges
   // them.
   readonly reload?: boolean
+
+  // The read serves the chain walk, not the paint: ask the
+  // browser to schedule it behind the hero image and the
+  // key documents that start at the same moment.
+  readonly background?: boolean
 }
 
 // Pull a version's snapshot bytes from the CDN and
@@ -271,7 +276,8 @@ export async function fetchSnapshot(
   if (!url) return null
 
   const mode = options.reload ? 'reload' : 'default'
-  const raw = await fetchJson<SignedSnapshot>(url, mode)
+  const priority = options.background ? 'low' : 'auto'
+  const raw = await fetchJson<SignedSnapshot>(url, mode, priority)
 
   // A reboot landed while this fetch was in flight: the
   // bytes belong to the previous DPP and must not enter
@@ -594,10 +600,12 @@ function resolveAgainst(base: string, relative: string | undefined): string | nu
 
 async function fetchJson<T>(
   url: string, cache: RequestCache = 'default',
+  priority: RequestPriority = 'auto',
 ): Promise<T> {
   const res = await fetch(url, {
     credentials: 'omit',
     cache,
+    priority,
     headers: { accept: ACCEPT_JSON },
     signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
   })

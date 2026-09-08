@@ -1002,15 +1002,18 @@ that would rather not download Firefox.
    - Apply the any-issuer-and-any-platform rule
      (default) or all-five (`{ mode: 'strict' }`) to
      produce the aggregate verdict.
-   It also runs the priorVersionHash chain check
-   against the manifest's claimed hash for the prior
-   version.
+   It also walks the priorVersionHash chain back to v1,
+   checking each prior's bytes against the manifest's
+   claim and the next version's claim. Every prior is
+   requested the moment judging starts, so the walk
+   costs one round trip rather than one per link.
 5. The verification chip flips to its verified state
    once both checks pass for the active
    version; clicking the chip opens the proof modal
    with the per-entry chain plus per-version
    issuer/platform/chain status. Older versions are
-   fetched + verified lazily as the visitor scrubs.
+   verified as the visitor scrubs, from the bytes the
+   chain walk already holds.
 
 ## Architecture
 

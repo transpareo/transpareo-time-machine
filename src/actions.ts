@@ -148,6 +148,7 @@ export function resetVerifyCaches(): void {
   eventsVerifyPromise = null
   freshlyRead.clear()
   freshReads.clear()
+  cachedReads.clear()
   cancelReleaseAnim()
 }
 
@@ -331,6 +332,14 @@ async function judgeVersion(
   const raw = await readRawSnapshot(n, fresh)
   if (!raw) throw new Error(`No snapshot available for version ${n}`)
 
+  // The chain walk below needs every prior, one link at a
+  // time. Start them all now so each link finds its prior
+  // in the cache instead of paying a round trip of its own,
+  // behind the requests the first paint is waiting on.
+  for (let prior = n - 1; prior >= 1; prior--) {
+    readRawSnapshot(prior, fresh, true).catch(() => undefined)
+  }
+
   const bodyOk = await bodyMatchesManifest(n, raw)
   const result = await verifySnapshotAnySuite(
     raw as unknown as Record<string, unknown>, {
@@ -408,6 +417,13 @@ const freshlyRead = new Set<number>()
 const freshReads =
   new Map<number, Promise<SignedSnapshot | undefined>>()
 
+// Cached reads in flight, the default path's counterpart:
+// judging a version starts every prior at once, and the
+// chain walk then joins those reads instead of repeating
+// them.
+const cachedReads =
+  new Map<number, Promise<SignedSnapshot | undefined>>()
+
 // The proof modal's re-verify. A failed verdict may be
 // transient (key host briefly unreachable) or describe bytes
 // the origin has since replaced, so the retry forgets what
@@ -438,20 +454,30 @@ export function retryFailedVersions(): void {
 // copy is already cached, which is how a version stored at
 // boot gets a second, honest reading.
 async function readRawSnapshot(
-  n: number, fresh: boolean,
+  n: number, fresh: boolean, background = false,
 ): Promise<SignedSnapshot | undefined> {
-  if (fresh && !freshlyRead.has(n)) return freshRawSnapshot(n)
-  if (!host.rawSnapshots.peek()[n]) await host.fetchSnapshot(n)
-  return host.rawSnapshots.peek()[n]
+  if (fresh && !freshlyRead.has(n)) return freshRawSnapshot(n, background)
+  const cached = host.rawSnapshots.peek()[n]
+  if (cached) return cached
+
+  // One fetch per version while it is in flight: the chain
+  // walk asks for a prior the prefetch already started.
+  const inFlight = cachedReads.get(n)
+  if (inFlight) return inFlight
+  const read = host.fetchSnapshot(n, { background })
+    .then(() => host.rawSnapshots.peek()[n])
+    .finally(() => cachedReads.delete(n))
+  cachedReads.set(n, read)
+  return read
 }
 
 // The origin read behind readRawSnapshot's fresh path.
 function freshRawSnapshot(
-  n: number,
+  n: number, background = false,
 ): Promise<SignedSnapshot | undefined> {
   const inFlight = freshReads.get(n)
   if (inFlight) return inFlight
-  const read = host.fetchSnapshot(n, { reload: true })
+  const read = host.fetchSnapshot(n, { reload: true, background })
     .then((snapshot) => {
       // A null snapshot is a reboot that landed mid-flight;
       // its bytes were discarded, so the version has not had
