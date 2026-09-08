@@ -12,6 +12,18 @@ and this project adheres to
 
 ### Fixed
 
+- Small text clears the WCAG AA 4.5:1 contrast floor. Search
+  Console flagged the verified chip, the footer copyright and
+  the locale switch. The verification accents, the six
+  timeline event colours and the muted-text mix were all too
+  light: the muted mix now takes 78% of the font colour
+  instead of 60%, and the accents moved to darker shades so
+  their labels and the white pill text read on the tints
+  they sit on. The footer takes the publisher's
+  `--footer-text-color`, the token tuned for the body
+  background it sits on, instead of the card-surface muted
+  colour. The Nordic Wear fixture darkens that token to
+  match.
 - The `<dpp-verifier>` widget fills the box the embedding
   page gives it, instead of stopping at a 640px measure of
   its own. A host that sized its own container wider got a

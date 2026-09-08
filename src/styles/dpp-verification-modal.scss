@@ -24,7 +24,7 @@
 
   &.verified {
     background: color-mix(
-      in oklab, var(--color-verified, #16a34a) 14%, transparent);
+      in oklab, var(--color-verified, #166534) 14%, transparent);
 
     // Match the verification chip, same darker shade
     // for status text, same 14% tint for background, so
@@ -33,14 +33,14 @@
     // variants are for places where readability against
     // a dark surface matters; on a 14% green tint the
     // darker shade has more contrast.
-    .proof-status { color: var(--color-verified, #16a34a); }
+    .proof-status { color: var(--color-verified, #166534); }
   }
 
   &.failed {
     background: color-mix(
-      in oklab, var(--color-verify-fail, #dc2626) 14%, transparent);
+      in oklab, var(--color-verify-fail, #b91c1c) 14%, transparent);
 
-    .proof-status { color: var(--color-verify-fail, #dc2626); }
+    .proof-status { color: var(--color-verify-fail, #b91c1c); }
   }
 }
 
@@ -193,13 +193,13 @@ code {
   // Only failing keys get the red fill, so a clean
   // proof chain reads as a row of outlined chips and a
   // failure jumps out without painting the whole strip.
-  &.status-verified { color: var(--color-verified, #16a34a); }
+  &.status-verified { color: var(--color-verified, #166534); }
   &.status-pending  { color: var(--color-muted, #777); }
   &.status-unreachable,
   &.status-invalid {
     color: var(--background-color, #fff);
-    background: var(--color-verify-fail, #dc2626);
-    border-color: var(--color-verify-fail, #dc2626);
+    background: var(--color-verify-fail, #b91c1c);
+    border-color: var(--color-verify-fail, #b91c1c);
   }
 
   &:hover { filter: brightness(0.92); }
@@ -438,6 +438,6 @@ code {
 // global `.icon { margin-right: 5px }` rule so the
 // glyph sits centred inside the circle (same fix the
 // chip already carries for its own orb).
-.orb-verified { color: var(--color-verified, #16a34a); }
-.orb-failed { color: var(--color-verify-fail, #dc2626); }
+.orb-verified { color: var(--color-verified, #166534); }
+.orb-failed { color: var(--color-verify-fail, #b91c1c); }
 .orb .icon { margin: 0; }

@@ -135,8 +135,8 @@
   padding: 12px 14px;
   border-radius: var(--verifier-radius);
   background: color-mix(
-    in oklab, var(--color-verify-fail, #dc2626) 12%, transparent);
-  color: var(--color-verify-fail, #dc2626);
+    in oklab, var(--color-verify-fail, #b91c1c) 12%, transparent);
+  color: var(--color-verify-fail, #b91c1c);
   @include dpp.sm;
 }
 
@@ -168,14 +168,14 @@
 
   &.verdict-authentic .verifier-banner {
     background: color-mix(
-      in oklab, var(--color-verified, #16a34a) 14%, transparent);
-    .verifier-verdict { color: var(--color-verified, #16a34a); }
+      in oklab, var(--color-verified, #166534) 14%, transparent);
+    .verifier-verdict { color: var(--color-verified, #166534); }
   }
 
   &.verdict-unauthenticated .verifier-banner {
     background: color-mix(
-      in oklab, var(--color-verify-fail, #dc2626) 14%, transparent);
-    .verifier-verdict { color: var(--color-verify-fail, #dc2626); }
+      in oklab, var(--color-verify-fail, #b91c1c) 14%, transparent);
+    .verifier-verdict { color: var(--color-verify-fail, #b91c1c); }
   }
 }
 
@@ -296,7 +296,7 @@
   .verifier-entry-reason {
     grid-column: 2 / -1;
     grid-row: 2;
-    color: var(--color-verify-fail, #dc2626);
+    color: var(--color-verify-fail, #b91c1c);
     @include dpp.xs;
   }
 }
@@ -323,6 +323,6 @@
   }
 }
 
-.orb-verified { color: var(--color-verified, #16a34a); }
-.orb-failed { color: var(--color-verify-fail, #dc2626); }
+.orb-verified { color: var(--color-verified, #166534); }
+.orb-failed { color: var(--color-verify-fail, #b91c1c); }
 .orb-pending { color: var(--verifier-muted); }

@@ -326,7 +326,7 @@
   &.copied {
     color: var(--color-verified-text, #4ade80);
     border-color: color-mix(
-      in oklab, var(--color-verified, #16a34a) 40%, transparent);
+      in oklab, var(--color-verified, #166534) 40%, transparent);
     background: transparent;
   }
 }

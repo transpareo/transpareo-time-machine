@@ -88,9 +88,10 @@
    * cascade into hero/modal/timeline muted copy. If a
    * publisher needs a dedicated knob for content-surface
    * muted text, add a --muted-color token and override
-   * here. */
+   * here. 78% keeps the mix above the 4.5:1 small-text
+   * floor on a white card; 60% only reached 3.7:1. */
   --color-muted: color-mix(
-    in oklab, var(--font-color) 60%, var(--background-color));
+    in oklab, var(--font-color) 78%, var(--background-color));
   --color-card: var(--background-color);
   --color-page: var(--body-background);
   --color-accent: var(--action-color);
@@ -105,17 +106,17 @@
    * editor. --timeline-event-text is the pill's text
    * colour, legible against any of the per-state
    * backgrounds. */
-  --timeline-event-published: #3b82f6;
-  --timeline-event-use: #16a34a;
-  --timeline-event-repair: #ea580c;
-  --timeline-event-refurbished: #8b5cf6;
-  --timeline-event-collected: #0ea5e9;
-  --timeline-event-recycled: #059669;
+  --timeline-event-published: #1d4ed8;
+  --timeline-event-use: #15803d;
+  --timeline-event-repair: #c2410c;
+  --timeline-event-refurbished: #6d28d9;
+  --timeline-event-collected: #0369a1;
+  --timeline-event-recycled: #047857;
   --timeline-event-text: #ffffff;
 
   /* verification */
-  --color-verified: #16a34a;
-  --color-verify-fail: #dc2626;
+  --color-verified: #166534;
+  --color-verify-fail: #b91c1c;
 
   /* Lighter text variants used for status pills /
    * "verified" / "failed" labels, readable on both

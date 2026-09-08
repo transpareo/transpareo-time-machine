@@ -29,7 +29,11 @@ dpp-footer:empty {
   margin: 0 auto;
   padding: 14px 25px 16px;
   @include dpp.sm;
-  color: var(--color-muted, #888);
+
+  // The footer sits on the body background, so it takes
+  // the publisher's muted-on-body token rather than
+  // --color-muted, which is mixed against the card.
+  color: var(--footer-text-color, #777);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -51,7 +55,8 @@ dpp-footer:empty {
 }
 
 .sep {
-  color: color-mix(in oklab, var(--color-muted, #888) 50%, transparent);
+  color: color-mix(
+    in oklab, var(--footer-text-color, #777) 50%, transparent);
 }
 
 .locale-wrap {
