@@ -23,10 +23,11 @@ will save round-trips on review:
 - New features go through a fixture: see
   `fixtures/*.yml` for the shape and `scripts/seed/`
   for the YAML to signed-JSON artefact pipeline.
-- Style: `src/` is ASI (no statement-ending
-  semicolons); `scripts/` and root-level configs use
-  explicit semicolons. Follow the prevailing style of
-  the file you are editing rather than reformatting.
+- Style: `src/` and the top-level `scripts/*.ts` are
+  ASI (no statement-ending semicolons); `scripts/seed/`
+  and most root-level configs use explicit semicolons.
+  Follow the prevailing style of the file you are
+  editing rather than reformatting.
 
 By contributing you agree to license your changes
 under [GPL-3.0-or-later](LICENSE), matching the rest
