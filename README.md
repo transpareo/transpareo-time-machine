@@ -1,5 +1,9 @@
 # Transpareo Time Machine
 
+[![ci](https://github.com/transpareo/transpareo-time-machine/actions/workflows/ci.yml/badge.svg)](https://github.com/transpareo/transpareo-time-machine/actions/workflows/ci.yml)
+[![npm](https://img.shields.io/npm/v/transpareo-time-machine?label=npm)](https://www.npmjs.com/package/transpareo-time-machine)
+[![licence](https://img.shields.io/npm/l/transpareo-time-machine?label=licence)](LICENSE)
+
 Open-source Digital Product Passport renderer.
 
 The Transpareo Time Machine is a single-page app (SPA)
