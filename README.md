@@ -16,6 +16,8 @@ chip on the card shows whether the data is authentic,
 checked cryptographically in the visitor's own browser
 instead of taken on trust from a server.
 
+![The renderer showing a Nordic Wear t-shirt passport: the timeline opens and fans out every event in the product's history, the recall event's record opens down to its raw EPCIS fields, and the card scrubs back to the launch version before returning to today](docs/demo.webp)
+
 **Demo:**
 [time-machine.transpareo.com](https://time-machine.transpareo.com)
 renders three sample passports end to end: a Nordic Wear
@@ -802,6 +804,7 @@ hot-reloads on save.
 | `npm run check` | `tsc` over the SPA + the seed scripts + tests. |
 | `npm test` | Vitest. Covers crypto (JCS, multibase, eddsa-jcs-2022 aggregate verifier) and the reactive runtime. |
 | `npm run seed` | Walk every `fixtures/*.yml`, validate against the zod schema, download remote images, write `branding.css` under `/public/<id>/`, and write the published JSON artefacts (manifest, per-version snapshots, EPCIS document, key resolution docs) under `/public/<id>/dpp/<code>/`. Generates a fresh Ed25519 keypair per fixture on each run; the produced snapshots are signed with these keys. A `publication: single-snapshot` fixture with `proof_suite: none` emits just one unsigned `snapshot.json` instead (no manifest, no keys). Idempotent on image cache; output JSON overwrites. Re-run after pulling a fixture change. |
+| `npm run demo` | Re-record the animated loop at the top of this README. Drives the dev page through the nordic-wear passport's history with a Chromium screencast running, then encodes the frames to `docs/demo.webp`. Needs `ffmpeg` on PATH and a seeded `/public/`; reuses a dev server already on :5173 and otherwise starts its own. Pass `--keep-frames` to retune the encode without re-recording. |
 | `npm run check:fixtures` | Network-free Zod parse of every `fixtures/*.yml`. CI runs this on every push and PR to catch schema regressions without depending on third-party image hosts. |
 
 ## Fixtures

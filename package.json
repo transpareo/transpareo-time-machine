@@ -76,6 +76,7 @@
     "serve:embed": "tsx scripts/serve-embed.ts",
     "lint": "eslint .",
     "seed": "./scripts/seed.sh",
+    "demo": "tsx scripts/demo.ts",
     "release": "./scripts/release.sh",
     "test": "vitest run",
     "test:watch": "vitest"
