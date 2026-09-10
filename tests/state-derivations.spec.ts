@@ -7,15 +7,17 @@
  * carries no versionNumber resolves to the most recent
  * publication AT or before its timestamp (the DPP state as
  * it stood when the event happened), falling back to the
- * latest version. Plus displayedEvent's hover > focus >
- * latest precedence. Driven through the real host signals.
+ * latest version. activeSnapshot renders that same version,
+ * and both read as live again once the timeline is hidden.
+ * Plus displayedEvent's hover > focus > latest precedence.
+ * Driven through the real host signals.
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import * as host from '../src/host';
 import {
-  activeVersionNumber, displayedEvent, focusedEventId, hoveredEventId,
-  verifyResult, versionStates, timelineState,
+  activeSnapshot, activeVersionNumber, displayedEvent, focusedEventId,
+  hoveredEventId, isOnCurrent, verifyResult, versionStates, timelineState
 } from '../src/state';
 import type { EpcisDocument } from '../src/epcis';
 import type { DppSnapshot } from '../src/types';
@@ -52,6 +54,11 @@ beforeEach(() => {
   host.currentVersion.set(2);
   focusedEventId.set(null);
   hoveredEventId.set(null);
+
+  // A focused event only means anything with the timeline
+  // open; hiding it shelves the focus, which the last case
+  // in each block below covers.
+  timelineState.set('expanded');
 });
 
 describe('activeVersionNumber', () => {
@@ -79,6 +86,12 @@ describe('activeVersionNumber', () => {
     focusedEventId.set('insp-early');
     expect(activeVersionNumber()).toBe(2);
   });
+
+  it('reports the live version once the timeline is hidden', () => {
+    focusedEventId.set('insp-a');
+    timelineState.set('hidden');
+    expect(activeVersionNumber()).toBe(2);
+  });
 });
 
 describe('displayedEvent', () => {
@@ -97,6 +110,46 @@ function snap(
   const proof = signed ? [{ proofValue: 'z1' }] : [];
   return { version, status, proof } as unknown as DppSnapshot;
 }
+
+describe('activeSnapshot', () => {
+  beforeEach(() => {
+    host.snapshots.set({ 1: snap(1, 'in_use'), 2: snap(2, 'in_use') });
+  });
+
+  it('renders the version in effect at a non-publishing event', () => {
+    focusedEventId.set('insp-a');
+    expect(activeSnapshot().version).toBe(1);
+  });
+
+  it('renders the focused publication', () => {
+    focusedEventId.set('pub-1');
+    expect(activeSnapshot().version).toBe(1);
+  });
+
+  it('renders the live version once the timeline is hidden', () => {
+    focusedEventId.set('insp-a');
+    timelineState.set('hidden');
+    expect(activeSnapshot().version).toBe(2);
+  });
+});
+
+describe('isOnCurrent', () => {
+  it('is false on an event that resolves to an older version', () => {
+    focusedEventId.set('insp-a');
+    expect(isOnCurrent()).toBe(false);
+  });
+
+  it('is true on an event that resolves to the latest version', () => {
+    focusedEventId.set('insp-b');
+    expect(isOnCurrent()).toBe(true);
+  });
+
+  it('is true once the timeline is hidden', () => {
+    focusedEventId.set('insp-a');
+    timelineState.set('hidden');
+    expect(isOnCurrent()).toBe(true);
+  });
+});
 
 describe('verifyResult', () => {
   beforeEach(() => {

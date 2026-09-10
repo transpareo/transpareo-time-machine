@@ -7,10 +7,12 @@
  * `transpareo-time-machine:state` event has no replay, so an
  * integration script that attaches its listener after the
  * first dispatch depends on this getter to learn the DPP
- * identity at all. Two properties matter and are pinned here:
- * the getter answers once the manifest has loaded even though
- * no event is coming, and it is a live read of what the SPA
- * is showing rather than a copy of the boot state.
+ * identity at all. Three properties matter and are pinned
+ * here: the getter answers once the manifest has loaded even
+ * though no event is coming, it is a live read of what the
+ * SPA is showing rather than a copy of the boot state, and
+ * it follows the card back to the live version when the
+ * visitor hides the history.
  *
  * Runs against `npm run dev`, which renders the full fixture
  * DPP so the timeline has versions to scrub through.
@@ -114,4 +116,57 @@ test('state follows the timeline instead of freezing at boot', async ({
   // The getter and the event are the same identity, built in
   // one place: the last dispatch matches the live read.
   expect(s).toEqual(r.seen[r.seen.length - 1])
+})
+
+test('state returns to current when the history hides', async ({ page }) => {
+  await attachLate(page)
+
+  const r = await page.evaluate(async (ev) => {
+    const tm = document.querySelector('transpareo-time-machine')!
+    const root = tm.shadowRoot!
+
+    // Each step settles on the dispatch it causes, with a
+    // timeout so a step that changes nothing cannot hang.
+    const settle = (act: () => void): Promise<void> =>
+      new Promise((resolve) => {
+        const done = (): void => {
+          tm.removeEventListener(ev, done)
+          resolve()
+        }
+        tm.addEventListener(ev, done)
+        act()
+        setTimeout(done, 1000)
+      })
+
+    const toggleHistory = (): Promise<void> => settle(
+      () => root.querySelector<HTMLElement>('.versions-toggle')!.click()
+    )
+
+    await toggleHistory()
+    const dots = root.querySelectorAll<HTMLElement>('[data-event-id]')
+    for (const id of new Set([...dots].map((el) => el.dataset.eventId!))) {
+      await settle(() => { window.location.hash = id })
+      const s = tm.state
+      if (s && s.version !== s.currentVersion) break
+    }
+
+    const historical = tm.state
+    const dispatches = window.__ttmStates!.length
+    await toggleHistory()
+    return {
+      historical,
+      hidden: tm.state,
+      dispatched: window.__ttmStates!.length - dispatches
+    }
+  }, EV)
+
+  // The scrub reached a historical version to come back from.
+  expect(r.historical!.version).not.toBe(r.historical!.currentVersion)
+
+  // Hiding the history puts the live snapshot back on screen,
+  // and the identity says so: an integration gating a CTA on
+  // `version === currentVersion` sees it reopen, and hears
+  // about it rather than having to poll.
+  expect(r.hidden!.version).toBe(r.hidden!.currentVersion)
+  expect(r.dispatched).toBeGreaterThan(0)
 })

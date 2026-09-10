@@ -12,6 +12,21 @@ and this project adheres to
 
 ### Fixed
 
+- An event that published nothing shows the passport as it
+  stood when it happened. Focusing an inspection, a repair
+  or a lifecycle step that carried no new version rendered
+  today's snapshot under a "historical view" badge, while
+  the verification chip judged the older version that was
+  not on screen. The rendered snapshot, the chip's verdict,
+  the version that gets verified and the identity the
+  element reports now resolve through one rule.
+- Hiding the history reports the live version again. The
+  card went back to the current snapshot, but the `state`
+  property and the `transpareo-time-machine:state` event
+  kept naming the version the visitor had scrubbed to, and
+  no event announced the return, so an integration gating a
+  call to action on `version === currentVersion` stayed
+  closed until the next scrub.
 - The first paint is in the visitor's language. The renderer
   used to mount with the English labels and swap the picked
   locale in once its chunk arrived, a visible flash for every

@@ -153,17 +153,15 @@ export const focusIndex = computed(() => {
 
 // Visitor is "on current" whenever the displayed
 // snapshot matches the live one. True while the
-// timeline is hidden (activeSnapshot shelves the
-// focused id and the page reads as live), and also
-// true when the focused event is at or after the
-// latest publication: e.g. clicking the most recent
-// inspection chip resolves to the latest version
-// because nothing was published in between, so the
-// page shows current content and the "historical
-// view" badge would be misleading.
-export const isOnCurrent = computed(() =>
-  timelineState() === 'hidden'
-  || activeVersionNumber() === latestVersion(),
+// timeline is hidden, since the page reads as live
+// again, and also true when the focused event
+// resolves to the latest publication: e.g. clicking
+// the most recent inspection chip resolves to the
+// latest version because nothing was published in
+// between, so the page shows current content and the
+// "historical view" badge would be misleading.
+export const isOnCurrent = computed(
+  () => activeVersionNumber() === latestVersion()
 )
 
 // ---- Active version (drives chip + lazy verify). In
@@ -172,31 +170,43 @@ export const isOnCurrent = computed(() =>
 // `host.currentVersion` carries both.
 export const latestVersion = computed(() => host.currentVersion())
 
-// When the focused event has its own versionNumber
-// (i.e. it triggered a publish), use that. Otherwise,
-// an inspection, ownership-transfer or other non-
-// publishing event, walk back through the timeline
-// to find the most recent publication AT or before the
-// focused event's timestamp. That's the DPP state as it
-// stood when the inspection happened, not whatever the
-// newest publication happens to be today.
-export const activeVersionNumber = computed<number>(() => {
-  const fe = focusedEvent()
-  if (!fe) return latestVersion()
-  if (fe.versionNumber != null) return fe.versionNumber
+// The publication an event shows. Its own version when it
+// triggered a publish; otherwise, for an inspection,
+// ownership transfer or other non-publishing event, walk
+// back through the timeline to the most recent publication
+// AT or before the event's timestamp. That's the DPP state
+// as it stood when the inspection happened, not whatever
+// the newest publication happens to be today.
+//
+// One rule behind every reading of "which version is on
+// screen": the rendered snapshot, the chip's verdict, the
+// lazily verified version and the identity the element
+// reports all resolve through here, so they cannot drift
+// apart on an event that published nothing.
+function versionForEvent(ev: DppEvent | null): number {
+  if (!ev) return latestVersion()
+  if (ev.versionNumber != null) return ev.versionNumber
 
   const list = sortedEvents()
-  const focusTime = eventTime(fe.occurredAt)
+  const at = eventTime(ev.occurredAt)
   for (let i = list.length - 1; i >= 0; i--) {
     const e = list[i]
     if (
       e.versionNumber != null
-      && eventTime(e.occurredAt) <= focusTime
+      && eventTime(e.occurredAt) <= at
     ) {
       return e.versionNumber
     }
   }
   return latestVersion()
+}
+
+export const activeVersionNumber = computed<number>(() => {
+  // Hiding the timeline shelves the focused event and the
+  // card goes back to the live snapshot, so the version
+  // goes back with it.
+  if (timelineState() === 'hidden') return latestVersion()
+  return versionForEvent(focusedEvent())
 })
 
 // ---- Snapshot resolution + rendered product.
@@ -232,14 +242,15 @@ export const activeSnapshot = computed<DppSnapshot>(() => {
   // focusedEventId stays put; only a completed commit
   // moves the actual focus.
   const previewId = previewEventId()
-  if (previewId) {
-    const preview = events().find((e) => e.id === previewId)
-    const snap = snapshotForVersion(preview?.versionNumber)
+  const preview = previewId
+    ? events().find((e) => e.id === previewId) ?? null
+    : null
+  if (preview) {
+    const snap = snapshotForVersion(versionForEvent(preview))
     if (snap) return snap
   }
 
-  return snapshotForVersion(focusedEvent()?.versionNumber)
-    ?? currentSnapshot()
+  return snapshotForVersion(activeVersionNumber()) ?? currentSnapshot()
 })
 
 export const renderedProduct = computed<DppProduct>(
