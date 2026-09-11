@@ -49,6 +49,7 @@ import {
 } from '@/components/dpp-modal'
 import { config, initConfigFromElement } from '@/config'
 import { installIcons } from '@/icons'
+import { playHandover, travellerRect } from '@/handover'
 
 import './dpp-verifier'
 import './dpp-brandbar'
@@ -272,9 +273,16 @@ class TranspareoTimeMachine extends BaseElement {
     this.effect(() => {
       const state = host.loadState()
       if (state === 'ready' && i18n.labelsReady) {
+        // Measured while the host's first frame is still on
+        // screen, and handed to the travel below once the
+        // card has been laid out. See handover.ts for why
+        // the two layouts are measured rather than matched.
+        const from = travellerRect(this)
+
         this.dropTree()
         container.replaceChildren()
         this.mountReady(container)
+        if (from) playHandover(this, from)
       } else {
         container.replaceChildren(
           buildLoadingShell(state, host.loadError()),
