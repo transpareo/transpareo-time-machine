@@ -10,6 +10,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.14.2] - 2026-09-11
+
 ### Fixed
 
 - Product images load from where the passport lives. A
