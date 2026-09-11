@@ -200,6 +200,48 @@ describe('toRenderModel: image references', () => {
   it('yields no images when the wire carries none', () => {
     expect(toRenderModel(wire([]), SNAPSHOT).product.images).toEqual([]);
   });
+
+  it('resolves every rendition and orders them narrowest first', () => {
+    const model = toRenderModel(withImages([{
+      thumbnail: '/media/a-800.jpg', large: '/media/a-1500.jpg',
+      variants: [
+        { url: '/media/a-800.jpg', width: 800 },
+        { url: '/media/a-400.jpg', width: 400 }
+      ]
+    }]), SNAPSHOT);
+    expect(model.product.images[0].variants).toEqual([
+      { url: 'https://cdn.example.com/media/a-400.jpg', width: 400 },
+      { url: 'https://cdn.example.com/media/a-800.jpg', width: 800 }
+    ]);
+  });
+
+  it('drops a rendition with no usable width', () => {
+    const model = toRenderModel(withImages([{
+      thumbnail: '/a.jpg', large: '/a.jpg',
+      variants: [
+        { url: '/a-400.jpg', width: 400 },
+        { url: '/a-800.jpg', width: 0 },
+        { url: '/a-1500.jpg' },
+        { url: '', width: 600 },
+        { url: '/a-1200.jpg', width: 1200 }
+      ]
+    }]), SNAPSHOT);
+    const widths = model.product.images[0].variants?.map((v) => v.width);
+    expect(widths).toEqual([400, 1200]);
+  });
+
+  it('leaves a lone rendition off: src already says it', () => {
+    const model = toRenderModel(withImages([{
+      thumbnail: '/a.jpg', large: '/a.jpg',
+      variants: [{ url: '/a-800.jpg', width: 800 }]
+    }]), SNAPSHOT);
+    expect(model.product.images[0].variants).toBeUndefined();
+  });
+
+  it('names no renditions for a snapshot that carries none', () => {
+    const model = toRenderModel(withImages(['/media/a.jpg']), SNAPSHOT);
+    expect(model.product.images[0].variants).toBeUndefined();
+  });
 });
 
 describe('adaptPrivateRows: post-auth tiers', () => {

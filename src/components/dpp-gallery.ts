@@ -19,7 +19,7 @@ import { icon } from '@/icons'
 import { renderedProduct } from '@/state'
 import { i18n } from '@/i18n'
 import { t } from '@/i18n/labels'
-import { tx } from '@/types'
+import { tx, type SnapshotImage } from '@/types'
 import { getPages } from '@/pagination'
 import { OPEN_EVENT, type OpenLightboxDetail } from './dpp-lightbox'
 
@@ -89,6 +89,7 @@ class DppGallery extends LightElement {
     const idx = Math.min(this.current(), total - 1)
     const alt = tx(product.name, i18n.locale)
     img.src = images[idx].thumbnail
+    applyRenditions(img, images[idx])
     img.alt = alt
     img.title = alt
     img.setAttribute('aria-label', t(i18n.labels, 'gallery.openFull'))
@@ -138,6 +139,33 @@ class DppGallery extends LightElement {
       detail, bubbles: true, composed: true,
     }))
   }
+}
+
+// What the hero image actually fills: a fixed column
+// beside the product copy, and, once the card stacks, the
+// viewport less the card's own 25px of padding either
+// side. A publisher's frame only narrows that further, and
+// over-declaring costs bytes where under-declaring would
+// cost sharpness. Tracks .dpp-hero-image and .card-content
+// in dpp.scss.
+const HERO_SIZES = '(max-width: 600px) calc(100vw - 50px), 320px'
+
+// Offer every rendition the publisher holds of this image,
+// so the browser can spend bytes on the box it will fill
+// and the density it renders at. An image carrying none is
+// cleared rather than left alone: a srcset from the
+// previously shown image would outrank the src just set.
+function applyRenditions(
+  img: HTMLImageElement, image: SnapshotImage
+): void {
+  const variants = image.variants
+  if (!variants || variants.length === 0) {
+    img.removeAttribute('srcset')
+    img.removeAttribute('sizes')
+    return
+  }
+  img.srcset = variants.map((v) => `${v.url} ${v.width}w`).join(', ')
+  img.sizes = HERO_SIZES
 }
 
 // Pure builder for the `< 1 2 … N >` pagination strip.

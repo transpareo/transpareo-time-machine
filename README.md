@@ -314,6 +314,56 @@ of `/media/hero-800.jpg` in a snapshot served from
 naming any other host is a second copy of the image
 rather than a head start.
 
+An image may name more than one rendition of itself. Each
+entry in a snapshot's `images` can carry a `variants`
+array, every rendition the publisher holds with its
+intrinsic width in pixels:
+
+```json
+{
+  "thumbnail": "/media/hero-800.jpg",
+  "large": "/media/hero-1500.jpg",
+  "variants": [
+    { "url": "/media/hero-400.jpg", "width": 400 },
+    { "url": "/media/hero-800.jpg", "width": 800 },
+    { "url": "/media/hero-1500.jpg", "width": 1500 }
+  ]
+}
+```
+
+The renderer turns that into a `srcset` on the hero image,
+paired with a `sizes` describing the box the hero actually
+fills: `(max-width: 600px) calc(100vw - 50px), 320px`, a
+fixed column beside the product copy, and the viewport
+less the card's padding once the card stacks. A rendition
+missing a URL or a positive width is skipped, and a list
+that comes down to a single rendition is dropped, since
+`src` already says that much. A snapshot naming no
+variants renders from `thumbnail` alone, as every snapshot
+did before.
+
+Emit a ladder rather than the two ends. A 360px-wide hero
+on a 2x phone wants around 720px of image, so a set of
+400, 600, 800 and 1200 lets the browser land near what it
+needs; with only 400 and 1500 to choose from it takes
+1500.
+
+Once an image carries renditions the browser picks by
+width and density instead of taking `src`, and a preload
+naming one URL no longer matches that pick. Restate the
+list on the preload so it still does:
+
+```html
+<link
+  rel="preload"
+  as="image"
+  fetchpriority="high"
+  href="https://cdn.example.com/media/hero-800.jpg"
+  imagesrcset="https://cdn.example.com/media/hero-400.jpg 400w,
+               https://cdn.example.com/media/hero-800.jpg 800w"
+  imagesizes="(max-width: 600px) calc(100vw - 50px), 320px">
+```
+
 The manifest cannot be preloaded the same way: the
 renderer fetches it without credentials, and a preload
 link has no setting for that mode, so the browser would

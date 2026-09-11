@@ -10,6 +10,19 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Added
+
+- The hero image offers every rendition the publisher
+  holds. An image entry in a snapshot may now carry a
+  `variants` array, each rendition with its intrinsic
+  width, and the renderer hands the browser a `srcset`
+  plus a `sizes` describing the box the hero fills, so a
+  phone spends phone-sized bytes on the largest paint
+  instead of taking a rendition cut for a desktop card. A
+  snapshot naming no variants renders from `thumbnail`
+  alone, as before, and the README shows the preload a
+  host page needs once an image has more than one.
+
 ## [2.14.2] - 2026-09-11
 
 ### Fixed

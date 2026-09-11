@@ -44,7 +44,7 @@ import { readJsonResponse } from '@/fetch-json'
 import { detectArtefact, snapshotBody } from '@/artefact-detect'
 import type { DppManifest, Organization, SignedSnapshot } from '@/archive'
 import type {
-  DppSnapshot, DppProduct, DppManufacturer, SnapshotImage,
+  DppSnapshot, DppProduct, DppManufacturer, SnapshotImage, ImageVariant,
   PropertyValue, PropertyValueKind, SnapshotLocalizedText, SnapshotProof,
   ChangeSet,
 } from '@/types'
@@ -604,12 +604,34 @@ function normalizeImages(
     const pair = typeof entry === 'string'
       ? { thumbnail: entry, large: entry }
       : entry
+    const variants = normalizeVariants(pair.variants, absolute)
+
+    // One candidate says no more than `src` already
+    // does, so it is dropped rather than rendered as a
+    // srcset the browser has no choice within.
     after.push({
       thumbnail: absolute(pair.thumbnail),
-      large: absolute(pair.large)
+      large: absolute(pair.large),
+      ...(variants.length > 1 ? { variants } : {})
     })
   }
   return after
+}
+
+// Keep the renditions that name both a URL and a usable
+// intrinsic width, narrowest first. A width the publisher
+// left out, set to zero or wrote as something other than a
+// number would make the browser's pick meaningless, so that
+// rendition drops out and the rest still stand.
+function normalizeVariants(
+  variants: ReadonlyArray<ImageVariant> | undefined,
+  absolute: (url: string) => string
+): ReadonlyArray<ImageVariant> {
+  if (!variants || variants.length === 0) return []
+  return variants
+    .filter((v) => v?.url && Number.isFinite(v.width) && v.width > 0)
+    .map((v) => ({ url: absolute(v.url), width: Math.round(v.width) }))
+    .sort((a, b) => a.width - b.width)
 }
 
 function resolveAgainst(base: string, relative: string | undefined): string | null {

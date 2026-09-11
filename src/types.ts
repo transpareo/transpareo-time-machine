@@ -467,6 +467,20 @@ export interface ComponentLookup {
 export interface SnapshotImage {
   readonly thumbnail: string
   readonly large: string
+
+  // Every rendition the publisher holds of this image,
+  // each with its intrinsic width in pixels, so the
+  // browser can pick one against the box it will fill
+  // and the visitor's pixel density. Optional: a
+  // snapshot that names none is rendered from
+  // `thumbnail` alone, as every snapshot was before
+  // publishers emitted this.
+  readonly variants?: ReadonlyArray<ImageVariant>
+}
+
+export interface ImageVariant {
+  readonly url: string
+  readonly width: number
 }
 
 // Self-contained per-version render payload. Each
