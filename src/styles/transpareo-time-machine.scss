@@ -158,6 +158,22 @@ dpp-verifier {
   padding: 24px;
 }
 
+/* While loading, the slot carries the host page's own
+ * boot composition, and a host that has laid that out to
+ * line up with the card it resolves into has already
+ * placed it. Centring it in the viewport and insetting it
+ * 24px here moves it away from those measurements, so the
+ * picture steps inward on upgrade and outward again on
+ * mount. Pass it through instead and let it keep the
+ * position it was authored at. The centring still applies
+ * to the error and retired states below, which render
+ * their own text and have nothing to line up with. */
+.boot-shell-idle,
+.boot-shell-loading {
+  display: block;
+  padding: 0;
+}
+
 .boot-shell-error {
   color: var(--font-color, #222);
   text-align: center;
