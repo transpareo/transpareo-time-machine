@@ -305,6 +305,15 @@ trip instead of the fifth:
       href="https://cdn.example.com/acme/media/hero-800.jpg">
 ```
 
+Preload the URL the renderer will actually request. A
+snapshot states its image references relatively and they
+resolve against the snapshot's own URL, so a `thumbnail`
+of `/media/hero-800.jpg` in a snapshot served from
+`https://cdn.example.com/acme/dpp/...` is requested as
+`https://cdn.example.com/media/hero-800.jpg`. A preload
+naming any other host is a second copy of the image
+rather than a head start.
+
 The manifest cannot be preloaded the same way: the
 renderer fetches it without credentials, and a preload
 link has no setting for that mode, so the browser would

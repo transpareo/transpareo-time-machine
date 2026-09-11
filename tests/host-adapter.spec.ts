@@ -148,6 +148,60 @@ describe('toRenderModel: rating location', () => {
   });
 });
 
+describe('toRenderModel: image references', () => {
+  const SNAPSHOT = 'https://cdn.example.com/dpp/p1/v/3-abc.jsonld.gz';
+
+  function withImages(images: unknown): SignedSnapshot {
+    return wire([], {
+      product: {
+        '@type': 'Product', name: { en: 'X' }, brand: 'B',
+        properties: [], images
+      }
+    });
+  }
+
+  it('resolves a root-relative reference onto the snapshot host', () => {
+    const model = toRenderModel(withImages([
+      { thumbnail: '/media/a-800.jpg', large: '/media/a-1500.jpg' }
+    ]), SNAPSHOT);
+    expect(model.product.images[0].thumbnail).
+      toBe('https://cdn.example.com/media/a-800.jpg');
+    expect(model.product.images[0].large).
+      toBe('https://cdn.example.com/media/a-1500.jpg');
+  });
+
+  it('resolves a path-relative reference beside the snapshot', () => {
+    const model = toRenderModel(withImages(['a-800.jpg']), SNAPSHOT);
+    expect(model.product.images[0].thumbnail).
+      toBe('https://cdn.example.com/dpp/p1/v/a-800.jpg');
+  });
+
+  it('leaves an absolute reference untouched', () => {
+    const abs = 'https://other.example.com/a.jpg';
+    const model = toRenderModel(
+      withImages([{ thumbnail: abs, large: abs }]), SNAPSHOT
+    );
+    expect(model.product.images[0].thumbnail).toBe(abs);
+  });
+
+  it('coerces a flat-string entry to both sizes', () => {
+    const model = toRenderModel(withImages(['/media/a.jpg']), SNAPSHOT);
+    expect(model.product.images[0]).toEqual({
+      thumbnail: 'https://cdn.example.com/media/a.jpg',
+      large: 'https://cdn.example.com/media/a.jpg'
+    });
+  });
+
+  it('leaves references as they stand with no base', () => {
+    const model = toRenderModel(withImages(['/media/a.jpg']));
+    expect(model.product.images[0].thumbnail).toBe('/media/a.jpg');
+  });
+
+  it('yields no images when the wire carries none', () => {
+    expect(toRenderModel(wire([]), SNAPSHOT).product.images).toEqual([]);
+  });
+});
+
 describe('adaptPrivateRows: post-auth tiers', () => {
   it('keeps only legitimateInterest rows', () => {
     const out = adaptPrivateRows([

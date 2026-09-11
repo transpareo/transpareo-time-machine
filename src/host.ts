@@ -130,7 +130,7 @@ export async function bootFrom(src: string): Promise<void> {
     if (detectArtefact(data) === 'manifest') {
       await bootFromManifest(data as DppManifest, manifestUrl, epoch)
     } else {
-      bootFromSnapshot(data as SignedSnapshot)
+      bootFromSnapshot(data as SignedSnapshot, manifestUrl)
     }
     if (epoch === bootEpoch) loadState.set('ready')
   } catch (err) {
@@ -170,7 +170,7 @@ async function bootFromManifest(
   ])
   if (epoch !== bootEpoch) return
 
-  storeSnapshot(current)
+  storeSnapshot(current, currentVersionUrl)
   epcisDocument.set(epcis)
 }
 
@@ -178,9 +178,9 @@ async function bootFromManifest(
 // manifest (so no version list and no chain anchor) and no
 // EPCIS sidecar (so no event timeline); the snapshot's own
 // 2-of-2 proof still verifies via actions.ensureVersionLoaded.
-function bootFromSnapshot(snap: SignedSnapshot): void {
+function bootFromSnapshot(snap: SignedSnapshot, url: string): void {
   currentVersion.set(snap.version)
-  storeSnapshot(snap)
+  storeSnapshot(snap, url)
 }
 
 // Thrown by fetchManifest when the manifest endpoint
@@ -290,14 +290,16 @@ export async function fetchSnapshot(
   if (!options.reload && rawSnapshots.peek()[versionNumber]) {
     return snapshots.peek()[versionNumber] ?? null
   }
-  return storeSnapshot(raw)
+  return storeSnapshot(raw, url)
 }
 
 // Cache one fetched snapshot in both representations: the
 // raw bytes for verification + chain hashing, and the
-// adapted render model the rendering layer reads.
-function storeSnapshot(raw: SignedSnapshot): DppSnapshot {
-  const model = toRenderModel(raw)
+// adapted render model the rendering layer reads. `url` is
+// where the snapshot was read from: the base its own
+// relative references resolve against.
+function storeSnapshot(raw: SignedSnapshot, url: string): DppSnapshot {
+  const model = toRenderModel(raw, url)
   // Key both caches by the model version: a VC snapshot
   // carries its version under credentialSubject, so raw.version
   // is absent and only the adapted model has it resolved.
@@ -425,7 +427,9 @@ function unwrapCredential(raw: SignedSnapshot): WireSnapshot {
   ) as unknown as WireSnapshot
 }
 
-export function toRenderModel(raw: SignedSnapshot): DppSnapshot {
+export function toRenderModel(
+  raw: SignedSnapshot, base?: string
+): DppSnapshot {
   const w = unwrapCredential(raw)
   const changed = adaptChangeSet(w.changedProperties)
   return {
@@ -435,7 +439,9 @@ export function toRenderModel(raw: SignedSnapshot): DppSnapshot {
     status: canonicalStatus(w.dppStatus ?? w.status),
     issuer: w.issuer,
     platform: w.platform,
-    product: adaptProduct(w.product, w.rating, w.identifiers?.gtin ?? w.gtin),
+    product: adaptProduct(
+      w.product, w.rating, w.identifiers?.gtin ?? w.gtin, base
+    ),
     properties: adaptProperties(w.product?.properties ?? w.properties ?? []),
     ...(typeof w.priorVersion === 'number' ? { priorVersion: w.priorVersion } : {}),
     ...(w.priorVersionHash ? { priorVersionHash: w.priorVersionHash } : {}),
@@ -446,6 +452,7 @@ export function toRenderModel(raw: SignedSnapshot): DppSnapshot {
 
 function adaptProduct(
   p: WireProduct | undefined, topRating?: unknown, gtin?: string,
+  base?: string
 ): DppProduct {
   // Rating is top-level in the contract; fall back to
   // product.rating for snapshots that carry it there.
@@ -457,7 +464,7 @@ function adaptProduct(
     ...(p?.category != null ? { category: foldLocale(p.category) } : {}),
     ...(gtin ? { gtin } : {}),
     ...adaptWeight(p),
-    images: normalizeImages(p?.images),
+    images: normalizeImages(p?.images, base),
     manufacturer: adaptManufacturer(p?.manufacturer),
     ...(rating ? { rating } : {}),
   }
@@ -572,19 +579,35 @@ function buildPrivateRow(
 }
 
 // Coerce a flat-string image entry to the {thumbnail,
-// large} pair the gallery reads; object entries pass
-// through unchanged.
+// large} pair the gallery reads, and resolve both
+// references against `base`, the URL the snapshot was
+// read from. Image references ship relative so a passport
+// stays portable across mirrors, and they belong to the
+// document that declares them: resolving them against the
+// surrounding page instead points them at a host that may
+// hold none of the media, and misses the preload the page
+// issued against the real one.
 function normalizeImages(
   images: ReadonlyArray<SnapshotImage | string> | undefined,
+  base?: string
 ): ReadonlyArray<SnapshotImage> {
   if (!images || images.length === 0) return []
+
+  // With no base (a bare adapter call outside a fetch)
+  // the references stand as they are, for the browser to
+  // resolve against the document.
+  const absolute = (url: string): string =>
+    base ? resolveAgainst(base, url) ?? url : url
+
   const after: SnapshotImage[] = []
   for (const entry of images) {
-    if (typeof entry === 'string') {
-      after.push({ thumbnail: entry, large: entry })
-    } else {
-      after.push(entry)
-    }
+    const pair = typeof entry === 'string'
+      ? { thumbnail: entry, large: entry }
+      : entry
+    after.push({
+      thumbnail: absolute(pair.thumbnail),
+      large: absolute(pair.large)
+    })
   }
   return after
 }

@@ -12,6 +12,17 @@ and this project adheres to
 
 ### Fixed
 
+- Product images load from where the passport lives. A
+  snapshot states its image references relatively, and the
+  renderer resolved them against the surrounding page
+  rather than against the snapshot that declared them. A
+  publisher serving passports from a CDN and pages from
+  their own domain fetched every image a second time from
+  a host that holds none of them, ignoring the copy the
+  page had already preloaded and pushing the largest paint
+  seconds late on a phone. Both sizes now resolve against
+  the URL the snapshot itself was read from, which is
+  where its media sits.
 - An event that published nothing shows the passport as it
   stood when it happened. Focusing an inspection, a repair
   or a lifecycle step that carried no new version rendered
