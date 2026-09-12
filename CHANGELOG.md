@@ -10,6 +10,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.15.0] - 2026-09-11
+
 ### Added
 
 - The hero image offers every rendition the publisher
