@@ -23,6 +23,46 @@ and this project adheres to
   alone, as before, and the README shows the preload a
   host page needs once an image has more than one.
 
+- The picture travels from the host page's first frame into
+  the card. A host paints something before the renderer has
+  data, usually the product picture it already knows, laid
+  out wherever its author wanted it; the card then painted
+  the same picture somewhere else and it jumped. The
+  renderer now measures where the host's picture is at the
+  moment of mount and where its own lands, and animates the
+  difference away. The two layouts share no measurement, so
+  a host is free to compose its first frame however it
+  likes and still gets the travel, and neither side can
+  drift from the other. A transform is excluded from layout
+  shift and does not move the paint, so it costs nothing on
+  either metric. Skipped under `prefers-reduced-motion`,
+  and for a distance too small to read as motion.
+
+### Fixed
+
+- Turning a gallery page no longer waits for the network.
+  Swapping the image meant the frame sat empty until the
+  new bytes arrived, so on a slow link a page turn looked
+  like the click had not registered, though the pagination
+  had already moved. The neighbouring pictures are now
+  fetched while the visitor looks at the one they are on,
+  at low priority, so the usual turn paints in the same
+  frame as the click. Only the immediate neighbours, and
+  none at all for a visitor whose browser reports
+  Save-Data: warming a whole gallery spends data on
+  pictures most visitors never open. A turn that does have
+  to wait says so, and stops saying it the moment the
+  picture is there.
+
+- A host page's first frame keeps the position it was
+  authored at. The loading shell centred whatever the host
+  had painted and inset it 24px, so a first frame laid out
+  to line up with the card stepped inward when the element
+  upgraded and outward again when the card mounted, which
+  no host could correct from its own stylesheet. The error
+  and retired shells still centre their own text, since
+  they have nothing to line up with.
+
 ## [2.14.2] - 2026-09-11
 
 ### Fixed
