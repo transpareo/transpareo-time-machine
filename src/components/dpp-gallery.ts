@@ -27,6 +27,10 @@ class DppGallery extends LightElement {
   private current = signal(0)
   private lastKey = ''
 
+  // Thumbnails already asked for, so paging back and forth
+  // over the same pair does not re-request them.
+  private warmed = new Set<string>()
+
   protected setup(): void {
     this.innerHTML = `
       <div class="gallery">
@@ -90,6 +94,8 @@ class DppGallery extends LightElement {
     const alt = tx(product.name, i18n.locale)
     img.src = images[idx].thumbnail
     applyRenditions(img, images[idx])
+    markPending(wrap, img)
+    this.warmNeighbours(images, idx)
     img.alt = alt
     img.title = alt
     img.setAttribute('aria-label', t(i18n.labels, 'gallery.openFull'))
@@ -99,6 +105,26 @@ class DppGallery extends LightElement {
       nav.replaceChildren(navFragment(idx, total))
     } else {
       nav.style.display = 'none'
+    }
+  }
+
+  // A visitor who pages once almost always pages again, and
+  // the next picture is a fresh request that only starts
+  // when they ask for it. Fetch the neighbours while they
+  // are looking at this one, at low priority so they queue
+  // behind anything the page still needs, and not at all
+  // for a visitor who has asked their browser to save data.
+  private warmNeighbours(
+    images: ReadonlyArray<SnapshotImage>, idx: number
+  ): void {
+    if (navigator.connection?.saveData) return
+    for (const near of [idx - 1, idx + 1]) {
+      const url = images[near]?.thumbnail
+      if (!url || this.warmed.has(url)) continue
+      this.warmed.add(url)
+      const warm = new Image()
+      warm.fetchPriority = 'low'
+      warm.src = url
     }
   }
 
@@ -139,6 +165,23 @@ class DppGallery extends LightElement {
       detail, bubbles: true, composed: true,
     }))
   }
+}
+
+// Swapping `src` leaves the frame showing the old picture,
+// or nothing, until the new bytes arrive, so on a slow link
+// a page turn looks like it did not register. Say that the
+// picture is on its way and let the stylesheet show it.
+// Already-decoded bytes clear it in the same pass, so a
+// warmed neighbour never flickers the state on.
+function markPending(wrap: HTMLElement, img: HTMLImageElement): void {
+  if (img.complete) {
+    wrap.classList.remove('loading')
+    return
+  }
+  wrap.classList.add('loading')
+  const done = (): void => wrap.classList.remove('loading')
+  img.addEventListener('load', done, { once: true })
+  img.addEventListener('error', done, { once: true })
 }
 
 // What the hero image actually fills: a fixed column
