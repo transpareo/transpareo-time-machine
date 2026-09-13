@@ -12,6 +12,10 @@
  *   - Placeholder parity: the {name} variables per key match
  *     English, so t()'s substitution never leaves a literal
  *     `{count}` on screen.
+ *   - Event coverage: every event type the feed can carry
+ *     has a pill and a summary line, so a type the
+ *     publisher starts emitting cannot reach the card as
+ *     its own raw key.
  *   - No markup: label values are plain text. Several
  *     components interpolate labels near innerHTML
  *     templates; keeping `<`, `>`, `"` and script-bearing
@@ -21,6 +25,8 @@
 
 import { describe, it, expect } from 'vitest';
 import { regionName } from '../src/i18n/display-names';
+import { EVENT_TYPES } from '../src/types';
+import { colorForEventType } from '../src/event-colors';
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -69,6 +75,30 @@ describe('locale catalogs', () => {
         `${file} ${key}`,
       ).toEqual(placeholdersOf(english[key]));
     }
+  });
+
+  // The timeline reads both keys off the event type it
+  // parses, and t() falls back to the key itself, so a
+  // type nobody translated renders "eventSummary.voided"
+  // in the card body. The publisher decides which types
+  // it emits, not this package, so the catalog has to
+  // carry all of them before one shows up in the wild.
+  it.each(files)('%s labels every event type', (file) => {
+    const catalog = load(file);
+    const missing = EVENT_TYPES.flatMap((type) => [
+      `eventType.${type}`,
+      `eventSummary.${type}`,
+    ]).filter((key) => !catalog[key]);
+    expect(missing, `${file} unlabelled event keys`).toEqual([]);
+  });
+
+  // A type with no entry in the colour map draws in the
+  // muted grey the renderer keeps for the unknown, which
+  // reads as a styling choice rather than as the gap it is.
+  it('gives every event type its own colour', () => {
+    const unmapped = EVENT_TYPES
+      .filter((t) => colorForEventType(t) === 'var(--color-muted)');
+    expect(unmapped, 'event types with no colour').toEqual([]);
   });
 
   it.each(files)('%s values carry no markup', (file) => {

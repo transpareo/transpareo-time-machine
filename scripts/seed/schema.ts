@@ -45,6 +45,7 @@ const EventType = z.enum([
   'published', 'lifecycle_transition', 'recalled',
   'rolled_back', 'registered_with_eu', 'repair',
   'refurbished', 'collected', 'recycled', 'inspection',
+  'voided', 'superseded', 'reissued', 'corrected',
 ]);
 
 const Rating = z.enum([

@@ -10,6 +10,18 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Fixed
+
+- The timeline labels the passport-record events. A feed
+  carrying a `voided`, `superseded`, `reissued` or
+  `corrected` event drew its card from keys no catalog
+  held, so the pill read `eventType.voided` and the body
+  read `eventSummary.voided`, in every language. All four
+  now carry a pill, a summary line and a colour of their
+  own in all 40 locales, and the suite checks every type
+  the renderer knows against the catalogs so the next one
+  added cannot reach a card as its own key.
+
 ## [2.15.0] - 2026-09-11
 
 ### Added

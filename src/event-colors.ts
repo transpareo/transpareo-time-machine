@@ -21,6 +21,16 @@ const TYPE_COLORS: Record<string, string> = {
   refurbished: 'var(--timeline-event-refurbished)',
   collected: 'var(--timeline-event-collected)',
   recycled: 'var(--timeline-event-recycled)',
+
+  // Passport-record events, keyed to what they do to the
+  // record rather than to the product: voiding ends it
+  // (the fail red the recall shares), superseding hands
+  // it to another passport, a reissue mints a fresh one,
+  // and a correction repairs the data in place.
+  voided: 'var(--color-verify-fail)',
+  superseded: 'var(--timeline-event-refurbished)',
+  reissued: 'var(--timeline-event-published)',
+  corrected: 'var(--timeline-event-repair)',
 }
 
 export function colorForEventType(eventType: string): string {

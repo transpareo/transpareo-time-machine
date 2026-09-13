@@ -167,17 +167,30 @@ export type LifecycleStatus =
   | 'end_of_life'
   | 'suspended'
 
-export type EventType =
-  | 'published'
-  | 'lifecycle_transition'
-  | 'recalled'
-  | 'rolled_back'
-  | 'registered_with_eu'
-  | 'repair'
-  | 'refurbished'
-  | 'collected'
-  | 'recycled'
-  | 'inspection'
+// Every event type the public EPCIS feed can carry.
+// A runtime list rather than a bare union so the
+// catalogs can be checked against it: each entry needs
+// an `eventType.*` pill and an `eventSummary.*` line in
+// every locale, and an unlabelled type renders its own
+// key on the card.
+export const EVENT_TYPES = [
+  'published',
+  'lifecycle_transition',
+  'recalled',
+  'rolled_back',
+  'registered_with_eu',
+  'repair',
+  'refurbished',
+  'collected',
+  'recycled',
+  'inspection',
+  'voided',
+  'superseded',
+  'reissued',
+  'corrected',
+] as const
+
+export type EventType = typeof EVENT_TYPES[number]
 
 export type Rating =
   | 'veryBad'
