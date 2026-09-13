@@ -855,6 +855,18 @@ function buildManifest(
     versions,
     epcisUrl: 'epcis.json',
     signedAt: current.publishedAt,
+
+    // A withdrawn passport states it here, inside the
+    // signed body, exactly as the publisher does.
+    ...(fixture.voided
+      ? {
+          voidedAt: fixture.voided.at,
+          voidedReason: fixture.voided.reason,
+        }
+      : {}),
+    ...(fixture.superseded_by
+      ? { supersededBy: fixture.superseded_by }
+      : {}),
   };
   return { ...body, signature: signer.signManifest(body) };
 }

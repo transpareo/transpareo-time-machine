@@ -10,7 +10,59 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Added
+
+- A passport that is out of circulation says so on its
+  own card. A manifest carrying `voidedAt` (the unit it
+  described is gone) or `supersededBy` (another passport
+  carries the unit now) renders a band across the top of
+  the card, under the brandbar: what happened, which of
+  the four void reasons it was, who withdrew it and on
+  what day, and the code of the replacement passport when
+  there is one. Until now the renderer read none of those
+  fields, so a voided passport presented itself as a live
+  one.
+
+  In a versioned publication only the manifest can carry
+  this. A snapshot is signed once and frozen, so the
+  version on screen was written while the passport still
+  stood and still calls itself active; the manifest is
+  re-signed on every change. The band therefore does not
+  move as the visitor scrubs the timeline, and the
+  manifest signature covers the fields it reads. A DPP
+  served as a lone document states it on the document
+  itself, and the band reads it there instead.
+
+  The band wears the card's own ink with the card's
+  background as its text, in whichever direction the
+  publisher's theme runs. Not the verification red: a
+  voided passport's proofs usually verify perfectly, and
+  red in this renderer means a proof that did not check
+  out.
+
+  The standalone verifier says it too, under the verdict.
+  A withdrawn passport's signatures are intact, so the
+  widget used to answer a voided passport with a green
+  orb and nothing else, which reads as "good to use".
+
+  A `supersededBy` that carries a `url` (the successor's
+  public passport page) turns the code into a link, on
+  both surfaces. Without one the code stays plain text:
+  it still answers "which passport replaced this one",
+  and the renderer does not guess an address from a code.
+  The URL passes the same scheme guard as every other
+  link built from publisher data.
+
 ### Fixed
+
+- A voided passport whose reason is `recalled` no longer
+  reads as a recall notice. Voiding is for a unit that no
+  longer exists, including one scrapped after a recall; a
+  recall of units still in the field keeps the passport
+  live and scannable, which is how the person holding one
+  learns of it. The sentence now says the product was
+  taken out of circulation rather than leaving a reader to
+  infer they are holding a recalled item.
 
 - The timeline labels the passport-record events. A feed
   carrying a `voided`, `superseded`, `reissued` or

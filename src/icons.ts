@@ -46,7 +46,7 @@ const FUNCTIONAL_IDS = new Set([
   'icon-cancel', 'icon-ok', 'spinner', 'chevron-down',
   'icon-down', 'icon-history', 'icon-resize-full',
   'icon-download', 'icon-link-ext', 'icon-arrow',
-  'icon-key', 'icon-info', 'icon-help',
+  'icon-key', 'icon-info', 'icon-help', 'icon-attention',
 ])
 
 // The functional symbols, lifted verbatim from the full
@@ -70,6 +70,7 @@ const FUNCTIONAL_SPRITE =
   '<symbol id="icon-arrow" viewBox="0 0 1000 1000"><path transform="translate(0 850) scale(1 -1)" d="M0 170l0 360 414 0 0 211 586-391-586-391 0 211-414 0z"/></symbol>' +
   '<symbol id="icon-key" viewBox="0 0 780 1000"><path transform="translate(0 850) scale(1 -1)" d="M774 612q20-116-28-215t-150-117q-66-12-130-2l-118-194-70-12-104-166q-14-28-46-32l-76-14q-12-4-22 4t-12 22l-16 98q-8 30 12 56l258 386q-24 50-38 120-18 106 53 187t185 101q106 20 195-45t107-177z m-126-76q30 44 21 97t-51 83q-42 32-92 22t-80-54q-8-12-12-23t-1-20 5-16 13-17 18-15 22-16 23-17q6-4 22-16t23-16 19-12 19-8 17 1 18 8 16 19z"/></symbol>' +
   '<symbol id="icon-help" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" d="M8.4 9.2a3.6 3.6 0 1 1 5.2 3.2c-1.1.6-1.6 1.2-1.6 2.6"/><circle cx="12" cy="19" r="1.5"/></symbol>' +
+  '<symbol id="icon-attention" viewBox="0 0 962 1000"><path transform="translate(0 850) scale(1 -1)" d="M957-24q10-16 0-34-10-16-30-16l-892 0q-18 0-28 16-13 18-2 34l446 782q8 18 30 18t30-18z m-420 50l0 100-110 0 0-100 110 0z m0 174l0 300-110 0 0-300 110 0z"/></symbol>' +
   '<symbol id="icon-info" viewBox="0 0 460 1000"><path transform="translate(0 850) scale(1 -1)" d="M352 850q48 0 74-27t26-69q0-50-39-88t-95-38q-48 0-74 26t-24 72q0 46 35 85t97 39z m-206-1000q-100 0-54 178l60 254q14 56 0 56-12 0-54-18t-72-38l-26 44q90 78 189 126t151 48q78 0 36-162l-70-266q-16-64 6-64 44 0 118 60l30-40q-84-86-175-132t-139-46z"/></symbol>' +
   '</svg>'
 

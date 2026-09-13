@@ -308,6 +308,26 @@ export const FixtureSchema = z.object({
   // codegen appends the matching ref.openepcis.io
   // extension context to the EPCIS document.
   regulation: Regulation.optional(),
+  // Optional. A passport out of circulation: voided (the
+  // unit it describes is gone) or superseded by another
+  // passport, or both. Emitted onto the manifest, which is
+  // where the renderer reads the withdrawal band from; the
+  // snapshots are signed once and cannot carry it.
+  voided: z.object({
+    at: Iso8601,
+    reason: z.enum([
+      'destroyed', 'recalled', 'never_shipped', 'other',
+    ]),
+  }).optional(),
+  superseded_by: z.object({
+    code: z.string(),
+    uuid: z.string().optional(),
+
+    // The successor's public passport page, which the band
+    // links the code to. Optional: a manifest published
+    // before the publisher emitted one carries no address.
+    url: z.url().optional(),
+  }).optional(),
   issuer: Issuer,
   platform: Platform,
   available_locales: z.array(z.string()).min(1),

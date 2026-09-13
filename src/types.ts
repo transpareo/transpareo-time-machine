@@ -192,6 +192,26 @@ export const EVENT_TYPES = [
 
 export type EventType = typeof EVENT_TYPES[number]
 
+// Why a passport was voided, as the manifest states it.
+// The reason decides which sentence the withdrawal band
+// reads; `other` is both a reason the publisher can pick
+// and where an unknown token lands, so a reason this
+// package has never heard of still renders a sentence
+// that says something true.
+export const VOID_REASONS = [
+  'destroyed',
+  'recalled',
+  'never_shipped',
+  'other',
+] as const
+
+export type VoidReason = typeof VOID_REASONS[number]
+
+export function canonicalVoidReason(raw: unknown): VoidReason {
+  const found = VOID_REASONS.find((r) => r === raw)
+  return found ?? 'other'
+}
+
 export type Rating =
   | 'veryBad'
   | 'bad'

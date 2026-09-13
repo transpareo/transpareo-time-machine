@@ -403,3 +403,27 @@ export function formatShortDate(iso: string, locale: string): string {
   }
   return fmt.format(new Date(iso))
 }
+
+// The same instant with the month spelled out, de-DE:
+// 13. September 2026, en: September 13, 2026. For the few
+// dates a reader may act on rather than scan past: the
+// withdrawal band states one, and 03/08/2026 is two
+// different days depending on where the reader lives.
+const longDateFormatters = new Map<string, Intl.DateTimeFormat>()
+export function formatLongDate(iso: string, locale: string): string {
+  // The withdrawal band reads a field the renderer does
+  // not mint, and a publisher who writes something that is
+  // not a date must not turn the sentence into "withdrew
+  // its passport on Invalid Date". Hand back what the
+  // manifest said instead.
+  if (Number.isNaN(Date.parse(iso))) return iso
+
+  let fmt = longDateFormatters.get(locale)
+  if (!fmt) {
+    fmt = new Intl.DateTimeFormat(locale, {
+      day: 'numeric', month: 'long', year: 'numeric',
+    })
+    longDateFormatters.set(locale, fmt)
+  }
+  return fmt.format(new Date(iso))
+}

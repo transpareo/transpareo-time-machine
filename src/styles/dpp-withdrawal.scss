@@ -1,0 +1,133 @@
+/*
+ * transpareo-time-machine - open-source DPP renderer
+ * Copyright (C) 2026 Transpareo AG
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ *
+ * The withdrawal band: a passport that has been voided or
+ * superseded says so across the top of its own card,
+ * between the brandbar and the hero.
+ *
+ * The palette is the card's two theme colours swapped:
+ * ground mixed from --font-color, text taken from
+ * --background-color. A publisher who themes the card
+ * themes the band with it, in either direction, and the
+ * band cannot collide with the verification red that
+ * means a proof did not check out.
+ */
+
+@use 'dpp';
+
+dpp-withdrawal {
+  display: block;
+}
+
+.withdrawal {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3, 12px);
+
+  /* Horizontal padding matches .card-content so the band's
+   * text sits on the same margin as the passport below it,
+   * with the glyph hanging in the gutter beside it. */
+  padding: var(--space-4, 16px) 25px;
+
+  /* The card's own ink, undiluted, with the card's ground
+   * as the text on it. Nothing else on the page is this
+   * dark, so the band reads as a stamp across the card
+   * rather than as one more tinted notice box. */
+  background: var(--font-color, #222);
+  color: var(--background-color, #fff);
+}
+
+.withdrawal-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-size: 14px;
+
+  /* Tinted from the band's own text colour rather than a
+   * fixed value, so the disc stays a step off the ground
+   * whichever way the theme runs. */
+  background: color-mix(in oklab, currentColor 16%, transparent);
+}
+
+.withdrawal-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.withdrawal-title {
+  margin: 0;
+  @include dpp.regular-semibold;
+  line-height: 1.35;
+}
+
+.withdrawal-body {
+  margin: 0;
+  @include dpp.sm;
+  line-height: 1.45;
+
+  /* A step down from the title without dropping out of
+   * contrast: the band's ground is already at full
+   * strength, so the text only softens to 82%. */
+  color: color-mix(in oklab, currentColor 82%, transparent);
+}
+
+.withdrawal-successor {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2, 8px);
+  margin: var(--space-2, 8px) 0 0;
+
+  /* The row is hidden by attribute when the withdrawal
+   * names no successor, and a `display` of our own beats
+   * the user agent's rule for `[hidden]`. Without this the
+   * void-only band shows an empty label and an empty chip. */
+  &[hidden] {
+    display: none;
+  }
+}
+
+.withdrawal-successor-label {
+  @include dpp.eyebrow;
+  color: color-mix(in oklab, currentColor 70%, transparent);
+}
+
+/* The successor's code, a link when the publisher stated
+ * an address for it and plain text when it did not. One
+ * element either way: an anchor with no href is inert and
+ * unfocusable, which is exactly the bare code. */
+.withdrawal-code {
+  font-family: var(--font-mono);
+  font-size: var(--font-xs, 12px);
+  padding: 2px 8px;
+  border-radius: var(--radius-sm, 6px);
+  background: color-mix(in oklab, currentColor 14%, transparent);
+
+  /* The band sets its own text colour against its own
+   * ground; the theme's link colour was picked for the
+   * card and would not survive the swap. */
+  color: inherit;
+  text-decoration: none;
+
+  /* The code is publisher data of unknown length; let it
+   * break rather than push the band wider than the card. */
+  overflow-wrap: anywhere;
+
+  &[href] {
+    cursor: pointer;
+
+    &:hover,
+    &:focus-visible {
+      background: color-mix(in oklab, currentColor 26%, transparent);
+      text-decoration: underline;
+    }
+  }
+}

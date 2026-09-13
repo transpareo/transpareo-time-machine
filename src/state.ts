@@ -23,6 +23,8 @@ import type {
   DppEvent, DppProduct, DppSnapshot, EventType, LifecycleStatus,
   PropertyValue,
 } from '@/types'
+import { withdrawalOf, type Withdrawal } from '@/withdrawal'
+import { snapshotBody } from '@/artefact-detect'
 import * as host from '@/host'
 import type { VersionState } from '@/archive'
 import { eventTime, type EpcisObjectEvent } from '@/epcis'
@@ -281,6 +283,35 @@ export const activeIssuer = computed(
 export const activePlatform = computed(
   () => activeSnapshot().platform,
 )
+
+// The passport being out of circulation: voided, or
+// superseded, or both. Null while it stands, which is
+// every passport that never reached either state.
+//
+// The manifest answers whenever there is one, and no
+// snapshot is consulted then: an archived version says
+// what it said on the day it was signed, and a withdrawal
+// is a fact about the carrier rather than a correction of
+// the record. So the band does not move as the visitor
+// scrubs the timeline. A DPP served as a lone document has
+// no manifest beside it and states the withdrawal on
+// itself, so that document answers instead.
+export const withdrawal = computed<Withdrawal | null>(() => {
+  const m = manifest()
+  if (m) return withdrawalOf(m)
+  return withdrawalOf(loneDocumentBody())
+})
+
+// The wire bytes of a lone document boot, unwrapped from
+// the credential envelope when it came in one. Read from
+// the raw side rather than the adapted snapshot: these
+// keys are the carrier's, not the product's, and the
+// render model has no business carrying them.
+function loneDocumentBody(): Record<string, unknown> | null {
+  const raw = host.rawSnapshots()[host.currentVersion()]
+  if (!raw) return null
+  return snapshotBody(raw as unknown as Record<string, unknown>)
+}
 
 // Whether the verification chip renders at all. An
 // explicit show-verification-mark attribute wins both

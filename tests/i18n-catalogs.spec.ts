@@ -25,7 +25,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { regionName } from '../src/i18n/display-names';
-import { EVENT_TYPES } from '../src/types';
+import { EVENT_TYPES, VOID_REASONS } from '../src/types';
 import { colorForEventType } from '../src/event-colors';
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -90,6 +90,18 @@ describe('locale catalogs', () => {
       `eventSummary.${type}`,
     ]).filter((key) => !catalog[key]);
     expect(missing, `${file} unlabelled event keys`).toEqual([]);
+  });
+
+  // Same for the reason a passport was voided: the band
+  // reads one sentence per reason, and canonicalVoidReason
+  // folds an unknown token onto `other`, so the four
+  // listed here are every sentence that can be asked for.
+  it.each(files)('%s words every void reason', (file) => {
+    const catalog = load(file);
+    const missing = VOID_REASONS
+      .map((reason) => `withdrawal.voided.${reason}`)
+      .filter((key) => !catalog[key]);
+    expect(missing, `${file} unworded void reasons`).toEqual([]);
   });
 
   // A type with no entry in the colour map draws in the

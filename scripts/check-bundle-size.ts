@@ -42,7 +42,11 @@ interface Budget {
 // deliberate feature earns the bytes, and say so.
 const BUDGETS: ReadonlyArray<Budget> = [
   { file: 'transpareo-time-machine.js', maxGzipBytes: 72 * 1024, dir: 'dist' },
-  { file: 'dpp-verifier.js', maxGzipBytes: 30 * 1024, dir: 'dist' },
+  // 31 KB since the verifier answers a withdrawn passport
+  // with more than a green orb: the withdrawal sentences
+  // ride the bundled English catalog, which every entry
+  // carries whole.
+  { file: 'dpp-verifier.js', maxGzipBytes: 31 * 1024, dir: 'dist' },
   { file: 'embed.js', maxGzipBytes: 72 * 1024, dir: 'dist-embed' },
 ]
 

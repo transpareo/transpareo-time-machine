@@ -86,6 +86,35 @@ export interface DppManifest {
   readonly epcisUrl: string
   readonly signedAt: string
   readonly signature: ManifestSignature
+
+  // Withdrawal state of the carrier, absent while the
+  // passport stands. The snapshots cannot carry it: they
+  // are signed once and frozen, so a passport voided after
+  // its last publish still has `passportStatus: Active`
+  // inside every one of them. The manifest is re-signed on
+  // every change, which makes it the only artefact that
+  // can say what is true today, and the signature covers
+  // these fields like any other.
+  //
+  // `voidedReason` is a token from the project's void
+  // vocabulary rather than a translated phrase; see
+  // `canonicalVoidReason`.
+  readonly voidedAt?: string
+  readonly voidedReason?: string
+
+  // The passport that replaces this one: `code` names it
+  // the way the publisher's URLs do, and `url` is the
+  // successor's public passport page (never its manifest).
+  // The address is optional because manifests published
+  // before it existed carry none and nothing rewrites them
+  // until their passport is republished; the band prints
+  // the code either way and links it when the address is
+  // there and its scheme clears the link guard.
+  readonly supersededBy?: {
+    readonly code: string
+    readonly uuid?: string
+    readonly url?: string
+  }
 }
 
 // schema.org-style Organization block, used wherever

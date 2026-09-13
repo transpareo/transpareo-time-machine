@@ -67,8 +67,13 @@ beforeAll(async () => {
   })
 })
 
-function manifest(): Record<string, unknown> {
+// `extra` merges onto the manifest body, which is how the
+// withdrawal cases below serve a voided or superseded one.
+function manifest(
+  extra: Record<string, unknown> = {},
+): Record<string, unknown> {
   return {
+    ...extra,
     '@type': 'DppManifest',
     code: CODE,
     currentVersion: 1,
@@ -83,10 +88,10 @@ function manifest(): Record<string, unknown> {
 // Serves the manifest, the credential and the two key
 // documents; anything else 404s so a missed route shows up as
 // a failure rather than a silent pass.
-function stubFetch(): void {
+function stubFetch(extra?: Record<string, unknown>): void {
   vi.stubGlobal('fetch', async (input: string | URL): Promise<Response> => {
     const url = typeof input === 'string' ? input : input.toString()
-    if (url.endsWith('/manifest.json')) return json(manifest())
+    if (url.endsWith('/manifest.json')) return json(manifest(extra))
     if (url.endsWith('/v/1.json')) return json(credential)
     const key = /\/keys\/([a-z0-9-]+\.json)$/.exec(url)?.[1]
     if (key) {
@@ -190,6 +195,40 @@ describe('dpp-verifier: attribution under pinned keys', () => {
     stubFetch()
     const widget = await mountWidget(await platformKey())
     expect(authorityLabels(widget)).toEqual(['Acme', 'Transpareo'])
+  })
+})
+
+// A withdrawn passport still verifies: its proofs are
+// intact, and the widget's green orb says so. On its own
+// that reads as "good to use", which is the wrong thing to
+// tell someone checking a passport whose unit is gone.
+describe('dpp-verifier: withdrawn passports', () => {
+  it('says a verified passport was voided, and why', async () => {
+    stubFetch({
+      voidedAt: '2026-09-13T21:42:31Z', voidedReason: 'recalled',
+    })
+    const widget = await mountWidget()
+    const note = widget.shadowRoot?.querySelector('.verifier-withdrawn')
+    expect(widget.shadowRoot?.querySelector('.verifier-card')?.className)
+      .toContain('verdict-authentic')
+    expect(note?.textContent).toContain('This passport has been withdrawn')
+    expect(note?.textContent).toContain('recalled')
+    expect(note?.textContent).toContain('Acme')
+  })
+
+  it('names the successor of a superseded passport', async () => {
+    stubFetch({ supersededBy: { code: 'abc99999' } })
+    const widget = await mountWidget()
+    const note = widget.shadowRoot?.querySelector('.verifier-withdrawn')
+    expect(note?.textContent).toContain('A newer passport replaces this one')
+    expect(note?.querySelector('.verifier-successor')?.textContent)
+      .toBe('abc99999')
+  })
+
+  it('says nothing for a passport that stands', async () => {
+    stubFetch()
+    const widget = await mountWidget()
+    expect(widget.shadowRoot?.querySelector('.verifier-withdrawn')).toBeNull()
   })
 })
 

@@ -230,11 +230,44 @@ Field notes:
 - `issuer` / `platform` - schema.org-style
   attribution blocks; their `did` identities are
   matched against the snapshot proof entries.
+- `voidedAt` / `voidedReason` / `supersededBy`
+  (optional) - the passport is out of circulation.
+  In a versioned publication only the manifest can say
+  so: a snapshot is signed once and frozen, so the one
+  on screen was written while the passport still stood,
+  and the manifest is re-signed on every change. A DPP
+  served as a lone document carries the same three keys
+  on the document itself, and the renderer reads them
+  there when it booted without a manifest. The renderer states it in
+  a band across the top of the card, over every
+  version, since the unit is out of circulation today
+  whichever version is being read. `voidedReason` is a
+  token, not a phrase (`recalled`, `destroyed`,
+  `never_shipped`, `other`); a token this renderer does
+  not know reads as `other`. `supersededBy` names the
+  replacement passport by `code` (plus an optional
+  `uuid`), which the band prints, and optionally by
+  `url`, the successor's public passport page, which
+  the band links the code to. A manifest published
+  before the publisher emitted addresses carries no
+  `url`, and the code then renders as plain text
+  rather than as a guess at where to find it:
+
+  ```json
+  "voidedAt": "2026-09-13T21:42:31Z",
+  "voidedReason": "recalled",
+  "supersededBy": {
+    "code": "demo-2026-t002",
+    "url": "https://example.com/01/09524000059116"
+  }
+  ```
+
 - `signature` - a W3C Data Integrity proof
   (`eddsa-jcs-2022`, platform key) over the manifest
   body. The renderer verifies it and folds the
   outcome into every version verdict, so a tampered
-  version list cannot present itself as verified.
+  version list cannot present itself as verified. It
+  covers the withdrawal fields above like any other.
 
 ## Using it in a host page
 
@@ -936,6 +969,19 @@ public/<id>/
                                                 proof_suite: none, no proof
 ```
 
+No shipped fixture is out of circulation, so the
+withdrawal band takes a local edit to see. Add either
+key to a manifest fixture and re-seed:
+
+```yaml
+voided:
+  at: 2026-09-13T21:42:31Z
+  reason: recalled          # destroyed | never_shipped | other
+superseded_by:
+  code: demo-2026-t002
+  url: https://example.com/01/09524000059116   # optional
+```
+
 The output tree is gitignored, every dev re-runs the
 seed after pulling a fixture change. The YAML sources
 (under `fixtures/`) and the binary branding assets
@@ -1139,6 +1185,7 @@ src/
                               contributor reference.
   components/                 web components (`<dpp-…>` custom elements,
     dpp-brandbar.ts             vanilla TS over reactive/)
+    dpp-withdrawal.ts           band for a passport out of circulation
     dpp-deck.ts
     dpp-hero.ts
     dpp-composition-donut.ts

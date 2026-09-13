@@ -34,6 +34,7 @@ export default defineConfig({
       'tests/timeline-axis.spec.ts',
       'tests/verifier-measure.spec.ts',
       'tests/verifier-theme.spec.ts',
+      'tests/withdrawal-band.spec.ts',
       'node_modules/**',
     ],
     environment: 'node',

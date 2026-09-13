@@ -96,9 +96,13 @@ import { looksLikeHtml, discoverManifestUrl } from '@/manifest-discovery'
 import { parseKeySet } from '@/config'
 import {
   i18n, locale, hostLocaleOf, setHostLocale, detectLocale, UI_LOCALES,
+  formatLongDate,
 } from '@/i18n'
 import { t, type LabelKey } from '@/i18n/labels'
 import type { DppManifest, SignedSnapshot } from '@/archive'
+import {
+  withdrawalOf, withdrawalTitle, withdrawalBody, type Withdrawal,
+} from '@/withdrawal'
 import css from '@/styles/dpp-verifier.scss?inline'
 
 const tr = (key: LabelKey, vars?: Record<string, string | number>): string =>
@@ -522,6 +526,13 @@ function buildResultCard(
     `verifier-card verdict-${verdict.outcome} identity-${identity}`)
 
   wrap.appendChild(buildBanner(verdict, identity, facts))
+
+  // An authentic verdict over a withdrawn passport is
+  // still authentic, and on its own it reads as "this
+  // document is good to use". Say what the manifest says
+  // before the reader acts on the green orb.
+  const withdrawn = withdrawalOf(s.manifest)
+  if (withdrawn) wrap.appendChild(buildWithdrawalNote(withdrawn, facts))
   if (!s.manifest) {
     wrap.appendChild(el('p', 'verifier-note', tr('verifier.singleSnapshot')))
   }
@@ -558,6 +569,36 @@ function bannerText(
     return tr('verifier.verdict.consistentOnly')
   }
   return tr('verifiedByPlatform', { name: facts.platformName })
+}
+
+function buildWithdrawalNote(
+  w: Withdrawal, facts: CardFacts,
+): HTMLElement {
+  const note = el('p', 'verifier-note verifier-withdrawn')
+  note.append(
+    el('strong', undefined, withdrawalTitle(w, i18n.labels)),
+    document.createTextNode(' '),
+    withdrawalBody(w, i18n.labels, {
+      issuer: facts.issuerName ?? '',
+      date: w.voidedAt ? formatLongDate(w.voidedAt, i18n.locale) : '',
+    }),
+  )
+  if (w.successorCode) {
+    const row = el('span', 'verifier-successor-row')
+
+    // An anchor with no href is inert text, so the code
+    // renders the same way whether or not the publisher
+    // stated an address for the successor. The href itself
+    // is assigned through the DOM, never interpolated.
+    const code = el('a', 'verifier-successor', w.successorCode)
+    if (w.successorUrl) (code as HTMLAnchorElement).href = w.successorUrl
+    row.append(
+      el('span', 'verifier-successor-label', tr('withdrawal.successor')),
+      code,
+    )
+    note.appendChild(row)
+  }
+  return note
 }
 
 function buildMeta(facts: CardFacts): HTMLElement {
