@@ -397,10 +397,36 @@ list on the preload so it still does:
   imagesizes="(max-width: 600px) calc(100vw - 50px), 320px">
 ```
 
-The manifest cannot be preloaded the same way: the
-renderer fetches it without credentials, and a preload
-link has no setting for that mode, so the browser would
-fetch it twice rather than reuse the preload.
+The manifest cannot be preloaded. The renderer fetches
+it with `cache: 'no-cache'`, because it is the trust
+anchor for the whole version list and carries the
+withdrawal state; a request that refuses the HTTP cache
+is never served from the preload cache, so a preload
+link downloads the bytes a second time and the browser
+fetches them again anyway. Measured on a real passport
+page, cold and warm: the preload transfers the manifest
+and the renderer's own request still goes to the network
+for it every time. Small bytes (a manifest is around
+half a kilobyte on the wire), but a wasted request on
+the critical path, where it competes with the artefacts
+the first paint is actually waiting for.
+
+What does pay, for a shell that renders per passport and
+therefore knows the addresses:
+
+```html
+<link rel="preconnect" href="https://cdn.example.com" crossorigin>
+<link rel="preload" as="fetch" crossorigin
+      href="https://cdn.example.com/dpp/<code>/v/6.json">
+```
+
+The preconnect opens the connection the boot fetch needs
+before the bundle has parsed. The current version's
+snapshot is fetched with ordinary caching, so that one
+preload is reused (2ms in the same measurement) rather
+than doubled. Hand-written pages should skip the snapshot
+preload: its URL changes with every publish, and a stale
+one preloads bytes the renderer will not ask for.
 
 ### 2. npm + a bundler (Vite, Next, webpack, etc.)
 
