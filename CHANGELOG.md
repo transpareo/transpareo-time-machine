@@ -10,6 +10,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.16.0] - 2026-09-13
+
 ### Changed
 
 - The passport no longer waits for its own history. The
