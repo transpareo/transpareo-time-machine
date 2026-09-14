@@ -27,6 +27,12 @@
  * A voided passport's proofs usually verify perfectly, and
  * a red band beside a green chip would read as a broken
  * document rather than a closed one.
+ *
+ * It carries no glyph. One sat in front of the text and
+ * pushed the whole block out of the card's column, so the
+ * band's sentences lined up with nothing else on the page;
+ * an inverted slab under the logo needs no help being
+ * noticed, and the title says which state this is.
  */
 
 import { LightElement } from '@/reactive/element'
@@ -38,7 +44,6 @@ import {
 } from '@/withdrawal'
 import { i18n, formatLongDate } from '@/i18n'
 import { t } from '@/i18n/labels'
-import { icon } from '@/icons'
 import type { Organization } from '@/archive'
 
 class DppWithdrawal extends LightElement {
@@ -48,34 +53,25 @@ class DppWithdrawal extends LightElement {
 
     const tpl = html`
       <section class="withdrawal" role="status">
-        <span class="withdrawal-mark" aria-hidden="true"></span>
-        <div class="withdrawal-text">
-          <p class="withdrawal-title">
-            ${() => withdrawalTitle(state, i18n.labels)}
-          </p>
-          <p class="withdrawal-body">
-            ${() => withdrawalBody(state, i18n.labels, sentenceVars(state))}
-          </p>
-          <p class="withdrawal-successor"
-             ?hidden=${!state.successorCode}>
-            <span class="withdrawal-successor-label">
-              ${() => t(i18n.labels, 'withdrawal.successor')}
-            </span>
-            <a class="withdrawal-code"
-               href=${state.successorUrl ?? undefined}>${
-              state.successorCode ?? ''
-            }</a>
-          </p>
-        </div>
+        <p class="withdrawal-title">
+          ${() => withdrawalTitle(state, i18n.labels)}
+        </p>
+        <p class="withdrawal-body">
+          ${() => withdrawalBody(state, i18n.labels, sentenceVars(state))}
+        </p>
+        <p class="withdrawal-successor"
+           ?hidden=${!state.successorCode}>
+          <span class="withdrawal-successor-label">
+            ${() => t(i18n.labels, 'withdrawal.successor')}
+          </span>
+          <a class="withdrawal-code"
+             href=${state.successorUrl ?? undefined}>${
+            state.successorCode ?? ''
+          }</a>
+        </p>
       </section>
     `
     tpl.mount(this, this.effect.bind(this))
-
-    // The glyph is an SVG element, which a text slot cannot
-    // carry, so it is appended once after the mount. A void
-    // warns; a supersede points onward.
-    const glyph = state.voidedAt ? 'attention' : 'arrow'
-    this.querySelector('.withdrawal-mark')?.appendChild(icon(glyph))
   }
 }
 

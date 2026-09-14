@@ -10,6 +10,20 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Fixed
+
+- The withdrawal band lines up with the card again. A glyph
+  sat in front of its text and carried the whole block 40px
+  to the right of the column the logo, the picture and the
+  product name all start on, so the band's sentences lined
+  up with nothing else on the page. The glyph is gone: an
+  inverted slab under the logo needs no help being noticed,
+  and the title already says which state the passport is in.
+
+- The band's sentence no longer drops the date onto a line
+  of its own. It is set to a paragraph measure rather than
+  the card's full width.
+
 ## [2.16.0] - 2026-09-13
 
 ### Changed

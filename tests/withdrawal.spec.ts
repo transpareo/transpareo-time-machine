@@ -227,15 +227,14 @@ describe('dpp-withdrawal', () => {
     expect(text(el, '.withdrawal-code')).toBe('demo-2026-t002')
   })
 
-  it('warns on a void and points onward on a supersede', () => {
+  // Nothing sits in front of the text. A glyph did, and it
+  // carried every line in the band out of the column the
+  // rest of the card starts on.
+  it('puts nothing before the text', () => {
     seed({ voidedAt: '2026-09-13T21:42:31Z', voidedReason: 'other' })
-    expect(mount().querySelector('.withdrawal-mark svg')?.getAttribute('class'))
-      .toContain('icon-attention')
-
-    document.body.replaceChildren()
-    seed({ supersededBy: { code: 'demo-2026-t002' } })
-    expect(mount().querySelector('.withdrawal-mark svg')?.getAttribute('class'))
-      .toContain('icon-arrow')
+    const el = mount()
+    expect(el.querySelector('.withdrawal-mark')).toBeNull()
+    expect(el.querySelector('.withdrawal svg')).toBeNull()
   })
 
   // The publisher may state where the successor can be

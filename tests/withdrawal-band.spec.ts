@@ -13,12 +13,15 @@
  * only place the lone-document boot is exercised through
  * the renderer's own fetch.
  *
- * It exists for a defect those unit tests could not see:
- * the successor row is hidden by attribute, and the row's
+ * It exists for defects those unit tests could not see.
+ * The successor row is hidden by attribute, and the row's
  * own `display` beat the user agent's rule for `[hidden]`,
  * so a void with no successor showed an empty label and an
- * empty chip. The property said hidden, the pixels said
- * otherwise.
+ * empty chip: the property said hidden, the pixels said
+ * otherwise. And a glyph in front of the text carried every
+ * line in the band out of the column the rest of the card
+ * starts on, which is why the left edges are measured here
+ * against the card's own content rather than described.
  *
  * Rewriting the manifest breaks its signature, and the
  * band renders anyway. That is deliberate: a passport out
@@ -49,13 +52,19 @@ function band(page: Page) {
     if (!el) return null
     const row = el.querySelector('.withdrawal-successor') as HTMLElement
     const code = el.querySelector('.withdrawal-code') as HTMLAnchorElement
+    const title = el.querySelector('.withdrawal-title') as HTMLElement
+    const hero = root!.querySelector('.dpp-hero-image') as HTMLElement
     return {
       title: el.querySelector('.withdrawal-title')?.textContent?.trim(),
       body: el.querySelector('.withdrawal-body')?.textContent?.trim(),
       rowDisplay: getComputedStyle(row).display,
       code: code.textContent?.trim(),
       href: code.getAttribute('href'),
-      glyph: el.querySelector('.withdrawal-mark svg')?.getAttribute('class')
+
+      // Where the band's text starts, against where the
+      // card's own content starts. They must be the same.
+      textLeft: Math.round(title.getBoundingClientRect().left),
+      contentLeft: Math.round(hero.getBoundingClientRect().left)
     }
   })
 }
@@ -78,7 +87,10 @@ test('a void with no successor shows no successor row', async ({ page }) => {
   const b = await band(page)
   expect(b!.title).toBe('This passport has been withdrawn')
   expect(b!.body).toContain('taken out of circulation')
-  expect(b!.glyph).toContain('icon-attention')
+
+  // Every line in the band starts on the column the logo,
+  // the picture and the product name start on.
+  expect(b!.textLeft).toBe(b!.contentLeft)
 
   // The row is in the DOM and must take no space.
   expect(b!.rowDisplay).toBe('none')
@@ -98,7 +110,7 @@ test('a supersede shows the successor and links it', async ({ page }) => {
   expect(b!.rowDisplay).toBe('flex')
   expect(b!.code).toBe('demo-2026-t002')
   expect(b!.href).toBe('https://demo.example/01/04012345678902')
-  expect(b!.glyph).toContain('icon-arrow')
+  expect(b!.textLeft).toBe(b!.contentLeft)
 })
 
 test('a successor with no address is text, not a link', async ({ page }) => {

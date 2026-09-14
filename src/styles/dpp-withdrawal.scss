@@ -23,12 +23,14 @@ dpp-withdrawal {
 
 .withdrawal {
   display: flex;
-  align-items: flex-start;
-  gap: var(--space-3, 12px);
+  flex-direction: column;
+  gap: 2px;
 
-  /* Horizontal padding matches .card-content so the band's
-   * text sits on the same margin as the passport below it,
-   * with the glyph hanging in the gutter beside it. */
+  /* The same horizontal padding as .card-content, and
+   * nothing in front of the text, so every line in the band
+   * starts on the column the logo, the picture and the
+   * product name all start on. A glyph used to sit here and
+   * carried the whole block 40px to the right of it. */
   padding: var(--space-4, 16px) 25px;
 
   /* The card's own ink, undiluted, with the card's ground
@@ -37,29 +39,6 @@ dpp-withdrawal {
    * rather than as one more tinted notice box. */
   background: var(--font-color, #222);
   color: var(--background-color, #fff);
-}
-
-.withdrawal-mark {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  font-size: 14px;
-
-  /* Tinted from the band's own text colour rather than a
-   * fixed value, so the disc stays a step off the ground
-   * whichever way the theme runs. */
-  background: color-mix(in oklab, currentColor 16%, transparent);
-}
-
-.withdrawal-text {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
 }
 
 .withdrawal-title {
@@ -72,6 +51,14 @@ dpp-withdrawal {
   margin: 0;
   @include dpp.sm;
   line-height: 1.45;
+
+  /* A measure short of the card's full width, so the
+   * sentence breaks where a paragraph would rather than
+   * running the whole way and dropping two words onto a
+   * line of their own. `text-wrap: pretty` takes care of
+   * the orphan where the browser supports it. */
+  max-width: 62ch;
+  text-wrap: pretty;
 
   /* A step down from the title without dropping out of
    * contrast: the band's ground is already at full
