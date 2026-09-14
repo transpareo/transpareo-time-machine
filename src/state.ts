@@ -35,6 +35,12 @@ import type { ProofEntryResult } from '@/crypto/verify'
 // fetched alongside the current snapshot).
 export const manifest = host.manifest
 export const epcisDocument = host.epcisDocument
+
+// True while the events feed is in flight. The boot does
+// not wait for it (see host.ts), so the timeline holds its
+// strip's space on this rather than appearing later and
+// pushing the card down.
+export const eventsPending = host.eventsPending
 export const versionStates =
   signal<Record<number, VersionState>>({})
 

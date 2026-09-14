@@ -22,7 +22,7 @@ import { el } from '@/reactive/dom'
 import { REVEAL_TOTAL_MS, prefersReducedMotion } from '@/motion'
 import {
   sortedEvents, focusedEventId, hoveredEventId, timelineState,
-  displayedEvent,
+  displayedEvent, eventsPending,
 } from '@/state'
 import { eventModalEventId } from '../dpp-event-modal'
 import {
@@ -153,10 +153,18 @@ class DppTimeline extends LightElement {
     // Single-snapshot mode (and any DPP with no event feed)
     // has nothing to scrub, so hide the whole timeline,
     // including the "show history" toggle, when there are no
-    // events. Reactive because the EPCIS feed loads after
-    // mount in manifest mode.
+    // events.
+    //
+    // A feed still in flight counts as events. The boot does
+    // not wait for it, and a strip that appeared once it
+    // landed would push the card down a second into the
+    // visit; holding the space from the first paint costs
+    // the collapsed strip's height on a passport whose feed
+    // turns out to be empty, which a published passport
+    // never is.
     this.effect(() => {
-      this.style.display = sortedEvents().length ? '' : 'none'
+      const expected = sortedEvents().length > 0 || eventsPending()
+      this.style.display = expected ? '' : 'none'
     })
 
     // Reflect the hovered event onto its connector path

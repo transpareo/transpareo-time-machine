@@ -102,10 +102,19 @@ function verifyManifest(): Promise<ArtefactSignatureState> {
 // document body, so the document signature already covers
 // them. Idempotent: the first call kicks the verify off and
 // later calls are no-ops.
+//
+// The boot no longer waits for the feed, so this can be
+// called before it lands. A verdict must not be latched
+// then: judging an absent document as 'absent' and
+// memoising it would leave a feed that arrives a moment
+// later reading as unsigned for the rest of the visit.
+// While a feed is still coming, the state stays 'pending'
+// and bootstrap.ts calls this again on arrival.
 let eventsVerifyPromise: Promise<ProofEntryResult | null> | null = null
 export function ensureEventsVerified(): void {
   if (eventsVerifyPromise) return
   const doc = host.epcisDocument.peek()
+  if (!doc && host.eventsPending.peek()) return
   eventsVerifyPromise = (
     doc
       ? verifyManifestSignature(

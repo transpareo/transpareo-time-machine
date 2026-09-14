@@ -12,9 +12,11 @@
  */
 import { effect } from '@/reactive/signals'
 import {
-  focusedEventId, activeVersionNumber, timelineState,
+  focusedEventId, activeVersionNumber, timelineState, epcisDocument,
 } from '@/state'
-import { ensureVersionLoaded, navByEventId } from '@/actions'
+import {
+  ensureVersionLoaded, navByEventId, ensureEventsVerified,
+} from '@/actions'
 import { manifest } from '@/host'
 
 // Number of versions on either side of the active
@@ -55,6 +57,14 @@ export function bootstrapVerify(): void {
     if (!n) return
     ensureVersionLoaded(n)
     if (timelineState() !== 'hidden') prefetchAround(n)
+  })
+
+  // The events feed is fetched beside the first paint
+  // rather than before it, so its signature is judged when
+  // the document lands. Mounting is no longer the moment
+  // it is there.
+  effect(() => {
+    if (epcisDocument()) ensureEventsVerified()
   })
 }
 

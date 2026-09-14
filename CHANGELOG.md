@@ -10,6 +10,33 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Changed
+
+- The passport no longer waits for its own history. The
+  events feed is fetched beside the current snapshot
+  rather than before the first paint: it feeds the
+  timeline, which sits below the card and opens closed, so
+  the card a visitor scanned the code for was held behind
+  bytes nothing on screen was asking for. On a cold load of
+  a real passport page that request was most of a second.
+
+  The timeline holds its collapsed strip's space from the
+  first paint, so the card does not move when the feed
+  lands. The one visit that still waits is a link into a
+  single event: that is a request for the timeline itself,
+  and rendering the current version first would jump to the
+  linked one as the events resolved.
+
+  A feed that will not load now costs the history rather
+  than the passport. It used to fail the whole boot, which
+  answered a broken events file with a page the visitor
+  could not read at all.
+
+  The feed's signature is judged when the document lands
+  rather than at mount, since mounting is no longer the
+  moment it is there. Until then the events badge reads as
+  checking, not as unsigned.
+
 ### Added
 
 - A passport that is out of circulation says so on its

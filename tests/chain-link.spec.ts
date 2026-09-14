@@ -19,6 +19,7 @@ vi.mock('@/host', () => ({
   rawSnapshots: { peek: vi.fn(() => ({})) },
   snapshots: { peek: vi.fn(() => ({})) },
   epcisDocument: { peek: vi.fn(() => null) },
+  eventsPending: { peek: vi.fn(() => false) },
   fetchSnapshot: vi.fn(async () => undefined),
 }));
 

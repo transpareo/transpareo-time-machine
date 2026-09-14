@@ -30,6 +30,7 @@ export default defineConfig({
     /(logo-link|timeline-axis|verifier-measure)\.spec\.ts/,
     /(first-paint-locale|boot-shell-passthrough)\.spec\.ts/,
     /withdrawal-band\.spec\.ts/,
+    /events-off-critical-path\.spec\.ts/,
     /gallery-turn\.spec\.ts/
   ],
   fullyParallel: false,

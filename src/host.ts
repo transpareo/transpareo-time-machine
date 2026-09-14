@@ -63,6 +63,12 @@ export const loadError = signal<string | null>(null)
 
 export const manifest = signal<DppManifest | null>(null)
 
+// True while the events feed is in flight. The boot does
+// not wait for it, so the timeline reads this to hold its
+// strip's space from the first paint rather than appearing
+// under the card later and pushing it down.
+export const eventsPending = signal(false)
+
 // Active "current" version number. In manifest mode it
 // mirrors `manifest.currentVersion`; in single-snapshot
 // mode (no manifest) it is the lone snapshot's `version`,
@@ -117,6 +123,7 @@ export async function bootFrom(src: string): Promise<void> {
   snapshots.set({})
   rawSnapshots.set({})
   epcisDocument.set(null)
+  eventsPending.set(false)
 
   // Normalize to an absolute URL so URL resolution
   // against the manifest's sibling URLs works whether
@@ -160,18 +167,63 @@ async function bootFromManifest(
     throw new Error('manifest is missing epcisUrl')
   }
 
-  // The events sidecar is one mutable document under a
-  // stable URL, like the manifest: it grows with every
-  // event the publisher records, so it is revalidated
-  // rather than replayed from the HTTP cache.
-  const [current, epcis] = await Promise.all([
-    fetchJson<SignedSnapshot>(currentVersionUrl),
-    fetchJson<EpcisDocument>(epcisUrl, 'no-cache'),
-  ])
+  // Both requests start here; only the snapshot is waited
+  // on. The feed is what the timeline reads, and the
+  // timeline is below the card and closed when the page
+  // opens, so waiting for it held the whole first paint
+  // behind bytes the visitor has asked nothing of yet. On
+  // the live demo that was most of a second.
+  const feed = fetchEventsFeed(epcisUrl, epoch)
+  const current = await fetchJson<SignedSnapshot>(currentVersionUrl)
   if (epoch !== bootEpoch) return
-
   storeSnapshot(current, currentVersionUrl)
-  epcisDocument.set(epcis)
+
+  // A link into one event is a request for the timeline
+  // itself. Mounting before the feed lands would render the
+  // current version and then jump to the linked one as the
+  // events resolve, so those visits keep waiting.
+  if (deepLinkedToEvent()) await feed
+}
+
+// The events feed, fetched beside the snapshot and stored
+// when it lands. It is one mutable document under a stable
+// URL, like the manifest: it grows with every event the
+// publisher records, so it is revalidated rather than
+// replayed from the HTTP cache.
+//
+// A feed that will not load costs the timeline, not the
+// passport. The card renders from the snapshot, which is
+// what the visitor scanned the code for; failing the whole
+// boot over the history would be the renderer deciding
+// that a passport nobody can read is better than one
+// without its events.
+function fetchEventsFeed(url: string, epoch: number): Promise<void> {
+  eventsPending.set(true)
+  return fetchJson<EpcisDocument>(url, 'no-cache')
+    .then((doc) => {
+      if (epoch === bootEpoch) epcisDocument.set(doc)
+    })
+    .catch((err: unknown) => {
+      const message = err instanceof Error ? err.message : String(err)
+      console.warn('[host] events feed did not load:', message)
+    })
+    .finally(() => {
+      if (epoch === bootEpoch) eventsPending.set(false)
+    })
+}
+
+// Whether the URL names an event. The hash is the SPA's
+// own deep link into the timeline (see bootstrap.ts), and
+// it is read here rather than passed in because the boot
+// already resolves `src` against window.location.
+function deepLinkedToEvent(): boolean {
+  if (typeof window === 'undefined') return false
+
+  // Read through, rather than off, `location`: a boot can
+  // run under a window double that carries only what the
+  // fetch flow needs.
+  const hash = window.location?.hash ?? ''
+  return hash.length > 1
 }
 
 // Single-snapshot mode: render one frozen version. No

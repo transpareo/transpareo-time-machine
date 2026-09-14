@@ -9,6 +9,13 @@
  * fetch) detects the epoch change and drops its result
  * instead of writing the previous DPP's data into the
  * fresh caches.
+ *
+ * And what the boot waits for. The events feed is fetched
+ * beside the snapshot and not awaited: it feeds the
+ * timeline, which is below the card and closed when the
+ * page opens. A link into one event is the exception, and
+ * a feed that never loads costs the history rather than
+ * the passport.
  */
 
 import { describe, it, expect, vi, afterEach } from 'vitest';
@@ -69,6 +76,82 @@ async function freshHost(): Promise<HostModule> {
 
 afterEach(() => {
   vi.unstubAllGlobals();
+});
+
+describe('bootFrom and the events feed', () => {
+  it('is ready before the feed lands', async () => {
+    const host = await freshHost();
+    const feed = deferred<unknown>();
+    stubFetch({
+      '/a/manifest.json': manifestOf('dpp-a', '/a'),
+      '/a/v/1.json': snapshotOf('alias-a'),
+      '/a/epcis.json': feed.promise,
+    });
+
+    await host.bootFrom('https://cdn.test/a/manifest.json');
+
+    // The card can render: the snapshot is in and the feed
+    // is still in flight.
+    expect(host.loadState.peek()).toBe('ready');
+    expect(host.epcisDocument.peek()).toBeNull();
+    expect(host.eventsPending.peek()).toBe(true);
+
+    feed.resolve(EPCIS);
+    await vi.waitFor(() => {
+      expect(host.epcisDocument.peek()).not.toBeNull();
+    });
+    expect(host.eventsPending.peek()).toBe(false);
+  });
+
+  it('renders the passport when the feed will not load', async () => {
+    const host = await freshHost();
+    stubFetch({
+      '/a/manifest.json': manifestOf('dpp-a', '/a'),
+      '/a/v/1.json': snapshotOf('alias-a'),
+      // No route for the feed: it 404s.
+    });
+
+    await host.bootFrom('https://cdn.test/a/manifest.json');
+
+    expect(host.loadState.peek()).toBe('ready');
+    expect(host.snapshots.peek()[1].code).toBe('alias-a');
+    await vi.waitFor(() => {
+      expect(host.eventsPending.peek()).toBe(false);
+    });
+    expect(host.epcisDocument.peek()).toBeNull();
+  });
+
+  // A shared link into one event asks for the timeline
+  // itself. Mounting before the feed lands would render the
+  // current version and then jump to the linked one.
+  it('waits for the feed when the URL names an event', async () => {
+    vi.resetModules();
+    vi.stubGlobal('window', {
+      location: { href: 'https://page.test/#evt-7', hash: '#evt-7' },
+    });
+    const host: HostModule = await import('../src/host');
+    const feed = deferred<unknown>();
+    stubFetch({
+      '/a/manifest.json': manifestOf('dpp-a', '/a'),
+      '/a/v/1.json': snapshotOf('alias-a'),
+      '/a/epcis.json': feed.promise,
+    });
+
+    let settled = false;
+    const boot = host.bootFrom('https://cdn.test/a/manifest.json')
+      .then(() => { settled = true; });
+
+    await vi.waitFor(() => {
+      expect(host.snapshots.peek()[1]).toBeDefined();
+    });
+    expect(settled).toBe(false);
+    expect(host.loadState.peek()).toBe('loading');
+
+    feed.resolve(EPCIS);
+    await boot;
+    expect(host.loadState.peek()).toBe('ready');
+    expect(host.epcisDocument.peek()).not.toBeNull();
+  });
 });
 
 describe('bootFrom', () => {

@@ -24,6 +24,7 @@ export default defineConfig({
       'tests/boot-shell-passthrough.spec.ts',
       'tests/card-render.spec.ts',
       'tests/embed-smoke.spec.ts',
+      'tests/events-off-critical-path.spec.ts',
       'tests/first-paint-locale.spec.ts',
       'tests/gallery-turn.spec.ts',
       'tests/icons.spec.ts',
