@@ -137,6 +137,9 @@
   "verifier.placeholder": "https://example.com/dpp/abc-123",
   "verifier.verify": "Перевірити",
   "verifier.verifying": "Перевірка…",
+  "verifier.httpStatus": "Адреса відповіла кодом HTTP {status}.",
+  "verifier.notJson": "Ця адреса не повернула паспорт.",
+  "verifier.unreadable": "Цю сторінку не можна перевірити звідси.",
   "verifier.couldNotVerify": "Не вдалося перевірити: {message}",
   "verifier.noSignedData": "Ця сторінка не надає підписаних даних для перевірки.",
   "verifier.notSignedArtefact": "Отриманий JSON не є ні маніфестом DPP, ні підписаним знімком.",
@@ -166,7 +169,6 @@
   "auth.signIn": "Увійти",
   "boot.retired": "Цей продукт виведено з обігу.",
   "boot.retiredDetail": "Цифровий паспорт продукту для цього товару більше не публікується.",
-  "boot.loadError": "Не вдалося завантажити паспорт: {message}",
   "boot.loadErrorGeneric": "Не вдалося завантажити паспорт.",
   "lightbox.title": "Переглядач зображень продукту"
 }

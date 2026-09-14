@@ -138,6 +138,9 @@
   "verifier.placeholder": "https://example.com/dpp/abc-123",
   "verifier.verify": "Verify",
   "verifier.verifying": "Verifying…",
+  "verifier.httpStatus": "The address answered with HTTP {status}.",
+  "verifier.notJson": "That address did not return a passport.",
+  "verifier.unreadable": "This page cannot be checked from here.",
   "verifier.couldNotVerify": "Could not verify: {message}",
   "verifier.noSignedData": "This page exposes no signed data to verify.",
   "verifier.notSignedArtefact": "The fetched JSON is neither a DPP manifest nor a signed snapshot.",
@@ -167,6 +170,5 @@
   "auth.signIn": "Sign in",
   "boot.retired": "This product has been retired.",
   "boot.retiredDetail": "The digital product passport for this item is no longer published.",
-  "boot.loadError": "Could not load passport: {message}",
   "boot.loadErrorGeneric": "Could not load passport."
 }

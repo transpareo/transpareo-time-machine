@@ -137,6 +137,9 @@
   "verifier.placeholder": "https://example.com/dpp/abc-123",
   "verifier.verify": "Επαλήθευση",
   "verifier.verifying": "Επαλήθευση…",
+  "verifier.httpStatus": "Η διεύθυνση απάντησε με HTTP {status}.",
+  "verifier.notJson": "Αυτή η διεύθυνση δεν επέστρεψε διαβατήριο.",
+  "verifier.unreadable": "Αυτή η σελίδα δεν μπορεί να ελεγχθεί από εδώ.",
   "verifier.couldNotVerify": "Αδυναμία επαλήθευσης: {message}",
   "verifier.noSignedData": "Αυτή η σελίδα δεν εκθέτει υπογεγραμμένα δεδομένα προς επαλήθευση.",
   "verifier.notSignedArtefact": "Το JSON που λήφθηκε δεν είναι ούτε μανιφέστο DPP ούτε υπογεγραμμένο στιγμιότυπο.",
@@ -166,7 +169,6 @@
   "auth.signIn": "Σύνδεση",
   "boot.retired": "Αυτό το προϊόν έχει αποσυρθεί.",
   "boot.retiredDetail": "Το ψηφιακό διαβατήριο προϊόντος για αυτό το είδος δεν δημοσιεύεται πλέον.",
-  "boot.loadError": "Δεν ήταν δυνατή η φόρτωση του διαβατηρίου: {message}",
   "boot.loadErrorGeneric": "Δεν ήταν δυνατή η φόρτωση του διαβατηρίου.",
   "lightbox.title": "Προβολέας εικόνων προϊόντος"
 }

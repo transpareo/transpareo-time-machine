@@ -137,6 +137,9 @@
   "verifier.placeholder": "https://example.com/dpp/abc-123",
   "verifier.verify": "Проверка",
   "verifier.verifying": "Проверка…",
+  "verifier.httpStatus": "Адресът отговори с HTTP {status}.",
+  "verifier.notJson": "Този адрес не върна паспорт.",
+  "verifier.unreadable": "Тази страница не може да бъде проверена оттук.",
   "verifier.couldNotVerify": "Неуспешна проверка: {message}",
   "verifier.noSignedData": "Тази страница не предоставя подписани данни за проверка.",
   "verifier.notSignedArtefact": "Полученият JSON не е нито DPP манифест, нито подписан снапшот.",
@@ -166,7 +169,6 @@
   "auth.signIn": "Вход",
   "boot.retired": "Този продукт е изтеглен от употреба.",
   "boot.retiredDetail": "Цифровият продуктов паспорт за този артикул вече не се публикува.",
-  "boot.loadError": "Паспортът не можа да бъде зареден: {message}",
   "boot.loadErrorGeneric": "Паспортът не можа да бъде зареден.",
   "lightbox.title": "Визуализатор на изображения на продукта"
 }

@@ -137,6 +137,9 @@
   "verifier.placeholder": "https://example.com/dpp/abc-123",
   "verifier.verify": "Pārbaudīt",
   "verifier.verifying": "Pārbauda…",
+  "verifier.httpStatus": "Adrese atbildēja ar HTTP {status}.",
+  "verifier.notJson": "Šī adrese neatgrieza pasi.",
+  "verifier.unreadable": "Šo lapu no šejienes nevar pārbaudīt.",
   "verifier.couldNotVerify": "Neizdevās pārbaudīt: {message}",
   "verifier.noSignedData": "Šī lapa nesniedz parakstītus datus pārbaudei.",
   "verifier.notSignedArtefact": "Iegūtais JSON nav ne DPP manifests, ne parakstīts momentuzņēmums.",
@@ -166,7 +169,6 @@
   "auth.signIn": "Pieteikties",
   "boot.retired": "Šis produkts ir izņemts no aprites.",
   "boot.retiredDetail": "Šī izstrādājuma digitālā produkta pase vairs netiek publicēta.",
-  "boot.loadError": "Neizdevās ielādēt pasi: {message}",
   "boot.loadErrorGeneric": "Neizdevās ielādēt pasi.",
   "lightbox.title": "Produkta attēlu skatītājs"
 }

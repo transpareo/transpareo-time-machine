@@ -137,6 +137,9 @@
   "verifier.placeholder": "https://example.com/dpp/abc-123",
   "verifier.verify": "Verificér",
   "verifier.verifying": "Verificerer…",
+  "verifier.httpStatus": "Adressen svarede med HTTP {status}.",
+  "verifier.notJson": "Adressen returnerede ikke et pas.",
+  "verifier.unreadable": "Denne side kan ikke kontrolleres herfra.",
   "verifier.couldNotVerify": "Kunne ikke verificere: {message}",
   "verifier.noSignedData": "Denne side udstiller ingen signerede data til verifikation.",
   "verifier.notSignedArtefact": "Den hentede JSON er hverken et DPP-manifest eller et signeret snapshot.",
@@ -166,7 +169,6 @@
   "auth.signIn": "Log ind",
   "boot.retired": "Dette produkt er udgået.",
   "boot.retiredDetail": "Det digitale produktpas for denne vare offentliggøres ikke længere.",
-  "boot.loadError": "Kunne ikke indlæse pas: {message}",
   "boot.loadErrorGeneric": "Kunne ikke indlæse pas.",
   "lightbox.title": "Fremviser til produktbilleder"
 }

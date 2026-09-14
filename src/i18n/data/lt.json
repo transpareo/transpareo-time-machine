@@ -137,6 +137,9 @@
   "verifier.placeholder": "https://example.com/dpp/abc-123",
   "verifier.verify": "Patikrinti",
   "verifier.verifying": "Tikrinama…",
+  "verifier.httpStatus": "Adresas atsakė HTTP {status}.",
+  "verifier.notJson": "Šis adresas negrąžino paso.",
+  "verifier.unreadable": "Šio puslapio iš čia patikrinti negalima.",
   "verifier.couldNotVerify": "Nepavyko patikrinti: {message}",
   "verifier.noSignedData": "Šis puslapis nepateikia pasirašytų duomenų patikrai.",
   "verifier.notSignedArtefact": "Gautas JSON nėra nei DPP manifestas, nei pasirašyta momentinė kopija.",
@@ -166,7 +169,6 @@
   "auth.signIn": "Prisijungti",
   "boot.retired": "Šis produktas nebenaudojamas.",
   "boot.retiredDetail": "Šio gaminio skaitmeninis produkto pasas nebeskelbiamas.",
-  "boot.loadError": "Nepavyko įkelti paso: {message}",
   "boot.loadErrorGeneric": "Nepavyko įkelti paso.",
   "lightbox.title": "Produkto vaizdų peržiūros priemonė"
 }

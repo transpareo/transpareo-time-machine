@@ -138,6 +138,9 @@
   "verifier.placeholder": "https://example.com/dpp/abc-123",
   "verifier.verify": "Staðfesta",
   "verifier.verifying": "Staðfesting…",
+  "verifier.httpStatus": "Slóðin svaraði með HTTP {status}.",
+  "verifier.notJson": "Þessi slóð skilaði ekki vegabréfi.",
+  "verifier.unreadable": "Ekki er hægt að athuga þessa síðu héðan.",
   "verifier.couldNotVerify": "Ekki var hægt að staðfesta: {message}",
   "verifier.noSignedData": "Þessi síða birtir engin undirrituð gögn til staðfestingar.",
   "verifier.notSignedArtefact": "Sótt JSON er hvorki DPP-yfirlitsskrá né undirrituð skyndimynd.",
@@ -167,6 +170,5 @@
   "auth.signIn": "Innganga",
   "boot.retired": "Þessi vara hefur verið tekin úr sölu.",
   "boot.retiredDetail": "Rafræna vörupassi fyrir þennan hlut er ekki lengur birtur.",
-  "boot.loadError": "Ekki hægt að hlaða vegabréfi: {message}",
   "boot.loadErrorGeneric": "Ekki hægt að hlaða vegabréfi."
 }

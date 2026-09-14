@@ -137,6 +137,9 @@
   "verifier.placeholder": "https://example.com/dpp/abc-123",
   "verifier.verify": "検証",
   "verifier.verifying": "検証中…",
+  "verifier.httpStatus": "このアドレスは HTTP {status} を返しました。",
+  "verifier.notJson": "このアドレスからはパスポートが返されませんでした。",
+  "verifier.unreadable": "このページはここからは確認できません。",
   "verifier.couldNotVerify": "検証できませんでした: {message}",
   "verifier.noSignedData": "このページには検証できる署名済みデータがありません。",
   "verifier.notSignedArtefact": "取得したJSONはDPPマニフェストでも署名済みスナップショットでもありません。",
@@ -166,7 +169,6 @@
   "auth.signIn": "サインイン",
   "boot.retired": "この製品は提供を終了しました。",
   "boot.retiredDetail": "このアイテムのデジタル製品パスポートは公開されていません。",
-  "boot.loadError": "パスポートを読み込めませんでした: {message}",
   "boot.loadErrorGeneric": "パスポートを読み込めませんでした。",
   "lightbox.title": "製品画像ビューア"
 }

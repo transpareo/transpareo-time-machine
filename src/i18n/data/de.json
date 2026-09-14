@@ -138,6 +138,9 @@
   "verifier.placeholder": "https://example.com/dpp/abc-123",
   "verifier.verify": "Prüfen",
   "verifier.verifying": "Wird geprüft…",
+  "verifier.httpStatus": "Die Adresse antwortete mit HTTP {status}.",
+  "verifier.notJson": "Diese Adresse hat keinen Produktpass zurückgegeben.",
+  "verifier.unreadable": "Diese Seite kann von hier aus nicht geprüft werden.",
   "verifier.couldNotVerify": "Prüfung fehlgeschlagen: {message}",
   "verifier.noSignedData": "Diese Seite stellt keine signierten Daten zur Prüfung bereit.",
   "verifier.notSignedArtefact": "Das geladene JSON ist weder ein DPP-Manifest noch ein signierter Snapshot.",
@@ -167,6 +170,5 @@
   "auth.signIn": "Anmelden",
   "boot.retired": "Dieses Produkt wurde eingestellt.",
   "boot.retiredDetail": "Der digitale Produktpass für diesen Artikel wird nicht mehr veröffentlicht.",
-  "boot.loadError": "Produktpass konnte nicht geladen werden: {message}",
   "boot.loadErrorGeneric": "Produktpass konnte nicht geladen werden."
 }

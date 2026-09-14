@@ -138,6 +138,9 @@
   "verifier.placeholder": "https://example.com/dpp/abc-123",
   "verifier.verify": "Provjeri",
   "verifier.verifying": "Provjera…",
+  "verifier.httpStatus": "Adresa je odgovorila s HTTP {status}.",
+  "verifier.notJson": "Ova adresa nije vratila pasoš.",
+  "verifier.unreadable": "Ova stranica se ne može provjeriti odavde.",
   "verifier.couldNotVerify": "Nije moguće provjeriti: {message}",
   "verifier.noSignedData": "Ova stranica ne izlaže potpisane podatke za provjeru.",
   "verifier.notSignedArtefact": "Preuzeti JSON nije ni DPP manifest ni potpisani snimak.",
@@ -167,6 +170,5 @@
   "auth.signIn": "Prijavite se",
   "boot.retired": "Ovaj proizvod je povučen iz proizvodnje.",
   "boot.retiredDetail": "Digitalni pasoš proizvoda za ovaj artikl više nije objavljen.",
-  "boot.loadError": "Nije moguće učitati pasoš: {message}",
   "boot.loadErrorGeneric": "Nije moguće učitati pasoš."
 }

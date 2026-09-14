@@ -137,6 +137,9 @@
   "verifier.placeholder": "https://example.com/dpp/abc-123",
   "verifier.verify": "Vahvista",
   "verifier.verifying": "Vahvistetaan…",
+  "verifier.httpStatus": "Osoite vastasi koodilla HTTP {status}.",
+  "verifier.notJson": "Osoite ei palauttanut passia.",
+  "verifier.unreadable": "Tätä sivua ei voi tarkistaa täältä.",
   "verifier.couldNotVerify": "Vahvistus epäonnistui: {message}",
   "verifier.noSignedData": "Tämä sivu ei tarjoa allekirjoitettuja tietoja vahvistettavaksi.",
   "verifier.notSignedArtefact": "Haettu JSON ei ole DPP-manifesti eikä allekirjoitettu tilannekuva.",
@@ -166,7 +169,6 @@
   "auth.signIn": "Kirjaudu sisään",
   "boot.retired": "Tämä tuote on poistettu käytöstä.",
   "boot.retiredDetail": "Tämän tuotteen digitaalista tuotepassia ei enää julkaista.",
-  "boot.loadError": "Passia ei voitu ladata: {message}",
   "boot.loadErrorGeneric": "Passia ei voitu ladata.",
   "lightbox.title": "Tuotekuvien katselin"
 }

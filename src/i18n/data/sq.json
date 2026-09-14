@@ -138,6 +138,9 @@
   "verifier.placeholder": "https://example.com/dpp/abc-123",
   "verifier.verify": "Verifiko",
   "verifier.verifying": "Po verifikon…",
+  "verifier.httpStatus": "Adresa u përgjigj me HTTP {status}.",
+  "verifier.notJson": "Kjo adresë nuk ktheu një pasaportë.",
+  "verifier.unreadable": "Kjo faqe nuk mund të kontrollohet nga këtu.",
   "verifier.couldNotVerify": "Nuk mund të verifikohet: {message}",
   "verifier.noSignedData": "Kjo faqe nuk ekspozon të dhëna të nënshkruara për verifikim.",
   "verifier.notSignedArtefact": "JSON-i i marrë nuk është as manifest DPP, as pamje e nënshkruar.",
@@ -167,6 +170,5 @@
   "auth.signIn": "Hyni",
   "boot.retired": "Ky produkt është tërhequr nga qarkullimi.",
   "boot.retiredDetail": "Pasaporta dixhitale e produktit për këtë artikull nuk publikohet më.",
-  "boot.loadError": "Nuk mund të ngarkojë pasaportën: {message}",
   "boot.loadErrorGeneric": "Nuk mund të ngarkojë pasaportën."
 }

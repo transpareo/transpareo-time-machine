@@ -137,6 +137,9 @@
   "verifier.placeholder": "https://example.com/dpp/abc-123",
   "verifier.verify": "सत्यापित करें",
   "verifier.verifying": "सत्यापित किया जा रहा है…",
+  "verifier.httpStatus": "पते ने HTTP {status} के साथ उत्तर दिया।",
+  "verifier.notJson": "उस पते से कोई पासपोर्ट नहीं मिला।",
+  "verifier.unreadable": "इस पेज की जाँच यहाँ से नहीं की जा सकती।",
   "verifier.couldNotVerify": "सत्यापित नहीं किया जा सका: {message}",
   "verifier.noSignedData": "यह पृष्ठ सत्यापन के लिए कोई हस्ताक्षरित डेटा प्रस्तुत नहीं करता।",
   "verifier.notSignedArtefact": "प्राप्त JSON न तो DPP मेनिफ़ेस्ट है और न ही हस्ताक्षरित स्नैपशॉट।",
@@ -166,7 +169,6 @@
   "auth.signIn": "साइन इन करें",
   "boot.retired": "यह उत्पाद बंद कर दिया गया है।",
   "boot.retiredDetail": "इस वस्तु का डिजिटल उत्पाद पासपोर्ट अब प्रकाशित नहीं किया जाता है।",
-  "boot.loadError": "पासपोर्ट लोड नहीं किया जा सका: {message}",
   "boot.loadErrorGeneric": "पासपोर्ट लोड नहीं किया जा सका।",
   "lightbox.title": "उत्पाद छवि व्यूअर"
 }

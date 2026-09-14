@@ -48,9 +48,10 @@ describe('t', () => {
 
   it('leaves an unknown placeholder literal', () => {
     const labels = {
-      'boot.loadError': 'Fehler: {message}',
+      'verifier.httpStatus': 'Antwort: {status}',
     } as unknown as Labels;
-    expect(t(labels, 'boot.loadError', {})).toBe('Fehler: {message}');
+    expect(t(labels, 'verifier.httpStatus', {}))
+      .toBe('Antwort: {status}');
   });
 });
 

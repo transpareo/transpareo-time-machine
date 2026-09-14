@@ -137,6 +137,9 @@
   "verifier.placeholder": "https://example.com/dpp/abc-123",
   "verifier.verify": "Verifikasi",
   "verifier.verifying": "Memverifikasi…",
+  "verifier.httpStatus": "Alamat menjawab dengan HTTP {status}.",
+  "verifier.notJson": "Alamat itu tidak mengembalikan paspor.",
+  "verifier.unreadable": "Halaman ini tidak dapat diperiksa dari sini.",
   "verifier.couldNotVerify": "Tidak dapat memverifikasi: {message}",
   "verifier.noSignedData": "Halaman ini tidak menampilkan data bertanda tangan untuk diverifikasi.",
   "verifier.notSignedArtefact": "JSON yang diambil bukan manifes DPP maupun snapshot bertanda tangan.",
@@ -166,7 +169,6 @@
   "auth.signIn": "Masuk",
   "boot.retired": "Produk ini telah ditarik.",
   "boot.retiredDetail": "Paspor produk digital untuk item ini tidak lagi dipublikasikan.",
-  "boot.loadError": "Tidak dapat memuat paspor: {message}",
   "boot.loadErrorGeneric": "Tidak dapat memuat paspor.",
   "lightbox.title": "Penampil gambar produk"
 }

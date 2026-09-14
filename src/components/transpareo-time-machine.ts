@@ -286,7 +286,7 @@ class TranspareoTimeMachine extends BaseElement {
         if (from) playHandover(this, from)
       } else {
         container.replaceChildren(
-          buildLoadingShell(state, host.loadError()),
+          buildLoadingShell(state),
         )
       }
     })
@@ -377,9 +377,7 @@ class TranspareoTimeMachine extends BaseElement {
 // that was visible before the custom element upgraded,
 // so there's no visual swap as JS takes over. For
 // error we render text inside the shell.
-function buildLoadingShell(
-  state: host.LoadState, err: string | null,
-): HTMLElement {
+function buildLoadingShell(state: host.LoadState): HTMLElement {
   const wrap = document.createElement('div')
   wrap.className = `boot-shell boot-shell-${state}`
   if (state === 'retired') {
@@ -391,9 +389,14 @@ function buildLoadingShell(
     detail.textContent = t(i18n.labels, 'boot.retiredDetail')
     wrap.append(heading, detail)
   } else if (state === 'error') {
-    wrap.textContent = err
-      ? t(i18n.labels, 'boot.loadError', { message: err })
-      : t(i18n.labels, 'boot.loadErrorGeneric')
+    // One localised sentence, whatever went wrong. What
+    // went wrong is a fetch rejection, an HTTP status or a
+    // parser's complaint, all of them written in English by
+    // something that was not asked to address a visitor -
+    // and none of them anything the person holding the
+    // product can act on. host.ts logs the detail, which is
+    // where whoever can act on it will look.
+    wrap.textContent = t(i18n.labels, 'boot.loadErrorGeneric')
   } else {
     wrap.appendChild(document.createElement('slot'))
   }

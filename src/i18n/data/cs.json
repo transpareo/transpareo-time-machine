@@ -137,6 +137,9 @@
   "verifier.placeholder": "https://example.com/dpp/abc-123",
   "verifier.verify": "Ověřit",
   "verifier.verifying": "Ověřování…",
+  "verifier.httpStatus": "Adresa odpověděla stavem HTTP {status}.",
+  "verifier.notJson": "Tato adresa nevrátila pas.",
+  "verifier.unreadable": "Tuto stránku odsud nelze ověřit.",
   "verifier.couldNotVerify": "Nelze ověřit: {message}",
   "verifier.noSignedData": "Tato stránka neposkytuje žádná podepsaná data k ověření.",
   "verifier.notSignedArtefact": "Načtený JSON není ani DPP manifest, ani podepsaný snímek.",
@@ -166,7 +169,6 @@
   "auth.signIn": "Přihlásit se",
   "boot.retired": "Tento produkt byl vyřazen.",
   "boot.retiredDetail": "Digitální produktový pas pro tuto položku se již nezveřejňuje.",
-  "boot.loadError": "Pas se nepodařilo načíst: {message}",
   "boot.loadErrorGeneric": "Pas se nepodařilo načíst.",
   "lightbox.title": "Prohlížeč obrázků produktu"
 }

@@ -137,6 +137,9 @@
   "verifier.placeholder": "https://example.com/dpp/abc-123",
   "verifier.verify": "Ellenőrzés",
   "verifier.verifying": "Ellenőrzés…",
+  "verifier.httpStatus": "A cím HTTP {status} választ adott.",
+  "verifier.notJson": "Ez a cím nem adott vissza útlevelet.",
+  "verifier.unreadable": "Ez az oldal innen nem ellenőrizhető.",
   "verifier.couldNotVerify": "Az ellenőrzés sikertelen: {message}",
   "verifier.noSignedData": "Ez az oldal nem tesz közzé aláírt adatokat ellenőrzéshez.",
   "verifier.notSignedArtefact": "A letöltött JSON sem DPP-manifest, sem aláírt pillanatkép.",
@@ -166,7 +169,6 @@
   "auth.signIn": "Bejelentkezés",
   "boot.retired": "Ezt a terméket kivonták a forgalomból.",
   "boot.retiredDetail": "Ehhez a tételhez tartozó digitális termékútlevél már nem érhető el.",
-  "boot.loadError": "Az útlevelet nem sikerült betölteni: {message}",
   "boot.loadErrorGeneric": "Az útlevelet nem sikerült betölteni.",
   "lightbox.title": "Termékkép-megjelenítő"
 }

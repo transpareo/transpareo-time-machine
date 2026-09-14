@@ -137,6 +137,9 @@
   "verifier.placeholder": "https://example.com/dpp/abc-123",
   "verifier.verify": "Fíoraigh",
   "verifier.verifying": "Á fhíorú…",
+  "verifier.httpStatus": "D'fhreagair an seoladh le HTTP {status}.",
+  "verifier.notJson": "Níor thug an seoladh sin pas ar ais.",
+  "verifier.unreadable": "Ní féidir an leathanach seo a sheiceáil as seo.",
   "verifier.couldNotVerify": "Níorbh fhéidir fíorú: {message}",
   "verifier.noSignedData": "Ní nochtann an leathanach seo aon sonraí sínithe le fíorú.",
   "verifier.notSignedArtefact": "Ní manifeasta DPP ná snapshot sínithe é an JSON a fuarthas.",
@@ -166,7 +169,6 @@
   "auth.signIn": "Sínigh isteach",
   "boot.retired": "Tá an táirge seo curtha ar scor.",
   "boot.retiredDetail": "Níl pas digiteach an táirge don mhír seo á fhoilsiú a thuilleadh.",
-  "boot.loadError": "Níorbh fhéidir an pas a luchtú: {message}",
   "boot.loadErrorGeneric": "Níorbh fhéidir an pas a luchtú.",
   "lightbox.title": "Amharcán íomhánna táirge"
 }

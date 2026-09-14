@@ -12,6 +12,26 @@ and this project adheres to
 
 ### Fixed
 
+- Every error the renderer shows is in the reader's
+  language. Both surfaces spliced a raw `Error.message`
+  into localised copy, so a German visitor whose fetch
+  failed read "Prüfung fehlgeschlagen: Failed to fetch",
+  and one whose passport would not load read the same
+  half-English sentence. The messages a browser writes are
+  in the browser's English, about byte offsets and network
+  stacks, and none of them are addressed to a visitor.
+
+  The verifier now says which of three things happened, in
+  40 languages: the page could not be read from here (the
+  host is unreachable, or it does not allow other origins
+  to read it, which no script can tell apart), the address
+  answered with an HTTP status, or the address returned
+  something that is not a passport. The renderer's boot
+  shell says one sentence and no longer splices anything.
+
+  The technical text is not lost: it goes to the console,
+  with the original error attached as `cause`.
+
 - The withdrawal band lines up with the card again. A glyph
   sat in front of its text and carried the whole block 40px
   to the right of the column the logo, the picture and the

@@ -137,6 +137,9 @@
   "verifier.placeholder": "https://example.com/dpp/abc-123",
   "verifier.verify": "Verifiera",
   "verifier.verifying": "Verifierar…",
+  "verifier.httpStatus": "Adressen svarade med HTTP {status}.",
+  "verifier.notJson": "Adressen returnerade inget pass.",
+  "verifier.unreadable": "Den här sidan kan inte kontrolleras härifrån.",
   "verifier.couldNotVerify": "Kunde inte verifiera: {message}",
   "verifier.noSignedData": "Den här sidan exponerar inga signerade data att verifiera.",
   "verifier.notSignedArtefact": "Den hämtade JSON-datan är varken ett DPP-manifest eller en signerad ögonblicksbild.",
@@ -166,7 +169,6 @@
   "auth.signIn": "Logga in",
   "boot.retired": "Den här produkten har tagits ur bruk.",
   "boot.retiredDetail": "Det digitala produktpasset för denna artikel publiceras inte längre.",
-  "boot.loadError": "Det gick inte att läsa in passet: {message}",
   "boot.loadErrorGeneric": "Det gick inte att läsa in passet.",
   "lightbox.title": "Visare för produktbilder"
 }

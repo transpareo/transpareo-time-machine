@@ -137,6 +137,9 @@
   "verifier.placeholder": "https://example.com/dpp/abc-123",
   "verifier.verify": "Verificar",
   "verifier.verifying": "A verificar…",
+  "verifier.httpStatus": "O endereço respondeu com HTTP {status}.",
+  "verifier.notJson": "Este endereço não devolveu um passaporte.",
+  "verifier.unreadable": "Esta página não pode ser verificada a partir daqui.",
   "verifier.couldNotVerify": "Não foi possível verificar: {message}",
   "verifier.noSignedData": "Esta página não expõe dados assinados para verificar.",
   "verifier.notSignedArtefact": "O JSON obtido não é um manifesto DPP nem um instantâneo assinado.",
@@ -166,7 +169,6 @@
   "auth.signIn": "Iniciar sessão",
   "boot.retired": "Este produto foi descontinuado.",
   "boot.retiredDetail": "O passaporte digital de produto deste item já não é publicado.",
-  "boot.loadError": "Não foi possível carregar o passaporte: {message}",
   "boot.loadErrorGeneric": "Não foi possível carregar o passaporte.",
   "lightbox.title": "Visualizador de imagens do produto"
 }

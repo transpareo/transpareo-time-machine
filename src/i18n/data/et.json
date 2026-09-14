@@ -137,6 +137,9 @@
   "verifier.placeholder": "https://example.com/dpp/abc-123",
   "verifier.verify": "Kontrolli",
   "verifier.verifying": "Kontrollimine…",
+  "verifier.httpStatus": "Aadress vastas koodiga HTTP {status}.",
+  "verifier.notJson": "See aadress ei tagastanud passi.",
+  "verifier.unreadable": "Seda lehte ei saa siit kontrollida.",
   "verifier.couldNotVerify": "Kontrollimine ebaõnnestus: {message}",
   "verifier.noSignedData": "See leht ei paku allkirjastatud andmeid kontrollimiseks.",
   "verifier.notSignedArtefact": "Laaditud JSON ei ole DPP manifest ega allkirjastatud hetktõmmis.",
@@ -166,7 +169,6 @@
   "auth.signIn": "Logi sisse",
   "boot.retired": "See toode on kasutuselt kõrvaldatud.",
   "boot.retiredDetail": "Selle toote digitaalset tootepassi enam ei avaldata.",
-  "boot.loadError": "Passi ei õnnestunud laadida: {message}",
   "boot.loadErrorGeneric": "Passi ei õnnestunud laadida.",
   "lightbox.title": "Tootepiltide vaatur"
 }

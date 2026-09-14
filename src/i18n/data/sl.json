@@ -137,6 +137,9 @@
   "verifier.placeholder": "https://example.com/dpp/abc-123",
   "verifier.verify": "Preveri",
   "verifier.verifying": "Preverjanje…",
+  "verifier.httpStatus": "Naslov je odgovoril s HTTP {status}.",
+  "verifier.notJson": "Ta naslov ni vrnil potnega lista.",
+  "verifier.unreadable": "Te strani od tod ni mogoče preveriti.",
   "verifier.couldNotVerify": "Preverjanje ni uspelo: {message}",
   "verifier.noSignedData": "Ta stran ne izpostavlja podpisanih podatkov za preverjanje.",
   "verifier.notSignedArtefact": "Pridobljeni JSON ni ne DPP manifest ne podpisan posnetek.",
@@ -166,7 +169,6 @@
   "auth.signIn": "Prijava",
   "boot.retired": "Ta izdelek je bil umaknjen.",
   "boot.retiredDetail": "Digitalni potni list izdelka za ta artikel ni več objavljen.",
-  "boot.loadError": "Potnega lista ni bilo mogoče naložiti: {message}",
   "boot.loadErrorGeneric": "Potnega lista ni bilo mogoče naložiti.",
   "lightbox.title": "Pregledovalnik slik izdelka"
 }

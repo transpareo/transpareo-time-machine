@@ -137,6 +137,9 @@
   "verifier.placeholder": "https://example.com/dpp/abc-123",
   "verifier.verify": "Verificar",
   "verifier.verifying": "Verificando…",
+  "verifier.httpStatus": "La dirección respondió con HTTP {status}.",
+  "verifier.notJson": "Esa dirección no devolvió un pasaporte.",
+  "verifier.unreadable": "Esta página no se puede verificar desde aquí.",
   "verifier.couldNotVerify": "No se pudo verificar: {message}",
   "verifier.noSignedData": "Esta página no expone datos firmados para verificar.",
   "verifier.notSignedArtefact": "El JSON obtenido no es ni un manifiesto DPP ni una instantánea firmada.",
@@ -166,7 +169,6 @@
   "auth.signIn": "Iniciar sesión",
   "boot.retired": "Este producto ha sido retirado.",
   "boot.retiredDetail": "El pasaporte digital de producto de este artículo ya no se publica.",
-  "boot.loadError": "No se pudo cargar el pasaporte: {message}",
   "boot.loadErrorGeneric": "No se pudo cargar el pasaporte.",
   "lightbox.title": "Visor de imágenes del producto"
 }

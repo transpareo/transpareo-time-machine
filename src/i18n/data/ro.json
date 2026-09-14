@@ -137,6 +137,9 @@
   "verifier.placeholder": "https://example.com/dpp/abc-123",
   "verifier.verify": "Verifică",
   "verifier.verifying": "Se verifică…",
+  "verifier.httpStatus": "Adresa a răspuns cu HTTP {status}.",
+  "verifier.notJson": "Această adresă nu a returnat un pașaport.",
+  "verifier.unreadable": "Această pagină nu poate fi verificată de aici.",
   "verifier.couldNotVerify": "Nu s-a putut verifica: {message}",
   "verifier.noSignedData": "Această pagină nu expune date semnate de verificat.",
   "verifier.notSignedArtefact": "JSON-ul preluat nu este nici manifest DPP, nici instantaneu semnat.",
@@ -166,7 +169,6 @@
   "auth.signIn": "Conectare",
   "boot.retired": "Acest produs a fost retras.",
   "boot.retiredDetail": "Pașaportul digital al produsului pentru acest articol nu mai este publicat.",
-  "boot.loadError": "Pașaportul nu a putut fi încărcat: {message}",
   "boot.loadErrorGeneric": "Pașaportul nu a putut fi încărcat.",
   "lightbox.title": "Vizualizator de imagini ale produsului"
 }

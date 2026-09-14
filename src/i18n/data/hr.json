@@ -137,6 +137,9 @@
   "verifier.placeholder": "https://example.com/dpp/abc-123",
   "verifier.verify": "Provjeri",
   "verifier.verifying": "Provjera…",
+  "verifier.httpStatus": "Adresa je odgovorila s HTTP {status}.",
+  "verifier.notJson": "Ta adresa nije vratila putovnicu.",
+  "verifier.unreadable": "Ovu stranicu nije moguće provjeriti odavde.",
   "verifier.couldNotVerify": "Provjera nije uspjela: {message}",
   "verifier.noSignedData": "Ova stranica ne izlaže potpisane podatke za provjeru.",
   "verifier.notSignedArtefact": "Dohvaćeni JSON nije ni DPP manifest ni potpisana snimka.",
@@ -166,7 +169,6 @@
   "auth.signIn": "Prijava",
   "boot.retired": "Ovaj je proizvod povučen.",
   "boot.retiredDetail": "Digitalna putovnica proizvoda za ovaj artikl više se ne objavljuje.",
-  "boot.loadError": "Putovnicu nije moguće učitati: {message}",
   "boot.loadErrorGeneric": "Putovnicu nije moguće učitati.",
   "lightbox.title": "Preglednik slika proizvoda"
 }

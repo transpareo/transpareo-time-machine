@@ -137,6 +137,9 @@
   "verifier.placeholder": "https://example.com/dpp/abc-123",
   "verifier.verify": "Ivverifika",
   "verifier.verifying": "Qed jiġi vverifikat…",
+  "verifier.httpStatus": "L-indirizz wieġeb b'HTTP {status}.",
+  "verifier.notJson": "Dan l-indirizz ma rritornax passaport.",
+  "verifier.unreadable": "Din il-paġna ma tistax tiġi vverifikata minn hawn.",
   "verifier.couldNotVerify": "Ma setax jiġi vverifikat: {message}",
   "verifier.noSignedData": "Din il-paġna ma tesponi l-ebda data ffirmata għall-verifika.",
   "verifier.notSignedArtefact": "Il-JSON miġbur la hu manifest DPP u lanqas snapshot iffirmat.",
@@ -166,7 +169,6 @@
   "auth.signIn": "Idħol",
   "boot.retired": "Dan il-prodott ġie rtirat.",
   "boot.retiredDetail": "Il-passaport diġitali tal-prodott għal din l-oġġett m’għadux ippubblikat.",
-  "boot.loadError": "Ma setax jitgħabba l-passaport: {message}",
   "boot.loadErrorGeneric": "Ma setax jitgħabba l-passaport.",
   "lightbox.title": "Viżwalizzatur tal-immaġni tal-prodott"
 }

@@ -138,6 +138,9 @@
   "verifier.placeholder": "https://example.com/dpp/abc-123",
   "verifier.verify": "Xác minh",
   "verifier.verifying": "Đang xác minh…",
+  "verifier.httpStatus": "Địa chỉ đã trả về HTTP {status}.",
+  "verifier.notJson": "Địa chỉ đó không trả về hộ chiếu.",
+  "verifier.unreadable": "Không thể kiểm tra trang này từ đây.",
   "verifier.couldNotVerify": "Không thể xác minh: {message}",
   "verifier.noSignedData": "Trang này không cung cấp dữ liệu đã ký để xác minh.",
   "verifier.notSignedArtefact": "JSON đã tải không phải là manifest DPP hay snapshot đã ký.",
@@ -167,6 +170,5 @@
   "auth.signIn": "Đăng nhập",
   "boot.retired": "Sản phẩm này đã ngừng hoạt động.",
   "boot.retiredDetail": "Hộ chiếu sản phẩm số cho mặt hàng này không còn được công bố.",
-  "boot.loadError": "Không thể tải hộ chiếu: {message}",
   "boot.loadErrorGeneric": "Không thể tải hộ chiếu."
 }

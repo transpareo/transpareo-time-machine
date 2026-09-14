@@ -137,6 +137,9 @@
   "verifier.placeholder": "https://example.com/dpp/abc-123",
   "verifier.verify": "Zweryfikuj",
   "verifier.verifying": "Weryfikowanie…",
+  "verifier.httpStatus": "Adres odpowiedział kodem HTTP {status}.",
+  "verifier.notJson": "Ten adres nie zwrócił paszportu.",
+  "verifier.unreadable": "Tej strony nie można sprawdzić z tego miejsca.",
   "verifier.couldNotVerify": "Nie można zweryfikować: {message}",
   "verifier.noSignedData": "Ta strona nie udostępnia podpisanych danych do weryfikacji.",
   "verifier.notSignedArtefact": "Pobrany JSON nie jest ani manifestem DPP, ani podpisaną migawką.",
@@ -166,7 +169,6 @@
   "auth.signIn": "Zaloguj się",
   "boot.retired": "Ten produkt został wycofany.",
   "boot.retiredDetail": "Cyfrowy paszport produktu dla tego artykułu nie jest już publikowany.",
-  "boot.loadError": "Nie udało się wczytać paszportu: {message}",
   "boot.loadErrorGeneric": "Nie udało się wczytać paszportu.",
   "lightbox.title": "Przeglądarka zdjęć produktu"
 }

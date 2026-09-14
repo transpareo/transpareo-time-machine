@@ -137,6 +137,9 @@
   "verifier.placeholder": "https://example.com/dpp/abc-123",
   "verifier.verify": "Overiť",
   "verifier.verifying": "Overovanie…",
+  "verifier.httpStatus": "Adresa odpovedala stavom HTTP {status}.",
+  "verifier.notJson": "Táto adresa nevrátila pas.",
+  "verifier.unreadable": "Túto stránku odtiaľto nemožno overiť.",
   "verifier.couldNotVerify": "Nepodarilo sa overiť: {message}",
   "verifier.noSignedData": "Táto stránka neposkytuje žiadne podpísané dáta na overenie.",
   "verifier.notSignedArtefact": "Načítaný JSON nie je ani DPP manifest, ani podpísaná snímka.",
@@ -166,7 +169,6 @@
   "auth.signIn": "Prihlásiť sa",
   "boot.retired": "Tento produkt bol stiahnutý z obehu.",
   "boot.retiredDetail": "Digitálny produktový pas pre túto položku sa už nezverejňuje.",
-  "boot.loadError": "Pas sa nepodarilo načítať: {message}",
   "boot.loadErrorGeneric": "Pas sa nepodarilo načítať.",
   "lightbox.title": "Prehliadač obrázkov produktu"
 }

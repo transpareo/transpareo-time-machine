@@ -137,6 +137,9 @@
   "verifier.placeholder": "https://example.com/dpp/abc-123",
   "verifier.verify": "验证",
   "verifier.verifying": "正在验证…",
+  "verifier.httpStatus": "该地址返回了 HTTP {status}。",
+  "verifier.notJson": "该地址未返回护照。",
+  "verifier.unreadable": "无法从此处检查该页面。",
   "verifier.couldNotVerify": "无法验证：{message}",
   "verifier.noSignedData": "此页面未提供可验证的签名数据。",
   "verifier.notSignedArtefact": "获取的 JSON 既不是 DPP 清单，也不是签名快照。",
@@ -166,7 +169,6 @@
   "auth.signIn": "登录",
   "boot.retired": "该产品已停用。",
   "boot.retiredDetail": "此商品的数字产品护照已不再发布。",
-  "boot.loadError": "无法加载护照：{message}",
   "boot.loadErrorGeneric": "无法加载护照。",
   "lightbox.title": "产品图片查看器"
 }

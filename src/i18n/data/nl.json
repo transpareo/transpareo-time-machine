@@ -137,6 +137,9 @@
   "verifier.placeholder": "https://example.com/dpp/abc-123",
   "verifier.verify": "Verifiëren",
   "verifier.verifying": "Bezig met verifiëren…",
+  "verifier.httpStatus": "Het adres antwoordde met HTTP {status}.",
+  "verifier.notJson": "Dit adres heeft geen paspoort geretourneerd.",
+  "verifier.unreadable": "Deze pagina kan hiervandaan niet worden gecontroleerd.",
   "verifier.couldNotVerify": "Kan niet verifiëren: {message}",
   "verifier.noSignedData": "Deze pagina biedt geen ondertekende gegevens om te verifiëren.",
   "verifier.notSignedArtefact": "De opgehaalde JSON is geen DPP-manifest en geen ondertekende momentopname.",
@@ -166,7 +169,6 @@
   "auth.signIn": "Aanmelden",
   "boot.retired": "Dit product is uit de roulatie genomen.",
   "boot.retiredDetail": "Het digitale productpaspoort voor dit artikel wordt niet meer gepubliceerd.",
-  "boot.loadError": "Kan paspoort niet laden: {message}",
   "boot.loadErrorGeneric": "Kan paspoort niet laden.",
   "lightbox.title": "Productafbeeldingviewer"
 }

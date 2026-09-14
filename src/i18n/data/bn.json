@@ -137,6 +137,9 @@
   "verifier.placeholder": "https://example.com/dpp/abc-123",
   "verifier.verify": "যাচাই করুন",
   "verifier.verifying": "যাচাই করা হচ্ছে…",
+  "verifier.httpStatus": "ঠিকানাটি HTTP {status} দিয়ে সাড়া দিয়েছে।",
+  "verifier.notJson": "এই ঠিকানাটি কোনও পাসপোর্ট ফেরত দেয়নি।",
+  "verifier.unreadable": "এই পৃষ্ঠাটি এখান থেকে যাচাই করা যাবে না।",
   "verifier.couldNotVerify": "যাচাই করা যায়নি: {message}",
   "verifier.noSignedData": "এই পৃষ্ঠাটি যাচাই করার জন্য কোনো স্বাক্ষরিত ডেটা প্রকাশ করে না।",
   "verifier.notSignedArtefact": "প্রাপ্ত JSON কোনো DPP ম্যানিফেস্ট বা স্বাক্ষরিত স্ন্যাপশট নয়।",
@@ -166,7 +169,6 @@
   "auth.signIn": "সাইন ইন",
   "boot.retired": "এই পণ্যটি প্রত্যাহার করা হয়েছে।",
   "boot.retiredDetail": "এই আইটেমের ডিজিটাল প্রোডাক্ট পাসপোর্ট আর প্রকাশিত হয় না।",
-  "boot.loadError": "পাসপোর্ট লোড করা যায়নি: {message}",
   "boot.loadErrorGeneric": "পাসপোর্ট লোড করা যায়নি।",
   "lightbox.title": "পণ্যের ছবি ভিউয়ার"
 }

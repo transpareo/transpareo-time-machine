@@ -137,6 +137,9 @@
   "verifier.placeholder": "https://example.com/dpp/abc-123",
   "verifier.verify": "Doğrula",
   "verifier.verifying": "Doğrulanıyor…",
+  "verifier.httpStatus": "Adres HTTP {status} yanıtı verdi.",
+  "verifier.notJson": "Bu adres bir pasaport döndürmedi.",
+  "verifier.unreadable": "Bu sayfa buradan kontrol edilemez.",
   "verifier.couldNotVerify": "Doğrulanamadı: {message}",
   "verifier.noSignedData": "Bu sayfa doğrulanacak imzalı veri sunmuyor.",
   "verifier.notSignedArtefact": "Alınan JSON ne bir DPP manifesti ne de imzalı bir anlık görüntü.",
@@ -166,7 +169,6 @@
   "auth.signIn": "Oturum aç",
   "boot.retired": "Bu ürün kullanımdan kaldırıldı.",
   "boot.retiredDetail": "Bu ürünün dijital ürün pasaportu artık yayımlanmıyor.",
-  "boot.loadError": "Pasaport yüklenemedi: {message}",
   "boot.loadErrorGeneric": "Pasaport yüklenemedi.",
   "lightbox.title": "Ürün görseli görüntüleyici"
 }

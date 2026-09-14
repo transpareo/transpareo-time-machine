@@ -112,6 +112,7 @@ type WidgetState =
   | { status: 'idle' }
   | { status: 'loading'; url: string }
   | { status: 'error'; url: string; message: string }
+  | { status: 'unreadable'; url: string }
 
   // The URL led to something real but unsigned (a page
   // with no signed reference, or JSON that is no DPP
@@ -234,7 +235,9 @@ class DppVerifier extends BaseElement {
     } catch (err) {
       if (seq !== this.runSeq) return
       const message = err instanceof Error ? err.message : String(err)
-      if (err instanceof UnverifiableError) {
+      if (err instanceof UnreadableError) {
+        this.state.set({ status: 'unreadable', url })
+      } else if (err instanceof UnverifiableError) {
         this.state.set({ status: 'unverifiable', url, message })
       } else {
         this.state.set({ status: 'error', url, message })
@@ -254,6 +257,15 @@ class DppVerifier extends BaseElement {
       mount.replaceChildren(
         el('p', 'verifier-status', tr('verifier.verifying')),
       )
+      return
+    }
+    if (s.status === 'unreadable') {
+      const wrap = el('div', 'verifier-error')
+      wrap.append(
+        buildOrb(false),
+        el('span', undefined, tr('verifier.unreadable')),
+      )
+      mount.replaceChildren(wrap)
       return
     }
     if (s.status === 'error') {
@@ -297,25 +309,55 @@ class DppVerifier extends BaseElement {
 async function fetchText(
   url: string,
 ): Promise<{ body: string; url: string }> {
-  const res = await fetch(url, {
-    credentials: 'omit',
-    cache: 'no-cache',
-    signal: AbortSignal.timeout(15_000),
-  })
+  let res: Response
+  try {
+    res = await fetch(url, {
+      credentials: 'omit',
+      cache: 'no-cache',
+      signal: AbortSignal.timeout(15_000),
+    })
+  } catch (err) {
+    // fetch itself rejected, so there is no response to
+    // read: the host is unreachable, or the browser refused
+    // to hand us the answer because the page does not allow
+    // other origins to read it. The two are deliberately
+    // indistinguishable from script, so the widget says what
+    // it can see rather than guessing, and points at the
+    // manifest URL, which publishers do serve cross-origin.
+    throw new UnreadableError(String(err))
+  }
   if (!res.ok) {
-    throw new Error(`HTTP ${res.status} fetching ${url}`)
+    // The status is the one piece of an answer worth
+    // putting on screen: a number, the same in every
+    // language, and the difference between a wrong address
+    // and a broken server. The URL is already in the input
+    // field above, and the rest goes to the console.
+    throw new Error(tr('verifier.httpStatus', { status: res.status }))
   }
   return { body: await readTextResponse(res), url: res.url || url }
 }
 
 async function fetchJson<T>(url: string): Promise<T> {
   const { body } = await fetchText(url)
-  return JSON.parse(body) as T
+  try {
+    return JSON.parse(body) as T
+  } catch (err) {
+    // A parser's complaint is written by the browser, in
+    // the browser's English, about a byte offset. Say what
+    // it means instead and keep the original for whoever
+    // opens the console.
+    console.warn('[verifier] not JSON:', url, err)
+    throw new Error(tr('verifier.notJson'), { cause: err })
+  }
 }
 
 // Routes to the neutral nothing-to-verify state instead
 // of the red failure card.
 class UnverifiableError extends Error {}
+
+// The fetch never landed. Distinct from an HTTP status,
+// which at least tells the reader what the server said.
+class UnreadableError extends Error {}
 
 interface LoadedArtefact {
   readonly kind: 'manifest' | 'snapshot'

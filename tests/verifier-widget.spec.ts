@@ -232,6 +232,33 @@ describe('dpp-verifier: withdrawn passports', () => {
   })
 })
 
+// A fetch that never lands is not an answer the server
+// gave: the host is unreachable, or the browser refused to
+// hand the widget the response because the page does not
+// allow other origins to read it. Script cannot tell those
+// apart, and "Failed to fetch" is not a sentence to show
+// anyone, so the widget says what it can see.
+describe('dpp-verifier: a page it cannot read', () => {
+  it('says so, without the browser\'s own words', async () => {
+    vi.stubGlobal('fetch', async () => {
+      throw new TypeError('Failed to fetch')
+    })
+    const widget = await mountWidget(undefined, `${ORIGIN}/page`)
+    const text = widget.shadowRoot?.textContent ?? ''
+    expect(text).toContain('This page cannot be checked from here')
+    expect(text).not.toContain('Failed to fetch')
+  })
+
+  // An answer the server did gave keeps its status: 404
+  // tells the reader something this message cannot.
+  it('keeps an HTTP status in the message', async () => {
+    vi.stubGlobal('fetch', async () =>
+      new Response('nope', { status: 404 }))
+    const widget = await mountWidget(undefined, `${ORIGIN}/page`)
+    expect(widget.shadowRoot?.textContent ?? '').toContain('404')
+  })
+})
+
 describe('dpp-verifier: status icons', () => {
   it('installs the functional sprite into its own shadow root', async () => {
     stubFetch()

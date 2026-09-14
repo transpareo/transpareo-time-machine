@@ -137,6 +137,9 @@
   "verifier.placeholder": "https://example.com/dpp/abc-123",
   "verifier.verify": "Проверить",
   "verifier.verifying": "Проверка…",
+  "verifier.httpStatus": "Адрес ответил кодом HTTP {status}.",
+  "verifier.notJson": "Этот адрес не вернул паспорт.",
+  "verifier.unreadable": "Эту страницу нельзя проверить отсюда.",
   "verifier.couldNotVerify": "Не удалось проверить: {message}",
   "verifier.noSignedData": "Эта страница не содержит подписанных данных для проверки.",
   "verifier.notSignedArtefact": "Полученный JSON не является ни манифестом DPP, ни подписанным снимком.",
@@ -166,7 +169,6 @@
   "auth.signIn": "Войти",
   "boot.retired": "Этот продукт выведен из обращения.",
   "boot.retiredDetail": "Цифровой паспорт продукта для этого товара больше не публикуется.",
-  "boot.loadError": "Не удалось загрузить паспорт: {message}",
   "boot.loadErrorGeneric": "Не удалось загрузить паспорт.",
   "lightbox.title": "Просмотр изображений продукта"
 }

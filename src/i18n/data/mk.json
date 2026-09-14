@@ -138,6 +138,9 @@
   "verifier.placeholder": "https://example.com/dpp/abc-123",
   "verifier.verify": "Потврди",
   "verifier.verifying": "Проверува…",
+  "verifier.httpStatus": "Адресата одговори со HTTP {status}.",
+  "verifier.notJson": "Оваа адреса не врати пасош.",
+  "verifier.unreadable": "Оваа страница не може да се провери оттука.",
   "verifier.couldNotVerify": "Не може да се потврди: {message}",
   "verifier.noSignedData": "Оваа страница не изложува потпишани податоци за проверка.",
   "verifier.notSignedArtefact": "Преземениот JSON не е ниту DPP манифест ниту потпишана снимка.",
@@ -167,6 +170,5 @@
   "auth.signIn": "Најавете се",
   "boot.retired": "Овој производ е повлечен од производство.",
   "boot.retiredDetail": "Дигиталниот пасош за овој производ повеќе не е објавен.",
-  "boot.loadError": "Не може да се вчита пасошот: {message}",
   "boot.loadErrorGeneric": "Не може да се вчита пасошот."
 }
