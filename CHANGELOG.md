@@ -10,6 +10,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.16.1] - 2026-09-13
+
 ### Fixed
 
 - Every error the renderer shows is in the reader's
