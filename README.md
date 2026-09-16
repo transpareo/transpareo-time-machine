@@ -283,14 +283,14 @@ ordering risk:
 
 ```html
 <script type="module"
-        src="https://unpkg.com/transpareo-time-machine@2.16.1/dist-embed/embed.js"></script>
+        src="https://unpkg.com/transpareo-time-machine@2.17.0/dist-embed/embed.js"></script>
 
 <transpareo-time-machine
   src="https://cdn.example.com/acme/01/09524000059109/manifest.json">
 </transpareo-time-machine>
 ```
 
-Pin a specific version (`@2.16.1`) for production. Use
+Pin a specific version (`@2.17.0`) for production. Use
 `@latest` only in throwaway demos.
 
 The embed bundle inlines `app.css` into a `<style>` it
@@ -316,9 +316,9 @@ the lib bundle instead:
 
 ```html
 <link rel="stylesheet"
-      href="https://unpkg.com/transpareo-time-machine@2.16.1/dist/transpareo-time-machine.css">
+      href="https://unpkg.com/transpareo-time-machine@2.17.0/dist/transpareo-time-machine.css">
 <script type="module"
-        src="https://unpkg.com/transpareo-time-machine@2.16.1"></script>
+        src="https://unpkg.com/transpareo-time-machine@2.17.0"></script>
 ```
 
 Lib vs embed is a CSS-delivery choice; both expose the

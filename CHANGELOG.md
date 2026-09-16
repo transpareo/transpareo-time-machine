@@ -10,6 +10,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.17.0] - 2026-09-16
+
 ### Changed
 
 - Body-text sections stay open once opened. Care,
