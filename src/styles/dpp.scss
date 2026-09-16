@@ -444,7 +444,7 @@ button.dpp-comp-name-trigger {
   opacity: 0.7;
 }
 
-// Every click rebuilds the items (single render path in
+// A toggled section is rebuilt from its data (see
 // dpp-accordions.ts), so open-state motion runs as
 // entrance animations on the freshly-inserted nodes;
 // a transition would never see both states on one node.

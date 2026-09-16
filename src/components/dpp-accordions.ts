@@ -4,13 +4,19 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * <dpp-accordions>, collapsible body-text panels for
- * care, disposal, repair, etc. Single-open: clicking an
- * item closes the previously-open one. Click handling is
- * delegated; each item carries its key on a data attr.
+ * care, disposal, repair, etc. Each section opens and
+ * closes on its own and stays open until its header is
+ * clicked again. Click handling is delegated; each item
+ * carries its key on a data attr.
+ *
+ * A toggle rebuilds the clicked item alone: the fresh
+ * node plays the entrance animation, while the sections
+ * open around it hold the body they are showing.
+ * Rebuilding the whole list is the effect's job, and it
+ * runs when the rows or the locale change.
  */
 
 import { LightElement } from '@/reactive/element'
-import { signal } from '@/reactive/signals'
 import { el } from '@/reactive/dom'
 import { icon, iconForProperty } from '@/icons'
 import { renderedPresentation } from '@/state'
@@ -22,7 +28,12 @@ import {
 type LongText = PropertyValueOf<'longText'>
 
 class DppAccordions extends LightElement {
-  private openKey = signal<string | null>(null)
+  // Every section the reader has opened. The click
+  // handler is its only writer and renders its own item;
+  // the effect reads it to restore the sections whenever
+  // it rebuilds the list. Nothing reads it reactively, so
+  // a plain Set carries it.
+  private open = new Set<string>()
 
   protected setup(): void {
     const wrap = el('div', 'dpp-accordion')
@@ -32,18 +43,38 @@ class DppAccordions extends LightElement {
       const item = (e.target as HTMLElement).closest('[data-key]')
       if (!(item instanceof HTMLElement)) return
       const key = item.dataset.key!
-      this.openKey.set(this.openKey.peek() === key ? null : key)
+      const row = longTextRows().find((r) => r.key === key)
+      if (!row) return
+
+      const isOpen = !this.open.has(key)
+      if (isOpen) this.open.add(key)
+      else this.open.delete(key)
+      swapItem(item, buildItem(row, isOpen))
     })
 
     this.effect(() => {
-      const rows = renderedPresentation().filter(propertyIsKind('longText'))
-      const open = this.openKey()
+      const rows = longTextRows()
       wrap.style.display = rows.length ? '' : 'none'
       wrap.replaceChildren(
-        ...rows.map((row) => buildItem(row, open === row.key)),
+        ...rows.map((row) => buildItem(row, this.open.has(row.key)))
       )
     })
   }
+}
+
+function longTextRows(): LongText[] {
+  return renderedPresentation().filter(propertyIsKind('longText'))
+}
+
+// Put a rebuilt item in place of the one just toggled,
+// keeping the keyboard on the header that leaves with the
+// old node. Inside a shadow root document.activeElement
+// names the host, so the focus is read off the root node.
+function swapItem(old: HTMLElement, next: HTMLElement): void {
+  const root = old.getRootNode() as Document | ShadowRoot
+  const focused = old.contains(root.activeElement)
+  old.replaceWith(next)
+  if (focused) next.querySelector('button')?.focus()
 }
 
 function buildItem(row: LongText, isOpen: boolean): HTMLElement {

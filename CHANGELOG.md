@@ -10,6 +10,20 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Changed
+
+- Body-text sections stay open once opened. Care,
+  disposal and repair answer separate questions, and a
+  reader holding two of them side by side lost the first
+  the moment the second opened. Each section now opens
+  and closes on its own header.
+
+  A toggle rebuilds the section it was clicked on and
+  leaves the rest of the list where it stands, so a body
+  that is already open holds still while another opens
+  beside it. The header a reader activates from the
+  keyboard keeps the focus through that rebuild.
+
 ## [2.16.1] - 2026-09-13
 
 ### Fixed
