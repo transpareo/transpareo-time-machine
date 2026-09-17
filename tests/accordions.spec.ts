@@ -56,9 +56,11 @@ function mount(): Element {
   return acc
 }
 
-// Keys of the sections showing a body, in render order.
-function openKeys(acc: Element): string[] {
-  return [...acc.querySelectorAll<HTMLElement>('.dpp-accordion-item.open')]
+// Keys of the sections carrying a state class, in render
+// order: the open ones by default.
+function sectionKeys(acc: Element, state = '.open'): string[] {
+  const sel = `.dpp-accordion-item${state}`
+  return [...acc.querySelectorAll<HTMLElement>(sel)]
     .map((item) => item.dataset.key!)
 }
 
@@ -77,7 +79,7 @@ describe('accordion sections', () => {
   it('opens the section whose header is clicked', () => {
     const acc = mount()
     click(acc, 'care')
-    expect(openKeys(acc)).toEqual(['care'])
+    expect(sectionKeys(acc)).toEqual(['care'])
     expect(acc.querySelector('.dpp-accordion-body')?.textContent).
       toBe('care body')
   })
@@ -86,7 +88,7 @@ describe('accordion sections', () => {
     const acc = mount()
     click(acc, 'care')
     click(acc, 'repair')
-    expect(openKeys(acc)).toEqual(['care', 'repair'])
+    expect(sectionKeys(acc)).toEqual(['care', 'repair'])
   })
 
   it('closes the section clicked a second time, only it', () => {
@@ -94,7 +96,7 @@ describe('accordion sections', () => {
     click(acc, 'care')
     click(acc, 'repair')
     click(acc, 'care')
-    expect(openKeys(acc)).toEqual(['repair'])
+    expect(sectionKeys(acc)).toEqual(['repair'])
   })
 
   it('tells assistive tech which sections are expanded', () => {
@@ -125,8 +127,29 @@ describe('accordion sections', () => {
     click(acc, 'care')
     click(acc, 'repair')
     locale.set('de')
-    expect(openKeys(acc)).toEqual(['care', 'repair'])
+    expect(sectionKeys(acc)).toEqual(['care', 'repair'])
     expect(acc.querySelector('.dpp-accordion-body')?.textContent).
       toBe('care Text')
+  })
+
+  // The entrance animation belongs to the click. A section
+  // rebuilt from data is already open when the reader
+  // meets it, so `opening` marks the clicked item alone.
+  it('animates the section opened, and only that one', () => {
+    const acc = mount()
+    click(acc, 'care')
+    click(acc, 'repair')
+    expect(sectionKeys(acc, '.opening')).toEqual(['repair'])
+  })
+
+  it('opens a section at rest when the rows come back', () => {
+    const acc = mount()
+    click(acc, 'care')
+
+    // What a version switch does to this element: the
+    // snapshot under it changes and the list is rebuilt.
+    host.snapshots.set({ 1: { properties: ROWS } as unknown as DppSnapshot })
+    expect(sectionKeys(acc)).toEqual(['care'])
+    expect(sectionKeys(acc, '.opening')).toEqual([])
   })
 })

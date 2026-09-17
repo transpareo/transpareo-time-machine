@@ -448,8 +448,14 @@ button.dpp-comp-name-trigger {
 // dpp-accordions.ts), so open-state motion runs as
 // entrance animations on the freshly-inserted nodes;
 // a transition would never see both states on one node.
+// The motion keys on `opening`, carried by the item a
+// click built: a list rebuilt for another version or
+// locale paints its open sections at rest.
 .dpp-accordion-item.open .dpp-accordion-toggle {
   transform: none;
+}
+
+.dpp-accordion-item.opening .dpp-accordion-toggle {
   animation: dpp-accordion-toggle-in 0.2s ease;
 }
 
@@ -470,6 +476,9 @@ button.dpp-comp-name-trigger {
   .open > & {
     display: grid;
     grid-template-rows: 1fr;
+  }
+
+  .opening > & {
     animation: dpp-accordion-expand 0.2s ease;
   }
 
@@ -493,8 +502,8 @@ button.dpp-comp-name-trigger {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .open > .dpp-accordion-body,
-  .dpp-accordion-item.open .dpp-accordion-toggle {
+  .opening > .dpp-accordion-body,
+  .dpp-accordion-item.opening .dpp-accordion-toggle {
     animation: none;
   }
 }

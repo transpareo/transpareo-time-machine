@@ -10,6 +10,17 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Fixed
+
+- A section left open holds still while the reader moves
+  through versions. Rebuilding the card for another
+  version replayed the expand animation on every open
+  section, so their bodies collapsed and grew back under
+  a swipe that had nothing to do with them. The entrance
+  motion now belongs to the header that was clicked, and
+  a list rebuilt for another version or locale paints its
+  open sections at rest.
+
 ## [2.17.0] - 2026-09-16
 
 ### Changed

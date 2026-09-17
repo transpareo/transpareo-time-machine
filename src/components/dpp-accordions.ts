@@ -49,7 +49,12 @@ class DppAccordions extends LightElement {
       const isOpen = !this.open.has(key)
       if (isOpen) this.open.add(key)
       else this.open.delete(key)
-      swapItem(item, buildItem(row, isOpen))
+
+      // The entrance marker belongs to one item at a
+      // time; the toggle before this one has finished
+      // moving.
+      wrap.querySelector('.opening')?.classList.remove('opening')
+      swapItem(item, buildItem(row, isOpen, true))
     })
 
     this.effect(() => {
@@ -77,9 +82,16 @@ function swapItem(old: HTMLElement, next: HTMLElement): void {
   if (focused) next.querySelector('button')?.focus()
 }
 
-function buildItem(row: LongText, isOpen: boolean): HTMLElement {
-  const cls = `dpp-accordion-item${isOpen ? ' open' : ''}`
-  const it = el('div', cls)
+// `opening` marks the item a click just built, which is
+// the one whose entrance motion the reader asked for. A
+// version or locale switch rebuilds the list without it,
+// so the sections it finds open are open from the first
+// frame (dpp.scss).
+function buildItem(
+  row: LongText, isOpen: boolean, opening = false
+): HTMLElement {
+  const state = (isOpen ? ' open' : '') + (opening ? ' opening' : '')
+  const it = el('div', `dpp-accordion-item${state}`)
   it.dataset.key = row.key
   it.appendChild(buildHeader(row, isOpen))
 
