@@ -10,6 +10,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.17.1] - 2026-09-16
+
 ### Fixed
 
 - A section left open holds still while the reader moves
