@@ -10,6 +10,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.18.0] - 2026-09-17
+
 ### Fixed
 
 - A page turn in the image gallery shows that it
