@@ -173,13 +173,20 @@ class DppGallery extends LightElement {
 // picture is on its way and let the stylesheet show it.
 // Already-decoded bytes clear it in the same pass, so a
 // warmed neighbour never flickers the state on.
-function markPending(wrap: HTMLElement, img: HTMLImageElement): void {
+//
+// `frame` is whichever element the stylesheet keys the
+// state off: the wrapper here, the host in <dpp-lightbox>.
+// That viewer rebuilds its <img> on every open, so a
+// request still in flight from the last one is ignored.
+export function markPending(frame: HTMLElement, img: HTMLImageElement): void {
   if (img.complete) {
-    wrap.classList.remove('loading')
+    frame.classList.remove('loading')
     return
   }
-  wrap.classList.add('loading')
-  const done = (): void => wrap.classList.remove('loading')
+  frame.classList.add('loading')
+  const done = (): void => {
+    if (img.isConnected) frame.classList.remove('loading')
+  }
   img.addEventListener('load', done, { once: true })
   img.addEventListener('error', done, { once: true })
 }

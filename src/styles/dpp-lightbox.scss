@@ -16,6 +16,11 @@
  */
 
 dpp-lightbox {
+  /* The viewer paints on its own black backdrop, so its
+     chrome carries a foreground token of its own; the
+     publisher's palette never reaches in here. */
+  --lightbox-fg: #fff;
+
   position: fixed;
   inset: 0;
   z-index: 1000;
@@ -42,7 +47,7 @@ dpp-lightbox {
     right: 20px;
     width: 25px;
     height: 25px;
-    color: #fff;
+    color: var(--lightbox-fg, #fff);
     cursor: pointer;
     z-index: 1001;
     background: none;
@@ -71,5 +76,61 @@ dpp-lightbox {
   .navigation {
     --nav-fg: #777;
     --nav-bg: #000;
+  }
+
+  /* A turn keeps showing the picture it is leaving: the
+     browser paints the old bytes until the new ones decode,
+     and the viewer warms nothing ahead, so a full-size
+     request runs its course with the previous picture
+     sitting there looking like the click missed. Stepping
+     it back is what makes the turn visible, and it darkens
+     the frame enough for the ring below to read over any
+     picture. Marked by dpp-lightbox.ts, which clears it
+     when the bytes are in and again on close. */
+  &.loading img.gallery-image {
+    opacity: 0.25;
+  }
+
+  /* The icon system's own class: the verification chip's
+     `.spinner` rules are unscoped and land in this same
+     stylesheet. */
+  svg.icon-spinner {
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 34px;
+    height: 34px;
+    margin: -17px 0 0 -17px;
+    color: var(--lightbox-fg, #fff);
+  }
+
+  /* Two animations, one element. The rotation runs from the
+     moment the mark goes on; the fade holds the ring at
+     nothing for the first 160ms, so a short wait shows the
+     step-back alone and never blips a spinner. */
+  &.loading svg.icon-spinner {
+    display: block;
+    opacity: 0;
+    animation:
+      lightbox-spinner-spin 0.9s linear infinite,
+      lightbox-spinner-in 120ms 160ms linear forwards;
+  }
+}
+
+@keyframes lightbox-spinner-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes lightbox-spinner-in {
+  to { opacity: 1; }
+}
+
+/* A still ring, and no delay before it: the wait is what
+   needs explaining, so it shows at once. */
+@media (prefers-reduced-motion: reduce) {
+  dpp-lightbox.loading svg.icon-spinner {
+    animation: none;
+    opacity: 1;
   }
 }

@@ -31,7 +31,7 @@ export default defineConfig({
     /(first-paint-locale|boot-shell-passthrough)\.spec\.ts/,
     /withdrawal-band\.spec\.ts/,
     /events-off-critical-path\.spec\.ts/,
-    /gallery-turn\.spec\.ts/
+    /(gallery-turn|lightbox-turn)\.spec\.ts/
   ],
   fullyParallel: false,
   retries: 0,

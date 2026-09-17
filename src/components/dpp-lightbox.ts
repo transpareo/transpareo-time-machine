@@ -21,7 +21,7 @@ import { signal } from '@/reactive/signals'
 import { bindModalChrome } from '@/reactive/modal'
 import { i18n } from '@/i18n'
 import { t } from '@/i18n/labels'
-import { navFragment } from './dpp-gallery'
+import { markPending, navFragment } from './dpp-gallery'
 import type { SnapshotImage } from '@/types'
 import { WHEEL_AXIS_LOCK_PX } from '@/gestures'
 
@@ -98,7 +98,7 @@ class DppLightbox extends LightElement {
   private render(): void {
     const state = lightboxState()
     if (!state) {
-      this.classList.remove('open')
+      this.classList.remove('open', 'loading')
       this.replaceChildren()
       return
     }
@@ -119,6 +119,9 @@ class DppLightbox extends LightElement {
         </svg>
       </button>
       <img class="gallery-image" alt=""/>
+      <svg class="icon icon-spinner icon--fn" aria-hidden="true">
+        <use href="#spinner"/>
+      </svg>
       <div class="nav-wrap">
         <div class="navigation"></div>
       </div>
@@ -248,6 +251,12 @@ class DppLightbox extends LightElement {
 
     img.src = this.images[this.index].large
     img.alt = `${this.alt} (${this.index + 1} / ${this.images.length})`
+
+    // The browser keeps painting the old picture until the
+    // new bytes decode, and nothing is warmed ahead here,
+    // so a cold full-size request runs its course with the
+    // previous picture still on screen.
+    markPending(this, img)
 
     if (this.images.length > 1) {
       nav.replaceChildren(navFragment(this.index, this.images.length))

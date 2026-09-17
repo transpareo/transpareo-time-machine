@@ -29,6 +29,7 @@ export default defineConfig({
       'tests/gallery-turn.spec.ts',
       'tests/icons.spec.ts',
       'tests/integration-hook.spec.ts',
+      'tests/lightbox-turn.spec.ts',
       'tests/locale-picker.spec.ts',
       'tests/logo-link.spec.ts',
       'tests/snapshot.spec.ts',
