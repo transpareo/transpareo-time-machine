@@ -47,34 +47,48 @@ dpp-gallery {
   border-radius: 6px;
 }
 
-/* A page turn to a picture that is not already decoded
-   leaves the frame empty while the bytes arrive, which on a
-   slow link reads as the click not having registered. The
-   pagination has already moved by then, so this only has to
-   say that the picture is on its way. Kept as a breathing
-   tint rather than a spinner: the wait is usually well
-   under a second, and a spinner appearing and vanishing
-   that fast is worse than the tint.
+/* The browser keeps painting the picture being left until
+   the new bytes decode, so a turn to a thumbnail the
+   browser has yet to hold leaves the frame looking
+   untouched while the pagination moves under it. Stepping
+   the picture back is what shows the turn; the grey behind
+   it is what it fades toward.
 
    Marked by dpp-gallery.ts, which clears it the moment the
    bytes are in, and never sets it for a neighbour it warmed
-   ahead of the turn. */
-.gallery.loading .images li::after {
-  content: '';
+   ahead of the turn, so a step of one stays instant and
+   silent. */
+.gallery.loading .images img {
+  opacity: 0.25;
+}
+
+/* Centred in the square frame, over the stepped-back
+   picture. The rotation runs from the moment the mark goes
+   on; the fade holds the ring at nothing for the first
+   160ms, so a short wait shows the step-back alone. */
+.gallery .images svg.icon-spinner {
+  display: none;
   position: absolute;
-  inset: 0;
-  background: color-mix(
-    in oklab, var(--font-color, #3D3C3B) 7%, transparent);
-  animation: gallery-waiting 1.1s ease-in-out infinite;
+  top: 50%;
+  left: 50%;
+  width: 28px;
+  height: 28px;
+  margin: -14px 0 0 -14px;
+  color: var(--font-color, #3D3C3B);
 }
 
-@keyframes gallery-waiting {
-  0%, 100% { opacity: 0; }
-  50% { opacity: 1; }
+.gallery.loading .images svg.icon-spinner {
+  display: block;
+  opacity: 0;
+  animation:
+    dpp-spinner-spin 0.9s linear infinite,
+    dpp-spinner-in 120ms 160ms linear forwards;
 }
 
+/* A still ring, and no delay before it: the wait is what
+   needs explaining, so it shows at once. */
 @media (prefers-reduced-motion: reduce) {
-  .gallery.loading .images li::after {
+  .gallery.loading .images svg.icon-spinner {
     animation: none;
     opacity: 1;
   }

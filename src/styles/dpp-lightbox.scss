@@ -113,17 +113,9 @@ dpp-lightbox {
     display: block;
     opacity: 0;
     animation:
-      lightbox-spinner-spin 0.9s linear infinite,
-      lightbox-spinner-in 120ms 160ms linear forwards;
+      dpp-spinner-spin 0.9s linear infinite,
+      dpp-spinner-in 120ms 160ms linear forwards;
   }
-}
-
-@keyframes lightbox-spinner-spin {
-  to { transform: rotate(360deg); }
-}
-
-@keyframes lightbox-spinner-in {
-  to { opacity: 1; }
 }
 
 /* A still ring, and no delay before it: the wait is what

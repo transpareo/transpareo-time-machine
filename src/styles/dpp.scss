@@ -560,6 +560,24 @@ svg.icon {
 
 .icon { margin-right: 5px; }
 
+// ─── Waiting ring ────────────────────────────────────
+// The `#spinner` symbol turns while a component waits on
+// bytes it has asked for. The gallery and the lightbox
+// both ring, in their own size, colour and place, off
+// the `loading` class their shared markPending sets; what
+// they have in common is the motion, so that lives here.
+//
+// The fade is what keeps a short wait quiet: it holds the
+// ring at nothing for its delay, so a picture that lands
+// quickly never paints one.
+@keyframes dpp-spinner-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes dpp-spinner-in {
+  to { opacity: 1; }
+}
+
 // ─── Event-type tag ──────────────────────────────────
 // Solid pill chip, white text on the event's colour
 // token. Used wherever an event type is surfaced

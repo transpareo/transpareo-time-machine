@@ -10,6 +10,26 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Fixed
+
+- A page turn in the image gallery shows that it
+  registered before the picture arrives. The browser
+  keeps painting the picture a reader is leaving until
+  the new bytes decode, so on a slow link a click on a
+  page number moved the number and nothing else, and
+  the picture sat there unchanged for as long as the
+  request took.
+
+  The picture being left now steps back the moment
+  another is asked for, and a ring turns over it once
+  the wait passes 160ms. Both the card's gallery and
+  the fullscreen viewer answer this way, in their own
+  colours. A picture already decoded still arrives in
+  the same frame as the click, with no step-back and no
+  ring, which is the usual turn: the gallery fetches the
+  neighbours of the one on screen while the reader looks
+  at it.
+
 ## [2.17.1] - 2026-09-16
 
 ### Fixed

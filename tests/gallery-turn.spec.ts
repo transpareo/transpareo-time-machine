@@ -3,12 +3,13 @@
  * Copyright (C) 2026 Transpareo AG
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
- * Turning a gallery page. Swapping the image's src leaves
- * the frame empty until the new bytes arrive, so on a slow
- * link a turn used to look like the click had not
+ * Turning a gallery page. The browser keeps painting the
+ * picture being left until the new bytes decode, so on a
+ * slow link a turn used to look like the click had not
  * registered. The neighbours are fetched while the visitor
  * looks at the picture they are on, so the usual turn shows
- * its picture in the same frame as the click.
+ * its picture in the same frame as the click; a jump past
+ * them has to say the next one is coming.
  */
 import { test, expect } from '@playwright/test'
 import type { Page } from '@playwright/test'
@@ -78,14 +79,24 @@ test('a turn to a cold picture says it is coming', async ({ page }) => {
   const marked = await page.evaluate(() => {
     const root = document.querySelector('transpareo-time-machine')!.shadowRoot!
     const wrap = root.querySelector('.gallery')!
+    const img = wrap.querySelector('.gallery-image')!
     const nav = root.querySelector('.navigation')!
     const third = [...nav.querySelectorAll<HTMLElement>('[data-page]')]
       .find((b) => b.dataset.page === '3')!
 
     third.click()
-    return wrap.classList.contains('loading')
+    return {
+      loading: wrap.classList.contains('loading'),
+      rings: wrap.querySelectorAll('svg.icon-spinner').length,
+      imageOpacity: getComputedStyle(img).opacity
+    }
   })
-  expect(marked).toBe(true)
+  expect(marked.loading).toBe(true)
+  expect(marked.rings).toBe(1)
+
+  // The picture being left steps back in the same frame as
+  // the click, so the turn shows before the bytes do.
+  expect(Number(marked.imageOpacity)).toBeLessThan(1)
 
   // And it stops saying so once the picture is there.
   await expect.poll(() => page.evaluate(() => {

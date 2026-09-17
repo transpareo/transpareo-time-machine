@@ -35,7 +35,12 @@ class DppGallery extends LightElement {
     this.innerHTML = `
       <div class="gallery">
         <ul class="images">
-          <li><img class="gallery-image" alt="" fetchpriority="high"/></li>
+          <li>
+            <img class="gallery-image" alt="" fetchpriority="high"/>
+            <svg class="icon icon-spinner icon--fn" aria-hidden="true">
+              <use href="#spinner"/>
+            </svg>
+          </li>
         </ul>
         <div class="navigation"></div>
       </div>
