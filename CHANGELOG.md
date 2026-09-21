@@ -10,6 +10,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.18.1] - 2026-09-21
+
 ### Fixed
 
 - A preloaded artefact is fetched the way the preload can
