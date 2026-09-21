@@ -17,7 +17,8 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import * as host from '../src/host';
 import {
   activeSnapshot, activeVersionNumber, displayedEvent, focusedEventId,
-  hoveredEventId, isOnCurrent, verifyResult, versionStates, timelineState
+  focusIndex, hoveredEventId, isOnCurrent, verifyResult, versionStates,
+  timelineState
 } from '../src/state';
 import type { EpcisDocument } from '../src/epcis';
 import type { DppSnapshot } from '../src/types';
@@ -101,6 +102,45 @@ describe('displayedEvent', () => {
     expect(displayedEvent()?.id).toBe('pub-1');
     hoveredEventId.set('insp-a');
     expect(displayedEvent()?.id).toBe('insp-a');
+  });
+
+  // The URL fragment is a deep link into the timeline, and
+  // it is read before the feed arrives, so nothing checks
+  // that it names an event that exists. A link carrying a
+  // stale id, or one a copy-paste appended a query string
+  // to, used to leave the open history with no event picked
+  // at all: an empty details panel and both nav arrows
+  // greyed out, with no way back other than reloading.
+  it('falls back to the newest event for an unknown focus', () => {
+    focusedEventId.set('6ab168e1c5b303e1e298b959?reload=1');
+    expect(displayedEvent()?.id).toBe('insp-b');
+  });
+
+  it('falls back to the newest event for a stale hover', () => {
+    hoveredEventId.set('gone');
+    expect(displayedEvent()?.id).toBe('insp-b');
+  });
+
+  // A hover that names nothing hands the panel back to the
+  // focused event.
+  it('hands an unknown hover back to the focused event', () => {
+    focusedEventId.set('pub-1');
+    hoveredEventId.set('gone');
+    expect(displayedEvent()?.id).toBe('pub-1');
+  });
+
+  it('has nothing to show when there are no events', () => {
+    host.epcisDocument.set(feed([]));
+    focusedEventId.set('whatever');
+    expect(displayedEvent()).toBe(null);
+  });
+});
+
+// The index the nav arrows and the strip's active dot read.
+describe('focusIndex', () => {
+  it('points at the newest event for an unknown focus', () => {
+    focusedEventId.set('6ab168e1c5b303e1e298b959?reload=1');
+    expect(focusIndex()).toBe(3);
   });
 });
 

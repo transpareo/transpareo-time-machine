@@ -159,6 +159,19 @@ export const focusIndex = computed(() => {
   return idx >= 0 ? idx : list.length - 1
 })
 
+// The event the timeline is settled on. The focused id
+// arrives from the URL fragment before the feed does, so
+// nothing guarantees it names an event that exists: a link
+// made against an older feed, or one a copy-paste appended
+// a query string to, names nothing. Such an id resolves to
+// the newest event, so an open history always has exactly
+// one event picked, with a details panel and working nav
+// arrows. The strip's active dot, the nav arrows and the
+// panel all read this one answer.
+export const activeEvent = computed<DppEvent | null>(
+  () => sortedEvents()[focusIndex()] ?? null
+)
+
 // Visitor is "on current" whenever the displayed
 // snapshot matches the live one. True while the
 // timeline is hidden, since the page reads as live
@@ -428,18 +441,13 @@ export const timelineState =
 // Display surface for the event-details panel.
 // Hover takes precedence over focus, which beats the
 // implicit "latest" so the panel always has content
-// while the timeline is expanded.
+// while the timeline is expanded. An id that names no
+// event falls through instead of blanking the panel.
 export const displayedEvent = computed<DppEvent | null>(() => {
   const list = sortedEvents()
   const hover = hoveredEventId()
-  if (hover) {
-    return list.find((e) => e.id === hover) ?? null
-  }
-  const focus = focusedEventId()
-  if (focus) {
-    return list.find((e) => e.id === focus) ?? null
-  }
-  return list.length ? list[list.length - 1] : null
+  const hovered = hover ? list.find((e) => e.id === hover) : undefined
+  return hovered ?? activeEvent()
 })
 
 // ---- Viewport-driven layout switch.

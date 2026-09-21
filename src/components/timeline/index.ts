@@ -21,8 +21,8 @@ import { signal } from '@/reactive/signals'
 import { el } from '@/reactive/dom'
 import { REVEAL_TOTAL_MS, prefersReducedMotion } from '@/motion'
 import {
-  sortedEvents, focusedEventId, hoveredEventId, timelineState,
-  displayedEvent, eventsPending,
+  sortedEvents, focusedEventId, focusIndex, hoveredEventId,
+  timelineState, activeEvent, displayedEvent, eventsPending,
 } from '@/state'
 import { eventModalEventId } from '../dpp-event-modal'
 import {
@@ -273,10 +273,7 @@ class DppTimeline extends LightElement {
     // Disabled state, gray the arrows out at either end.
     this.effect(() => {
       const list = sortedEvents()
-      const focused = focusedEventId()
-      const idx = focused
-        ? list.findIndex((e) => e.id === focused)
-        : list.length - 1
+      const idx = focusIndex()
       prev.disabled = idx <= 0
       next.disabled = idx < 0 || idx >= list.length - 1
     })
@@ -331,7 +328,12 @@ class DppTimeline extends LightElement {
     const rows = this.rowCount()
     const layout = layOut(list, rows, projection.dotXs, cw)
     const stageH = stageHeight(layout)
+    // A focus the reader never set leaves the canvas
+    // unhighlighted; one they did set resolves to a real
+    // card even when the id names no event.
     const focusedId = focusedEventId()
+      ? activeEvent()?.id ?? null
+      : null
 
     const stage = el('div', 'card-stage')
     stage.style.width = `${cw}px`
@@ -454,10 +456,8 @@ class DppTimeline extends LightElement {
   private renderEvents(host: HTMLDivElement): void {
     const list = sortedEvents()
     const { dotXs } = this.makeProjection()
-    const focusedId = focusedEventId()
     const hoveredId = hoveredEventId()
-    const lastEvent = list.length ? list[list.length - 1] : null
-    const activeId = focusedId ?? lastEvent?.id ?? null
+    const activeId = activeEvent()?.id ?? null
 
     const activeChanged = activeId !== this.lastActiveId
     this.lastActiveId = activeId
@@ -705,12 +705,8 @@ class DppTimeline extends LightElement {
       }
       const list = sortedEvents()
       if (!list.length) return
-      const focusedId = focusedEventId()
-      const last = list[list.length - 1]
-      const at = focusedId
-        ? list.findIndex((e) => e.id === focusedId)
-        : list.length - 1
-      const active = at < 0 ? last : list[at]
+      const at = focusIndex()
+      const active = list[at]
       const cameFromHidden = prevState === 'hidden'
       const activeChanged = active.id !== prevActiveId
 
@@ -725,7 +721,7 @@ class DppTimeline extends LightElement {
       if (!cameFromHidden && !activeChanged && !enteredFull) return
 
       const { dotXs } = this.makeProjection()
-      const x = dotXs[at < 0 ? list.length - 1 : at]
+      const x = dotXs[at]
       requestAnimationFrame(() => {
         const margin = 60
         const view = pane.clientWidth

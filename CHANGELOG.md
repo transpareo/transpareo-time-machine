@@ -12,6 +12,14 @@ and this project adheres to
 
 ### Fixed
 
+- An open history always has one event picked. The URL
+  fragment is read before the events feed arrives, so a
+  fragment naming no event - a link made against an older
+  feed, or one a copy-paste appended a query string to -
+  left the details panel empty, no dot marked, and both
+  nav arrows greyed out, with no way back but a reload.
+  Such a fragment now resolves to the newest event, which
+  is the answer the version deck already gave.
 - Two events minutes apart keep two dots. The strip put
   every dot at its literal time, so events close together
   drew on the same pixel and the timeline showed one dot
