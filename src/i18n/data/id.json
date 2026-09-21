@@ -88,6 +88,7 @@
   "eventSummary.reissued": "Paspor diterbitkan ulang untuk produk ini.",
   "eventSummary.corrected": "Data paspor dikoreksi dan diterbitkan ulang.",
   "status.draft": "draf",
+  "status.manufactured": "diproduksi",
   "status.placed_on_market": "dipasarkan",
   "status.in_use": "sedang digunakan",
   "status.repair": "perbaikan",

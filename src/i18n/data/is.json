@@ -99,6 +99,7 @@
   "eventSummary.reissued": "Vegabréfið var endurútgefið fyrir þessa vöru.",
   "eventSummary.corrected": "Gögn vegabréfsins voru leiðrétt og birt á ný.",
   "status.draft": "drög",
+  "status.manufactured": "framleitt",
   "status.placed_on_market": "sett á markað",
   "status.in_use": "í notkun",
   "status.repair": "viðgerð",

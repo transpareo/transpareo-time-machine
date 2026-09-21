@@ -99,6 +99,7 @@
   "eventSummary.reissued": "Le passeport a été réémis pour ce produit.",
   "eventSummary.corrected": "Les données du passeport ont été corrigées et republiées.",
   "status.draft": "brouillon",
+  "status.manufactured": "fabriqué",
   "status.placed_on_market": "mis sur le marché",
   "status.in_use": "en usage",
   "status.repair": "réparation",

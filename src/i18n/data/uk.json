@@ -88,6 +88,7 @@
   "eventSummary.reissued": "Паспорт було перевидано для цього продукту.",
   "eventSummary.corrected": "Дані паспорта було виправлено та опубліковано повторно.",
   "status.draft": "чернетка",
+  "status.manufactured": "вироблено",
   "status.placed_on_market": "розміщено на ринку",
   "status.in_use": "у використанні",
   "status.repair": "ремонт",

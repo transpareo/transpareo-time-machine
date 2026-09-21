@@ -88,6 +88,7 @@
   "eventSummary.reissued": "Het paspoort is opnieuw uitgegeven voor dit product.",
   "eventSummary.corrected": "De gegevens van het paspoort zijn gecorrigeerd en opnieuw gepubliceerd.",
   "status.draft": "concept",
+  "status.manufactured": "geproduceerd",
   "status.placed_on_market": "op de markt gebracht",
   "status.in_use": "in gebruik",
   "status.repair": "reparatie",

@@ -19,9 +19,9 @@
  */
 import { signal, computed } from '@/reactive/signals'
 import { config } from '@/config'
+import { canonicalStatus } from '@/types'
 import type {
-  DppEvent, DppProduct, DppSnapshot, EventType, LifecycleStatus,
-  PropertyValue,
+  DppEvent, DppProduct, DppSnapshot, EventType, PropertyValue,
 } from '@/types'
 import { withdrawalOf, type Withdrawal } from '@/withdrawal'
 import { snapshotBody } from '@/artefact-detect'
@@ -115,9 +115,9 @@ function epcisToDppEvent(ev: EpcisObjectEvent): DppEvent | null {
     occurredAt: ev.eventTime,
     ...(typeof actorLabel === 'string' ? { actorLabel } : {}),
     ...(typeof statusFrom === 'string'
-      ? { statusFrom: statusFrom as LifecycleStatus } : {}),
+      ? { statusFrom: canonicalStatus(statusFrom) } : {}),
     ...(typeof statusTo === 'string'
-      ? { statusTo: statusTo as LifecycleStatus } : {}),
+      ? { statusTo: canonicalStatus(statusTo) } : {}),
     ...(isLocalizedText(description) ? { description } : {}),
     ...(typeof versionNumber === 'number' ? { versionNumber } : {}),
   }

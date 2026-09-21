@@ -88,6 +88,7 @@
   "eventSummary.reissued": "Bu ürün için pasaport yeniden düzenlendi.",
   "eventSummary.corrected": "Pasaport verileri düzeltildi ve yeniden yayınlandı.",
   "status.draft": "taslak",
+  "status.manufactured": "üretildi",
   "status.placed_on_market": "piyasaya sürüldü",
   "status.in_use": "kullanımda",
   "status.repair": "onarım",

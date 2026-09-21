@@ -88,6 +88,7 @@
   "eventSummary.reissued": "Atheisíodh an pas don táirge seo.",
   "eventSummary.corrected": "Ceartaíodh sonraí an phas agus foilsíodh arís iad.",
   "status.draft": "dréacht",
+  "status.manufactured": "déanta",
   "status.placed_on_market": "ar an margadh",
   "status.in_use": "in úsáid",
   "status.repair": "deisiú",

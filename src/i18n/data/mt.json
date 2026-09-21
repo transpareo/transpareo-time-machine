@@ -88,6 +88,7 @@
   "eventSummary.reissued": "Il-passaport inħareġ mill-ġdid għal dan il-prodott.",
   "eventSummary.corrected": "Id-data tal-passaport ġiet ikkoreġuta u ppubblikata mill-ġdid.",
   "status.draft": "abbozz",
+  "status.manufactured": "manifatturat",
   "status.placed_on_market": "imqiegħed fis-suq",
   "status.in_use": "fl-użu",
   "status.repair": "tiswija",

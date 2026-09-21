@@ -88,6 +88,7 @@
   "eventSummary.reissued": "Паспортът беше преиздаден за този продукт.",
   "eventSummary.corrected": "Данните на паспорта бяха коригирани и публикувани отново.",
   "status.draft": "чернова",
+  "status.manufactured": "произведено",
   "status.placed_on_market": "пуснато на пазара",
   "status.in_use": "в употреба",
   "status.repair": "ремонт",

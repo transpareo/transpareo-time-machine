@@ -88,6 +88,7 @@
   "eventSummary.reissued": "এই পণ্যের জন্য পাসপোর্টটি পুনরায় জারি করা হয়েছে।",
   "eventSummary.corrected": "পাসপোর্টের তথ্য সংশোধন করে পুনরায় প্রকাশ করা হয়েছে।",
   "status.draft": "খসড়া",
+  "status.manufactured": "উৎপাদিত",
   "status.placed_on_market": "বাজারে স্থাপিত",
   "status.in_use": "ব্যবহারে",
   "status.repair": "মেরামত",

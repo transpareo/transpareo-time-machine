@@ -99,6 +99,7 @@
   "eventSummary.reissued": "Pasaporta u rilëshua për këtë produkt.",
   "eventSummary.corrected": "Të dhënat e pasaportës u korrigjuan dhe u ribotuan.",
   "status.draft": "Skicë",
+  "status.manufactured": "Prodhuar",
   "status.placed_on_market": "vendosur në treg",
   "status.in_use": "në përdorim",
   "status.repair": "riparim",

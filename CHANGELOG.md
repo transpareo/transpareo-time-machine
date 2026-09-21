@@ -10,6 +10,21 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Fixed
+
+- The lifecycle stage `manufactured` reads as a word. It
+  is one of the ten stages a passport can stand in, and
+  the renderer knew nine of them, so an event moving a
+  unit into it showed the bare key `status.manufactured`.
+  The stage now carries a label in every locale, and the
+  catalog guard checks the whole list so the next stage
+  cannot go missing.
+- A lifecycle token on the wire is normalised before it
+  is looked up. Events took `statusFrom` and `statusTo`
+  straight off the feed, so the camelCase spellings the
+  snapshot elsewhere uses (`inUse`, `placedOnMarket`)
+  reached the label lookup unmapped.
+
 ## [2.18.0] - 2026-09-17
 
 ### Fixed

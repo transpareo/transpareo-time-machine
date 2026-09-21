@@ -88,6 +88,7 @@
   "eventSummary.reissued": "Putovnica je ponovno izdana za ovaj proizvod.",
   "eventSummary.corrected": "Podaci putovnice ispravljeni su i ponovno objavljeni.",
   "status.draft": "nacrt",
+  "status.manufactured": "proizvedeno",
   "status.placed_on_market": "stavljeno na tržište",
   "status.in_use": "u upotrebi",
   "status.repair": "popravak",

@@ -88,6 +88,7 @@
   "eventSummary.reissued": "이 제품에 대해 여권이 재발행되었습니다.",
   "eventSummary.corrected": "여권 데이터가 정정되어 다시 발행되었습니다.",
   "status.draft": "초안",
+  "status.manufactured": "제조됨",
   "status.placed_on_market": "출시됨",
   "status.in_use": "사용 중",
   "status.repair": "수리",

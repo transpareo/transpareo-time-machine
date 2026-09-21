@@ -99,6 +99,7 @@
   "eventSummary.reissued": "Pasoš je ponovo izdat za ovaj proizvod.",
   "eventSummary.corrected": "Podaci pasoša su ispravljeni i ponovo objavljeni.",
   "status.draft": "nacrt",
+  "status.manufactured": "proizvedeno",
   "status.placed_on_market": "stavljeno na tržište",
   "status.in_use": "u upotrebi",
   "status.repair": "popravka",

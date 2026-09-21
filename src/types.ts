@@ -156,16 +156,25 @@ export function foldLocale(v: unknown): SnapshotLocalizedText {
   return ''
 }
 
-export type LifecycleStatus =
-  | 'draft'
-  | 'placed_on_market'
-  | 'in_use'
-  | 'repair'
-  | 'refurbished'
-  | 'collected'
-  | 'recycled'
-  | 'end_of_life'
-  | 'suspended'
+// Every lifecycle stage a passport can stand in, as a
+// runtime list the catalogs can be checked against: each
+// entry needs a `status.*` label in every locale, and an
+// unlabelled stage renders its own key wherever an event
+// names the new stage.
+export const LIFECYCLE_STATUSES = [
+  'draft',
+  'manufactured',
+  'placed_on_market',
+  'in_use',
+  'repair',
+  'refurbished',
+  'collected',
+  'recycled',
+  'end_of_life',
+  'suspended'
+] as const
+
+export type LifecycleStatus = typeof LIFECYCLE_STATUSES[number]
 
 // Every event type the public EPCIS feed can carry.
 // A runtime list rather than a bare union so the
@@ -248,6 +257,7 @@ export function canonicalRating(raw: unknown): Rating | undefined {
 // unmapped lifecycle state.
 const STATUS_BY_WIRE: Readonly<Record<string, LifecycleStatus>> = {
   draft: 'draft',
+  manufactured: 'manufactured',
   placedOnMarket: 'placed_on_market',
   placed_on_market: 'placed_on_market',
   inUse: 'in_use',

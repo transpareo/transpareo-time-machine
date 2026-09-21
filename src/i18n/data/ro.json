@@ -88,6 +88,7 @@
   "eventSummary.reissued": "Pașaportul a fost reemis pentru acest produs.",
   "eventSummary.corrected": "Datele pașaportului au fost corectate și republicate.",
   "status.draft": "ciornă",
+  "status.manufactured": "fabricat",
   "status.placed_on_market": "introdus pe piață",
   "status.in_use": "în utilizare",
   "status.repair": "reparație",

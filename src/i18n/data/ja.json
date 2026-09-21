@@ -88,6 +88,7 @@
   "eventSummary.reissued": "この製品のパスポートが再発行されました。",
   "eventSummary.corrected": "パスポートのデータが訂正され、再公開されました。",
   "status.draft": "下書き",
+  "status.manufactured": "製造済み",
   "status.placed_on_market": "市場投入",
   "status.in_use": "使用中",
   "status.repair": "修理",

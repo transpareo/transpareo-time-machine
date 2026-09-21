@@ -88,6 +88,7 @@
   "eventSummary.reissued": "Pase šim produktam tika izdota atkārtoti.",
   "eventSummary.corrected": "Pases dati tika laboti un publicēti atkārtoti.",
   "status.draft": "melnraksts",
+  "status.manufactured": "saražots",
   "status.placed_on_market": "laists tirgū",
   "status.in_use": "lietošanā",
   "status.repair": "remonts",

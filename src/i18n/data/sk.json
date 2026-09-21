@@ -88,6 +88,7 @@
   "eventSummary.reissued": "Pas bol pre tento produkt znovu vydaný.",
   "eventSummary.corrected": "Údaje pasu boli opravené a znovu zverejnené.",
   "status.draft": "návrh",
+  "status.manufactured": "vyrobené",
   "status.placed_on_market": "uvedené na trh",
   "status.in_use": "v používaní",
   "status.repair": "oprava",

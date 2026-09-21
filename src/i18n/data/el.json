@@ -88,6 +88,7 @@
   "eventSummary.reissued": "Το διαβατήριο επανεκδόθηκε για αυτό το προϊόν.",
   "eventSummary.corrected": "Τα δεδομένα του διαβατηρίου διορθώθηκαν και δημοσιεύθηκαν εκ νέου.",
   "status.draft": "πρόχειρο",
+  "status.manufactured": "κατασκευασμένο",
   "status.placed_on_market": "διατέθηκε στην αγορά",
   "status.in_use": "σε χρήση",
   "status.repair": "επισκευή",

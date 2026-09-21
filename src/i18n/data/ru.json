@@ -88,6 +88,7 @@
   "eventSummary.reissued": "Паспорт был переоформлен для этого продукта.",
   "eventSummary.corrected": "Данные паспорта были исправлены и опубликованы заново.",
   "status.draft": "черновик",
+  "status.manufactured": "произведено",
   "status.placed_on_market": "выпущено на рынок",
   "status.in_use": "в использовании",
   "status.repair": "ремонт",

@@ -25,7 +25,9 @@
 
 import { describe, it, expect } from 'vitest';
 import { regionName } from '../src/i18n/display-names';
-import { EVENT_TYPES, VOID_REASONS } from '../src/types';
+import {
+  EVENT_TYPES, LIFECYCLE_STATUSES, VOID_REASONS
+} from '../src/types';
 import { colorForEventType } from '../src/event-colors';
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -102,6 +104,18 @@ describe('locale catalogs', () => {
       .map((reason) => `withdrawal.voided.${reason}`)
       .filter((key) => !catalog[key]);
     expect(missing, `${file} unworded void reasons`).toEqual([]);
+  });
+
+  // And for the lifecycle stage an event moves a passport
+  // into: the card and the event modal name the stage
+  // through its `status.*` label, so a stage nobody
+  // translated reads as "status.manufactured" on screen.
+  it.each(files)('%s names every lifecycle stage', (file) => {
+    const catalog = load(file);
+    const missing = LIFECYCLE_STATUSES
+      .map((status) => `status.${status}`)
+      .filter((key) => !catalog[key]);
+    expect(missing, `${file} unnamed lifecycle stages`).toEqual([]);
   });
 
   // A type with no entry in the colour map draws in the

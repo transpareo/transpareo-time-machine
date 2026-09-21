@@ -88,6 +88,7 @@
   "eventSummary.reissued": "इस उत्पाद के लिए पासपोर्ट पुनः जारी किया गया।",
   "eventSummary.corrected": "पासपोर्ट का डेटा सुधारा गया और फिर से प्रकाशित किया गया।",
   "status.draft": "मसौदा",
+  "status.manufactured": "निर्मित",
   "status.placed_on_market": "बाजार में रखा गया",
   "status.in_use": "उपयोग में",
   "status.repair": "मरम्मत",

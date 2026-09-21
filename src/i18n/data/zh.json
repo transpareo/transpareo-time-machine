@@ -88,6 +88,7 @@
   "eventSummary.reissued": "已为该产品重新签发护照。",
   "eventSummary.corrected": "护照数据已更正并重新发布。",
   "status.draft": "草稿",
+  "status.manufactured": "已制造",
   "status.placed_on_market": "已投放市场",
   "status.in_use": "使用中",
   "status.repair": "维修",

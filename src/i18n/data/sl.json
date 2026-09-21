@@ -88,6 +88,7 @@
   "eventSummary.reissued": "Potni list je bil znova izdan za ta izdelek.",
   "eventSummary.corrected": "Podatki potnega lista so bili popravljeni in znova objavljeni.",
   "status.draft": "osnutek",
+  "status.manufactured": "izdelano",
   "status.placed_on_market": "dano na trg",
   "status.in_use": "v uporabi",
   "status.repair": "popravilo",

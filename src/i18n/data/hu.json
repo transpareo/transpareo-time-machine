@@ -88,6 +88,7 @@
   "eventSummary.reissued": "Az útlevelet újra kiadták ehhez a termékhez.",
   "eventSummary.corrected": "Az útlevél adatait javították és újra közzétették.",
   "status.draft": "tervezet",
+  "status.manufactured": "legyártva",
   "status.placed_on_market": "piacra bocsátva",
   "status.in_use": "használatban",
   "status.repair": "javítás",

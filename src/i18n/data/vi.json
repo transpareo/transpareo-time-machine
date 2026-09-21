@@ -99,6 +99,7 @@
   "eventSummary.reissued": "Hộ chiếu đã được cấp lại cho sản phẩm này.",
   "eventSummary.corrected": "Dữ liệu hộ chiếu đã được chỉnh sửa và công bố lại.",
   "status.draft": "bản nháp",
+  "status.manufactured": "đã sản xuất",
   "status.placed_on_market": "đưa ra thị trường",
   "status.in_use": "đang sử dụng",
   "status.repair": "sửa chữa",

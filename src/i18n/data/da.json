@@ -88,6 +88,7 @@
   "eventSummary.reissued": "Passet blev genudstedt for dette produkt.",
   "eventSummary.corrected": "Passets data blev rettet og udgivet på ny.",
   "status.draft": "udkast",
+  "status.manufactured": "fremstillet",
   "status.placed_on_market": "på markedet",
   "status.in_use": "i brug",
   "status.repair": "reparation",

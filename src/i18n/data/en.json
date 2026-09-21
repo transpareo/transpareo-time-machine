@@ -99,6 +99,7 @@
   "eventSummary.reissued": "The passport was reissued for this product.",
   "eventSummary.corrected": "The passport data was corrected and republished.",
   "status.draft": "draft",
+  "status.manufactured": "manufactured",
   "status.placed_on_market": "placed on market",
   "status.in_use": "in use",
   "status.repair": "repair",

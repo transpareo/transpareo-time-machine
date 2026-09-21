@@ -88,6 +88,7 @@
   "eventSummary.reissued": "Pasas šiam gaminiui buvo išduotas iš naujo.",
   "eventSummary.corrected": "Paso duomenys buvo pataisyti ir paskelbti iš naujo.",
   "status.draft": "juodraštis",
+  "status.manufactured": "pagaminta",
   "status.placed_on_market": "pateikta į rinką",
   "status.in_use": "naudojama",
   "status.repair": "remontas",

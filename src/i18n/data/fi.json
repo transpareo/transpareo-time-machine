@@ -88,6 +88,7 @@
   "eventSummary.reissued": "Passi myönnettiin uudelleen tälle tuotteelle.",
   "eventSummary.corrected": "Passin tiedot korjattiin ja julkaistiin uudelleen.",
   "status.draft": "luonnos",
+  "status.manufactured": "valmistettu",
   "status.placed_on_market": "markkinoilla",
   "status.in_use": "käytössä",
   "status.repair": "korjaus",

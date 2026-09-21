@@ -99,6 +99,7 @@
   "eventSummary.reissued": "Пасош је поново издат за овај производ.",
   "eventSummary.corrected": "Подаци пасоша су исправљени и поново објављени.",
   "status.draft": "нацрт",
+  "status.manufactured": "произведено",
   "status.placed_on_market": "стављено на тржиште",
   "status.in_use": "у употреби",
   "status.repair": "поправка",

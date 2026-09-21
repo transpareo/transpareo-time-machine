@@ -99,6 +99,7 @@
   "eventSummary.reissued": "Der Produktpass wurde für dieses Produkt neu ausgestellt.",
   "eventSummary.corrected": "Die Daten des Produktpasses wurden korrigiert und neu veröffentlicht.",
   "status.draft": "Entwurf",
+  "status.manufactured": "Hergestellt",
   "status.placed_on_market": "im Verkehr",
   "status.in_use": "in Verwendung",
   "status.repair": "Reparatur",
