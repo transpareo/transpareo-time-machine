@@ -12,6 +12,16 @@ and this project adheres to
 
 ### Fixed
 
+- A preloaded artefact is fetched the way the preload can
+  be handed over. A `<link rel="preload">` states its
+  credentials mode through `crossorigin`, which has no word
+  for `omit`, so artefacts fetched with `omit` never matched
+  the shell's preload and were downloaded a second time.
+  Cross-origin, `same-origin` attaches no credentials
+  either, so the boot now asks that way and collects the
+  preload. A passport on the page's own origin keeps
+  `omit`: there the modes differ for real, and the visitor's
+  cookies stay off a passport fetch.
 - An open history always has one event picked. The URL
   fragment is read before the events feed arrives, so a
   fragment naming no event - a link made against an older

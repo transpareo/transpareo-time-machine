@@ -180,7 +180,7 @@ describe('bootFrom', () => {
     const routes: Record<string, unknown> = {
       '/a/manifest.json': manifestOf('dpp-a', '/a'),
       '/a/v/1.json': snapshotOf('alias-a'),
-      '/a/epcis.json': EPCIS,
+      '/a/epcis.json': EPCIS
     };
     vi.stubGlobal('fetch', async (
       input: string | URL, init?: RequestInit,
@@ -202,6 +202,73 @@ describe('bootFrom', () => {
     for (const accept of accepts) {
       expect(accept).toBe('application/ld+json, application/json');
     }
+  });
+
+  // The shell preloads the version snapshot, and a preload
+  // is handed over only when the later fetch asks for it
+  // the same way. A link's credentials mode is whatever its
+  // `crossorigin` attribute says, and the attribute cannot
+  // spell 'omit', so an artefact fetched with 'omit' never
+  // matches and downloads a second time. Cross-origin,
+  // 'same-origin' sends no credentials either, so this
+  // costs nothing and collects the preload.
+  it('fetches cross-origin artefacts as a preload can', async () => {
+    const host = await freshHost();
+    const modes: Array<RequestCredentials | undefined> = [];
+    const routes: Record<string, unknown> = {
+      '/a/manifest.json': manifestOf('dpp-a', 'https://cdn.test/a'),
+      '/a/v/1.json': snapshotOf('alias-a'),
+      '/a/epcis.json': EPCIS
+    };
+    vi.stubGlobal('fetch', async (
+      input: string | URL, init?: RequestInit
+    ): Promise<Response> => {
+      const url = typeof input === 'string' ? input : input.toString();
+      modes.push(init?.credentials);
+      for (const [key, value] of Object.entries(routes)) {
+        if (url.includes(key)) {
+          return new Response(JSON.stringify(value), { status: 200 });
+        }
+      }
+      return new Response('not found', { status: 404 });
+    });
+
+    await host.bootFrom('https://cdn.test/a/manifest.json');
+
+    expect(modes.length).toBeGreaterThan(0);
+    for (const mode of modes) expect(mode).toBe('same-origin');
+  });
+
+  // Same origin is where the two modes stop being the same
+  // thing: 'same-origin' would attach the visitor's cookies
+  // to a passport fetched from the page's own host. The
+  // renderer keeps its promise never to send them and pays
+  // for the second download.
+  it('never sends credentials to its own origin', async () => {
+    const host = await freshHost();
+    const modes: Array<RequestCredentials | undefined> = [];
+    const routes: Record<string, unknown> = {
+      '/a/manifest.json': manifestOf('dpp-a', 'https://page.test/a'),
+      '/a/v/1.json': snapshotOf('alias-a'),
+      '/a/epcis.json': EPCIS
+    };
+    vi.stubGlobal('fetch', async (
+      input: string | URL, init?: RequestInit
+    ): Promise<Response> => {
+      const url = typeof input === 'string' ? input : input.toString();
+      modes.push(init?.credentials);
+      for (const [key, value] of Object.entries(routes)) {
+        if (url.includes(key)) {
+          return new Response(JSON.stringify(value), { status: 200 });
+        }
+      }
+      return new Response('not found', { status: 404 });
+    });
+
+    await host.bootFrom('https://page.test/a/manifest.json');
+
+    expect(modes.length).toBeGreaterThan(0);
+    for (const mode of modes) expect(mode).toBe('omit');
   });
 
   it('a reboot clears the previous boot artefacts', async () => {

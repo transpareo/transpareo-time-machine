@@ -283,7 +283,7 @@ async function fetchSource(
   // are pinned by the manifest's hashValue, and the verdict
   // layer refetches them past the cache when they miss it.
   const res = await fetch(url, {
-    credentials: 'omit',
+    credentials: credentialsFor(url),
     cache: 'no-cache',
     headers: { accept: ACCEPT_JSON },
     signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
@@ -686,6 +686,37 @@ function normalizeVariants(
     .sort((a, b) => a.width - b.width)
 }
 
+// Which credentials mode an artefact fetch asks for. The
+// shell preloads what the boot needs, and the browser hands
+// a preload over only when the fetch asks for it the same
+// way, credentials mode included. A link states that mode
+// through its `crossorigin` attribute, which spells
+// 'same-origin' or 'include' and has no word for 'omit', so
+// an artefact fetched with 'omit' can never match one and
+// is downloaded a second time.
+//
+// Cross-origin, 'same-origin' attaches no credentials, so
+// asking that way costs nothing and collects the preload.
+// On the page's own origin the two modes differ for real:
+// 'same-origin' would send the visitor's cookies along with
+// a passport fetch, so there the renderer keeps 'omit' and
+// pays for the second download.
+function credentialsFor(url: string): RequestCredentials {
+  return isCrossOrigin(url) ? 'same-origin' : 'omit'
+}
+
+function isCrossOrigin(url: string): boolean {
+  // A boot can run under a window double that carries only
+  // what the fetch flow needs, so read through `location`.
+  const here = window?.location?.href
+  if (!here) return false
+  try {
+    return new URL(url, here).origin !== new URL(here).origin
+  } catch {
+    return false
+  }
+}
+
 function resolveAgainst(base: string, relative: string | undefined): string | null {
   if (!relative) return null
   try {
@@ -700,7 +731,7 @@ async function fetchJson<T>(
   priority: RequestPriority = 'auto',
 ): Promise<T> {
   const res = await fetch(url, {
-    credentials: 'omit',
+    credentials: credentialsFor(url),
     cache,
     priority,
     headers: { accept: ACCEPT_JSON },
