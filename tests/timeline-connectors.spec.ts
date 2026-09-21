@@ -73,7 +73,7 @@ function connectorCrossings(times: string[], rows: number): number {
   const list = evts(times)
   const cw = gridWidth(times.length, rows)
   const proj = buildLinearProjection(list, cw, CARD_W / 2)
-  const layout = layOut(list, rows, proj.xFor, cw)
+  const layout = layOut(list, rows, proj.dotXs, cw)
   const svg = buildConnectorLayer(layout, cw, stageHeight(layout), null)
   const runs = [...svg.querySelectorAll('path')]
     .map((p) => segsOf(pointsOf(p.getAttribute('d') ?? '')))

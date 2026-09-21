@@ -12,6 +12,13 @@ and this project adheres to
 
 ### Fixed
 
+- Two events minutes apart keep two dots. The strip put
+  every dot at its literal time, so events close together
+  drew on the same pixel and the timeline showed one dot
+  where two events sat. Dot centres now stay at least
+  18px apart, pulled apart inside the span the strip
+  already spends, so the timeline keeps its width and the
+  cluster keeps its place in time.
 - The lifecycle stage `manufactured` reads as a word. It
   is one of the ten stages a passport can stand in, and
   the renderer knew nine of them, so an event moving a

@@ -33,8 +33,22 @@ export const TOP_GAP = 48
 // the connector SVG renders into via overflow:visible.
 export const DOT_Y_REL = -11
 
+// Dots are 14px across. Two events published in the same
+// minute project to the same x, so their dots draw exactly
+// on top of each other and the strip claims one thing
+// happened where two did. DOT_MIN_GAP is the closest two
+// dot centres may sit: 14px of dot plus 4px of daylight,
+// so every dot stays a whole circle with an edge.
+export const DOT_MIN_GAP = 18
+
 export interface Projection {
   xFor: (ts: number) => number
+
+  // One x per event, in the order the events were given,
+  // separated so no two dots overlap. Dots read off this;
+  // ticks and year labels read off xFor, which stays the
+  // plain time-to-pixel map a time axis needs.
+  dotXs: ReadonlyArray<number>
   totalWidth: number
   gaps: ReadonlyArray<{ x: number; width: number }>
   isInGap: (ts: number) => boolean
@@ -56,6 +70,7 @@ export function buildLinearProjection(
   if (!events.length) {
     return {
       xFor: () => PAD_X,
+      dotXs: [],
       totalWidth: canvasW,
       gaps: [],
       isInGap: () => false,
@@ -66,12 +81,23 @@ export function buildLinearProjection(
   const max = Math.max(eventTime(last.occurredAt), min + 1)
   const usable = Math.max(canvasW - 2 * PAD_X - 2 * edgeInset, 1)
   const left = PAD_X + edgeInset
+  // Round so dots, ticks, and connector endpoints all
+  // land on integer pixels, keeps 1px strokes crisp.
+  const xFor = (ts: number): number => Math.round(
+    left + ((ts - min) / (max - min)) * usable
+  )
+
+  // The spread stays inside the span the linear map
+  // already uses, so pulling a cluster apart never widens
+  // the strip: a dot pushed right off the end cascades the
+  // run back to the left instead.
+  const dotXs = spread(
+    events.map((e) => xFor(eventTime(e.occurredAt))),
+    left, left + usable, DOT_MIN_GAP
+  )
   return {
-    // Round so dots, ticks, and connector endpoints all
-    // land on integer pixels, keeps 1px strokes crisp.
-    xFor: (ts) => Math.round(
-      left + ((ts - min) / (max - min)) * usable,
-    ),
+    xFor,
+    dotXs,
     totalWidth: canvasW,
     gaps: [],
     isInGap: () => false,
@@ -98,7 +124,7 @@ export interface LayoutItem {
 export function layOut(
   list: ReadonlyArray<DppEvent>,
   rows: number,
-  xFor: (ts: number) => number,
+  dotXs: ReadonlyArray<number>,
   canvasW: number,
 ): LayoutItem[] {
   const out: LayoutItem[] = new Array(list.length)
@@ -107,15 +133,14 @@ export function layOut(
   for (let r = 0; r < rows; r++) {
     const idxs: number[] = []
     for (let i = r; i < list.length; i += rows) idxs.push(i)
-    const dotXs = idxs.map(
-      (i) => Math.round(xFor(eventTime(list[i].occurredAt))),
-    )
-    const cardXs = placeRow(
-      dotXs.map((x) => x - CARD_W / 2), leftBound, rightBound,
+    const rowDotXs = idxs.map((i) => dotXs[i])
+    const cardXs = spread(
+      rowDotXs.map((x) => x - CARD_W / 2),
+      leftBound, rightBound, CARD_W + CARD_GAP,
     )
     idxs.forEach((i, k) => {
       out[i] = {
-        evt: list[i], x: dotXs[k], cardX: cardXs[k],
+        evt: list[i], x: rowDotXs[k], cardX: cardXs[k],
         width: CARD_W, level: r,
       }
     })
@@ -123,28 +148,30 @@ export function layOut(
   return out
 }
 
-// Resolve one row of preferred (dot-centred) card x's into
-// non-overlapping positions inside [leftBound, rightBound].
+// Resolve a run of preferred x's, given in ascending order,
+// into positions at least `step` apart inside [left, right].
 // A left-to-right sweep clears overlaps by pushing right; a
-// right-to-left sweep then pulls any card that ran past
-// rightBound back inward, cascading the shift left into the
-// free space. Each card stays as close to its preferred x
-// as the row allows. The canvas is sized (see contentWidth)
-// so the fullest row's cards fit exactly, so the leftward
-// cascade never underflows leftBound.
-function placeRow(
-  prefer: ReadonlyArray<number>, leftBound: number, rightBound: number,
+// right-to-left sweep then pulls anything that ran past
+// `right` back inward, cascading the shift left into the
+// free space. Each position stays as close to its preferred
+// x as the run allows. Cards call this with a card width
+// and the canvas sized (see contentWidth) so the fullest
+// row fits exactly; dots call it with DOT_MIN_GAP across
+// the span the time axis already spends, and both leave the
+// leftward cascade room, so it never underflows `left`.
+function spread(
+  prefer: ReadonlyArray<number>,
+  left: number, right: number, step: number,
 ): number[] {
-  const step = CARD_W + CARD_GAP
   const xs: number[] = []
   let prev = -Infinity
   for (const p of prefer) {
-    prev = Math.max(p, leftBound, prev + step)
+    prev = Math.max(p, left, prev + step)
     xs.push(prev)
   }
   let next = Infinity
   for (let i = xs.length - 1; i >= 0; i--) {
-    next = Math.min(xs[i], rightBound, next - step)
+    next = Math.min(xs[i], right, next - step)
     xs[i] = next
   }
   return xs

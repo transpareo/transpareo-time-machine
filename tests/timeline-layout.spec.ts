@@ -14,7 +14,8 @@
  */
 import { describe, expect, it } from 'vitest'
 import {
-  layOut, buildLinearProjection, CARD_W, CARD_GAP, PAD_X,
+  layOut, buildLinearProjection, CARD_W, CARD_GAP, DOT_MIN_GAP,
+  PAD_X,
 } from '../src/components/timeline/layout'
 import { eventTime } from '../src/epcis'
 import type { DppEvent } from '../src/types'
@@ -36,7 +37,7 @@ function gridWidth(n: number, rows: number): number {
 function place(times: string[], rows: number, canvasW: number) {
   const list = evts(times)
   const proj = buildLinearProjection(list, canvasW, CARD_W / 2)
-  return layOut(list, rows, proj.xFor, canvasW)
+  return layOut(list, rows, proj.dotXs, canvasW)
 }
 
 // Two events in 2024 then four within ninety minutes on one
@@ -116,6 +117,83 @@ describe('layout with a malformed occurredAt', () => {
     for (const it of items) {
       expect(Number.isFinite(it.x)).toBe(true)
       expect(Number.isFinite(it.cardX)).toBe(true)
+    }
+  })
+})
+
+// Two events minutes apart land on the same pixel, and two
+// dots on one pixel read as one event. The projection pulls
+// them apart inside the span it already uses, so the strip
+// is no longer for it.
+describe('dot separation', () => {
+  const SAME_INSTANT = [
+    '2026-09-21T09:00:00Z',
+    '2026-09-21T09:00:00Z',
+    '2026-09-21T09:00:00Z'
+  ]
+
+  function dotsOf(times: string[], canvasW: number) {
+    const list = evts(times)
+    return buildLinearProjection(list, canvasW, CARD_W / 2)
+  }
+
+  it('parts two dots that fall on the same instant', () => {
+    const { dotXs } = dotsOf(SAME_INSTANT.slice(0, 2), 900)
+    expect(dotXs[1] - dotXs[0]).toBeGreaterThanOrEqual(DOT_MIN_GAP)
+  })
+
+  it('parts a whole cluster of simultaneous events', () => {
+    const { dotXs } = dotsOf(SAME_INSTANT, 900)
+    for (let i = 1; i < dotXs.length; i++) {
+      expect(dotXs[i] - dotXs[i - 1]).toBeGreaterThanOrEqual(DOT_MIN_GAP)
+    }
+  })
+
+  // The separation spends slack inside the strip; it never
+  // buys room by making the strip wider.
+  it('leaves the timeline the width it was', () => {
+    const proj = dotsOf(SAME_INSTANT, 900)
+    expect(proj.totalWidth).toBe(900)
+    for (const x of proj.dotXs) {
+      expect(x).toBeGreaterThanOrEqual(PAD_X + CARD_W / 2)
+      expect(x).toBeLessThanOrEqual(900 - PAD_X - CARD_W / 2)
+    }
+  })
+
+  // The rule only applies where dots collide: events with
+  // room between them stay at the time they happened.
+  it('leaves events that already have room alone', () => {
+    const times = [
+      '2024-01-01T00:00:00Z',
+      '2025-01-01T00:00:00Z',
+      '2026-01-01T00:00:00Z'
+    ]
+    const { xFor, dotXs } = dotsOf(times, 1200)
+    const linear = times.map((t) => xFor(eventTime(t)))
+    expect(dotXs).toEqual(linear)
+  })
+
+  // The dense feed the card grid is sized for: every dot
+  // still stands clear at the width the timeline renders.
+  it('parts every dot in a full-width cluster', () => {
+    const times = Array.from(
+      { length: 12 },
+      (_, i) => `2026-09-21T09:0${i % 2}:00Z`
+    )
+    const cw = gridWidth(times.length, 2)
+    const { dotXs } = dotsOf(times, cw)
+    for (let i = 1; i < dotXs.length; i++) {
+      expect(dotXs[i] - dotXs[i - 1]).toBeGreaterThanOrEqual(DOT_MIN_GAP)
+    }
+  })
+
+  // Cards hang off the dots, so parting the dots must not
+  // push a card past the canvas edge.
+  it('keeps cards inside the canvas once dots are parted', () => {
+    const cw = gridWidth(SAME_INSTANT.length, 2)
+    for (const it of place(SAME_INSTANT, 2, cw)) {
+      expect(it.cardX).toBeGreaterThanOrEqual(PAD_X)
+      expect(it.cardX + it.width).toBeLessThanOrEqual(cw - PAD_X)
     }
   })
 })

@@ -329,7 +329,7 @@ class DppTimeline extends LightElement {
     const projection = this.makeProjection()
     const cw = this.contentWidth()
     const rows = this.rowCount()
-    const layout = layOut(list, rows, projection.xFor, cw)
+    const layout = layOut(list, rows, projection.dotXs, cw)
     const stageH = stageHeight(layout)
     const focusedId = focusedEventId()
 
@@ -453,7 +453,7 @@ class DppTimeline extends LightElement {
 
   private renderEvents(host: HTMLDivElement): void {
     const list = sortedEvents()
-    const { xFor } = this.makeProjection()
+    const { dotXs } = this.makeProjection()
     const focusedId = focusedEventId()
     const hoveredId = hoveredEventId()
     const lastEvent = list.length ? list[list.length - 1] : null
@@ -470,7 +470,7 @@ class DppTimeline extends LightElement {
     const stagger = list.length > 1 ? total / (list.length - 1) : 0
 
     const fragments = list.map((evt, i) => {
-      const x = xFor(eventTime(evt.occurredAt))
+      const x = dotXs[i]
       const isActive = evt.id === activeId
       const isHovered = evt.id === hoveredId
       const delay = (list.length - 1 - i) * stagger
@@ -481,12 +481,12 @@ class DppTimeline extends LightElement {
     host.replaceChildren(...fragments)
 
     if (activeChanged && activeId) {
-      const active = list.find((e) => e.id === activeId)
+      const at = list.findIndex((e) => e.id === activeId)
+      const active = at < 0 ? undefined : list[at]
       if (active) {
         if (this.pulseEl) this.pulseEl.remove()
         this.pulseEl = buildPulse(
-          xFor(eventTime(active.occurredAt)),
-          colorForEventType(active.eventType),
+          dotXs[at], colorForEventType(active.eventType),
         )
         host.appendChild(this.pulseEl)
       }
@@ -707,9 +707,10 @@ class DppTimeline extends LightElement {
       if (!list.length) return
       const focusedId = focusedEventId()
       const last = list[list.length - 1]
-      const active = focusedId
-        ? list.find((e) => e.id === focusedId) ?? last
-        : last
+      const at = focusedId
+        ? list.findIndex((e) => e.id === focusedId)
+        : list.length - 1
+      const active = at < 0 ? last : list[at]
       const cameFromHidden = prevState === 'hidden'
       const activeChanged = active.id !== prevActiveId
 
@@ -723,8 +724,8 @@ class DppTimeline extends LightElement {
       prevState = state
       if (!cameFromHidden && !activeChanged && !enteredFull) return
 
-      const xFor = this.makeProjection().xFor
-      const x = xFor(eventTime(active.occurredAt))
+      const { dotXs } = this.makeProjection()
+      const x = dotXs[at < 0 ? list.length - 1 : at]
       requestAnimationFrame(() => {
         const margin = 60
         const view = pane.clientWidth
