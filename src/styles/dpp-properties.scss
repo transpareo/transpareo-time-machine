@@ -9,8 +9,8 @@
  * the .dpp-metrics grid and the badge lists; visually
  * close to a definition-list table so it reads as
  * "additional structured data" rather than "more
- * tiles". The private rows render under their own
- * heading beneath the public list.
+ * tiles". The live rows and the private rows each
+ * render under their own heading beneath the public list.
  */
 
 .dpp-properties {
@@ -52,6 +52,13 @@
   color: var(--color-muted);
   text-transform: uppercase;
   letter-spacing: 0.04em;
+}
+
+// When the live values under a heading were written.
+.dpp-properties-updated {
+  margin: 0 0 4px;
+  font-size: var(--font-sm);
+  color: var(--color-muted);
 }
 
 // End-of-passport sign-in prompt (dpp-private-signin), placed

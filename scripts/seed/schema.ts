@@ -328,6 +328,21 @@ export const FixtureSchema = z.object({
     // before the publisher emitted one carries no address.
     url: z.url().optional(),
   }).optional(),
+
+  // Optional. The passport's live values, emitted as the
+  // separately signed dynamic-data document the manifest
+  // advertises at `dynamicDataUrl`. Rows carry the frozen
+  // property rows' shape; `name` is optional because the
+  // publisher does not emit it yet.
+  dynamic_data: z.object({
+    updated_at: Iso8601,
+    values: z.array(z.object({
+      property_id: z.string(),
+      name: LocalizedText.optional(),
+      value: z.union([z.number(), z.string(), z.boolean()]),
+      unit_code: z.string().optional(),
+    })).min(1),
+  }).optional(),
   issuer: Issuer,
   platform: Platform,
   available_locales: z.array(z.string()).min(1),
@@ -351,6 +366,14 @@ export const FixtureSchema = z.object({
         code: 'custom',
         path: ['snapshots'],
         message: 'single-snapshot publication carries exactly one snapshot',
+      });
+    }
+    if (f.dynamic_data) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['dynamic_data'],
+        message: 'single-snapshot publication carries no dynamic data '
+          + '(there is no manifest to advertise it)',
       });
     }
     if (f.events.length > 0 || f.epcis.length > 0) {

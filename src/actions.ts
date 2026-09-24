@@ -28,7 +28,10 @@ import {
 } from '@/crypto/verify'
 import type { ProofEntryResult, VerificationResult } from '@/crypto/verify'
 import { verifySnapshotAnySuite } from '@/crypto/dispatch'
-import { manifestProofState, eventsProofState } from '@/state'
+import {
+  manifestProofState, eventsProofState, dynamicDataProofState,
+  type SignatureProofState,
+} from '@/state'
 import { config } from '@/config'
 import {
   artefactSignatureAcceptable, type ArtefactSignatureState,
@@ -110,41 +113,78 @@ function verifyManifest(): Promise<ArtefactSignatureState> {
 // later reading as unsigned for the rest of the visit.
 // While a feed is still coming, the state stays 'pending'
 // and bootstrap.ts calls this again on arrival.
-let eventsVerifyPromise: Promise<ProofEntryResult | null> | null = null
+let eventsVerifyPromise: Promise<void> | null = null
 export function ensureEventsVerified(): void {
   if (eventsVerifyPromise) return
   const doc = host.epcisDocument.peek()
   if (!doc && host.eventsPending.peek()) return
+  const epoch = host.currentBootEpoch()
   eventsVerifyPromise = (
-    doc
-      ? verifyManifestSignature(
-          doc as unknown as Record<string, unknown>,
-          config.pinnedPlatformKeys,
-        )
-      : Promise.resolve(null)
+    doc ? judgeSidecar(doc, 'events') : Promise.resolve('absent' as const)
+  ).then((state) => {
+    if (epoch === host.currentBootEpoch()) eventsProofState.set(state)
+  })
+}
+
+// Verify the dynamic-data document once it lands, and keep
+// the verdict for the page's lifetime. The document must
+// name this passport before its signature counts for
+// anything: a signed document of another passport verifies
+// perfectly and says nothing about this one. Until the
+// document is there the state stays 'pending'; bootstrap.ts
+// calls this again on arrival.
+let dynamicVerifyPromise: Promise<void> | null = null
+export function ensureDynamicDataVerified(): void {
+  if (dynamicVerifyPromise) return
+  const doc = host.dynamicData.peek()
+  if (!doc) return
+  const epoch = host.currentBootEpoch()
+  const code = host.manifest.peek()?.code
+  const foreign = `dynamic data names passport ${doc.code}, not ${code}`
+  const judged = doc.code === code
+    ? judgeSidecar(doc, 'dynamic data')
+    : Promise.resolve(invalidEntry(foreign))
+  dynamicVerifyPromise = judged.then((state) => {
+    if (epoch === host.currentBootEpoch()) dynamicDataProofState.set(state)
+  })
+}
+
+// Whether the live values may paint: once their document's
+// verdict is in and clears the same policy as the events
+// feed.
+export function liveDataIsShowable(state: SignatureProofState): boolean {
+  return state !== 'pending' && signatureIsAcceptable(state)
+}
+
+// The platform signature of a document fetched beside the
+// manifest in its single-signature scheme. A throw means
+// canonicalisation or hashing blew up, which is a real
+// failure: it fails closed as an invalid entry, and the
+// proof modal shows it as one.
+function judgeSidecar(
+  doc: object, name: string,
+): Promise<ProofEntryResult | 'absent'> {
+  return verifyManifestSignature(
+    doc as Record<string, unknown>, config.pinnedPlatformKeys,
   )
-    .then((res) => {
-      eventsProofState.set(res ?? 'absent')
-      return res
+    .then((res) => res ?? ('absent' as const))
+    .catch((err: unknown) => {
+      const reason = `${name} signature verify threw: ${describeError(err)}`
+      console.warn(`[${name}] signature verify threw:`, err)
+      return invalidEntry(reason)
     })
-    .catch((err) => {
-      // A throw here is a real failure (canonicalisation or
-      // hashing blew up), not a tolerable missing signature.
-      // Fail closed: surface an invalid entry so the events
-      // badge reads as a failure instead of "unsigned".
-      console.warn('[events] signature verify threw:', err)
-      const errored: ProofEntryResult = {
-        index: 0,
-        verificationMethod: '',
-        status: 'invalid',
-        proofValue: '',
-        pinned: false,
-        issuerPinned: false,
-        reason: `events signature verify threw: ${describeError(err)}`,
-      }
-      eventsProofState.set(errored)
-      return errored
-    })
+}
+
+function invalidEntry(reason: string): ProofEntryResult {
+  return {
+    index: 0,
+    verificationMethod: '',
+    status: 'invalid',
+    proofValue: '',
+    pinned: false,
+    issuerPinned: false,
+    reason,
+  }
 }
 
 // Forget the per-boot verify latches and stop any
@@ -155,6 +195,7 @@ export function ensureEventsVerified(): void {
 export function resetVerifyCaches(): void {
   manifestVerifyPromise = null
   eventsVerifyPromise = null
+  dynamicVerifyPromise = null
   freshlyRead.clear()
   freshReads.clear()
   cachedReads.clear()

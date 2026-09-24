@@ -227,6 +227,38 @@ Field notes:
   published in; drives the footer language picker.
 - `epcisUrl` - the EPCIS 2.0 events document the
   event timeline derives from.
+- `dynamicDataUrl` (optional) - the passport's live
+  values (state of charge, remaining capacity), which
+  change without a new version. The document names its
+  passport by `code`, carries `updatedAt` and one row
+  per value in the property rows' shape, and is signed
+  with the platform key in the manifest's scheme on
+  every write:
+
+  ```json
+  {
+    "@type": "DppDynamicData",
+    "code": "demo-2026-b001",
+    "updatedAt": "2026-09-24T06:40:00Z",
+    "values": [
+      { "propertyID": "stateOfCharge", "value": 81, "unitCode": "P1" }
+    ],
+    "signature": { "...": "..." }
+  }
+  ```
+
+  The renderer shows the rows under "Current state"
+  with the time they were written, on the current
+  version only. They carry their own verdict: a version
+  stays verified whatever this document says, and the
+  rows paint only once its signature clears the same
+  policy as the events document, and only when its
+  `code` is this passport's. A row without a `name` is
+  labelled by its `propertyID`. The manifest is not
+  re-signed on a telemetry write, so it vouches for the
+  address and nothing newer: an older signed copy of
+  the same passport's document still verifies, and
+  `updatedAt` is what tells the reader its age.
 - `issuer` / `platform` - schema.org-style
   attribution blocks; their `did` identities are
   matched against the snapshot proof entries.
@@ -982,6 +1014,8 @@ public/<id>/                              # gitignored
                                                 + 5-entry proof set
     epcis.json                                # EPCIS 2.0 events feed
                                                 (with transpareo:* extensions)
+    dynamic-data.json                         # live values, when the
+                                                fixture declares any
     keys/{issuer,platform}.json               # Ed25519 Multikey docs
 ```
 
@@ -1129,7 +1163,9 @@ that would rather not download Firefox.
       `epcisUrl` against the manifest URL.
    2. Fetches the current snapshot and the EPCIS
       document (the single public events feed) in
-      parallel.
+      parallel, plus the dynamic-data document when the
+      manifest advertises one. Only the snapshot is
+      waited on.
 
    For a single snapshot it stores that one version and
    leaves the manifest + EPCIS empty (so the timeline and
@@ -1181,7 +1217,8 @@ src/
   embed.ts                    embed entry (script-tag delivery, CSS inlined)
   bootstrap-spa.ts            global token import + element register
   bootstrap.ts                first-paint orchestration
-  host.ts                     fetch flow (manifest -> snapshot + EPCIS)
+  host.ts                     fetch flow (manifest -> snapshot + EPCIS
+                              + dynamic data)
   state.ts                    signal store + computed derivations
                               (events derive from EPCIS extensions)
   actions.ts                  mutations (focus, scrub, snapshot load + verify)

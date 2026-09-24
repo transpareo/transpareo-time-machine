@@ -21,6 +21,8 @@
  *     renderer's DppEvent type.
  *   - epcis.json: EPCIS 2.0 ObjectEvent projection plus a
  *     document-level platform signature block.
+ *   - dynamic-data.json: the live values, when the fixture
+ *     declares any, signed like the manifest.
  *
  * Public-tier artefacts are gitignored; every dev
  * regenerates locally via `npm run seed`. The renderer
@@ -111,6 +113,13 @@ export async function emitFixture(
     if (!signer) throw new Error('manifest publication needs a signer');
     const epcisDoc = buildEpcis(fixture, signer);
     const manifestDoc = buildManifest(fixture, snapshotDocs, signer);
+    if (fixture.dynamic_data) {
+      const dynamicDoc = buildDynamicData(fixture, signer);
+      writes.push(writeFile(
+        join(dir, 'dynamic-data.json'),
+        JSON.stringify(dynamicDoc, null, 2) + '\n',
+      ));
+    }
     writes.push(
       writeFile(
         join(dir, 'manifest.json'),
@@ -854,6 +863,7 @@ function buildManifest(
     currentVersion: current.number,
     versions,
     epcisUrl: 'epcis.json',
+    ...(fixture.dynamic_data ? { dynamicDataUrl: 'dynamic-data.json' } : {}),
     signedAt: current.publishedAt,
 
     // A withdrawn passport states it here, inside the
@@ -867,6 +877,32 @@ function buildManifest(
     ...(fixture.superseded_by
       ? { supersededBy: fixture.superseded_by }
       : {}),
+  };
+  return { ...body, signature: signer.signManifest(body) };
+}
+
+// ─── Dynamic data (the live values) ─────────────────
+//
+// The publisher rewrites this document on every telemetry
+// write and signs it with the platform key in the manifest's
+// single-signature scheme, so the seed reuses signManifest.
+// The published document carries no `@context`, and the
+// seed matches it.
+function buildDynamicData(
+  fixture: Fixture, signer: SnapshotSigner,
+): Record<string, unknown> {
+  const dynamic = fixture.dynamic_data;
+  if (!dynamic) throw new Error('fixture declares no dynamic data');
+  const body = {
+    '@type': 'DppDynamicData',
+    code: fixture.code,
+    updatedAt: dynamic.updated_at,
+    values: dynamic.values.map((v) => ({
+      propertyID: v.property_id,
+      ...(v.name ? { name: toWireLocalized(v.name) } : {}),
+      value: v.value,
+      ...(v.unit_code ? { unitCode: v.unit_code } : {}),
+    })),
   };
   return { ...body, signature: signer.signManifest(body) };
 }

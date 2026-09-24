@@ -6,14 +6,20 @@
  * <dpp-properties>, the flat property list driven by
  * the snapshot's top-level `properties` collection plus
  * the per-user private rows the auth-gated endpoint
- * returns. Layout is two stacked sections:
+ * returns, plus the passport's live values. Layout is
+ * three stacked sections:
  *
  *   1. Public list - category-1 (always-visible) and
  *      category-2 (on-demand) rows from snapshot
  *      .properties. On-demand rows only render when
  *      their namespace is unlocked by the URL's `?show=`
  *      token list.
- *   2. "Additional product data" - category-3 rows that
+ *   2. "Current state" - the rows of the dynamic-data
+ *      document, with the time it was last written. They
+ *      belong to today, so they show on the current
+ *      version only, and only once their signature has
+ *      cleared (see actions.liveDataIsShowable).
+ *   3. "Additional product data" - category-3 rows that
  *      arrived as `{ status: 'ok', rows }` from the
  *      manifest's `privateProperties.url` endpoint. The
  *      same `?show=` filter applies to private rows that
@@ -37,8 +43,12 @@
 
 import { LightElement } from '@/reactive/element'
 import { el } from '@/reactive/dom'
-import { activeSnapshot, activeVersionNumber } from '@/state'
-import { i18n, formatNumber } from '@/i18n'
+import {
+  activeSnapshot, activeVersionNumber, isOnCurrent, dynamicDataProofState,
+} from '@/state'
+import { dynamicData, adaptDynamicRows } from '@/host'
+import { liveDataIsShowable } from '@/actions'
+import { i18n, formatNumber, formatDateTime } from '@/i18n'
 import { t, type LabelKey } from '@/i18n/labels'
 import {
   tx, propertyIsKind, type PropertyValue, type PropertyValueOf,
@@ -65,6 +75,7 @@ class DppProperties extends LightElement {
       const privateRows = visiblePrivateRows(state)
 
       const children: HTMLElement[] = publicRows.map(buildRow)
+      children.push(...buildLiveSection())
       if (privateRows.length > 0) {
         children.push(buildHeading(tr('properties.additionalHeading')))
         for (const r of privateRows) children.push(buildRow(r))
@@ -103,6 +114,28 @@ function visiblePrivateRows(
   state: PrivateFetchState | undefined,
 ): ReadonlyArray<ScalarRow> {
   return state?.status === 'ok' ? detailRows(state.rows) : []
+}
+
+// The live section: heading, when the values were written,
+// then the rows. Empty when there is nothing that may show.
+function buildLiveSection(): HTMLElement[] {
+  const doc = dynamicData()
+  if (!doc || !isOnCurrent()) return []
+  if (!liveDataIsShowable(dynamicDataProofState())) return []
+
+  // The document is the publisher's to write, and a
+  // malformed one must cost the live section only.
+  const values = Array.isArray(doc.values) ? doc.values : []
+  const rows = detailRows(adaptDynamicRows(values))
+  if (rows.length === 0) return []
+
+  const out = [buildHeading(tr('properties.liveHeading'))]
+  const time = formatDateTime(doc.updatedAt, i18n.locale)
+  if (time) {
+    const text = t(i18n.labels, 'properties.liveUpdated', { time })
+    out.push(el('p', 'dpp-properties-updated', text))
+  }
+  return [...out, ...rows.map(buildRow)]
 }
 
 function buildRow(row: ScalarRow): HTMLElement {

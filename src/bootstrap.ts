@@ -16,8 +16,9 @@ import {
 } from '@/state'
 import {
   ensureVersionLoaded, navByEventId, ensureEventsVerified,
+  ensureDynamicDataVerified,
 } from '@/actions'
-import { manifest } from '@/host'
+import { manifest, dynamicData } from '@/host'
 
 // Number of versions on either side of the active
 // version to prefetch + verify when the visitor opens
@@ -65,6 +66,12 @@ export function bootstrapVerify(): void {
   // it is there.
   effect(() => {
     if (epcisDocument()) ensureEventsVerified()
+  })
+
+  // Likewise the dynamic-data document, which the boot
+  // never waits for either.
+  effect(() => {
+    if (dynamicData()) ensureDynamicDataVerified()
   })
 }
 

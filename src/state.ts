@@ -45,10 +45,10 @@ export const versionStates =
   signal<Record<number, VersionState>>({})
 
 // Verdict of a single platform signature bound to a whole
-// artefact: the manifest's version list, or the events
-// sidecar. 'pending' until the check resolves; 'absent'
-// when the artefact carries no signature; otherwise the
-// resolved proof entry result.
+// artefact: the manifest's version list, the events
+// sidecar, or the dynamic-data document. 'pending' until
+// the check resolves; 'absent' when the artefact carries
+// no signature; otherwise the resolved proof entry result.
 export type SignatureProofState = ProofEntryResult | 'absent' | 'pending'
 
 // Manifest version-list signature (shared across versions).
@@ -58,6 +58,12 @@ export const manifestProofState = signal<SignatureProofState>('pending')
 // at boot; surfaced in the proof modal alongside the
 // manifest signature.
 export const eventsProofState = signal<SignatureProofState>('pending')
+
+// Dynamic-data document signature, judged when the
+// document lands. The version verdict never reads it; the
+// live values paint only once it clears (see
+// actions.liveDataIsShowable).
+export const dynamicDataProofState = signal<SignatureProofState>('pending')
 
 // Lookup table keyed by `transpareo:dppEventId` so a
 // DppEvent row can resolve its matching EPCIS event in
@@ -504,6 +510,7 @@ export function resetBootState(): void {
   versionStates.set({})
   manifestProofState.set('pending')
   eventsProofState.set('pending')
+  dynamicDataProofState.set('pending')
   focusedEventId.set(null)
   hoveredEventId.set(null)
   previewEventId.set(null)

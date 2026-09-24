@@ -12,6 +12,18 @@ and this project adheres to
 
 ### Added
 
+- The passport's live values. A manifest that advertises
+  `dynamicDataUrl` has its dynamic-data document fetched
+  beside the snapshot, and its rows (state of charge,
+  remaining capacity) show under "Current state" with the
+  time they were written, on the current version only.
+  The document is checked against the platform key and
+  must name the passport it is served for; its rows paint
+  only once it clears, and the proof modal shows its
+  signature in a section of its own. A failing one counts
+  against the "all signatures valid" headline, like the
+  events document, and leaves every version verdict
+  alone.
 - Battery units read as symbols. Rows carrying the
   UN/CEFACT codes for watt-hours, watts, volts, amperes,
   ampere-hours, ohms, degrees Celsius, minutes and tonnes
@@ -19,6 +31,10 @@ and this project adheres to
 
 ### Fixed
 
+- Rebooting the element onto another passport while the
+  events signature was being checked could land the
+  previous passport's verdict on the new one. The verdict
+  is now dropped when the passport changed under it.
 - The Albanian label for the events signature read
   "characteristic event"; it now says what the section is.
 

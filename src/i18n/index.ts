@@ -404,6 +404,25 @@ export function formatShortDate(iso: string, locale: string): string {
   return fmt.format(new Date(iso))
 }
 
+// Date and time of day, de-DE: 24.09.2026, 08:15, en:
+// Sep 24, 2026, 8:15 AM. For a value that moves within a
+// day, where the date alone would make a reading from this
+// morning and one from last night look the same. Null for
+// a string that is not a date, so the caller can leave the
+// line out.
+const dateTimeFormatters = new Map<string, Intl.DateTimeFormat>()
+export function formatDateTime(iso: string, locale: string): string | null {
+  if (Number.isNaN(Date.parse(iso))) return null
+  let fmt = dateTimeFormatters.get(locale)
+  if (!fmt) {
+    fmt = new Intl.DateTimeFormat(locale, {
+      dateStyle: 'medium', timeStyle: 'short',
+    })
+    dateTimeFormatters.set(locale, fmt)
+  }
+  return fmt.format(new Date(iso))
+}
+
 // The same instant with the month spelled out, de-DE:
 // 13. September 2026, en: September 13, 2026. For the few
 // dates a reader may act on rather than scan past: the

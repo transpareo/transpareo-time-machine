@@ -625,6 +625,32 @@ product:
     street: Via Galvani 17
     city: 20121 Milano
     country: Italy
+# Live values from the BMS, rewritten on every telemetry
+# write without minting a version.
+dynamic_data:
+  updated_at: 2026-09-24T06:40:00Z
+  values:
+    - property_id: stateOfCharge
+      name:
+        en: State of charge
+        de: Ladezustand
+        fr: État de charge
+      value: 81
+      unit_code: P1
+    - property_id: stateOfCertifiedEnergy
+      name:
+        en: State of certified energy
+        de: Zustand der zertifizierten Energie
+        fr: État de l'énergie certifiée
+      value: 96
+      unit_code: P1
+    - property_id: remainingCapacity
+      name:
+        en: Remaining capacity
+        de: Verbleibende Kapazität
+        fr: Capacité restante
+      value: 38.6
+      unit_code: AMH
 snapshots:
   - version: 1
     published_at: 2024-03-01T09:00:00Z

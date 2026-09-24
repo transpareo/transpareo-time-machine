@@ -57,7 +57,8 @@ import {
   versionStates, events, focusedEventId, timelineState,
   activeVersionNumber, activeIssuer, activePlatform,
   epcisDocument, verifyResult,
-  manifestProofState, eventsProofState, type SignatureProofState,
+  manifestProofState, eventsProofState, dynamicDataProofState,
+  type SignatureProofState,
 } from '@/state'
 import * as host from '@/host'
 import {
@@ -135,11 +136,13 @@ class DppVerificationModal extends LightElement {
 
     const eventsState = eventsProofState()
     const epcisDoc = epcisDocument()
+    const dynamicState = dynamicDataProofState()
+    const dynamicDoc = host.dynamicData()
+    const sidecarsBad = sidecarFails(epcisDoc, eventsState)
+      || sidecarFails(dynamicDoc, dynamicState)
 
     const body = document.createDocumentFragment()
-    body.append(
-      buildSummary(m, states, eventsState, epcisDoc != null, activeVersion),
-    )
+    body.append(buildSummary(m, states, sidecarsBad, activeVersion))
 
     // The manifest's platform signature, when it carries one.
     // A stripped/unsigned manifest has no fields to show; on
@@ -158,6 +161,15 @@ class DppVerificationModal extends LightElement {
     if (eventsSig) {
       body.append(buildSignatureSection(
         eventsSig, 'cryptoProof.eventsSignature', eventsState,
+      ))
+    }
+
+    // The dynamic-data document's signature, judged apart
+    // from every version: the live values carry their own
+    // verdict.
+    if (dynamicDoc?.signature) {
+      body.append(buildSignatureSection(
+        dynamicDoc.signature, 'cryptoProof.liveDataSignature', dynamicState,
       ))
     }
     body.append(
@@ -229,41 +241,42 @@ function unverifiableNote(result: VerificationResult): string {
 
 // ─── Summary ─────────────────────────────────────────
 
+// Whether a document fetched beside the manifest (the
+// events feed, the dynamic data) fails the shared acceptance
+// gate. A failing one counts against the headline so "all
+// valid" can never sit above a red signature section.
+// Unpinned builds tolerate a missing signature or an
+// unreachable key host; a pinned build fails closed on both
+// (a CDN that strips a signature must not get a clean
+// headline). A still-pending check does not count, mirroring
+// how the version tally treats unchecked snapshots, and a
+// document that is not there has no signature to judge.
+function sidecarFails(doc: unknown, state: SignatureProofState): boolean {
+  return doc != null && state !== 'pending' && !signatureIsAcceptable(state)
+}
+
 function buildSummary(
   manifest: DppManifest, states: StatesMap,
-  eventsState: SignatureProofState,
-  hasEvents: boolean,
+  sidecarsBad: boolean,
   activeVersion: number,
 ): HTMLElement {
   const counts = tally(manifest, states)
   const { verified, failed, pending, untouched, unverifiable } = counts
 
-  // An events signature that fails the shared acceptance gate
-  // counts against the headline so "all valid" can never sit
-  // above a red events badge. Unpinned builds tolerate a
-  // missing signature or an unreachable key host; a pinned
-  // build fails closed on both (a CDN that strips the events
-  // signature must not get a clean headline). A still-pending
-  // check does not count, mirroring how the version tally
-  // treats unchecked snapshots, and a feed with no events
-  // document at all has no signature to judge.
-  const eventsBad = hasEvents
-    && eventsState !== 'pending'
-    && !signatureIsAcceptable(eventsState)
   // An unverifiable version blocks "all valid" (nothing
   // vouched for it) without counting as a mismatch, so the
   // headline falls back to the neutral verified count.
   const allChecked = untouched === 0 && pending === 0
   const allOk = allChecked && failed === 0 && unverifiable === 0
-    && verified > 0 && !eventsBad
+    && verified > 0 && !sidecarsBad
 
   const positive = failed === 0 && unverifiable === 0
-    && verified > 0 && !eventsBad
+    && verified > 0 && !sidecarsBad
   const cls = `proof-summary${positive ? ' verified' : ''}`
-    + `${failed > 0 || eventsBad ? ' failed' : ''}`
+    + `${failed > 0 || sidecarsBad ? ' failed' : ''}`
   const summary = el('section', cls)
 
-  summary.appendChild(buildSummaryStatus(counts, allOk, eventsBad))
+  summary.appendChild(buildSummaryStatus(counts, allOk, sidecarsBad))
   summary.appendChild(buildSummaryMeta(manifest))
 
   // Download what the visitor is looking at: while
@@ -274,7 +287,7 @@ function buildSummary(
 }
 
 function buildSummaryStatus(
-  counts: ReturnType<typeof tally>, allOk: boolean, eventsBad: boolean,
+  counts: ReturnType<typeof tally>, allOk: boolean, sidecarsBad: boolean,
 ): HTMLSpanElement {
   const { verified, failed } = counts
   const wrap = el('span', 'proof-status')
@@ -283,7 +296,7 @@ function buildSummaryStatus(
   let orbColor: 'verified' | 'failed' | null = null
   let iconName: 'ok' | 'cancel' | null = null
 
-  if (failed > 0 || eventsBad) {
+  if (failed > 0 || sidecarsBad) {
     text = tr('cryptoProof.mismatch')
     orbColor = 'failed'
     iconName = 'cancel'

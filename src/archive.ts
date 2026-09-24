@@ -84,6 +84,12 @@ export interface DppManifest {
   // its timeline from this single artefact; no separate
   // events sidecar is published.
   readonly epcisUrl: string
+
+  // Where the passport's dynamic-data document lives: the
+  // live values (state of charge, cycle count) that change
+  // without a new version. Absent when the passport carries
+  // none. See `DppDynamicData`.
+  readonly dynamicDataUrl?: string
   readonly signedAt: string
   readonly signature: ManifestSignature
 
@@ -115,6 +121,33 @@ export interface DppManifest {
     readonly uuid?: string
     readonly url?: string
   }
+}
+
+// The live values of one passport. The publisher rewrites
+// this document under one URL on every telemetry write and
+// signs it each time with the platform key, in the
+// manifest's single-signature scheme. The manifest is not
+// re-signed on those writes, so it vouches for the address
+// and nothing else: `code` ties the document to its
+// passport, and `updatedAt` is the only statement of its
+// age.
+//
+// Rows follow the frozen property rows' shape. `name` is
+// optional because the publisher does not emit it yet.
+export interface DppDynamicData {
+  readonly '@type': 'DppDynamicData'
+  readonly code: string
+  readonly updatedAt: string
+  readonly values: ReadonlyArray<DynamicDataValue>
+  readonly signature?: ManifestSignature
+}
+
+export interface DynamicDataValue {
+  readonly propertyID: string
+  readonly name?: SnapshotLocalizedText
+  readonly value?: unknown
+  readonly unitCode?: string
+  readonly unitText?: string
 }
 
 // schema.org-style Organization block, used wherever
@@ -202,3 +235,4 @@ export type { VerificationResult } from '@/crypto/verify'
 export type { ChainStatusResult } from '@/actions'
 import type { VerificationResult } from '@/crypto/verify'
 import type { ChainStatusResult } from '@/actions'
+import type { SnapshotLocalizedText } from '@/types'

@@ -22,6 +22,9 @@
  *      -> EPCIS document (single artefact; the renderer
  *      derives DppEvent[] from its transpareo:* event
  *      extensions in state.ts)
+ *   4. fetch(resolve(manifest.dynamicDataUrl, src))
+ *      -> dynamic-data document, when advertised (the
+ *      passport's live values)
  *
  * Older versions are loaded lazily: ensureVersionLoaded
  * in actions.ts pulls a target version on demand, and
@@ -42,7 +45,10 @@
 import { signal } from '@/reactive/signals'
 import { readJsonResponse } from '@/fetch-json'
 import { detectArtefact, snapshotBody } from '@/artefact-detect'
-import type { DppManifest, Organization, SignedSnapshot } from '@/archive'
+import type {
+  DppDynamicData, DppManifest, DynamicDataValue, Organization,
+  SignedSnapshot,
+} from '@/archive'
 import type {
   DppSnapshot, DppProduct, DppManufacturer, SnapshotImage, ImageVariant,
   PropertyValue, PropertyValueKind, SnapshotLocalizedText, SnapshotProof,
@@ -88,6 +94,11 @@ export const snapshots = signal<Record<number, DppSnapshot>>({})
 export const rawSnapshots = signal<Record<number, SignedSnapshot>>({})
 export const epcisDocument = signal<EpcisDocument | null>(null)
 
+// The passport's live values, once their document lands.
+// Null while in flight, when the manifest advertises none,
+// and when the fetch failed.
+export const dynamicData = signal<DppDynamicData | null>(null)
+
 // URL of the manifest the SPA was booted from. Stored
 // so ensureVersionLoaded can resolve relative version
 // URLs against it later.
@@ -124,6 +135,7 @@ export async function bootFrom(src: string): Promise<void> {
   rawSnapshots.set({})
   epcisDocument.set(null)
   eventsPending.set(false)
+  dynamicData.set(null)
 
   // Normalize to an absolute URL so URL resolution
   // against the manifest's sibling URLs works whether
@@ -174,6 +186,8 @@ async function bootFromManifest(
   // behind bytes the visitor has asked nothing of yet. On
   // the live demo that was most of a second.
   const feed = fetchEventsFeed(epcisUrl, epoch)
+  const dynamicUrl = resolveAgainst(base, m.dynamicDataUrl)
+  if (dynamicUrl) fetchDynamicData(dynamicUrl, epoch)
   const current = await fetchJson<SignedSnapshot>(currentVersionUrl)
   if (epoch !== bootEpoch) return
   storeSnapshot(current, currentVersionUrl)
@@ -209,6 +223,22 @@ function fetchEventsFeed(url: string, epoch: number): Promise<void> {
     })
     .finally(() => {
       if (epoch === bootEpoch) eventsPending.set(false)
+    })
+}
+
+// The live values, fetched beside the snapshot like the
+// events feed and for the same reasons: the publisher
+// rewrites the document under one URL, so it is
+// revalidated, and when it will not load the live block
+// stays out while the passport renders as usual.
+function fetchDynamicData(url: string, epoch: number): void {
+  fetchJson<DppDynamicData>(url, 'no-cache')
+    .then((doc) => {
+      if (epoch === bootEpoch) dynamicData.set(doc)
+    })
+    .catch((err: unknown) => {
+      const message = err instanceof Error ? err.message : String(err)
+      console.warn('[host] dynamic data did not load:', message)
     })
 }
 
@@ -595,6 +625,20 @@ export function adaptPrivateRows(
     rows.filter((r) => r.access === 'legitimateInterest'),
     buildPrivateRow,
   )
+}
+
+// Adapt the live rows of the dynamic-data document. They
+// render in the detail table, so each gets a namespace.
+// The frozen snapshot carries no row for a dynamic
+// property, so a row the publisher left unnamed is
+// labelled by its term.
+export function adaptDynamicRows(
+  rows: ReadonlyArray<DynamicDataValue>,
+): ReadonlyArray<PropertyValue> {
+  return buildRows(rows, (r, value) => {
+    const row = buildPrivateRow(r, value)
+    return row.name ? row : { ...row, name: row.key }
+  })
 }
 
 function buildRows(
