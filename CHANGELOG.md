@@ -17,6 +17,11 @@ and this project adheres to
   ampere-hours, ohms, degrees Celsius, minutes and tonnes
   showed the bare code (`AMH`); they now show `Ah`.
 
+### Fixed
+
+- The Albanian label for the events signature read
+  "characteristic event"; it now says what the section is.
+
 ## [2.18.1] - 2026-09-21
 
 ### Fixed

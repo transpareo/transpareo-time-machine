@@ -14,7 +14,7 @@
   "cryptoProof.snapshotsVerified": "{count} Versioni i verifikuar",
   "cryptoProof.snapshotsVerifiedPlural": "{count} Versione të verifikuara",
   "cryptoProof.manifestSignature": "Nënshkrimi i manifestit",
-  "cryptoProof.eventsSignature": "Ngjarje karakteristike",
+  "cryptoProof.eventsSignature": "Nënshkrimi i ngjarjeve",
   "cryptoProof.type": "Lloji",
   "cryptoProof.cryptosuite": "Krijtosuite",
   "cryptoProof.created": "Krijuar",
