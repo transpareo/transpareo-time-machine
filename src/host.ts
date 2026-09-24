@@ -62,6 +62,7 @@ import {
   classifyWireValue, bridgeLongTextGroups, numericWireValue,
 } from '@/property-classify'
 import type { EpcisDocument } from '@/epcis'
+import { levelOf } from '@/passport-level'
 
 export type LoadState = 'idle' | 'loading' | 'ready' | 'error' | 'retired'
 
@@ -437,6 +438,9 @@ interface WireSnapshot {
   readonly priorVersionHash?: string
   readonly changedProperties?: unknown
   readonly proof?: ReadonlyArray<SnapshotProof>
+  readonly passportLevel?: unknown
+  readonly unitPassportLevel?: unknown
+  readonly lotManufacturedOn?: unknown
 }
 
 interface WireProduct {
@@ -530,6 +534,9 @@ export function toRenderModel(
 ): DppSnapshot {
   const w = unwrapCredential(raw)
   const changed = adaptChangeSet(w.changedProperties)
+  const level = levelOf(w.passportLevel)
+  const unitLevel = levelOf(w.unitPassportLevel)
+  const lotDate = literalString(w.lotManufacturedOn)
   return {
     version: w.version,
     publishedAt: w.publishedAt,
@@ -544,8 +551,19 @@ export function toRenderModel(
     ...(typeof w.priorVersion === 'number' ? { priorVersion: w.priorVersion } : {}),
     ...(w.priorVersionHash ? { priorVersionHash: w.priorVersionHash } : {}),
     ...(changed ? { changedProperties: changed } : {}),
+    ...(level ? { level } : {}),
+    ...(unitLevel ? { unitLevel } : {}),
+    ...(lotDate ? { lotManufacturedOn: lotDate } : {}),
     proof: w.proof ?? [],
   }
+}
+
+// A string value, bare or as a typed literal.
+function literalString(raw: unknown): string | undefined {
+  if (typeof raw === 'string') return raw || undefined
+  if (!raw || typeof raw !== 'object') return undefined
+  const value = (raw as { '@value'?: unknown })['@value']
+  return typeof value === 'string' && value ? value : undefined
 }
 
 function adaptProduct(

@@ -34,19 +34,19 @@ interface Budget {
 // functional icon sprite, the element-config parser, and
 // the two-cryptosuite verifier (eddsa-jcs + the ecdsa-sd
 // selective-disclosure path with its cached JSON-LD
-// contexts); the embed entry also inlines app.css. Both are
-// capped at 72 KB gzipped, which is the current baseline
-// plus room for a feature or two: the gate is here to catch
-// a bundle that grows by a chunk nobody meant to ship, not
-// to hold the renderer to a product limit. Raise it when a
-// deliberate feature earns the bytes, and say so.
+// contexts); the embed entry also inlines app.css. The gate
+// catches a bundle that grows by a chunk nobody meant to
+// ship. Raise it when a deliberate feature earns the bytes,
+// and say so.
 const BUDGETS: ReadonlyArray<Budget> = [
-  { file: 'transpareo-time-machine.js', maxGzipBytes: 72 * 1024, dir: 'dist' },
-  // 31 KB since the verifier answers a withdrawn passport
-  // with more than a green orb: the withdrawal sentences
-  // ride the bundled English catalog, which every entry
-  // carries whole.
-  { file: 'dpp-verifier.js', maxGzipBytes: 31 * 1024, dir: 'dist' },
+  // 73 KB since model and lot passports: the walk-up band,
+  // the unit-passport line, their labels and four context
+  // terms.
+  { file: 'transpareo-time-machine.js', maxGzipBytes: 73 * 1024, dir: 'dist' },
+  // 32 KB for the same reason: the bundled English catalog
+  // and the Transpareo context ride every entry whole. It
+  // went to 31 KB when the withdrawal sentences joined.
+  { file: 'dpp-verifier.js', maxGzipBytes: 32 * 1024, dir: 'dist' },
   { file: 'embed.js', maxGzipBytes: 72 * 1024, dir: 'dist-embed' },
 ]
 

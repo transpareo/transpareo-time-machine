@@ -1,0 +1,32 @@
+/*
+ * transpareo-time-machine - open-source DPP renderer
+ * Copyright (C) 2026 Transpareo AG
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ *
+ * Passport levels: the walk-up band under the brandbar and
+ * the unit-passport line under the hero. The band takes the
+ * withdrawal band's column and a tint of the card's own ink,
+ * lighter than the withdrawal slab because the passport
+ * shown is in force.
+ */
+
+@use 'dpp';
+
+dpp-walkup,
+dpp-unit-passports {
+  display: block;
+}
+
+.walkup {
+  margin: 0;
+  padding: var(--space-4, 16px) 25px;
+  background: color-mix(
+    in oklab, var(--font-color, #222) 8%, var(--background-color, #fff));
+  @include dpp.sm;
+  line-height: 1.45;
+}
+
+.unit-passports {
+  margin: 24px 0 0;
+  @include dpp.sm;
+}

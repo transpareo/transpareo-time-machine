@@ -125,6 +125,15 @@ export interface TimeMachineConfig {
   // falls back to signature-grouping.
   readonly pinnedIssuerKeys?: ReadonlyArray<string>
 
+  // From `requested-level` and `requested-id`: what the
+  // visitor's link asked for, which the HTML shell states
+  // when it answers a unit link with the passport one level
+  // up. Absent on an ordinary visit.
+  readonly requested?: {
+    readonly level?: string
+    readonly id?: string
+  }
+
   // From `revoked-roots-src`. URL the SPA fetches at boot to
   // check whether its pinned key has been revoked. Defaults
   // to Transpareo's well-known endpoint; forks point at
@@ -165,6 +174,7 @@ export function initConfigFromElement(el: Element): void {
     verifier: el.hasAttribute('verifier') || undefined,
     showVerificationMark: parseShowMark(el),
     footer: parseFooter(el),
+    requested: parseRequested(el),
   }
   for (const [k, v] of Object.entries(next)) {
     if (v !== undefined) (state as Record<string, unknown>)[k] = v
@@ -184,6 +194,12 @@ export function parseKeySet(
   if (raw === null) return undefined
   const keys = raw.split(/\s+/).filter(Boolean)
   return keys.length > 0 ? keys : undefined
+}
+
+function parseRequested(el: Element): TimeMachineConfig['requested'] {
+  const level = el.getAttribute('requested-level') ?? undefined
+  const id = el.getAttribute('requested-id') ?? undefined
+  return level || id ? { level, id } : undefined
 }
 
 function parseShowMark(el: Element): boolean | undefined {

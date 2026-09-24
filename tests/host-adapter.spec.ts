@@ -294,3 +294,29 @@ describe('toRenderModel: dynamic rows', () => {
     expect(model.properties[0].dynamic).toBeUndefined();
   });
 });
+
+describe('toRenderModel: passport level', () => {
+  it('reads a lot passport and its unit level', () => {
+    const model = toRenderModel(wire([], {
+      passportLevel: 'lot',
+      unitPassportLevel: 'item',
+      lotManufacturedOn: '2026-03-01',
+    }));
+
+    expect(model.level).toBe('lot');
+    expect(model.unitLevel).toBe('item');
+    expect(model.lotManufacturedOn).toBe('2026-03-01');
+  });
+
+  // A date may arrive as a typed literal.
+  it('reads a typed lot date', () => {
+    const date = { '@value': '2026-03-01', '@type': 'xsd:date' };
+    const model = toRenderModel(wire([], { lotManufacturedOn: date }));
+    expect(model.lotManufacturedOn).toBe('2026-03-01');
+  });
+
+  it('leaves an unknown level out', () => {
+    const model = toRenderModel(wire([], { passportLevel: 'batch' }));
+    expect(model.level).toBeUndefined();
+  });
+});

@@ -5,6 +5,7 @@
  */
 import type { Organization } from './archive'
 import { regionName } from './i18n/display-names'
+import type { PassportLevel } from './passport-level'
 
 // Translatable scalar. Either a single string (one
 // locale, codes, proper nouns, etc.) or a record keyed
@@ -566,6 +567,16 @@ export interface LiveRow {
 export interface DppSnapshot {
   readonly version: number
   readonly publishedAt: string
+
+  // What the passport covers: one model, one lot or one
+  // unit. A model or lot passport names the level its unit
+  // passports sit at. `lotManufacturedOn` is on every
+  // passport frozen from a lot. All three are absent on
+  // passports that predate them.
+  readonly level?: PassportLevel
+  readonly unitLevel?: PassportLevel
+  readonly lotManufacturedOn?: string
+
   readonly code: string
   readonly status: LifecycleStatus
   readonly issuer: Organization

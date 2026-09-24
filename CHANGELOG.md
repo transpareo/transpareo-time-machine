@@ -30,6 +30,15 @@ and this project adheres to
   counts against the "all signatures valid" headline,
   like the events document, and leaves every version
   verdict alone.
+- Model and lot passports. A passport that covers a
+  model or a lot says its units carry passports of their
+  own, at the level it names. A link to a unit answered
+  in place with its lot or model passport gets a band
+  naming both: "No item passport exists for SN-7. This
+  lot passport covers it." The lot a passport was frozen
+  from shows its manufacture date. The four vocabulary
+  terms are defined in the bundled context, which has to
+  ship before a publisher emits them.
 - Battery units read as symbols. Rows carrying the
   UN/CEFACT codes for watt-hours, watts, volts, amperes,
   ampere-hours, ohms, degrees Celsius, minutes and tonnes

@@ -59,6 +59,7 @@ import './dpp-timeline'
 import './dpp-deck'
 import './dpp-property-cards'
 import './dpp-properties'
+import './dpp-passport-level'
 import './dpp-badge-lists'
 import './dpp-manufacturer'
 import './dpp-accordions'
@@ -346,8 +347,10 @@ class TranspareoTimeMachine extends BaseElement {
           <article class="card">
             <dpp-brandbar></dpp-brandbar>
             <dpp-withdrawal></dpp-withdrawal>
+            <dpp-walkup></dpp-walkup>
             <div class="card-content">
               <dpp-hero></dpp-hero>
+              <dpp-unit-passports></dpp-unit-passports>
               <slot name="additional" ?hidden=${() => !isOnCurrent()}></slot>
               <dpp-compositions></dpp-compositions>
               <dpp-property-cards></dpp-property-cards>

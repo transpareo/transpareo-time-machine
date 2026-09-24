@@ -107,3 +107,19 @@ describe('icon-map-src parsing', () => {
     expect(mod.config.iconMapUrl).toBeUndefined();
   });
 });
+
+// Set by the HTML shell when it answers a unit link with the
+// passport one level up.
+describe('requested-level / requested-id parsing', () => {
+  it('carries both attributes through', () => {
+    mod.initConfigFromElement(fakeElement({
+      'requested-level': 'item', 'requested-id': 'SN-1',
+    }));
+    expect(mod.config.requested).toEqual({ level: 'item', id: 'SN-1' });
+  });
+
+  it('is undefined when neither is set', () => {
+    mod.initConfigFromElement(fakeElement({}));
+    expect(mod.config.requested).toBeUndefined();
+  });
+});

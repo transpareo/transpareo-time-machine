@@ -33,6 +33,7 @@ export default defineConfig({
       'tests/live-data.spec.ts',
       'tests/locale-picker.spec.ts',
       'tests/logo-link.spec.ts',
+      'tests/passport-level-card.spec.ts',
       'tests/snapshot.spec.ts',
       'tests/timeline-axis.spec.ts',
       'tests/verifier-measure.spec.ts',
