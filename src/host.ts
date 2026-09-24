@@ -631,11 +631,12 @@ export function adaptPrivateRows(
 // render in the detail table, so each gets a namespace.
 // The frozen snapshot carries no row for a dynamic
 // property, so a row the publisher left unnamed is
-// labelled by its term.
+// labelled by its term. A row with no reading is left out.
 export function adaptDynamicRows(
   rows: ReadonlyArray<DynamicDataValue>,
 ): ReadonlyArray<PropertyValue> {
-  return buildRows(rows, (r, value) => {
+  const read = rows.filter((r) => r.value != null)
+  return buildRows(read, (r, value) => {
     const row = buildPrivateRow(r, value)
     return row.name ? row : { ...row, name: row.key }
   })

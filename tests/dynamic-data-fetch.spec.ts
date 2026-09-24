@@ -173,6 +173,18 @@ describe('adaptDynamicRows', () => {
     expect(row.namespace).toBe('stateOfCharge')
   })
 
+  // The publisher may list a term it holds no reading for;
+  // a label beside a blank says nothing.
+  it('leaves out a row that carries no value', async () => {
+    const host = await freshHost()
+    const rows = host.adaptDynamicRows([
+      { propertyID: 'bpass:stateOfCharge' },
+      { propertyID: 'bpass:fullCycles', value: 212 },
+    ])
+
+    expect(rows.map((r) => r.key)).toEqual(['bpass:fullCycles'])
+  })
+
   // The publisher does not name its dynamic rows yet, and
   // the frozen snapshot drops their property types, so the
   // term is all there is to show.
