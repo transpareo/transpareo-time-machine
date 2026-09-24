@@ -16,6 +16,7 @@ import { el } from '@/reactive/dom'
 import { icon, iconForProperty } from '@/icons'
 import { renderedPresentation } from '@/state'
 import { i18n, formatNumber } from '@/i18n'
+import { t } from '@/i18n/labels'
 import {
   propertyIsKind, tx, type PropertyValueOf,
 } from '@/types'
@@ -52,6 +53,13 @@ function buildCard(row: Scalar): HTMLElement {
     buildLabel(row),
     el('div', 'dpp-metric-value', text),
   )
+
+  // Only a past version shows a row marked dynamic here; its
+  // value is the reading sealed at publish.
+  if (row.dynamic) {
+    const note = t(i18n.labels, 'properties.atPublish')
+    card.append(el('div', 'dpp-metric-note', note))
+  }
   return card
 }
 

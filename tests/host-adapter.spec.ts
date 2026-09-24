@@ -273,3 +273,24 @@ describe('toRenderModel: battery units', () => {
     expect(model.properties[0].value).toMatchObject({ unit: symbol });
   });
 });
+
+describe('toRenderModel: dynamic rows', () => {
+  // A row marked dynamic carries the reading taken at
+  // publish; the live value is in the dynamic-data document.
+  it('keeps the marked row and flags it', () => {
+    const reading = { ...row('bpass:stateOfCharge'), value: 81, dynamic: true }
+    const model = toRenderModel(wire([row('model'), reading]));
+
+    expect(model.properties.map((p) => [p.key, p.dynamic])).toEqual([
+      ['model', undefined], ['bpass:stateOfCharge', true],
+    ]);
+  });
+
+  // Only a JSON true marks a row.
+  it('reads anything but true as a static row', () => {
+    const odd = { ...row('x'), dynamic: 'true' } as unknown as WireProperty
+    const model = toRenderModel(wire([odd]));
+
+    expect(model.properties[0].dynamic).toBeUndefined();
+  });
+});

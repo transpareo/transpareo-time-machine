@@ -52,10 +52,11 @@ import type {
 import type {
   DppSnapshot, DppProduct, DppManufacturer, SnapshotImage, ImageVariant,
   PropertyValue, PropertyValueKind, SnapshotLocalizedText, SnapshotProof,
-  ChangeSet,
+  ChangeSet, LiveRow,
 } from '@/types'
 import {
-  canonicalRating, canonicalStatus, foldLocale, regionLiteral,
+  canonicalRating, canonicalStatus, foldLocale, propertyIsKind,
+  regionLiteral,
 } from '@/types'
 import {
   classifyWireValue, bridgeLongTextGroups, numericWireValue,
@@ -99,6 +100,11 @@ export const epcisDocument = signal<EpcisDocument | null>(null)
 // and when the fetch failed.
 export const dynamicData = signal<DppDynamicData | null>(null)
 
+// True while that document is in flight, so the live block
+// can wait for it instead of showing the readings at
+// publish and then swapping them.
+export const dynamicDataPending = signal(false)
+
 // URL of the manifest the SPA was booted from. Stored
 // so ensureVersionLoaded can resolve relative version
 // URLs against it later.
@@ -136,6 +142,7 @@ export async function bootFrom(src: string): Promise<void> {
   epcisDocument.set(null)
   eventsPending.set(false)
   dynamicData.set(null)
+  dynamicDataPending.set(false)
 
   // Normalize to an absolute URL so URL resolution
   // against the manifest's sibling URLs works whether
@@ -232,6 +239,7 @@ function fetchEventsFeed(url: string, epoch: number): Promise<void> {
 // revalidated, and when it will not load the live block
 // stays out while the passport renders as usual.
 function fetchDynamicData(url: string, epoch: number): void {
+  dynamicDataPending.set(true)
   fetchJson<DppDynamicData>(url, 'no-cache')
     .then((doc) => {
       if (epoch === bootEpoch) dynamicData.set(doc)
@@ -239,6 +247,9 @@ function fetchDynamicData(url: string, epoch: number): void {
     .catch((err: unknown) => {
       const message = err instanceof Error ? err.message : String(err)
       console.warn('[host] dynamic data did not load:', message)
+    })
+    .finally(() => {
+      if (epoch === bootEpoch) dynamicDataPending.set(false)
     })
 }
 
@@ -459,6 +470,7 @@ export interface WireProperty {
   readonly unitText?: string
   readonly unitCode?: string
   readonly access?: 'onDemand' | 'legitimateInterest' | 'authorities'
+  readonly dynamic?: unknown
 }
 
 // UN/CEFACT unit codes mapped to a display unit: every
@@ -627,19 +639,39 @@ export function adaptPrivateRows(
   )
 }
 
-// Adapt the live rows of the dynamic-data document. They
-// render in the detail table, so each gets a namespace.
-// The frozen snapshot carries no row for a dynamic
-// property, so a row the publisher left unnamed is
-// labelled by its term. A row with no reading is left out.
-export function adaptDynamicRows(
-  rows: ReadonlyArray<DynamicDataValue>,
-): ReadonlyArray<PropertyValue> {
-  const read = rows.filter((r) => r.value != null)
-  return buildRows(read, (r, value) => {
-    const row = buildPrivateRow(r, value)
-    return row.name ? row : { ...row, name: row.key }
-  })
+// The rows of the live block. Each row the snapshot marks
+// dynamic shows the document's reading for its propertyID,
+// or else its own reading at publish; then come readings
+// the snapshot marks no row for, labelled by their term.
+// `readings` is null when no verified document is there. A
+// reading without a value, or one that is not a scalar,
+// counts as none.
+export function composeLiveRows(
+  snapshotRows: ReadonlyArray<PropertyValue>,
+  readings: ReadonlyArray<DynamicDataValue> | null,
+): ReadonlyArray<LiveRow> {
+  const byKey = new Map<string, LiveRow['value']>()
+  for (const r of readings ?? []) {
+    if (r.value == null) continue
+    const unit = r.unitText ?? unitCodeToText(r.unitCode)
+    const kind = classifyWireValue(r.value, unit)
+    if (kind.type === 'scalar') byKey.set(r.propertyID, kind)
+  }
+  const marked = snapshotRows
+    .filter(propertyIsKind('scalar'))
+    .filter((p) => p.dynamic)
+  const keys = new Set(marked.map((p) => p.key))
+  const unmarked = [...byKey]
+    .filter(([key]) => !keys.has(key))
+    .map(([key, value]) => ({ key, name: key, value, live: true }))
+  return [
+    ...marked.map((p) => {
+      const reading = byKey.get(p.key)
+      const value = reading ?? p.value
+      return { key: p.key, name: p.name, value, live: reading != null }
+    }),
+    ...unmarked,
+  ]
 }
 
 function buildRows(
@@ -664,6 +696,7 @@ function buildPublicRow(
     name: foldLocale(r.name),
     value,
     ...(gated ? { namespace: key, onDemand: true } : {}),
+    ...(r.dynamic === true ? { dynamic: true } : {}),
   }
 }
 
@@ -676,6 +709,7 @@ function buildPrivateRow(
     name: foldLocale(r.name),
     value,
     namespace: key,
+    ...(r.dynamic === true ? { dynamic: true } : {}),
   }
 }
 

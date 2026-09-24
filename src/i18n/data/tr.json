@@ -167,6 +167,7 @@
   "properties.additionalHeading": "Ek ürün verileri",
   "properties.liveHeading": "Mevcut durum",
   "properties.liveUpdated": "Güncellendi: {time}",
+  "properties.atPublish": "Yayın anındaki ölçüm",
   "properties.loadError": "Ek ürün verileri geçici olarak kullanılamıyor",
   "properties.retry": "Yeniden dene",
   "auth.connecting": "Bağlanıyor…",

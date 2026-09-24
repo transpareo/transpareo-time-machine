@@ -167,6 +167,7 @@
   "properties.additionalHeading": "追加の製品データ",
   "properties.liveHeading": "現在の状態",
   "properties.liveUpdated": "更新: {time}",
+  "properties.atPublish": "公開時の測定値",
   "properties.loadError": "追加の製品データは一時的に利用できません",
   "properties.retry": "再試行",
   "auth.connecting": "接続中…",

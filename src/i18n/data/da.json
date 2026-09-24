@@ -167,6 +167,7 @@
   "properties.additionalHeading": "Yderligere produktdata",
   "properties.liveHeading": "Aktuel tilstand",
   "properties.liveUpdated": "Opdateret {time}",
+  "properties.atPublish": "Måling ved offentliggørelse",
   "properties.loadError": "Yderligere produktdata midlertidigt utilgængelige",
   "properties.retry": "Prøv igen",
   "auth.connecting": "Forbinder…",

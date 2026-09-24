@@ -287,10 +287,14 @@ export const renderedProduct = computed<DppProduct>(
 // Flat data rows the renderer reads off the active
 // snapshot. Each row's `value.type` chooses the
 // presentation surface; `namespace` + `onDemand`
-// carry access-gating. Reads directly off
-// snapshot.properties - no derivation step.
+// carry access-gating. On the current version the rows
+// marked dynamic leave the static surfaces: they show in
+// the live block, with today's reading where one exists.
 export const renderedPresentation = computed<ReadonlyArray<PropertyValue>>(
-  () => activeSnapshot().properties,
+  () => {
+    const rows = activeSnapshot().properties
+    return isOnCurrent() ? rows.filter((p) => !p.dynamic) : rows
+  },
 )
 
 // Convenience: the issuer carried on the active

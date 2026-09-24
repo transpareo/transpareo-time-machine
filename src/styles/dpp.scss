@@ -340,6 +340,12 @@ button.dpp-comp-name-trigger {
   font-weight: 600;
 }
 
+// Beneath a value that is the reading sealed at publish.
+.dpp-metric-note {
+  @include xs;
+  color: $dpp-muted;
+}
+
 // ─── List Card ─────────────────────────────
 .dpp-list-card {
   background: $dpp-bg;

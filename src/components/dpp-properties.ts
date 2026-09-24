@@ -14,11 +14,14 @@
  *      .properties. On-demand rows only render when
  *      their namespace is unlocked by the URL's `?show=`
  *      token list.
- *   2. "Current state" - the rows of the dynamic-data
- *      document, with the time it was last written. They
- *      belong to today, so they show on the current
- *      version only, and only once their signature has
- *      cleared (see actions.liveDataIsShowable).
+ *   2. "Current state" - the rows the snapshot marks
+ *      dynamic, each with its reading from the dynamic-data
+ *      document and the time that was written. They belong
+ *      to today, so they show on the current version only.
+ *      A reading shows once its document's signature has
+ *      cleared (see actions.liveDataIsShowable); until
+ *      then, or without one, the property shows the
+ *      reading its snapshot sealed at publish.
  *   3. "Additional product data" - category-3 rows that
  *      arrived as `{ status: 'ok', rows }` from the
  *      manifest's `privateProperties.url` endpoint. The
@@ -45,13 +48,14 @@ import { LightElement } from '@/reactive/element'
 import { el } from '@/reactive/dom'
 import {
   activeSnapshot, activeVersionNumber, isOnCurrent, dynamicDataProofState,
+  renderedPresentation,
 } from '@/state'
-import { dynamicData, adaptDynamicRows } from '@/host'
+import { dynamicData, dynamicDataPending, composeLiveRows } from '@/host'
 import { liveDataIsShowable } from '@/actions'
 import { i18n, formatNumber, formatDateTime } from '@/i18n'
 import { t, type LabelKey } from '@/i18n/labels'
 import {
-  tx, propertyIsKind, type PropertyValue, type PropertyValueOf,
+  tx, propertyIsKind, type LiveRow, type PropertyValue, type PropertyValueOf,
 } from '@/types'
 import { showTokens, isUnlocked } from '@/show-filter'
 import {
@@ -107,7 +111,7 @@ function detailRows(
 }
 
 function visiblePublicRows(): ReadonlyArray<ScalarRow> {
-  return detailRows(activeSnapshot().properties)
+  return detailRows(renderedPresentation())
 }
 
 function visiblePrivateRows(
@@ -116,38 +120,61 @@ function visiblePrivateRows(
   return state?.status === 'ok' ? detailRows(state.rows) : []
 }
 
-// The live section: heading, when the values were written,
-// then the rows. Empty when there is nothing that may show.
+// The live section: heading, when the readings were
+// written, then one row per live property. Held while the
+// document is in flight or being checked. A property with
+// no verified reading shows the one sealed at publish.
 function buildLiveSection(): HTMLElement[] {
+  if (!isOnCurrent()) return []
   const doc = dynamicData()
-  if (!doc || !isOnCurrent()) return []
-  if (!liveDataIsShowable(dynamicDataProofState())) return []
+  const state = dynamicDataProofState()
+  if (dynamicDataPending() || (doc && state === 'pending')) return []
 
   // The document is the publisher's to write, and a
   // malformed one must cost the live section only.
-  const values = Array.isArray(doc.values) ? doc.values : []
-  const rows = detailRows(adaptDynamicRows(values))
+  const verified = doc && liveDataIsShowable(state) ? doc : null
+  const values = Array.isArray(verified?.values) ? verified.values : null
+  const rows = composeLiveRows(activeSnapshot().properties, values)
   if (rows.length === 0) return []
 
   const out = [buildHeading(tr('properties.liveHeading'))]
-  const time = formatDateTime(doc.updatedAt, i18n.locale)
+  const time = verified && formatDateTime(verified.updatedAt, i18n.locale)
   if (time) {
     const text = t(i18n.labels, 'properties.liveUpdated', { time })
     out.push(el('p', 'dpp-properties-updated', text))
   }
-  return [...out, ...rows.map(buildRow)]
+  return [...out, ...rows.map(buildLiveRow)]
 }
 
+function buildLiveRow(row: LiveRow): HTMLElement {
+  const label = tx(row.name, i18n.locale)
+  return buildPair(label, formatValue(row.value), !row.live)
+}
+
+// A row marked dynamic outside the live block is a past
+// version's: its value is the reading sealed at publish.
 function buildRow(row: ScalarRow): HTMLElement {
-  const wrap = el('div', 'dpp-property-row')
-  const v = row.value
+  const label = tx(row.name, i18n.locale)
+  return buildPair(label, formatValue(row.value), row.dynamic === true)
+}
+
+function formatValue(v: ScalarRow['value']): string {
   const resolved = v.numeric != null
     ? formatNumber(v.numeric) : tx(v.value, i18n.locale)
-  const value = v.unit ? `${resolved} ${v.unit}` : resolved
-  wrap.append(
-    el('div', 'dpp-property-label', tx(row.name, i18n.locale)),
-    el('div', 'dpp-property-value', value),
-  )
+  return v.unit ? `${resolved} ${v.unit}` : resolved
+}
+
+// A label and its value; a reading sealed at publish says
+// so beneath the value.
+function buildPair(
+  label: string, value: string, atPublish: boolean,
+): HTMLElement {
+  const wrap = el('div', 'dpp-property-row')
+  const cell = el('div', 'dpp-property-value', value)
+  if (atPublish) {
+    cell.append(el('span', 'dpp-property-note', tr('properties.atPublish')))
+  }
+  wrap.append(el('div', 'dpp-property-label', label), cell)
   return wrap
 }
 

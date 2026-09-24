@@ -137,9 +137,9 @@ export interface DppManifest {
 // an ecdsa-sd snapshot. Documents published before the
 // publisher added them carry neither.
 //
-// Rows follow the frozen property rows' shape and carry
-// only public-tier properties. The publisher emits no
-// `name`; a row without one is labelled by its term.
+// Rows carry only public-tier properties and no name. Each
+// is labelled by the snapshot row marked `dynamic` with the
+// same propertyID (see composeLiveRows in host.ts).
 export interface DppDynamicData {
   readonly '@type': 'DppDynamicData'
   readonly '@id'?: string
@@ -152,7 +152,6 @@ export interface DppDynamicData {
 
 export interface DynamicDataValue {
   readonly propertyID: string
-  readonly name?: SnapshotLocalizedText
   readonly value?: unknown
   readonly unitCode?: string
   readonly unitText?: string
@@ -243,4 +242,3 @@ export type { VerificationResult } from '@/crypto/verify'
 export type { ChainStatusResult } from '@/actions'
 import type { VerificationResult } from '@/crypto/verify'
 import type { ChainStatusResult } from '@/actions'
-import type { SnapshotLocalizedText } from '@/types'

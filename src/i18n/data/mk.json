@@ -168,6 +168,7 @@
   "properties.additionalHeading": "Дополнителни податоци за производот",
   "properties.liveHeading": "Моментална состојба",
   "properties.liveUpdated": "Ажурирано {time}",
+  "properties.atPublish": "Отчитување при објавување",
   "properties.loadError": "Дополнителни податоци за производот привремено недостапни",
   "properties.retry": "Повтори",
   "auth.connecting": "Се поврзува…",

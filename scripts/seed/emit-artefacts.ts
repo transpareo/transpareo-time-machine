@@ -639,6 +639,17 @@ function buildProperties(
       ),
       block.unit,
     )),
+
+    // Live properties, with the reading sealed at publish;
+    // the current one is in the dynamic-data document.
+    ...(fixture.dynamic_data?.values ?? []).map((v) => ({
+      '@type': 'PropertyValue',
+      propertyID: v.property_id,
+      name: toWireLocalized(v.name),
+      value: v.published,
+      ...(v.unit_code ? { unitCode: v.unit_code } : {}),
+      dynamic: true,
+    })),
   ];
 }
 
@@ -906,12 +917,13 @@ function buildDynamicData(
     code: fixture.code,
     issuer: passport.issuer,
     updatedAt: dynamic.updated_at,
-    values: dynamic.values.map((v) => ({
-      propertyID: v.property_id,
-      ...(v.name ? { name: toWireLocalized(v.name) } : {}),
-      value: v.value,
-      ...(v.unit_code ? { unitCode: v.unit_code } : {}),
-    })),
+    values: dynamic.values
+      .filter((v) => v.value !== undefined)
+      .map((v) => ({
+        propertyID: v.property_id,
+        value: v.value,
+        ...(v.unit_code ? { unitCode: v.unit_code } : {}),
+      })),
   };
   return { ...body, signature: signer.signManifest(body) };
 }

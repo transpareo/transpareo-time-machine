@@ -167,6 +167,7 @@
   "properties.additionalHeading": "অতিরিক্ত পণ্য ডেটা",
   "properties.liveHeading": "বর্তমান অবস্থা",
   "properties.liveUpdated": "হালনাগাদ {time}",
+  "properties.atPublish": "প্রকাশের সময়ের পাঠ",
   "properties.loadError": "অতিরিক্ত পণ্য ডেটা সাময়িকভাবে অনুপলব্ধ",
   "properties.retry": "আবার চেষ্টা করুন",
   "auth.connecting": "সংযোগ করা হচ্ছে…",

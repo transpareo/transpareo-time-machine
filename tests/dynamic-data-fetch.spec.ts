@@ -13,6 +13,7 @@
  */
 
 import { describe, it, expect, vi, afterEach } from 'vitest'
+import type { PropertyValue } from '../src/types'
 
 type HostModule = typeof import('../src/host')
 
@@ -103,10 +104,12 @@ describe('bootFrom and the dynamic-data document', () => {
 
     expect(host.loadState.peek()).toBe('ready')
     expect(host.dynamicData.peek()).toBeNull()
+    expect(host.dynamicDataPending.peek()).toBe(true)
     doc.resolve(DYNAMIC)
     await vi.waitFor(() => {
       expect(host.dynamicData.peek()).not.toBeNull()
     })
+    expect(host.dynamicDataPending.peek()).toBe(false)
   })
 
   it('asks for nothing when the manifest advertises none', async () => {
@@ -120,6 +123,7 @@ describe('bootFrom and the dynamic-data document', () => {
 
     expect(calls.some((c) => c.url.includes('dynamic'))).toBe(false)
     expect(host.dynamicData.peek()).toBeNull()
+    expect(host.dynamicDataPending.peek()).toBe(false)
   })
 
   it('renders the passport when the document will not load', async () => {
@@ -135,6 +139,7 @@ describe('bootFrom and the dynamic-data document', () => {
     expect(host.loadState.peek()).toBe('ready')
     await vi.waitFor(() => { expect(warn).toHaveBeenCalled() })
     expect(host.dynamicData.peek()).toBeNull()
+    expect(host.dynamicDataPending.peek()).toBe(false)
     warn.mockRestore()
   })
 
@@ -158,42 +163,76 @@ describe('bootFrom and the dynamic-data document', () => {
   })
 })
 
-describe('adaptDynamicRows', () => {
-  it('labels a row by its name and shows its unit', async () => {
+describe('composeLiveRows', () => {
+  // The marked rows of the current snapshot, as the adapter
+  // builds them: each carries its reading at publish.
+  async function frozen(): Promise<ReadonlyArray<PropertyValue>> {
     const host = await freshHost()
-    const [row] = host.adaptDynamicRows([{
-      propertyID: 'stateOfCharge',
-      name: [{ '@language': 'en', '@value': 'State of charge' }],
-      value: 81,
-      unitCode: 'P1',
-    } as never])
+    const rows = [
+      { propertyID: 'bpass:stateOfCharge', name: { en: 'State of charge' },
+        value: 100, unitCode: 'P1', dynamic: true },
+      { propertyID: 'bpass:capacityFade', name: { en: 'Capacity fade' },
+        value: 0, unitCode: 'P1', dynamic: true },
+      { propertyID: 'model', name: { en: 'Model' }, value: 'X' },
+    ]
+    const snapshot = { version: 1, publishedAt: '2026-01-01T00:00:00Z',
+      product: { properties: rows } }
+    return host.toRenderModel(snapshot as never).properties
+  }
+
+  it('shows the live reading under the snapshot label', async () => {
+    const host = await freshHost()
+    const [row] = host.composeLiveRows(await frozen(), [
+      { propertyID: 'bpass:stateOfCharge', value: 81, unitCode: 'P1' },
+    ])
 
     expect(row.name).toEqual({ en: 'State of charge' })
+    expect(row.live).toBe(true)
     expect(row.value).toMatchObject({ type: 'scalar', numeric: 81, unit: '%' })
-    expect(row.namespace).toBe('stateOfCharge')
   })
 
-  // The publisher may list a term it holds no reading for;
-  // a label beside a blank says nothing.
-  it('leaves out a row that carries no value', async () => {
+  it('falls back to the reading at publish', async () => {
     const host = await freshHost()
-    const rows = host.adaptDynamicRows([
-      { propertyID: 'bpass:stateOfCharge' },
+    const rows = host.composeLiveRows(await frozen(), [
+      { propertyID: 'bpass:stateOfCharge', value: 81 },
+    ])
+
+    expect(rows.map((r) => [r.key, r.value.numeric, r.live])).toEqual([
+      ['bpass:stateOfCharge', 81, true],
+      ['bpass:capacityFade', 0, false],
+    ])
+  })
+
+  // No verified document: every marked row shows its
+  // reading at publish.
+  it('shows every reading at publish without a document', async () => {
+    const host = await freshHost()
+    const rows = host.composeLiveRows(await frozen(), null)
+
+    expect(rows.map((r) => [r.value.numeric, r.live])).toEqual([
+      [100, false], [0, false],
+    ])
+  })
+
+  // A version whose snapshot marks no row for a reading.
+  it('labels a reading the snapshot does not mark by its term', async () => {
+    const host = await freshHost()
+    const rows = host.composeLiveRows(await frozen(), [
       { propertyID: 'bpass:fullCycles', value: 212 },
     ])
 
-    expect(rows.map((r) => r.key)).toEqual(['bpass:fullCycles'])
+    expect(rows.map((r) => r.name)).toEqual([
+      { en: 'State of charge' }, { en: 'Capacity fade' }, 'bpass:fullCycles',
+    ])
   })
 
-  // The publisher does not name its dynamic rows yet, and
-  // the frozen snapshot drops their property types, so the
-  // term is all there is to show.
-  it('falls back to the term when the row carries no name', async () => {
+  // The publisher may list a term it holds no reading for.
+  it('reads a row without a value as no reading', async () => {
     const host = await freshHost()
-    const [row] = host.adaptDynamicRows([
-      { propertyID: 'fullCycles', value: 212 },
+    const rows = host.composeLiveRows(await frozen(), [
+      { propertyID: 'bpass:stateOfCharge' },
     ])
 
-    expect(row.name).toBe('fullCycles')
+    expect(rows[0]).toMatchObject({ live: false })
   })
 })

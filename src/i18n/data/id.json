@@ -167,6 +167,7 @@
   "properties.additionalHeading": "Data produk tambahan",
   "properties.liveHeading": "Kondisi saat ini",
   "properties.liveUpdated": "Diperbarui {time}",
+  "properties.atPublish": "Pembacaan saat publikasi",
   "properties.loadError": "Data produk tambahan sementara tidak tersedia",
   "properties.retry": "Coba lagi",
   "auth.connecting": "Menghubungkan…",

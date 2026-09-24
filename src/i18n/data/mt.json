@@ -167,6 +167,7 @@
   "properties.additionalHeading": "Dejta addizzjonali tal-prodott",
   "properties.liveHeading": "Stat attwali",
   "properties.liveUpdated": "Aġġornat {time}",
+  "properties.atPublish": "Qari fil-pubblikazzjoni",
   "properties.loadError": "Dejta addizzjonali tal-prodott mhux disponibbli temporanjament",
   "properties.retry": "Erġa’ pprova",
   "auth.connecting": "Qed jgħaqqad…",

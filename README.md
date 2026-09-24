@@ -251,21 +251,32 @@ Field notes:
   }
   ```
 
-  The renderer shows the rows under "Current state"
-  with the time they were written, on the current
-  version only. They carry their own verdict: a version
-  stays verified whatever this document says, and the
-  rows paint only once its signature clears the same
-  policy as the events document, and only when it names
-  this passport: its `code` must be the manifest's, and
-  its `@id` and issuer's DID must be the current
-  snapshot's. A document published before those two
-  fields existed is held to its `code`. A row without a
-  `name` is labelled by its `propertyID`. The manifest
-  is not re-signed on a telemetry write, so it vouches
-  for the address and nothing newer: an older signed
-  copy of the same passport's document still verifies,
-  and `updatedAt` is what tells the reader its age.
+  The snapshot carries each live property as an ordinary
+  row marked `"dynamic": true`, whose value is the
+  reading sealed at publish. On the current version those
+  rows leave the static surfaces and show under "Current
+  state", each with the document's reading for its
+  `propertyID` and the time that was written, or else its
+  own reading with the note "Reading at publish". On a
+  past version they render as static rows with that
+  note. A reading the snapshot marks no row for (a
+  version signed before the marker existed) is labelled
+  by its `propertyID`. The bundled `transpareo/v1`
+  context defines `dynamic`, so an ecdsa-sd proof over
+  such a row canonicalises to the publisher's IRI.
+
+  The document carries its own verdict: a version stays
+  verified whatever it says, and its readings show only
+  once its signature clears the same policy as the events
+  document, and only when it names this passport: its
+  `code` must be the manifest's, and its `@id` and
+  issuer's DID must be the current snapshot's. A
+  document published before those two fields existed is
+  held to its `code`. The manifest is not re-signed on a
+  telemetry write, so it vouches for the address and
+  nothing newer: an older signed copy of the same
+  passport's document still verifies, and `updatedAt` is
+  what tells the reader its age.
 - `issuer` / `platform` - schema.org-style
   attribution blocks; their `did` identities are
   matched against the snapshot proof entries.

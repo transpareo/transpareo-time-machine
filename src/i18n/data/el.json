@@ -167,6 +167,7 @@
   "properties.additionalHeading": "Πρόσθετα δεδομένα προϊόντος",
   "properties.liveHeading": "Τρέχουσα κατάσταση",
   "properties.liveUpdated": "Ενημερώθηκε {time}",
+  "properties.atPublish": "Μέτρηση κατά τη δημοσίευση",
   "properties.loadError": "Πρόσθετα δεδομένα προϊόντος προσωρινά μη διαθέσιμα",
   "properties.retry": "Επανάληψη",
   "auth.connecting": "Σύνδεση…",

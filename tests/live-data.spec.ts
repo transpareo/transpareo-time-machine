@@ -34,6 +34,20 @@ async function bootVolturra(page: Page, hash = ''): Promise<void> {
   })
 }
 
+// The version chip settled on verified: the snapshot rows
+// without a value are signed like every other row.
+function verifiedChip(): boolean {
+  const root = document.querySelector('transpareo-time-machine')!.shadowRoot!
+  return /Verified/.test(root.querySelector('button.chip')!.textContent!)
+}
+
+// The text of every metric tile on the card.
+function tileLabels(): string[] {
+  const root = document.querySelector('transpareo-time-machine')!.shadowRoot!
+  return [...root.querySelectorAll('.dpp-metric')]
+    .map((tile) => tile.textContent!.trim())
+}
+
 function liveSection(page: Page) {
   return page.evaluate(() => {
     const root = document.querySelector('transpareo-time-machine')!.shadowRoot!
@@ -79,15 +93,20 @@ test('paints the signed live values today', async ({ page }) => {
     'State of charge81 %',
     'State of certified energy96 %',
     'Remaining capacity38.6 Ah',
+    'Capacity throughput0 AhReading at publish',
   ])
+
+  // The marked rows show in the live block only.
+  expect(await page.evaluate(tileLabels)).not.toContain('State of charge')
+  await expect.poll(() => page.evaluate(verifiedChip)).toBe(true)
 
   const p = await proof(page)
   expect(p.live).toBe(true)
 })
 
-// A value changed after signing: the signature fails, the
-// values stay off the page, and the proof modal cannot
-// claim every signature holds.
+// A value changed after signing: the signature fails, every
+// live property shows the reading sealed at publish, and the
+// proof modal cannot claim every signature holds.
 test('keeps tampered live values off the page', async ({ page }) => {
   await page.route('**/dynamic-data.json*', async (route) => {
     const res = await route.fetch()
@@ -102,7 +121,14 @@ test('keeps tampered live values off the page', async ({ page }) => {
   await expect.poll(async () => (await proof(page)).headline)
     .toBe('Signature mismatch')
   expect((await proof(page)).live).toBe(true)
-  expect((await liveSection(page)).heading).toBe(false)
+  const live = await liveSection(page)
+  expect(live.updated).toBeUndefined()
+  expect(live.rows).toEqual([
+    'State of charge100 %Reading at publish',
+    'State of certified energy100 %Reading at publish',
+    'Remaining capacity40 AhReading at publish',
+    'Capacity throughput0 AhReading at publish',
+  ])
 })
 
 // The live values belong to today; a past version shows
@@ -115,6 +141,11 @@ test('leaves the live values out of a past version', async ({ page }) => {
     return !!root?.querySelector('main.stage.scrubbing')
   })
   expect((await liveSection(page)).heading).toBe(false)
+
+  // The past version shows its marked rows as static tiles,
+  // each saying its value is the reading sealed at publish.
+  const tiles = await page.evaluate(tileLabels)
+  expect(tiles).toContain('State of charge100 %Reading at publish')
 
   // Back to today, where the section shows: the document
   // was in all along.

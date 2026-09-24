@@ -168,6 +168,7 @@
   "properties.additionalHeading": "Zusätzliche Produktdaten",
   "properties.liveHeading": "Aktueller Zustand",
   "properties.liveUpdated": "Aktualisiert {time}",
+  "properties.atPublish": "Messwert bei Veröffentlichung",
   "properties.loadError": "Zusätzliche Produktdaten vorübergehend nicht verfügbar",
   "properties.retry": "Erneut versuchen",
   "auth.connecting": "Verbindung wird hergestellt…",

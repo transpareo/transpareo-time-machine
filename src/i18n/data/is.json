@@ -168,6 +168,7 @@
   "properties.additionalHeading": "Viðbótar vörugögn",
   "properties.liveHeading": "Núverandi ástand",
   "properties.liveUpdated": "Uppfært {time}",
+  "properties.atPublish": "Mæling við birtingu",
   "properties.loadError": "Viðbótar vörugögn tímabundið óaðgengileg",
   "properties.retry": "Endurtaka",
   "auth.connecting": "Að tengjast…",

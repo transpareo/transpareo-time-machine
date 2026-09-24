@@ -167,6 +167,7 @@
   "properties.additionalHeading": "Täiendavad tooteandmed",
   "properties.liveHeading": "Praegune olek",
   "properties.liveUpdated": "Uuendatud {time}",
+  "properties.atPublish": "Näit avaldamise ajal",
   "properties.loadError": "Täiendavad tooteandmed pole ajutiselt saadaval",
   "properties.retry": "Proovi uuesti",
   "auth.connecting": "Ühendamine…",

@@ -329,17 +329,18 @@ export const FixtureSchema = z.object({
     url: z.url().optional(),
   }).optional(),
 
-  // Optional. The passport's live values, emitted as the
-  // separately signed dynamic-data document the manifest
-  // advertises at `dynamicDataUrl`. Rows carry the frozen
-  // property rows' shape; `name` is optional because the
-  // publisher does not emit it yet.
+  // Optional. The passport's live properties. Each goes into
+  // every snapshot as a row marked `dynamic` carrying its
+  // `published` reading, and its current `value`, when it
+  // has one, into the separately signed dynamic-data
+  // document the manifest advertises at `dynamicDataUrl`.
   dynamic_data: z.object({
     updated_at: Iso8601,
     values: z.array(z.object({
       property_id: z.string(),
-      name: LocalizedText.optional(),
-      value: z.union([z.number(), z.string(), z.boolean()]),
+      name: LocalizedText,
+      published: z.number(),
+      value: z.number().optional(),
       unit_code: z.string().optional(),
     })).min(1),
   }).optional(),

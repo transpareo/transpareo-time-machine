@@ -411,6 +411,11 @@ export interface PropertyValue {
   // privateProperties endpoint and carry both flags.
   readonly namespace?: string
   readonly onDemand?: boolean
+
+  // The value is a reading taken at publish of a property
+  // that changes over the product's life; the current
+  // reading is in the dynamic-data document.
+  readonly dynamic?: true
 }
 
 // PropertyValue narrowed to a single value-kind. The
@@ -546,6 +551,16 @@ export interface ChangeSet {
   readonly added: ReadonlyArray<string>
   readonly removed: ReadonlyArray<string>
   readonly modified: ReadonlyArray<string>
+}
+
+// One row of the live block: the live reading from the
+// dynamic-data document (`live`), or the reading the
+// snapshot sealed at publish.
+export interface LiveRow {
+  readonly key: string
+  readonly name: SnapshotLocalizedText
+  readonly value: Extract<PropertyValueKind, { type: 'scalar' }>
+  readonly live: boolean
 }
 
 export interface DppSnapshot {

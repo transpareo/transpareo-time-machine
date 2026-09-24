@@ -625,8 +625,9 @@ product:
     street: Via Galvani 17
     city: 20121 Milano
     country: Italy
-# Live values from the BMS, rewritten on every telemetry
-# write without minting a version.
+# Live properties: sealed in every snapshot with the reading
+# taken at publish; the BMS rewrites the current readings on
+# every telemetry write without minting a version.
 dynamic_data:
   updated_at: 2026-09-24T06:40:00Z
   values:
@@ -635,6 +636,7 @@ dynamic_data:
         en: State of charge
         de: Ladezustand
         fr: État de charge
+      published: 100
       value: 81
       unit_code: P1
     - property_id: stateOfCertifiedEnergy
@@ -642,6 +644,7 @@ dynamic_data:
         en: State of certified energy
         de: Zustand der zertifizierten Energie
         fr: État de l'énergie certifiée
+      published: 100
       value: 96
       unit_code: P1
     - property_id: remainingCapacity
@@ -649,7 +652,17 @@ dynamic_data:
         en: Remaining capacity
         de: Verbleibende Kapazität
         fr: Capacité restante
+      published: 40
       value: 38.6
+      unit_code: AMH
+    # No current reading from the BMS: shows the one sealed
+    # at publish.
+    - property_id: capacityThroughput
+      name:
+        en: Capacity throughput
+        de: Kapazitätsdurchsatz
+        fr: Débit de capacité
+      published: 0
       unit_code: AMH
 snapshots:
   - version: 1

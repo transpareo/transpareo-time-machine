@@ -167,6 +167,7 @@
   "properties.additionalHeading": "Lisätuotetiedot",
   "properties.liveHeading": "Nykyinen tila",
   "properties.liveUpdated": "Päivitetty {time}",
+  "properties.atPublish": "Lukema julkaisuhetkellä",
   "properties.loadError": "Lisätuotetiedot eivät ole tilapäisesti saatavilla",
   "properties.retry": "Yritä uudelleen",
   "auth.connecting": "Yhdistetään…",

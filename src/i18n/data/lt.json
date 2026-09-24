@@ -167,6 +167,7 @@
   "properties.additionalHeading": "Papildomi produkto duomenys",
   "properties.liveHeading": "Dabartinė būsena",
   "properties.liveUpdated": "Atnaujinta {time}",
+  "properties.atPublish": "Rodmuo paskelbimo metu",
   "properties.loadError": "Papildomi produkto duomenys laikinai nepasiekiami",
   "properties.retry": "Bandyti dar kartą",
   "auth.connecting": "Jungiamasi…",

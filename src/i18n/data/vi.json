@@ -168,6 +168,7 @@
   "properties.additionalHeading": "Dữ liệu sản phẩm bổ sung",
   "properties.liveHeading": "Trạng thái hiện tại",
   "properties.liveUpdated": "Cập nhật {time}",
+  "properties.atPublish": "Số đo khi công bố",
   "properties.loadError": "Dữ liệu sản phẩm bổ sung tạm thời không khả dụng",
   "properties.retry": "Thử lại",
   "auth.connecting": "Đang kết nối…",

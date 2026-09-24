@@ -167,6 +167,7 @@
   "properties.additionalHeading": "Дополнительные данные о продукте",
   "properties.liveHeading": "Текущее состояние",
   "properties.liveUpdated": "Обновлено {time}",
+  "properties.atPublish": "Показание на момент публикации",
   "properties.loadError": "Дополнительные данные о продукте временно недоступны",
   "properties.retry": "Повторить",
   "auth.connecting": "Подключение…",

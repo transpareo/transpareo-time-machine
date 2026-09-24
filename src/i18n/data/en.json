@@ -168,6 +168,7 @@
   "properties.additionalHeading": "Additional product data",
   "properties.liveHeading": "Current state",
   "properties.liveUpdated": "Updated {time}",
+  "properties.atPublish": "Reading at publish",
   "properties.loadError": "Additional product data temporarily unavailable",
   "properties.retry": "Retry",
   "auth.connecting": "Connecting…",

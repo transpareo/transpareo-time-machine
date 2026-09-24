@@ -167,6 +167,7 @@
   "properties.additionalHeading": "További termékadatok",
   "properties.liveHeading": "Jelenlegi állapot",
   "properties.liveUpdated": "Frissítve: {time}",
+  "properties.atPublish": "Közzétételkori mért érték",
   "properties.loadError": "A további termékadatok átmenetileg nem érhetők el",
   "properties.retry": "Újra",
   "auth.connecting": "Csatlakozás…",

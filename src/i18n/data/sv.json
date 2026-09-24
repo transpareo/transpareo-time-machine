@@ -167,6 +167,7 @@
   "properties.additionalHeading": "Ytterligare produktdata",
   "properties.liveHeading": "Aktuellt tillstånd",
   "properties.liveUpdated": "Uppdaterad {time}",
+  "properties.atPublish": "Mätvärde vid publicering",
   "properties.loadError": "Ytterligare produktdata tillfälligt otillgängliga",
   "properties.retry": "Försök igen",
   "auth.connecting": "Ansluter…",

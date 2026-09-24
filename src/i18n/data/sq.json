@@ -168,6 +168,7 @@
   "properties.additionalHeading": "Të dhëna shtesë për produktin",
   "properties.liveHeading": "Gjendja aktuale",
   "properties.liveUpdated": "Përditësuar {time}",
+  "properties.atPublish": "Leximi në publikim",
   "properties.loadError": "Të dhëna shtesë për produktin përkohësisht të pa disponueshme",
   "properties.retry": "Përpiqu përsëri",
   "auth.connecting": "Po lidhet…",

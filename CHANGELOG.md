@@ -14,18 +14,22 @@ and this project adheres to
 
 - The passport's live values. A manifest that advertises
   `dynamicDataUrl` has its dynamic-data document fetched
-  beside the snapshot, and its rows (state of charge,
+  beside the snapshot, and its readings (state of charge,
   remaining capacity) show under "Current state" with the
   time they were written, on the current version only.
-  The document is checked against the platform key and
-  must name the passport it is served for: its code, and,
-  where it carries them, its page and its issuer, which
-  must match the current version's snapshot. Its rows paint
-  only once it clears, and the proof modal shows its
-  signature in a section of its own. A failing one counts
-  against the "all signatures valid" headline, like the
-  events document, and leaves every version verdict
-  alone.
+  Each is labelled by the snapshot row marked `dynamic`
+  for that property, and without a verified reading shows
+  that row's reading, noted as taken at publish. On a
+  past version the marked rows render as static rows with
+  the same note. The document is
+  checked against the platform key and must name the
+  passport it is served for: its code, and, where it
+  carries them, its page and its issuer, which must match
+  the current version's snapshot. The proof modal shows
+  its signature in a section of its own. A failing one
+  counts against the "all signatures valid" headline,
+  like the events document, and leaves every version
+  verdict alone.
 - Battery units read as symbols. Rows carrying the
   UN/CEFACT codes for watt-hours, watts, volts, amperes,
   ampere-hours, ohms, degrees Celsius, minutes and tonnes

@@ -167,6 +167,7 @@
   "properties.additionalHeading": "Données produit supplémentaires",
   "properties.liveHeading": "État actuel",
   "properties.liveUpdated": "Mis à jour {time}",
+  "properties.atPublish": "Relevé à la publication",
   "properties.loadError": "Données produit supplémentaires temporairement indisponibles",
   "properties.retry": "Réessayer",
   "auth.connecting": "Connexion…",

@@ -167,6 +167,7 @@
   "properties.additionalHeading": "추가 제품 데이터",
   "properties.liveHeading": "현재 상태",
   "properties.liveUpdated": "업데이트: {time}",
+  "properties.atPublish": "게시 시점 측정값",
   "properties.loadError": "추가 제품 데이터를 일시적으로 사용할 수 없습니다",
   "properties.retry": "다시 시도",
   "auth.connecting": "연결 중…",

@@ -45,6 +45,13 @@
   white-space: nowrap;
 }
 
+// Beneath a value that is the reading sealed at publish.
+.dpp-property-note {
+  display: block;
+  font-size: var(--font-xs);
+  color: var(--color-muted);
+}
+
 .dpp-properties-heading {
   margin: 20px 0 4px;
   font-size: var(--font-sm);

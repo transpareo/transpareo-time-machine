@@ -167,6 +167,7 @@
   "properties.additionalHeading": "Dodatni podatki o izdelku",
   "properties.liveHeading": "Trenutno stanje",
   "properties.liveUpdated": "Posodobljeno {time}",
+  "properties.atPublish": "Odčitek ob objavi",
   "properties.loadError": "Dodatni podatki o izdelku začasno niso na voljo",
   "properties.retry": "Poskusi znova",
   "auth.connecting": "Povezovanje…",

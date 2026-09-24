@@ -167,6 +167,7 @@
   "properties.additionalHeading": "अतिरिक्त उत्पाद डेटा",
   "properties.liveHeading": "वर्तमान स्थिति",
   "properties.liveUpdated": "अपडेट किया गया {time}",
+  "properties.atPublish": "प्रकाशन के समय का माप",
   "properties.loadError": "अतिरिक्त उत्पाद डेटा अस्थायी रूप से अनुपलब्ध",
   "properties.retry": "पुनः प्रयास करें",
   "auth.connecting": "कनेक्ट हो रहा है…",

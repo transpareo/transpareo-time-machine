@@ -167,6 +167,7 @@
   "properties.additionalHeading": "Papildu produkta dati",
   "properties.liveHeading": "Pašreizējais stāvoklis",
   "properties.liveUpdated": "Atjaunināts {time}",
+  "properties.atPublish": "Rādījums publicēšanas brīdī",
   "properties.loadError": "Papildu produkta dati īslaicīgi nav pieejami",
   "properties.retry": "Mēģināt vēlreiz",
   "auth.connecting": "Savienojas…",

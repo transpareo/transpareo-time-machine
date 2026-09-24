@@ -167,6 +167,7 @@
   "properties.additionalHeading": "Додаткові дані про продукт",
   "properties.liveHeading": "Поточний стан",
   "properties.liveUpdated": "Оновлено {time}",
+  "properties.atPublish": "Показник на момент публікації",
   "properties.loadError": "Додаткові дані про продукт тимчасово недоступні",
   "properties.retry": "Повторити",
   "auth.connecting": "З’єднання…",

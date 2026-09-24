@@ -167,6 +167,7 @@
   "properties.additionalHeading": "Date suplimentare despre produs",
   "properties.liveHeading": "Starea curentă",
   "properties.liveUpdated": "Actualizat {time}",
+  "properties.atPublish": "Citire la publicare",
   "properties.loadError": "Date suplimentare despre produs temporar indisponibile",
   "properties.retry": "Reîncearcă",
   "auth.connecting": "Se conectează…",

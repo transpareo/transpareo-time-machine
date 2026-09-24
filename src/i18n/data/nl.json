@@ -167,6 +167,7 @@
   "properties.additionalHeading": "Aanvullende productgegevens",
   "properties.liveHeading": "Huidige toestand",
   "properties.liveUpdated": "Bijgewerkt {time}",
+  "properties.atPublish": "Meting bij publicatie",
   "properties.loadError": "Aanvullende productgegevens tijdelijk niet beschikbaar",
   "properties.retry": "Opnieuw proberen",
   "auth.connecting": "Verbinden…",

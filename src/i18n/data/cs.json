@@ -167,6 +167,7 @@
   "properties.additionalHeading": "Další údaje o produktu",
   "properties.liveHeading": "Aktuální stav",
   "properties.liveUpdated": "Aktualizováno {time}",
+  "properties.atPublish": "Hodnota při zveřejnění",
   "properties.loadError": "Další údaje o produktu jsou dočasně nedostupné",
   "properties.retry": "Zkusit znovu",
   "auth.connecting": "Připojování…",

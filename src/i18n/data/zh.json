@@ -167,6 +167,7 @@
   "properties.additionalHeading": "更多产品数据",
   "properties.liveHeading": "当前状态",
   "properties.liveUpdated": "更新于 {time}",
+  "properties.atPublish": "发布时读数",
   "properties.loadError": "更多产品数据暂时不可用",
   "properties.retry": "重试",
   "auth.connecting": "正在连接…",
