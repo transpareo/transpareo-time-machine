@@ -218,6 +218,22 @@
     "dynamic": {
       "@id": "https://transpareo.com/vocab/transpareo/v1#dynamic",
       "@type": "xsd:boolean"
+    },
+    "passportLevel": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#passportLevel",
+      "@type": "xsd:string"
+    },
+    "unitPassportLevel": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#unitPassportLevel",
+      "@type": "xsd:string"
+    },
+    "unitPassportLookup": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#unitPassportLookup",
+      "@type": "xsd:string"
+    },
+    "lotManufacturedOn": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#lotManufacturedOn",
+      "@type": "xsd:date"
     }
   }
 }

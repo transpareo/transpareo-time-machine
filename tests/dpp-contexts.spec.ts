@@ -37,4 +37,26 @@ describe('the bundled Transpareo context', () => {
         + `<${TRANSPAREO}dynamic> "true"^^<${XSD}boolean> .\n`,
     )
   })
+
+  // The passport levels: what a passport covers, which
+  // level its unit passports sit at, and how to find one.
+  it.each([
+    ['passportLevel', '"model"', 'string'],
+    ['unitPassportLevel', '"item"', 'string'],
+    ['unitPassportLookup', '"https://x.test/21/{serial}"', 'string'],
+    ['lotManufacturedOn', '"2026-03-01"', 'date'],
+  ])('expands %s to the publisher IRI', async (term, value, type) => {
+    const doc = {
+      '@context': [VC_CONTEXT_URL, TRANSPAREO_CONTEXT_URL],
+      '@id': 'https://publisher.test/dpp/a',
+      [term]: JSON.parse(value),
+    }
+    const quads = await canonicalize(doc, { contexts: DPP_CONTEXTS })
+    const object = type === 'string'
+      ? value : `${value}^^<${XSD}${type}>`
+
+    expect(quads).toContain(
+      `<https://publisher.test/dpp/a> <${TRANSPAREO}${term}> ${object} .\n`,
+    )
+  })
 })
