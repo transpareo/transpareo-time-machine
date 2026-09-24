@@ -214,6 +214,10 @@
     },
     "alloyCompositionCertificate": {
       "@id": "https://transpareo.com/vocab/transpareo/v1#alloyCompositionCertificate"
+    },
+    "dynamic": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#dynamic",
+      "@type": "xsd:boolean"
     }
   }
 }
