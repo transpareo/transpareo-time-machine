@@ -18,7 +18,9 @@ and this project adheres to
   remaining capacity) show under "Current state" with the
   time they were written, on the current version only.
   The document is checked against the platform key and
-  must name the passport it is served for; its rows paint
+  must name the passport it is served for: its code, and,
+  where it carries them, its page and its issuer, which
+  must match the current version's snapshot. Its rows paint
   only once it clears, and the proof modal shows its
   signature in a section of its own. A failing one counts
   against the "all signatures valid" headline, like the

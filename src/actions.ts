@@ -22,7 +22,10 @@ import {
   NAV_VISUAL_CAP, RELEASE_ANIM_MS,
 } from '@/state'
 import * as host from '@/host'
-import type { SignedSnapshot, VersionState } from '@/archive'
+import type {
+  DppDynamicData, SignedSnapshot, VersionState,
+} from '@/archive'
+import { snapshotBody } from '@/artefact-detect'
 import {
   verifyManifestSignature, hexChainHashOfSnapshot,
 } from '@/crypto/verify'
@@ -130,23 +133,57 @@ export function ensureEventsVerified(): void {
 // the verdict for the page's lifetime. The document must
 // name this passport before its signature counts for
 // anything: a signed document of another passport verifies
-// perfectly and says nothing about this one. Until the
-// document is there the state stays 'pending'; bootstrap.ts
-// calls this again on arrival.
+// perfectly and says nothing about this one. It is checked
+// against the current version's snapshot, so until both are
+// there the state stays 'pending'; bootstrap.ts calls this
+// again as they arrive.
 let dynamicVerifyPromise: Promise<void> | null = null
 export function ensureDynamicDataVerified(): void {
   if (dynamicVerifyPromise) return
   const doc = host.dynamicData.peek()
-  if (!doc) return
+  const snapshot = host.rawSnapshots.peek()[host.currentVersion.peek()]
+  if (!doc || !snapshot) return
   const epoch = host.currentBootEpoch()
-  const code = host.manifest.peek()?.code
-  const foreign = `dynamic data names passport ${doc.code}, not ${code}`
-  const judged = doc.code === code
-    ? judgeSidecar(doc, 'dynamic data')
-    : Promise.resolve(invalidEntry(foreign))
+  const body = snapshotBody(snapshot as unknown as Record<string, unknown>)
+  const foreign = foreignPassport(doc, host.manifest.peek()?.code, body)
+  const judged = foreign
+    ? Promise.resolve(invalidEntry(foreign))
+    : judgeSidecar(doc, 'dynamic data')
   dynamicVerifyPromise = judged.then((state) => {
     if (epoch === host.currentBootEpoch()) dynamicDataProofState.set(state)
   })
+}
+
+// Why the document belongs to another passport, or null
+// when it names this one. The code must match the
+// manifest's. `@id` and `issuer` are checked against the
+// current snapshot when the document carries them, the
+// issuer by its DID; older documents carry neither.
+function foreignPassport(
+  doc: DppDynamicData, code: string | undefined,
+  snapshot: Record<string, unknown>,
+): string | null {
+  if (doc.code !== code) {
+    return `dynamic data names passport ${doc.code}, not ${code}`
+  }
+  const page = snapshot['@id']
+  if (doc['@id'] !== undefined && doc['@id'] !== page) {
+    return `dynamic data names page ${doc['@id']}, not ${String(page)}`
+  }
+  if (doc.issuer === undefined) return null
+  const issuer = didOf(doc.issuer)
+  const expected = didOf(snapshot.issuer)
+  if (issuer && issuer === expected) return null
+  return `dynamic data names issuer ${issuer}, not ${expected}`
+}
+
+// An issuer's DID, whether it is written bare or as an
+// organization carrying one.
+function didOf(issuer: unknown): string | undefined {
+  if (typeof issuer === 'string') return issuer
+  if (!issuer || typeof issuer !== 'object') return undefined
+  const did = (issuer as { did?: unknown }).did
+  return typeof did === 'string' ? did : undefined
 }
 
 // Whether the live values may paint: once their document's

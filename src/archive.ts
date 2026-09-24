@@ -132,11 +132,19 @@ export interface DppManifest {
 // passport, and `updatedAt` is the only statement of its
 // age.
 //
-// Rows follow the frozen property rows' shape. `name` is
-// optional because the publisher does not emit it yet.
+// `@id` (the passport page) and `issuer` are copied from the
+// current version's snapshot, at the credential subject for
+// an ecdsa-sd snapshot. Documents published before the
+// publisher added them carry neither.
+//
+// Rows follow the frozen property rows' shape and carry
+// only public-tier properties. The publisher emits no
+// `name`; a row without one is labelled by its term.
 export interface DppDynamicData {
   readonly '@type': 'DppDynamicData'
+  readonly '@id'?: string
   readonly code: string
+  readonly issuer?: string | Readonly<Record<string, unknown>>
   readonly updatedAt: string
   readonly values: ReadonlyArray<DynamicDataValue>
   readonly signature?: ManifestSignature

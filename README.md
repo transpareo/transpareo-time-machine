@@ -230,15 +230,19 @@ Field notes:
 - `dynamicDataUrl` (optional) - the passport's live
   values (state of charge, remaining capacity), which
   change without a new version. The document names its
-  passport by `code`, carries `updatedAt` and one row
-  per value in the property rows' shape, and is signed
-  with the platform key in the manifest's scheme on
-  every write:
+  passport by `code`, by its page (`@id`) and by its
+  `issuer`, the last two copied from the current
+  version's snapshot. It carries `updatedAt` and one row
+  per public value in the property rows' shape, and is
+  signed with the platform key in the manifest's scheme
+  on every write:
 
   ```json
   {
     "@type": "DppDynamicData",
+    "@id": "https://volturra.example/dpp/demo-2026-b001",
     "code": "demo-2026-b001",
+    "issuer": "did:web:volturra.example",
     "updatedAt": "2026-09-24T06:40:00Z",
     "values": [
       { "propertyID": "stateOfCharge", "value": 81, "unitCode": "P1" }
@@ -252,13 +256,16 @@ Field notes:
   version only. They carry their own verdict: a version
   stays verified whatever this document says, and the
   rows paint only once its signature clears the same
-  policy as the events document, and only when its
-  `code` is this passport's. A row without a `name` is
-  labelled by its `propertyID`. The manifest is not
-  re-signed on a telemetry write, so it vouches for the
-  address and nothing newer: an older signed copy of
-  the same passport's document still verifies, and
-  `updatedAt` is what tells the reader its age.
+  policy as the events document, and only when it names
+  this passport: its `code` must be the manifest's, and
+  its `@id` and issuer's DID must be the current
+  snapshot's. A document published before those two
+  fields existed is held to its `code`. A row without a
+  `name` is labelled by its `propertyID`. The manifest
+  is not re-signed on a telemetry write, so it vouches
+  for the address and nothing newer: an older signed
+  copy of the same passport's document still verifies,
+  and `updatedAt` is what tells the reader its age.
 - `issuer` / `platform` - schema.org-style
   attribution blocks; their `did` identities are
   matched against the snapshot proof entries.

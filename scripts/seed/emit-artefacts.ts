@@ -114,7 +114,8 @@ export async function emitFixture(
     const epcisDoc = buildEpcis(fixture, signer);
     const manifestDoc = buildManifest(fixture, snapshotDocs, signer);
     if (fixture.dynamic_data) {
-      const dynamicDoc = buildDynamicData(fixture, signer);
+      const current = snapshotDocs[snapshotDocs.length - 1].doc;
+      const dynamicDoc = buildDynamicData(fixture, current, signer);
       writes.push(writeFile(
         join(dir, 'dynamic-data.json'),
         JSON.stringify(dynamicDoc, null, 2) + '\n',
@@ -887,15 +888,23 @@ function buildManifest(
 // write and signs it with the platform key in the manifest's
 // single-signature scheme, so the seed reuses signManifest.
 // The published document carries no `@context`, and the
-// seed matches it.
+// seed matches it. `@id` and `issuer` are copied from the
+// current snapshot as stored, at the credential subject for
+// an ecdsa-sd snapshot.
 function buildDynamicData(
-  fixture: Fixture, signer: SnapshotSigner,
+  fixture: Fixture, current: Record<string, unknown>,
+  signer: SnapshotSigner,
 ): Record<string, unknown> {
   const dynamic = fixture.dynamic_data;
   if (!dynamic) throw new Error('fixture declares no dynamic data');
+  const subject = current.credentialSubject as
+    Record<string, unknown> | undefined;
+  const passport = subject ?? current;
   const body = {
     '@type': 'DppDynamicData',
+    '@id': passport['@id'],
     code: fixture.code,
+    issuer: passport.issuer,
     updatedAt: dynamic.updated_at,
     values: dynamic.values.map((v) => ({
       propertyID: v.property_id,

@@ -12,6 +12,11 @@
  * it is served for: a signed document of another passport
  * verifies perfectly and says nothing about this one.
  *
+ * Newer documents also name the passport page (`@id`) and
+ * the issuer, copied from the current version's snapshot.
+ * Where present they must match that snapshot; older
+ * documents carry neither, and the code check is the floor.
+ *
  * Its verdict is its own. The version stays verified on the
  * snapshot's proofs; the live values paint only once their
  * document clears the same acceptance policy as the events
@@ -26,7 +31,7 @@ vi.mock('@/crypto/verify', async (importOriginal) => ({
 
 import { verifyManifestSignature } from '@/crypto/verify'
 import type { ProofEntryResult } from '@/crypto/verify'
-import type { DppDynamicData, DppManifest } from '@/archive'
+import type { DppDynamicData, DppManifest, SignedSnapshot } from '@/archive'
 import * as host from '@/host'
 import {
   ensureDynamicDataVerified, resetVerifyCaches, liveDataIsShowable,
@@ -65,14 +70,59 @@ const mutableConfig = config as {
   pinnedPlatformKeys?: ReadonlyArray<string>
 }
 
-function boot(doc: DppDynamicData | null): void {
+const PAGE = 'https://publisher.test/dpp/dpp-a'
+const ISSUER = {
+  '@type': 'Organization',
+  name: 'Publisher',
+  did: 'did:web:publisher.test',
+}
+
+// The current version as a flat eddsa-jcs snapshot.
+const FLAT = {
+  '@id': PAGE, version: 1, publishedAt: '2026-01-01T00:00:00Z',
+  issuer: ISSUER,
+} as unknown as SignedSnapshot
+
+// The same version as an ecdsa-sd credential: the credential
+// has its own id and a bare issuer DID, and the passport's
+// page and issuer sit on the subject.
+const CREDENTIAL = {
+  '@id': `${PAGE}#credential`,
+  issuer: ISSUER.did,
+  credentialSubject: {
+    '@id': PAGE, version: 1, publishedAt: '2026-01-01T00:00:00Z',
+    issuer: { ...ISSUER, '@id': `${PAGE}#issuer` },
+  },
+} as unknown as SignedSnapshot
+
+function boot(
+  doc: DppDynamicData | null, snapshot: SignedSnapshot | null = FLAT,
+): void {
   host.manifest.set({ code: 'dpp-a' } as DppManifest)
+  host.currentVersion.set(1)
+  host.rawSnapshots.set(snapshot ? { 1: snapshot } : {})
   host.dynamicData.set(doc)
+}
+
+// Settle the verdict of one document against the current
+// snapshot, the signature itself taken as verified.
+async function judge(
+  doc: DppDynamicData, snapshot: SignedSnapshot = FLAT,
+): Promise<unknown> {
+  vi.mocked(verifyManifestSignature).mockResolvedValue(VERIFIED)
+  boot(doc, snapshot)
+  ensureDynamicDataVerified()
+  await vi.waitFor(() => {
+    expect(dynamicDataProofState.peek()).not.toBe('pending')
+  })
+  return dynamicDataProofState.peek()
 }
 
 afterEach(() => {
   resetVerifyCaches()
   host.manifest.set(null)
+  host.currentVersion.set(0)
+  host.rawSnapshots.set({})
   host.dynamicData.set(null)
   dynamicDataProofState.set('pending')
   delete mutableConfig.pinnedPlatformKeys
@@ -180,6 +230,61 @@ describe('a reboot during the check', () => {
     expect(dynamicDataProofState.peek()).toBe('pending')
     warn.mockRestore()
     vi.unstubAllGlobals()
+  })
+})
+
+describe('the passport a document names', () => {
+  const BOUND = { ...DOC, '@id': PAGE, issuer: ISSUER }
+
+  it('accepts a document bound to the current snapshot', async () => {
+    expect(await judge(BOUND)).toEqual(VERIFIED)
+  })
+
+  // The shape published before the binding existed: the
+  // code is all there is to check.
+  it('accepts an older document by its code', async () => {
+    expect(await judge(DOC)).toEqual(VERIFIED)
+  })
+
+  it('reads a credential snapshot at its subject', async () => {
+    expect(await judge(BOUND, CREDENTIAL)).toEqual(VERIFIED)
+  })
+
+  it('accepts the issuer as a bare DID', async () => {
+    expect(await judge({ ...BOUND, issuer: ISSUER.did })).toEqual(VERIFIED)
+  })
+
+  it('rejects a document naming another page', async () => {
+    const other = { ...BOUND, '@id': 'https://publisher.test/dpp/dpp-b' }
+    expect(await judge(other)).toMatchObject({ status: 'invalid' })
+    expect(verifyManifestSignature).not.toHaveBeenCalled()
+  })
+
+  it('rejects a document naming another issuer', async () => {
+    const other = { ...BOUND, issuer: 'did:web:someone.test' }
+    expect(await judge(other)).toMatchObject({ status: 'invalid' })
+  })
+
+  it('rejects an issuer that names no DID', async () => {
+    const other = { ...BOUND, issuer: { name: 'Publisher' } }
+    expect(await judge(other)).toMatchObject({ status: 'invalid' })
+  })
+
+  // After a reboot the document can land before the
+  // snapshot it is checked against.
+  it('waits for the current snapshot', async () => {
+    vi.mocked(verifyManifestSignature).mockResolvedValue(VERIFIED)
+    boot(BOUND, null)
+
+    ensureDynamicDataVerified()
+    await new Promise((r) => { setTimeout(r, 0) })
+    expect(dynamicDataProofState.peek()).toBe('pending')
+
+    host.rawSnapshots.set({ 1: FLAT })
+    ensureDynamicDataVerified()
+    await vi.waitFor(() => {
+      expect(dynamicDataProofState.peek()).toEqual(VERIFIED)
+    })
   })
 })
 

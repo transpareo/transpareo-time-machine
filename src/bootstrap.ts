@@ -18,7 +18,9 @@ import {
   ensureVersionLoaded, navByEventId, ensureEventsVerified,
   ensureDynamicDataVerified,
 } from '@/actions'
-import { manifest, dynamicData } from '@/host'
+import {
+  manifest, dynamicData, rawSnapshots, currentVersion,
+} from '@/host'
 
 // Number of versions on either side of the active
 // version to prefetch + verify when the visitor opens
@@ -69,9 +71,11 @@ export function bootstrapVerify(): void {
   })
 
   // Likewise the dynamic-data document, which the boot
-  // never waits for either.
+  // never waits for either. It is checked against the
+  // current snapshot, which after a reboot can land later.
   effect(() => {
-    if (dynamicData()) ensureDynamicDataVerified()
+    const snapshot = rawSnapshots()[currentVersion()]
+    if (dynamicData() && snapshot) ensureDynamicDataVerified()
   })
 }
 
