@@ -437,12 +437,18 @@ export function formatLongDate(iso: string, locale: string): string {
   // manifest said instead.
   if (Number.isNaN(Date.parse(iso))) return iso
 
-  let fmt = longDateFormatters.get(locale)
+  // A calendar date (2026-03-01) has no time of day; it
+  // parses as UTC midnight, so it is shown in UTC too, or a
+  // reader west of UTC would see the day before.
+  const calendar = /^\d{4}-\d{2}-\d{2}$/.test(iso)
+  const key = calendar ? `${locale} UTC` : locale
+  let fmt = longDateFormatters.get(key)
   if (!fmt) {
     fmt = new Intl.DateTimeFormat(locale, {
       day: 'numeric', month: 'long', year: 'numeric',
+      ...(calendar ? { timeZone: 'UTC' } : {}),
     })
-    longDateFormatters.set(locale, fmt)
+    longDateFormatters.set(key, fmt)
   }
   return fmt.format(new Date(iso))
 }

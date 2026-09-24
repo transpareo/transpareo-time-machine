@@ -43,6 +43,9 @@ and this project adheres to
   is now dropped when the passport changed under it.
 - The Albanian label for the events signature read
   "characteristic event"; it now says what the section is.
+- A calendar date names the day it was written. Dates
+  without a time of day were read as UTC midnight, so a
+  reader west of UTC saw the day before.
 
 ## [2.18.1] - 2026-09-21
 

@@ -28,3 +28,19 @@ describe('formatNumber', () => {
     expect(formatNumber(2048)).toBe('2,048');
   });
 });
+
+// A calendar date carries no time of day. Read as UTC
+// midnight and shown in a zone west of UTC, it would name
+// the day before.
+describe('formatLongDate on a calendar date', () => {
+  it('names the day written, in any time zone', async () => {
+    const zone = process.env.TZ;
+    process.env.TZ = 'America/New_York';
+    try {
+      const { formatLongDate } = await import('../src/i18n');
+      expect(formatLongDate('2026-03-01', 'en')).toBe('March 1, 2026');
+    } finally {
+      process.env.TZ = zone;
+    }
+  });
+});
