@@ -260,3 +260,16 @@ describe('adaptPrivateRows: post-auth tiers', () => {
     expect(out[0].namespace).toBe('a:li');
   });
 });
+
+describe('toRenderModel: battery units', () => {
+  // A battery passport's rows carry UN/CEFACT codes; the
+  // reader sees the symbol the code stands for.
+  it.each([
+    ['AMH', 'Ah'], ['KWH', 'kWh'], ['WHR', 'Wh'], ['VLT', 'V'],
+    ['WTT', 'W'], ['OHM', 'Ω'], ['CEL', '°C'],
+  ])('shows %s as %s', (unitCode, symbol) => {
+    const property = { propertyID: 'p', name: { en: 'p' }, value: 1, unitCode }
+    const model = toRenderModel(wire([property]));
+    expect(model.properties[0].value).toMatchObject({ unit: symbol });
+  });
+});

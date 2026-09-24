@@ -10,6 +10,13 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Added
+
+- Battery units read as symbols. Rows carrying the
+  UN/CEFACT codes for watt-hours, watts, volts, amperes,
+  ampere-hours, ohms, degrees Celsius, minutes and tonnes
+  showed the bare code (`AMH`); they now show `Ah`.
+
 ## [2.18.1] - 2026-09-21
 
 ### Fixed

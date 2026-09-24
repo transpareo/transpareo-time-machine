@@ -431,12 +431,16 @@ export interface WireProperty {
   readonly access?: 'onDemand' | 'legitimateInterest' | 'authorities'
 }
 
-// UN/CEFACT unit codes mapped to a display unit. An
-// unmapped code falls through to itself; the free-text
-// `unitText` is preferred when the wire carries one.
+// UN/CEFACT unit codes mapped to a display unit: every
+// code the publisher emits whose symbol reads the same in
+// every language. An unmapped code falls through to itself;
+// the free-text `unitText` is preferred when the wire
+// carries one.
 const UNIT_BY_CODE: Readonly<Record<string, string>> = {
-  KGM: 'kg', GRM: 'g', MGM: 'mg', LTR: 'L', MLT: 'ml',
+  KGM: 'kg', GRM: 'g', MGM: 'mg', TNE: 't', LTR: 'L', MLT: 'ml',
   MTR: 'm', CMT: 'cm', MMT: 'mm', P1: '%',
+  WHR: 'Wh', KWH: 'kWh', MWH: 'MWh', WTT: 'W', KWT: 'kW',
+  VLT: 'V', AMP: 'A', AMH: 'Ah', OHM: 'Ω', CEL: '°C', MIN: 'min',
 }
 
 function unitCodeToText(code: string | undefined): string | undefined {
