@@ -117,6 +117,7 @@
   "withdrawal.superseded.title": "Ovaj pasoš zamjenjuje noviji",
   "withdrawal.superseded.body": "{issuer} je za ovaj proizvod izdao zamjenski pasoš. Ovaj ostaje čitljiv kao zapis.",
   "withdrawal.successor": "Zamjenski pasoš",
+  "withdrawal.archived": "Arhivirano {date}",
   "gallery.previous": "Prethodni",
   "gallery.next": "Sljedeće",
   "gallery.close": "Zatvori",

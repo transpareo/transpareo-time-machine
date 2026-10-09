@@ -106,6 +106,7 @@
   "withdrawal.superseded.title": "Ένα νεότερο διαβατήριο αντικαθιστά αυτό",
   "withdrawal.superseded.body": "Ένα διαβατήριο αντικατάστασης εκδόθηκε από {issuer} για αυτό το προϊόν. Αυτό παραμένει αναγνώσιμο ως αρχείο.",
   "withdrawal.successor": "Διαβατήριο αντικατάστασης",
+  "withdrawal.archived": "Αρχειοθετήθηκε στις {date}",
   "gallery.previous": "Προηγούμενο",
   "gallery.next": "Επόμενο",
   "gallery.close": "Κλείσιμο",

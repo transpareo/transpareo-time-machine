@@ -106,6 +106,7 @@
   "withdrawal.superseded.title": "Et nyere pass erstatter dette",
   "withdrawal.superseded.body": "{issuer} utstedte et erstatningspass for dette produktet. Dette passet er fortsatt lesbart som dokumentasjon.",
   "withdrawal.successor": "Erstatningspass",
+  "withdrawal.archived": "Arkivert {date}",
   "gallery.previous": "Forrige",
   "gallery.next": "Neste",
   "gallery.close": "Lukk",

@@ -106,6 +106,7 @@
   "withdrawal.superseded.title": "एक नया पासपोर्ट इसकी जगह लेता है",
   "withdrawal.superseded.body": "{issuer} ने इस उत्पाद के लिए प्रतिस्थापन पासपोर्ट जारी किया। यह पासपोर्ट रिकॉर्ड के रूप में पढ़ा जा सकता है।",
   "withdrawal.successor": "प्रतिस्थापन पासपोर्ट",
+  "withdrawal.archived": "{date} को संग्रहीत",
   "gallery.previous": "पिछला",
   "gallery.next": "अगला",
   "gallery.close": "बंद करें",

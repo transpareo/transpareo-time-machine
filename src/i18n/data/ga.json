@@ -106,6 +106,7 @@
   "withdrawal.superseded.title": "Tá pas níos nuaí in ionad an chinn seo",
   "withdrawal.superseded.body": "D'eisigh {issuer} pas ionaid don táirge seo. Fanann an ceann seo inléite mar thaifead.",
   "withdrawal.successor": "Pas ionaid",
+  "withdrawal.archived": "Cartlannaithe ar {date}",
   "gallery.previous": "Roimhe",
   "gallery.next": "Ar Aghaidh",
   "gallery.close": "Dún",

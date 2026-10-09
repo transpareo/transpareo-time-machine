@@ -106,6 +106,7 @@
   "withdrawal.superseded.title": "Egy újabb útlevél váltja fel ezt",
   "withdrawal.superseded.body": "{issuer} pótútlevelet állított ki ehhez a termékhez. Ez az útlevél nyilvántartásként olvasható marad.",
   "withdrawal.successor": "Pótútlevél",
+  "withdrawal.archived": "Archiválva: {date}",
   "gallery.previous": "Előző",
   "gallery.next": "Következő",
   "gallery.close": "Bezárás",

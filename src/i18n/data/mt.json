@@ -106,6 +106,7 @@
   "withdrawal.superseded.title": "Passaport aktar ġdid jissostitwixxi dan",
   "withdrawal.superseded.body": "{issuer} ħareġ passaport sostitut għal dan il-prodott. Dan jibqa' jinqara bħala rekord.",
   "withdrawal.successor": "Passaport sostitut",
+  "withdrawal.archived": "Arkivjat nhar {date}",
   "gallery.previous": "Preċedenti",
   "gallery.next": "Li jmiss",
   "gallery.close": "Agħlaq",

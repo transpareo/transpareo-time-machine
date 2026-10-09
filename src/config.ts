@@ -9,7 +9,7 @@
  * Every option is an attribute on the element
  * (icons-src, revoked-roots-src, show-verification-mark,
  * pinned-platform-key, pinned-issuer-key, verifier,
- * logo-href, footer-copyright, footer-links).
+ * logo-href, footer-copyright, footer-links, archived-at).
  * initConfigFromElement reads them once in the element's
  * setup(), before its subtree mounts, so the consumers
  * below (read at render time) see populated values.
@@ -55,6 +55,13 @@ export interface TimeMachineConfig {
   // the scheme guard: the value rides in host page markup
   // the same way the footer links do.
   readonly logoHref?: string
+
+  // From `archived-at`: the day a static archive of the
+  // publisher's passports was made, as a calendar date
+  // (2026-10-08). Set, the card states it in the band at
+  // its top on every version. Anything that is not a real
+  // calendar date leaves it undefined, and the line off.
+  readonly archivedAt?: string
 
   // URL for the decorative content sprite (the publisher's
   // icon vocabulary, addressed by name from snapshot data).
@@ -175,6 +182,7 @@ export function initConfigFromElement(el: Element): void {
     showVerificationMark: parseShowMark(el),
     footer: parseFooter(el),
     requested: parseRequested(el),
+    archivedAt: parseCalendarDate(el.getAttribute('archived-at')),
   }
   for (const [k, v] of Object.entries(next)) {
     if (v !== undefined) (state as Record<string, unknown>)[k] = v
@@ -200,6 +208,16 @@ function parseRequested(el: Element): TimeMachineConfig['requested'] {
   const level = el.getAttribute('requested-level') ?? undefined
   const id = el.getAttribute('requested-id') ?? undefined
   return level || id ? { level, id } : undefined
+}
+
+// A day written as YYYY-MM-DD that exists on the calendar.
+// The round trip catches 2026-02-30, which some engines
+// roll over into March instead of refusing.
+function parseCalendarDate(raw: string | null): string | undefined {
+  if (!raw || !/^\d{4}-\d{2}-\d{2}$/.test(raw)) return undefined
+  const day = new Date(raw)
+  if (Number.isNaN(day.getTime())) return undefined
+  return day.toISOString().slice(0, 10) === raw ? raw : undefined
 }
 
 function parseShowMark(el: Element): boolean | undefined {

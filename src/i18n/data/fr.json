@@ -117,6 +117,7 @@
   "withdrawal.superseded.title": "Un passeport plus récent remplace celui-ci",
   "withdrawal.superseded.body": "{issuer} a émis un passeport de remplacement pour ce produit. Celui-ci reste consultable comme archive.",
   "withdrawal.successor": "Passeport de remplacement",
+  "withdrawal.archived": "Archivé le {date}",
   "gallery.previous": "Précédent",
   "gallery.next": "Suivant",
   "gallery.close": "Fermer",

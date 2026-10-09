@@ -106,6 +106,7 @@
   "withdrawal.superseded.title": "Ta potni list nadomešča novejši",
   "withdrawal.superseded.body": "{issuer} je za ta izdelek izdal nadomestni potni list. Ta ostaja berljiv kot zapis.",
   "withdrawal.successor": "Nadomestni potni list",
+  "withdrawal.archived": "Arhivirano {date}",
   "gallery.previous": "Prejšnji",
   "gallery.next": "Naslednji",
   "gallery.close": "Zapri",

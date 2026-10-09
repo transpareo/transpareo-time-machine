@@ -106,6 +106,7 @@
   "withdrawal.superseded.title": "Um passaporte mais recente substitui este",
   "withdrawal.superseded.body": "{issuer} emitiu um passaporte de substituição para este produto. Este permanece acessível como registo.",
   "withdrawal.successor": "Passaporte de substituição",
+  "withdrawal.archived": "Arquivado em {date}",
   "gallery.previous": "Anterior",
   "gallery.next": "Seguinte",
   "gallery.close": "Fechar",

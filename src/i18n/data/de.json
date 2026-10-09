@@ -117,6 +117,7 @@
   "withdrawal.superseded.title": "Ein neuerer Produktpass ersetzt diesen",
   "withdrawal.superseded.body": "{issuer} hat für dieses Produkt einen Nachfolgepass ausgestellt. Dieser Pass bleibt als Nachweis lesbar.",
   "withdrawal.successor": "Nachfolgepass",
+  "withdrawal.archived": "Archiviert am {date}",
   "gallery.previous": "Zurück",
   "gallery.next": "Weiter",
   "gallery.close": "Schließen",

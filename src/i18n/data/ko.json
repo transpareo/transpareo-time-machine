@@ -106,6 +106,7 @@
   "withdrawal.superseded.title": "더 새로운 여권이 이 여권을 대체합니다",
   "withdrawal.superseded.body": "{issuer}이(가) 이 제품에 대해 대체 여권을 발행했습니다. 이 여권은 기록으로 계속 열람할 수 있습니다.",
   "withdrawal.successor": "대체 여권",
+  "withdrawal.archived": "{date}에 보관됨",
   "gallery.previous": "이전",
   "gallery.next": "다음",
   "gallery.close": "닫기",

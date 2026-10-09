@@ -123,3 +123,26 @@ describe('requested-level / requested-id parsing', () => {
     expect(mod.config.requested).toBeUndefined();
   });
 });
+
+// Set by the shell of a static archive: the day the copy
+// was made. A calendar date only, since the band prints a
+// day, and anything else leaves the archive line off.
+describe('archived-at parsing', () => {
+  it('reads a calendar date', () => {
+    mod.initConfigFromElement(fakeElement({ 'archived-at': '2026-10-08' }));
+    expect(mod.config.archivedAt).toBe('2026-10-08');
+  });
+
+  it('is undefined when the attribute is absent', () => {
+    mod.initConfigFromElement(fakeElement({}));
+    expect(mod.config.archivedAt).toBeUndefined();
+  });
+
+  it.each(['', 'yesterday', '2026-10-08T12:00:00Z', '2026-02-30'])(
+    'ignores %j',
+    (value) => {
+      mod.initConfigFromElement(fakeElement({ 'archived-at': value }));
+      expect(mod.config.archivedAt).toBeUndefined();
+    },
+  );
+});

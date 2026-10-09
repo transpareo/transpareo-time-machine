@@ -106,6 +106,7 @@
   "withdrawal.superseded.title": "Daha yeni bir pasaport bunun yerini aldı",
   "withdrawal.superseded.body": "{issuer} bu ürün için yerine geçen bir pasaport düzenledi. Bu pasaport kayıt olarak okunabilir kalır.",
   "withdrawal.successor": "Yerine geçen pasaport",
+  "withdrawal.archived": "{date} tarihinde arşivlendi",
   "gallery.previous": "Önceki",
   "gallery.next": "Sonraki",
   "gallery.close": "Kapat",

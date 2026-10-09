@@ -117,6 +117,7 @@
   "withdrawal.superseded.title": "Nýrra vegabréf kemur í stað þessa",
   "withdrawal.superseded.body": "{issuer} gaf út vegabréf í staðinn fyrir þessa vöru. Þetta vegabréf er áfram læsilegt sem skráning.",
   "withdrawal.successor": "Vegabréf í staðinn",
+  "withdrawal.archived": "Sett í skjalasafn {date}",
   "gallery.previous": "Fyrri",
   "gallery.next": "Næst",
   "gallery.close": "Loka",

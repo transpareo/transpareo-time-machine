@@ -117,6 +117,7 @@
   "withdrawal.superseded.title": "Một hộ chiếu mới hơn thay thế hộ chiếu này",
   "withdrawal.superseded.body": "{issuer} đã cấp hộ chiếu thay thế cho sản phẩm này. Hộ chiếu này vẫn đọc được như một bản ghi.",
   "withdrawal.successor": "Hộ chiếu thay thế",
+  "withdrawal.archived": "Đã lưu trữ ngày {date}",
   "gallery.previous": "Trước",
   "gallery.next": "Tiếp",
   "gallery.close": "Đóng",

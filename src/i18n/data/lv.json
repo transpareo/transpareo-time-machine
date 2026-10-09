@@ -106,6 +106,7 @@
   "withdrawal.superseded.title": "Jaunāka pase aizstāj šo",
   "withdrawal.superseded.body": "{issuer} izdeva šim produktam aizstājēju pasi. Šī pase paliek pieejama kā ieraksts.",
   "withdrawal.successor": "Aizstājēja pase",
+  "withdrawal.archived": "Arhivēts {date}",
   "gallery.previous": "Iepriekšējais",
   "gallery.next": "Nākamais",
   "gallery.close": "Aizvērt",

@@ -106,6 +106,7 @@
   "withdrawal.superseded.title": "Een nieuwer paspoort vervangt dit paspoort",
   "withdrawal.superseded.body": "{issuer} heeft voor dit product een vervangend paspoort uitgegeven. Dit paspoort blijft leesbaar als registratie.",
   "withdrawal.successor": "Vervangend paspoort",
+  "withdrawal.archived": "Gearchiveerd op {date}",
   "gallery.previous": "Vorige",
   "gallery.next": "Volgende",
   "gallery.close": "Sluiten",

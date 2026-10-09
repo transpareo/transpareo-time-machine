@@ -5,7 +5,9 @@
  *
  * The withdrawal band: a passport that has been voided or
  * superseded says so across the top of its own card,
- * between the brandbar and the hero.
+ * between the brandbar and the hero. A static archive
+ * states the day it was made in the same band, as the
+ * line that leads it.
  *
  * The palette is the card's two theme colours swapped:
  * ground mixed from --font-color, text taken from
@@ -39,6 +41,12 @@ dpp-withdrawal {
    * rather than as one more tinted notice box. */
   background: var(--font-color, #222);
   color: var(--background-color, #fff);
+}
+
+.withdrawal-archived {
+  margin: 0;
+  @include dpp.eyebrow;
+  color: color-mix(in oklab, currentColor 70%, transparent);
 }
 
 .withdrawal-title {

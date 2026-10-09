@@ -106,6 +106,7 @@
   "withdrawal.superseded.title": "Ett nyare pass ersätter det här",
   "withdrawal.superseded.body": "{issuer} utfärdade ett ersättningspass för den här produkten. Det här passet finns kvar som dokumentation.",
   "withdrawal.successor": "Ersättningspass",
+  "withdrawal.archived": "Arkiverad den {date}",
   "gallery.previous": "Föregående",
   "gallery.next": "Nästa",
   "gallery.close": "Stäng",

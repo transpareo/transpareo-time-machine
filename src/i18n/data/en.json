@@ -117,6 +117,7 @@
   "withdrawal.superseded.title": "A newer passport replaces this one",
   "withdrawal.superseded.body": "{issuer} issued a replacement passport for this product. This one stays readable as a record.",
   "withdrawal.successor": "Replacement passport",
+  "withdrawal.archived": "Archived on {date}",
   "gallery.previous": "Previous",
   "gallery.next": "Next",
   "gallery.close": "Close",

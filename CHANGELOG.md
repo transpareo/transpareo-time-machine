@@ -12,6 +12,14 @@ and this project adheres to
 
 ### Added
 
+- The archive day. An `archived-at` attribute on the
+  element (a calendar date, `2026-10-08`), which the shell
+  of a static archive sets, leads the withdrawal band
+  with "Archived on 8 October 2026" in the reader's
+  language and date format, on every version. A
+  withdrawn passport in an archive reads its withdrawal
+  under that line. Without the attribute, or with a value
+  that is not a real calendar date, nothing changes.
 - The passport's live values. A manifest that advertises
   `dynamicDataUrl` has its dynamic-data document fetched
   beside the snapshot, and its readings (state of charge,

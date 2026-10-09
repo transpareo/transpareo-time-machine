@@ -106,6 +106,7 @@
   "withdrawal.superseded.title": "Un pașaport mai nou îl înlocuiește pe acesta",
   "withdrawal.superseded.body": "{issuer} a emis un pașaport de înlocuire pentru acest produs. Acesta rămâne accesibil ca înregistrare.",
   "withdrawal.successor": "Pașaport de înlocuire",
+  "withdrawal.archived": "Arhivat pe {date}",
   "gallery.previous": "Anterior",
   "gallery.next": "Următor",
   "gallery.close": "Închide",

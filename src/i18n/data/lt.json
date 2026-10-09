@@ -106,6 +106,7 @@
   "withdrawal.superseded.title": "Šį pasą pakeičia naujesnis",
   "withdrawal.superseded.body": "{issuer} išdavė šiam produktui pakaitinį pasą. Šis pasas lieka prieinamas kaip įrašas.",
   "withdrawal.successor": "Pakaitinis pasas",
+  "withdrawal.archived": "Archyvuota {date}",
   "gallery.previous": "Ankstesnis",
   "gallery.next": "Kitas",
   "gallery.close": "Uždaryti",

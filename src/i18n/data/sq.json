@@ -117,6 +117,7 @@
   "withdrawal.superseded.title": "Një pasaportë më e re e zëvendëson këtë",
   "withdrawal.superseded.body": "{issuer} lëshoi një pasaportë zëvendësuese për këtë produkt. Kjo mbetet e lexueshme si regjistrim.",
   "withdrawal.successor": "Pasaportë zëvendësuese",
+  "withdrawal.archived": "Arkivuar më {date}",
   "gallery.previous": "Paraprak",
   "gallery.next": "Më pas",
   "gallery.close": "Mbyll",

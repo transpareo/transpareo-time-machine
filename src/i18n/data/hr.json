@@ -106,6 +106,7 @@
   "withdrawal.superseded.title": "Ovu putovnicu zamjenjuje novija",
   "withdrawal.superseded.body": "{issuer} je za ovaj proizvod izdao zamjensku putovnicu. Ova ostaje čitljiva kao zapis.",
   "withdrawal.successor": "Zamjenska putovnica",
+  "withdrawal.archived": "Arhivirano {date}",
   "gallery.previous": "Prethodno",
   "gallery.next": "Sljedeće",
   "gallery.close": "Zatvori",

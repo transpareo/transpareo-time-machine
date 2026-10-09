@@ -106,6 +106,7 @@
   "withdrawal.superseded.title": "Nowszy paszport zastępuje ten dokument",
   "withdrawal.superseded.body": "{issuer} wydał dla tego produktu paszport zastępczy. Ten pozostaje dostępny jako zapis.",
   "withdrawal.successor": "Paszport zastępczy",
+  "withdrawal.archived": "Zarchiwizowano {date}",
   "gallery.previous": "Poprzedni",
   "gallery.next": "Następny",
   "gallery.close": "Zamknij",

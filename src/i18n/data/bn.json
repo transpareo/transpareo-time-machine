@@ -106,6 +106,7 @@
   "withdrawal.superseded.title": "একটি নতুন পাসপোর্ট এটির স্থলাভিষিক্ত হয়েছে",
   "withdrawal.superseded.body": "{issuer} এই পণ্যের জন্য একটি বিকল্প পাসপোর্ট জারি করেছে। এটি রেকর্ড হিসেবে পাঠযোগ্য থাকে।",
   "withdrawal.successor": "বিকল্প পাসপোর্ট",
+  "withdrawal.archived": "{date} তারিখে আর্কাইভ করা হয়েছে",
   "gallery.previous": "পূর্ববর্তী",
   "gallery.next": "পরবর্তী",
   "gallery.close": "বন্ধ করুন",

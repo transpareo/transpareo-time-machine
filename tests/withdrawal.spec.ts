@@ -24,6 +24,7 @@ import { englishLabels, type Labels } from '@/i18n/labels'
 import deLabels from '@/i18n/data/de.json'
 import type { DppManifest, SignedSnapshot } from '@/archive'
 import type { DppSnapshot } from '@/types'
+import { config } from '@/config'
 import '@/components/dpp-withdrawal'
 
 const org = (name: string) => (
@@ -84,7 +85,14 @@ function mount(): HTMLElement {
 const text = (el: HTMLElement, sel: string): string =>
   el.querySelector(sel)?.textContent?.trim() ?? ''
 
+// Set by the shell of a static archive, read once in the
+// host element's setup before the band mounts.
+function archive(day: string): void {
+  ;(config as { archivedAt?: string }).archivedAt = day
+}
+
 afterEach(() => {
+  delete (config as { archivedAt?: string }).archivedAt
   host.manifest.set(null)
   host.rawSnapshots.set({})
   locale.set('en')
@@ -299,5 +307,54 @@ describe('dpp-withdrawal', () => {
     expect(text(el, '.withdrawal-title'))
       .toBe('Dieser Produktpass wurde zurückgezogen')
     expect(text(el, '.withdrawal-body')).toContain('13. September 2026')
+  })
+})
+
+// A static archive of a closed workspace states the day the
+// copy was made, over every version and every passport in
+// it, whether or not the passport itself still stands.
+describe('dpp-withdrawal in an archive', () => {
+  it('renders nothing without an archive date', () => {
+    seed({})
+    expect(mount().querySelector('.withdrawal-archived')).toBeNull()
+  })
+
+  it('states the archive day on a passport that stands', () => {
+    seed({})
+    archive('2026-10-08')
+    const el = mount()
+    expect(text(el, '.withdrawal-archived')).toBe('Archived on October 8, 2026')
+    expect((el.querySelector('.withdrawal-title') as HTMLElement).hidden)
+      .toBe(true)
+    expect((el.querySelector('.withdrawal-body') as HTMLElement).hidden)
+      .toBe(true)
+  })
+
+  // The archive line leads, so the date sits in the same
+  // place on every page of the archive, and the withdrawal
+  // reads under it unchanged.
+  it('leads a withdrawal with the archive day', () => {
+    seed({ voidedAt: '2026-09-13T21:42:31Z', voidedReason: 'recalled' })
+    archive('2026-10-08')
+    const el = mount()
+    const lines = [...el.querySelectorAll('.withdrawal > p:not([hidden])')]
+      .map((p) => p.className)
+    expect(lines).toEqual([
+      'withdrawal-archived', 'withdrawal-title', 'withdrawal-body',
+    ])
+    expect(text(el, '.withdrawal-title'))
+      .toBe('This passport has been withdrawn')
+  })
+
+  // The date is spelled out in the reader's language, and
+  // follows a switch like the band's other sentences.
+  it('follows a locale switch', () => {
+    seed({})
+    archive('2026-10-08')
+    const el = mount()
+    locale.set('de')
+    labelSet.set(deLabels as unknown as Labels)
+    expect(text(el, '.withdrawal-archived'))
+      .toBe('Archiviert am 8. Oktober 2026')
   })
 })

@@ -106,6 +106,7 @@
   "withdrawal.superseded.title": "更新的护照已取代此护照",
   "withdrawal.superseded.body": "{issuer} 已为该产品签发替代护照。此护照仍可作为记录查阅。",
   "withdrawal.successor": "替代护照",
+  "withdrawal.archived": "归档于 {date}",
   "gallery.previous": "上一张",
   "gallery.next": "下一张",
   "gallery.close": "关闭",

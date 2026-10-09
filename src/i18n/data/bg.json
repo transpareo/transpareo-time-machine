@@ -106,6 +106,7 @@
   "withdrawal.superseded.title": "По-нов паспорт замества този",
   "withdrawal.superseded.body": "{issuer} издаде заместващ паспорт за този продукт. Този остава четим като запис.",
   "withdrawal.successor": "Заместващ паспорт",
+  "withdrawal.archived": "Архивирано на {date}",
   "gallery.previous": "Предишно",
   "gallery.next": "Следващо",
   "gallery.close": "Затвори",

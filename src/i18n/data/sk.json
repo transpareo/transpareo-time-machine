@@ -106,6 +106,7 @@
   "withdrawal.superseded.title": "Tento pas nahrádza novší",
   "withdrawal.superseded.body": "{issuer} vydal pre tento produkt náhradný pas. Tento pas zostáva čitateľný ako záznam.",
   "withdrawal.successor": "Náhradný pas",
+  "withdrawal.archived": "Archivované {date}",
   "gallery.previous": "Predchádzajúce",
   "gallery.next": "Ďalšie",
   "gallery.close": "Zavrieť",

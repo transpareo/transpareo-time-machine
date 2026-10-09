@@ -6,19 +6,25 @@
  * <dpp-withdrawal>, the band across the top of the card
  * for a passport that is out of circulation: voided (the
  * unit it described is gone) or superseded (another
- * passport carries the unit now).
+ * passport carries the unit now). A static archive of the
+ * publisher's passports states its own day in the same
+ * band (`archived-at`), as a line that leads the band, so
+ * the date sits in one place on every page of the archive
+ * and a withdrawal reads under it unchanged.
  *
- * It renders nothing at all for a passport that stands,
- * which is nearly all of them, so the state is read once
- * at mount the way the brandbar reads its own: the
- * manifest cannot change under a mounted tree, and a new
- * `src` mounts a fresh one.
+ * It renders nothing at all for a passport that stands
+ * outside an archive, which is nearly all of them, so the
+ * state is read once at mount the way the brandbar reads
+ * its own: neither the manifest nor the host attributes
+ * change under a mounted tree, and a new `src` mounts a
+ * fresh one.
  *
  * The band does not follow the timeline. Scrubbing back
  * to a version published while the unit was still in
  * circulation shows that version's content, and the unit
  * is still out of circulation while the visitor reads it,
  * so the band states the same thing over every version.
+ * The archive day holds for every version alike.
  *
  * Its palette is the card's own, swapped: the card's ink
  * as ground, the card's ground as text, whichever way the
@@ -44,29 +50,41 @@ import {
 } from '@/withdrawal'
 import { i18n, formatLongDate } from '@/i18n'
 import { t } from '@/i18n/labels'
+import { config } from '@/config'
 import type { Organization } from '@/archive'
 
 class DppWithdrawal extends LightElement {
   protected setup(): void {
     const state = withdrawal()
-    if (!state) return
+    const archivedAt = config.archivedAt
+    if (!state && !archivedAt) return
+
+    const title = () => state
+      ? withdrawalTitle(state, i18n.labels)
+      : ''
+    const body = () => state
+      ? withdrawalBody(state, i18n.labels, sentenceVars(state))
+      : ''
 
     const tpl = html`
       <section class="withdrawal" role="status">
-        <p class="withdrawal-title">
-          ${() => withdrawalTitle(state, i18n.labels)}
+        <p class="withdrawal-archived" ?hidden=${!archivedAt}>
+          ${() => archivedLine(archivedAt)}
         </p>
-        <p class="withdrawal-body">
-          ${() => withdrawalBody(state, i18n.labels, sentenceVars(state))}
+        <p class="withdrawal-title" ?hidden=${!state}>
+          ${title}
+        </p>
+        <p class="withdrawal-body" ?hidden=${!state}>
+          ${body}
         </p>
         <p class="withdrawal-successor"
-           ?hidden=${!state.successorCode}>
+           ?hidden=${!state?.successorCode}>
           <span class="withdrawal-successor-label">
             ${() => t(i18n.labels, 'withdrawal.successor')}
           </span>
           <a class="withdrawal-code"
-             href=${state.successorUrl ?? undefined}>${
-            state.successorCode ?? ''
+             href=${state?.successorUrl ?? undefined}>${
+            state?.successorCode ?? ''
           }</a>
         </p>
       </section>
@@ -93,6 +111,13 @@ function sentenceVars(state: Withdrawal): WithdrawalVars {
       ? formatLongDate(state.voidedAt, i18n.locale)
       : '',
   }
+}
+
+// The archive day, spelled out in the reader's language.
+function archivedLine(day: string | undefined): string {
+  if (!day) return ''
+  const date = formatLongDate(day, i18n.locale)
+  return t(i18n.labels, 'withdrawal.archived', { date })
 }
 
 customElements.define('dpp-withdrawal', DppWithdrawal)

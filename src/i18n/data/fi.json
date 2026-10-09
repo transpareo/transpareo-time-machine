@@ -106,6 +106,7 @@
   "withdrawal.superseded.title": "Uudempi passi korvaa tämän",
   "withdrawal.superseded.body": "{issuer} myönsi tälle tuotteelle korvaavan passin. Tämä passi säilyy luettavana tositteena.",
   "withdrawal.successor": "Korvaava passi",
+  "withdrawal.archived": "Arkistoitu {date}",
   "gallery.previous": "Edellinen",
   "gallery.next": "Seuraava",
   "gallery.close": "Sulje",

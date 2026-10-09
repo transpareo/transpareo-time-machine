@@ -106,6 +106,7 @@
   "withdrawal.superseded.title": "Uuem pass asendab selle",
   "withdrawal.superseded.body": "{issuer} andis sellele tootele välja asenduspassi. See pass jääb dokumendina loetavaks.",
   "withdrawal.successor": "Asenduspass",
+  "withdrawal.archived": "Arhiveeritud {date}",
   "gallery.previous": "Eelmine",
   "gallery.next": "Järgmine",
   "gallery.close": "Sulge",

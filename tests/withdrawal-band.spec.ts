@@ -45,6 +45,19 @@ async function withdrawn(page: Page, extra: Record<string, unknown>) {
   })
 }
 
+// The shell of a static archive writes the day the copy
+// was made onto the element itself.
+async function archived(page: Page, day: string) {
+  await page.route('/', async (route) => {
+    const res = await route.fetch()
+    const body = (await res.text()).replace(
+      /<transpareo-time-machine(\s+src=)/,
+      `<transpareo-time-machine archived-at="${day}"$1`,
+    )
+    await route.fulfill({ response: res, body })
+  })
+}
+
 function band(page: Page) {
   return page.evaluate(() => {
     const root = document.querySelector('transpareo-time-machine')?.shadowRoot
@@ -54,7 +67,10 @@ function band(page: Page) {
     const code = el.querySelector('.withdrawal-code') as HTMLAnchorElement
     const title = el.querySelector('.withdrawal-title') as HTMLElement
     const hero = root!.querySelector('.dpp-hero-image') as HTMLElement
+    const archived = el.querySelector('.withdrawal-archived') as HTMLElement
     return {
+      archived: archived.hidden ? null : archived.textContent?.trim(),
+      archivedLeft: Math.round(archived.getBoundingClientRect().left),
       title: el.querySelector('.withdrawal-title')?.textContent?.trim(),
       body: el.querySelector('.withdrawal-body')?.textContent?.trim(),
       rowDisplay: getComputedStyle(row).display,
@@ -171,4 +187,30 @@ test('a passport that stands renders no band at all', async ({ page }) => {
     return !!root?.querySelector('.withdrawal')
   })
   expect(present).toBe(false)
+})
+
+test('an archive states its day on a standing passport', async ({ page }) => {
+  await archived(page, '2026-10-08')
+  await boot(page)
+
+  const b = await band(page)
+  expect(b!.archived).toBe('Archived on October 8, 2026')
+  expect(b!.archivedLeft).toBe(b!.contentLeft)
+  expect(b!.rowDisplay).toBe('none')
+})
+
+// The archive day leads, and the withdrawal reads under it
+// as it does outside an archive.
+test('an archive leads a withdrawal with its day', async ({ page }) => {
+  await archived(page, '2026-10-08')
+  await withdrawn(page, {
+    voidedAt: '2026-09-13T21:42:31Z',
+    voidedReason: 'destroyed',
+  })
+  await boot(page)
+
+  const b = await band(page)
+  expect(b!.archived).toBe('Archived on October 8, 2026')
+  expect(b!.title).toBe('This passport has been withdrawn')
+  expect(b!.archivedLeft).toBe(b!.textLeft)
 })

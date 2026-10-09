@@ -106,6 +106,7 @@
   "withdrawal.superseded.title": "Et nyere pas erstatter dette",
   "withdrawal.superseded.body": "{issuer} udstedte et erstatningspas for dette produkt. Dette pas forbliver læsbart som dokumentation.",
   "withdrawal.successor": "Erstatningspas",
+  "withdrawal.archived": "Arkiveret den {date}",
   "gallery.previous": "Forrige",
   "gallery.next": "Næste",
   "gallery.close": "Luk",

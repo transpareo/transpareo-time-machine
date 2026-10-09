@@ -106,6 +106,7 @@
   "withdrawal.superseded.title": "Цей паспорт замінено новішим",
   "withdrawal.superseded.body": "{issuer} видав для цього продукту замінний паспорт. Цей залишається доступним як запис.",
   "withdrawal.successor": "Замінний паспорт",
+  "withdrawal.archived": "Архівовано {date}",
   "gallery.previous": "Попереднє",
   "gallery.next": "Наступне",
   "gallery.close": "Закрити",

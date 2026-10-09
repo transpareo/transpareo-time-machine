@@ -106,6 +106,7 @@
   "withdrawal.superseded.title": "Paspor yang lebih baru menggantikan paspor ini",
   "withdrawal.superseded.body": "{issuer} menerbitkan paspor pengganti untuk produk ini. Paspor ini tetap dapat dibaca sebagai catatan.",
   "withdrawal.successor": "Paspor pengganti",
+  "withdrawal.archived": "Diarsipkan pada {date}",
   "gallery.previous": "Sebelumnya",
   "gallery.next": "Berikutnya",
   "gallery.close": "Tutup",

@@ -106,6 +106,7 @@
   "withdrawal.superseded.title": "Un pasaporte más reciente sustituye a este",
   "withdrawal.superseded.body": "{issuer} emitió un pasaporte de reemplazo para este producto. Este queda accesible como registro.",
   "withdrawal.successor": "Pasaporte de reemplazo",
+  "withdrawal.archived": "Archivado el {date}",
   "gallery.previous": "Anterior",
   "gallery.next": "Siguiente",
   "gallery.close": "Cerrar",

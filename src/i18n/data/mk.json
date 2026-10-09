@@ -117,6 +117,7 @@
   "withdrawal.superseded.title": "Овој пасош го заменува понов",
   "withdrawal.superseded.body": "{issuer} издаде заменски пасош за овој производ. Овој останува читлив како запис.",
   "withdrawal.successor": "Заменски пасош",
+  "withdrawal.archived": "Архивирано на {date}",
   "gallery.previous": "Претходно",
   "gallery.next": "Следно",
   "gallery.close": "Затвори",
