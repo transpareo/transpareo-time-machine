@@ -10,6 +10,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.19.0] - 2026-10-09
+
 ### Added
 
 - The archive day. An `archived-at` attribute on the
