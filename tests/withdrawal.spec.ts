@@ -250,7 +250,7 @@ describe('dpp-withdrawal', () => {
   // to "which passport replaced this one", so it renders
   // either way and only the link comes and goes.
   it('links the successor when the publisher gave an address', () => {
-    const url = 'https://demo.example/01/04012345678902'
+    const url = 'https://demo.example/01/04012345678918'
     seed({ supersededBy: { code: 'demo-2026-t002', url } })
     const a = mount().querySelector('.withdrawal-code') as HTMLAnchorElement
     expect(a.getAttribute('href')).toBe(url)

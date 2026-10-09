@@ -116,7 +116,7 @@ test('a supersede shows the successor and links it', async ({ page }) => {
   await withdrawn(page, {
     supersededBy: {
       code: 'demo-2026-t002',
-      url: 'https://demo.example/01/04012345678902',
+      url: 'https://demo.example/01/04012345678918',
     },
   })
   await boot(page)
@@ -125,7 +125,7 @@ test('a supersede shows the successor and links it', async ({ page }) => {
   expect(b!.title).toBe('A newer passport replaces this one')
   expect(b!.rowDisplay).toBe('flex')
   expect(b!.code).toBe('demo-2026-t002')
-  expect(b!.href).toBe('https://demo.example/01/04012345678902')
+  expect(b!.href).toBe('https://demo.example/01/04012345678918')
   expect(b!.textLeft).toBe(b!.contentLeft)
 })
 
