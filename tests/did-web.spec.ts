@@ -8,13 +8,17 @@
  * fetch behaviour (a timeout signal is attached; aborting it
  * rejects rather than hanging forever), and the cache bypass
  * a failed proof re-resolves with, which has to reach the
- * origin past a CDN rather than only past the browser.
+ * origin past a CDN rather than only past the browser. And
+ * pinnedMultikeys, which turns a page's pins into the keys
+ * both suites try before any document is read.
  */
 
 import { describe, expect, it, vi, afterEach } from 'vitest';
 import {
   splitVerificationMethod, resolveMultikey, forgetKeyDocuments,
+  pinnedMultikeys,
 } from '../src/crypto/did-web';
+import { encodeMultibaseBase58 } from '../src/crypto/multibase';
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -24,6 +28,27 @@ afterEach(() => {
 // Any well-formed Ed25519 Multikey; these cases read the
 // fetch, not the key.
 const KEY = 'z6MkkXFYBvMjeXkh4xBubXGz3n8ByWLZmVu9me6zXqZJSZF4';
+
+describe('pinnedMultikeys', () => {
+  const P256 = encodeMultibaseBase58(
+    Uint8Array.from([0x80, 0x24, 0x02, ...new Array(32).fill(5)]),
+  );
+
+  it('keeps the pins of the asked curve, in order', () => {
+    expect(pinnedMultikeys([P256, KEY], 'Ed25519').map((k) => k.multibase))
+      .toEqual([KEY]);
+    expect(pinnedMultikeys([KEY, P256], 'P-256').map((k) => k.multibase))
+      .toEqual([P256]);
+  });
+
+  it('decodes each pin once, however often it is listed', () => {
+    expect(pinnedMultikeys([KEY, KEY], 'Ed25519')).toHaveLength(1);
+  });
+
+  it('skips a pin that does not decode', () => {
+    expect(pinnedMultikeys(['z0OIl', KEY], 'Ed25519')).toHaveLength(1);
+  });
+});
 
 describe('splitVerificationMethod', () => {
   it('maps a did:web method to its well-known did.json', () => {

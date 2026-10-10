@@ -726,6 +726,92 @@ describe('verifySnapshot: pinned issuer key', () => {
   });
 });
 
+// A page that pins keys has already said which keys it
+// trusts, so a proof is tried under those first and its
+// verificationMethod document is read only when none of
+// them verifies it.
+describe('verifySnapshot: pins first', () => {
+  function recordingFetch(map: Map<string, string>): string[] {
+    const calls: string[] = [];
+    stubResolverFetch(map);
+    const resolve = globalThis.fetch;
+    vi.stubGlobal('fetch', (input: string | URL) => {
+      calls.push(String(input));
+      return resolve(input);
+    });
+    return calls;
+  }
+
+  it('verifies under the pins without reading a key document', async () => {
+    const setup = await buildSignedSnapshot();
+    const calls = recordingFetch(new Map());
+    const verifySnapshot = await freshVerifier();
+
+    const result = await verifySnapshot(setup.snapshot, {
+      pinnedPlatformKeys: [setup.platform.publicKeyMultibase],
+      pinnedIssuerKeys: [setup.issuer.publicKeyMultibase],
+    });
+
+    expect(calls).toEqual([]);
+    expect(result.verdict).toBe('authentic');
+    expect(result.verifiedEntryCount).toBe(5);
+    expect(result.entries.filter((e) => e.pinned).length).toBe(2);
+    expect(result.entries.filter((e) => e.issuerPinned).length).toBe(3);
+    expect(result.entries[0].keyMultibase)
+      .toBe(setup.issuer.publicKeyMultibase);
+  });
+
+  // A key minted after the page was cached: no pin verifies,
+  // so the method's document answers, as before pinning.
+  it('reads the document when no pin verifies', async () => {
+    const setup = await buildSignedSnapshot();
+    const stranger = await makeAuthority();
+    const calls = recordingFetch(fullResolverMap(setup));
+    const verifySnapshot = await freshVerifier();
+
+    const result = await verifySnapshot(setup.snapshot, {
+      pinnedPlatformKeys: [stranger.publicKeyMultibase],
+    });
+
+    expect(calls.length).toBeGreaterThan(0);
+    expect(result.verdict).toBe('authentic');
+    expect(result.entries.some((e) => e.pinned)).toBe(false);
+  });
+
+  it('skips a pin that does not decode', async () => {
+    const setup = await buildSignedSnapshot();
+    const calls = recordingFetch(new Map());
+    const verifySnapshot = await freshVerifier();
+
+    const result = await verifySnapshot(setup.snapshot, {
+      pinnedPlatformKeys: ['z0OIl', setup.platform.publicKeyMultibase],
+      pinnedIssuerKeys: [setup.issuer.publicKeyMultibase],
+    });
+
+    expect(calls).toEqual([]);
+    expect(result.verdict).toBe('authentic');
+  });
+
+  it('checks a manifest signature under the pin alone', async () => {
+    const platform = await makeAuthority();
+    const body = { '@type': 'DppManifest', code: 'x', currentVersion: 1 };
+    const options = proofOptions('did:web:platform.test#key-1');
+    const proofValue = await signProof(platform.privateKey, body, options);
+    const calls = recordingFetch(new Map());
+    vi.resetModules();
+    const { verifyManifestSignature } = await import('../src/crypto/verify');
+
+    const entry = await verifyManifestSignature(
+      { ...body, signature: { ...options, proofValue } },
+      [platform.publicKeyMultibase],
+    );
+
+    expect(calls).toEqual([]);
+    expect(entry?.status).toBe('verified');
+    expect(entry?.pinned).toBe(true);
+  });
+});
+
 describe('verifySnapshot: authority grouping by key', () => {
   // Each entry is signed independently now (five distinct
   // proofValues), but the three issuer aliases resolve to one

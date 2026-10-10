@@ -39,10 +39,12 @@ interface Budget {
 // ship. Raise it when a deliberate feature earns the bytes,
 // and say so.
 const BUDGETS: ReadonlyArray<Budget> = [
-  // 73 KB since model and lot passports: the walk-up band,
-  // the unit-passport line, their labels and four context
-  // terms.
-  { file: 'transpareo-time-machine.js', maxGzipBytes: 73 * 1024, dir: 'dist' },
+  // 74 KB since the asset host and pinned keys first: the
+  // root-path resolver, the revocation default and the key
+  // selection both cryptosuites share. It went to 73 KB for
+  // model and lot passports: the walk-up band, the
+  // unit-passport line, their labels and four context terms.
+  { file: 'transpareo-time-machine.js', maxGzipBytes: 74 * 1024, dir: 'dist' },
   // 32 KB for the same reason: the bundled English catalog
   // and the Transpareo context ride every entry whole. It
   // went to 31 KB when the withdrawal sentences joined.

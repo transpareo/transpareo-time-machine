@@ -24,9 +24,13 @@
  *      issuer key; verify each non-mandatory N-Quad's
  *      signature against the proof-scoped publicKey.
  *
- * The issuer key is resolved by the caller (from the
- * proof's verificationMethod) and passed in, so this
- * module stays free of network and DID plumbing.
+ * The issuer key is found by the caller (among the page's
+ * pins, else from the proof's verificationMethod) and
+ * passed in, so this module stays free of network and DID
+ * plumbing. Steps 1 to 4 do not depend on that key, so a
+ * caller trying several keys prepares the proof once
+ * (prepareDerivedProof) and checks it per key
+ * (verifyPreparedProof).
  */
 
 import { decodeMultibaseBase64url, encodeBase64url } from './base64url'
@@ -34,6 +38,7 @@ import { decodeCbor, type CborValue } from './cbor'
 import { importP256PublicKey, verifyP256 } from './p256'
 import { canonicalize, hashNQuads } from './rdfc'
 import { DPP_CONTEXTS } from './dpp-contexts'
+import { describeError } from '@/errors'
 
 export const ECDSA_SD_2023 = 'ecdsa-sd-2023'
 
@@ -41,7 +46,7 @@ export const ECDSA_SD_2023 = 'ecdsa-sd-2023'
 // proof value (0x5d01 is the tag number the decoder reads).
 const DERIVED_TAG = 0x5d01
 
-interface DerivedProof {
+export interface DerivedProof {
   readonly baseSignature: Uint8Array
   readonly publicKey: Uint8Array
   readonly signatures: readonly Uint8Array[]
@@ -59,22 +64,38 @@ export interface DerivedVerifyResult {
   readonly nonMandatoryCount: number
 }
 
+// Everything in a derived proof that does not depend on the
+// issuer key: the parsed proof value, the proof hash and
+// the canonical statements, split and hashed. Prepared
+// once, a proof can be tried under several keys at the
+// cost of one signature check each.
+export interface PreparedDerivedProof {
+  readonly derived: DerivedProof
+  readonly baseData: Uint8Array
+  readonly mandatoryCount: number
+  readonly nonMandatory: readonly string[]
+  readonly unsecured: Record<string, unknown>
+}
+
 export async function verifyDerivedProof(
   document: Record<string, unknown>,
   issuerPublicKey: Uint8Array,
 ): Promise<DerivedVerifyResult> {
+  let prepared: PreparedDerivedProof
   try {
-    return await runVerify(document, issuerPublicKey)
+    prepared = await prepareDerivedProof(document)
   } catch (err) {
-    const reason = err instanceof Error ? err.message : String(err)
-    return { verified: false, reason, mandatoryCount: 0, nonMandatoryCount: 0 }
+    return fail(describeError(err), 0, 0)
   }
+  return verifyPreparedProof(prepared, issuerPublicKey)
 }
 
-async function runVerify(
-  document: Record<string, unknown>,
-  issuerPublicKey: Uint8Array,
-): Promise<DerivedVerifyResult> {
+// Throws on a document whose proof cannot be read or
+// canonicalised; verifyDerivedProof turns that into a
+// failed result.
+export async function prepareDerivedProof(
+  document: Record<string, unknown>
+): Promise<PreparedDerivedProof> {
   const proof = requireProof(document)
   const derived = parseDerivedProofValue(requireString(proof.proofValue))
 
@@ -89,21 +110,48 @@ async function runVerify(
   })
 
   const { mandatory, nonMandatory } = split(nquads, derived.mandatoryIndexes)
+  const mandatoryHash = await hashNQuads(mandatory)
+  return {
+    derived,
+    baseData: concat(proofHash, derived.publicKey, mandatoryHash),
+    mandatoryCount: mandatory.length,
+    nonMandatory,
+    unsecured
+  }
+}
+
+// Check a prepared proof under one issuer key. Never throws:
+// a key that will not import fails like a wrong one.
+export async function verifyPreparedProof(
+  prepared: PreparedDerivedProof,
+  issuerPublicKey: Uint8Array
+): Promise<DerivedVerifyResult> {
+  try {
+    return await runVerify(prepared, issuerPublicKey)
+  } catch (err) {
+    const { mandatoryCount, nonMandatory } = prepared
+    return fail(describeError(err), mandatoryCount, nonMandatory.length)
+  }
+}
+
+async function runVerify(
+  prepared: PreparedDerivedProof,
+  issuerPublicKey: Uint8Array
+): Promise<DerivedVerifyResult> {
+  const { derived, baseData, mandatoryCount, nonMandatory } = prepared
   if (derived.signatures.length !== nonMandatory.length) {
     return fail(
       `signature count ${derived.signatures.length} `
       + `does not match ${nonMandatory.length} disclosed statements`,
-      mandatory.length, nonMandatory.length,
+      mandatoryCount, nonMandatory.length,
     )
   }
 
-  const mandatoryHash = await hashNQuads(mandatory)
   const issuerKey = await importP256PublicKey(issuerPublicKey)
-  const baseData = concat(proofHash, derived.publicKey, mandatoryHash)
   if (!await verifyP256(issuerKey, derived.baseSignature, baseData)) {
     return fail(
       'base signature does not verify against the issuer key',
-      mandatory.length, nonMandatory.length,
+      mandatoryCount, nonMandatory.length,
     )
   }
 
@@ -113,15 +161,15 @@ async function runVerify(
     if (!await verifyP256(proofScopedKey, derived.signatures[i], message)) {
       return fail(
         `disclosed statement ${i} does not verify`,
-        mandatory.length, nonMandatory.length,
+        mandatoryCount, nonMandatory.length,
       )
     }
   }
 
   return {
     verified: true,
-    revealedDocument: unsecured,
-    mandatoryCount: mandatory.length,
+    revealedDocument: prepared.unsecured,
+    mandatoryCount,
     nonMandatoryCount: nonMandatory.length,
   }
 }

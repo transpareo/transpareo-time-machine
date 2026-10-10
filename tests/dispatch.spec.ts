@@ -20,7 +20,10 @@ import {
 import {
   keyDocumentError, type ResolvedMultikey
 } from '../src/crypto/did-web';
-import { createSampleSigner, type SampleSigner } from './helpers/sd-signer';
+import { encodeMultibaseBase58 } from '../src/crypto/multibase';
+import {
+  createSampleSigner, generateKey, type SampleSigner
+} from './helpers/sd-signer';
 
 const ISSUER_MULTIBASE = 'zDnaeSampleIssuerP256Key';
 
@@ -172,6 +175,84 @@ describe('verifyDpp: unhandled inputs', () => {
     if (v.cryptosuite === 'unknown') {
       expect(v.reason).toMatch(/no proof/);
     }
+  });
+});
+
+// The ecdsa-sd counterpart of the eddsa-jcs rule in
+// verify.spec.ts: a pinned page tries its P-256 pins first
+// and resolves the verificationMethod only when none of
+// them verifies the proof.
+describe('verifyDpp: pins first', () => {
+  it('verifies under a pin without resolving the method', async () => {
+    const doc = await signer.makeDerived(['recycled']);
+    const resolver = stubResolver();
+    const pin = encodeMultibaseBase58(signer.issuer.multikey);
+
+    const v = await verifyDpp(doc, {
+      verifyOptions: { pinnedIssuerKeys: [pin] },
+      resolveIssuerKey: resolver.resolve,
+    });
+
+    expect(resolver.calls).toEqual([]);
+    expect(dppIsAuthentic(v)).toBe(true);
+    if (v.cryptosuite !== 'ecdsa-sd-2023') {
+      throw new Error('expected ecdsa-sd routing');
+    }
+    expect(v.results[0]?.keyMultibase).toBe(pin);
+  });
+
+  // The standalone widget's path: its own platform pins, the
+  // flat result, the pin flag set on the proof it verified.
+  it('flags the proof pinned on the flat result', async () => {
+    const doc = await signer.makeDerived(['recycled']);
+    const resolver = stubResolver();
+    const pin = encodeMultibaseBase58(signer.issuer.multikey);
+
+    const r = await verifySnapshotAnySuite(doc, {
+      mode: 'strict',
+      pinnedPlatformKeys: [pin],
+      resolveIssuerKey: resolver.resolve,
+    });
+
+    expect(resolver.calls).toEqual([]);
+    expect(r.verdict).toBe('authentic');
+    expect(r.entries[0]?.pinned).toBe(true);
+  });
+
+  // A key minted after the page was cached: no pin verifies,
+  // so the method resolves, as before pinning.
+  it('resolves the method when no pin verifies', async () => {
+    const doc = await signer.makeDerived(['recycled']);
+    const resolver = stubResolver();
+    const stranger = await generateKey();
+    const pin = encodeMultibaseBase58(stranger.multikey);
+
+    const r = await verifySnapshotAnySuite(doc, {
+      pinnedIssuerKeys: [pin],
+      resolveIssuerKey: resolver.resolve,
+    });
+
+    expect(resolver.calls).toEqual(['https://ex.dpp/issuer#key-1']);
+    expect(r.verdict).toBe('authentic');
+    expect(r.entries[0]?.keyMultibase).toBe(ISSUER_MULTIBASE);
+    expect(r.entries[0]?.issuerPinned).toBe(false);
+  });
+
+  it('fails a tampered proof under the pins and the method alike', async () => {
+    const doc = await signer.makeDerived(['recycled'], 'base-sig');
+    const resolver = stubResolver();
+    const pin = encodeMultibaseBase58(signer.issuer.multikey);
+
+    const v = await verifyDpp(doc, {
+      verifyOptions: { pinnedIssuerKeys: [pin] },
+      resolveIssuerKey: resolver.resolve,
+    });
+
+    expect(dppIsAuthentic(v)).toBe(false);
+    if (v.cryptosuite !== 'ecdsa-sd-2023') {
+      throw new Error('expected ecdsa-sd routing');
+    }
+    expect(v.results[0]?.result.reason).toMatch(/base signature/);
   });
 });
 

@@ -33,6 +33,48 @@ export interface ResolvedMultikey {
   readonly bytes: Uint8Array
 }
 
+// The two curves a proof here is signed on, told apart by
+// the Multikey's multicodec prefix: 0xed01 for Ed25519
+// (eddsa-jcs-2022), 0x8024 for a compressed P-256 point
+// (ecdsa-sd-2023).
+export type KeyCurve = 'Ed25519' | 'P-256'
+
+const MULTICODEC: Readonly<Record<KeyCurve, {
+  readonly prefix: readonly [number, number]
+  readonly length: number
+}>> = {
+  'Ed25519': { prefix: [0xed, 0x01], length: 34 },
+  'P-256': { prefix: [0x80, 0x24], length: 35 }
+}
+
+export function isCurveMultikey(bytes: Uint8Array, curve: KeyCurve): boolean {
+  const { prefix, length } = MULTICODEC[curve]
+  return bytes.length === length
+    && bytes[0] === prefix[0] && bytes[1] === prefix[1]
+}
+
+// The pinned keys a proof on `curve` may verify under, in
+// the order the page lists them and without repeats. A pin
+// that does not decode, or names the other curve, is left
+// out: the page's pins are where both suites take their
+// keys first, and a document is read only when none of
+// them verifies.
+export function pinnedMultikeys(
+  pins: ReadonlyArray<string>, curve: KeyCurve
+): ResolvedMultikey[] {
+  const keys: ResolvedMultikey[] = []
+  for (const multibase of new Set(pins)) {
+    let bytes: Uint8Array
+    try {
+      bytes = decodeMultibaseBase58(multibase)
+    } catch {
+      continue
+    }
+    if (isCurveMultikey(bytes, curve)) keys.push({ multibase, bytes })
+  }
+  return keys
+}
+
 // A key host that accepts a connection but never answers
 // must not stall verification forever - matches the
 // FETCH_TIMEOUT_MS budget host.ts gives every other fetch

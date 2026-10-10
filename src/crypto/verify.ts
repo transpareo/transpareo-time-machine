@@ -16,11 +16,13 @@
  *   2. JCS-canonicalize the snapshot with `proof` removed,
  *      SHA-256.
  *   3. hashData = proofConfigHash || documentHash.
- *   4. Resolve `verificationMethod` to a public key: a
- *      did:web method maps to its did.json and the key is
- *      selected from the verificationMethod array by
- *      fragment; an http(s) or relative URL is fetched and
- *      its publicKeyMultibase read directly.
+ *   4. Find the public key: each Ed25519 key the caller
+ *      pins is tried first; only when none verifies is
+ *      `verificationMethod` resolved: a did:web method maps
+ *      to its did.json and the key is selected from the
+ *      verificationMethod array by fragment; an http(s) or
+ *      relative URL is fetched and its publicKeyMultibase
+ *      read directly.
  *   5. Decode `proofValue` (multibase base58 "z" prefix +
  *      64-byte signature) and crypto.subtle.verify(
  *      Ed25519, pubKey, sig, hashData).
@@ -59,7 +61,8 @@ import { decodeMultibaseBase58 } from './multibase'
 import { proofConfig, joinHashes } from './eddsa-jcs'
 import {
   resolveMultikey, warnKeyChangedPastCaches,
-  keyDocumentError, isKeyDocumentError
+  keyDocumentError, isKeyDocumentError,
+  isCurveMultikey, pinnedMultikeys, type ResolvedMultikey
 } from './did-web'
 import { asBuffer } from './buffer'
 import { hashDocument, sha256Utf8 } from './chain-hash'
@@ -165,6 +168,9 @@ export interface VerifyOptions {
   // ProofEntryResult; the caller can then enforce a
   // "must include a pinned key" policy on top of the
   // aggregate verdict (see the <dpp-verifier> element).
+  // Both pin sets are also where every entry looks for its
+  // key first; the verificationMethod is fetched only when
+  // no pin verifies the entry.
   // Unpinned: every entry is verified against whatever
   // key its verificationMethod URL returns, so any
   // keypair the manifest references is accepted.
@@ -334,6 +340,26 @@ async function verifyEntry(
     }
   }
 
+  // Hashed once, when first needed: before any key is
+  // sought when there are pins to try, after the key
+  // document otherwise, so an unpinned page starts every
+  // entry's key read at once and aliases share one.
+  let hashing: Promise<Uint8Array> | undefined
+  const hashEntry = (): Promise<Uint8Array> =>
+    hashing ??= entryHashData(proof, documentHash, context)
+
+  // The keys the page pins come first: a signature that
+  // verifies under one needs no key document read.
+  const pins = pinnedMultikeys(
+    [...(pinnedPlatformKeys ?? []), ...(pinnedIssuerKeys ?? [])], 'Ed25519'
+  )
+  const underPin = pins.length > 0
+    ? await pinVerifying(pins, signature, hashEntry)
+    : undefined
+  if (underPin) {
+    return verifiedEntry(base, underPin, pinnedPlatformKeys, pinnedIssuerKeys)
+  }
+
   let resolved: ResolvedKey
   try {
     resolved = await resolveVerificationKey(proof.verificationMethod)
@@ -357,7 +383,7 @@ async function verifyEntry(
 
   let hashData: Uint8Array
   try {
-    hashData = await entryHashData(proof, documentHash, context)
+    hashData = await hashEntry()
   } catch (err) {
     return {
       ...base,
@@ -398,18 +424,59 @@ async function verifyEntry(
       }
     }
   }
-  // Pins are only meaningful when the signature actually
-  // verified; otherwise an attacker could control the
-  // URL the verifier fetches and trivially flag any
-  // entry as "pinned".
-  const pinned = (pinnedPlatformKeys ?? [])
-    .includes(resolved.multibase)
-  const issuerPinned = (pinnedIssuerKeys ?? [])
-    .includes(resolved.multibase)
+  return verifiedEntry(
+    base, resolved.multibase, pinnedPlatformKeys, pinnedIssuerKeys
+  )
+}
+
+// A verified entry under `key`, flagged against both pin
+// sets. Only ever called once the signature verified;
+// otherwise an attacker could control the URL the verifier
+// fetches and trivially flag any entry as "pinned".
+function verifiedEntry(
+  base: Omit<ProofEntryResult, 'status'>,
+  key: string,
+  pinnedPlatformKeys: ReadonlyArray<string> | undefined,
+  pinnedIssuerKeys: ReadonlyArray<string> | undefined
+): ProofEntryResult {
   return {
-    ...base, status: 'verified', keyMultibase: resolved.multibase,
-    pinned, issuerPinned,
+    ...base,
+    status: 'verified',
+    keyMultibase: key,
+    pinned: (pinnedPlatformKeys ?? []).includes(key),
+    issuerPinned: (pinnedIssuerKeys ?? []).includes(key)
   }
+}
+
+// The first pinned key the signature verifies under, by its
+// Multikey. A pin that cannot be imported, a check that
+// throws and hashing that fails all count as no match; the
+// document path reports the hashing failure.
+async function pinVerifying(
+  pins: ReadonlyArray<ResolvedMultikey>,
+  signature: Uint8Array,
+  hashEntry: () => Promise<Uint8Array>
+): Promise<string | undefined> {
+  for (const key of pins) {
+    const ok = await Promise.all([pinnedVerifier(key), hashEntry()])
+      .then(([verify, hashData]) => verify(signature, hashData))
+      .catch(() => false)
+    if (ok) return key.multibase
+  }
+  return undefined
+}
+
+// Imported pins, by Multikey: every entry of every version
+// tries the same few keys.
+const pinVerifiers = new Map<string, Promise<Ed25519Verifier>>()
+
+function pinnedVerifier(key: ResolvedMultikey): Promise<Ed25519Verifier> {
+  let verifier = pinVerifiers.get(key.multibase)
+  if (!verifier) {
+    verifier = buildVerifier(key.bytes.slice(2))
+    pinVerifiers.set(key.multibase, verifier)
+  }
+  return verifier
 }
 
 // Cache resolved keys by verificationMethod URL so two
@@ -489,7 +556,7 @@ async function fetchAndImportKey(
   // Multikey for Ed25519: 0xed 0x01 prefix + 32-byte raw
   // key, then base58. Strip the two-byte prefix to get the
   // 32 raw public-key bytes.
-  if (bytes.length !== 34 || bytes[0] !== 0xed || bytes[1] !== 0x01) {
+  if (!isCurveMultikey(bytes, 'Ed25519')) {
     throw keyDocumentError('publicKeyMultibase is not an Ed25519 multikey')
   }
   const rawKey = bytes.slice(2)

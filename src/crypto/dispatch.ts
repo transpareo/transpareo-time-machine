@@ -22,12 +22,14 @@ import {
   type ProofCarrier, type ProofEntryResult,
 } from './verify'
 import {
-  verifyDerivedProof, type DerivedVerifyResult, ECDSA_SD_2023,
+  prepareDerivedProof, verifyPreparedProof, ECDSA_SD_2023,
+  type DerivedVerifyResult, type PreparedDerivedProof
 } from './ecdsa-sd'
 import { EDDSA_JCS_2022 } from './eddsa-jcs'
 import {
   resolveMultikey, warnKeyChangedPastCaches,
   keyDocumentError, isKeyDocumentError,
+  isCurveMultikey, pinnedMultikeys,
   type ResolvedMultikey, type ResolveOptions
 } from './did-web'
 import { describeError } from '@/errors'
@@ -95,7 +97,7 @@ export async function verifyDpp(
   }
 
   if (cryptosuite === ECDSA_SD_2023) {
-    return verifyEcdsaSd(document, opts.resolveIssuerKey)
+    return verifyEcdsaSd(document, opts)
   }
 
   return {
@@ -218,16 +220,22 @@ export function dppIsAuthentic(v: DppVerification): boolean {
 // Verify every ecdsa-sd derived proof the snapshot carries.
 // A snapshot is signed twice (issuer + platform counter-
 // signature) and a derived view keeps both proofs; each
-// verifies against the key its own verificationMethod resolves
-// to. Mirrors the eddsa-jcs proof-set loop in verify.ts.
+// verifies under one of the page's P-256 pins, else against
+// the key its own verificationMethod resolves to. Mirrors
+// the eddsa-jcs proof-set loop in verify.ts.
 async function verifyEcdsaSd(
   document: Record<string, unknown>,
-  resolveIssuerKey: IssuerKeyResolver | undefined,
+  opts: DispatchOptions
 ): Promise<DppVerification> {
-  const resolve = resolveIssuerKey ?? resolveIssuerP256Key
+  const resolve = opts.resolveIssuerKey ?? resolveIssuerP256Key
+  const { pinnedPlatformKeys = [], pinnedIssuerKeys = [] } =
+    opts.verifyOptions ?? {}
+  const pins = pinnedMultikeys(
+    [...pinnedPlatformKeys, ...pinnedIssuerKeys], 'P-256'
+  )
   const results = await Promise.all(
     ecdsaProofs(document.proof).map(
-      (proof) => verifyOneProof(document, proof, resolve),
+      (proof) => verifyOneProof(document, proof, resolve, pins),
     ),
   )
   return { cryptosuite: ECDSA_SD_2023, results }
@@ -237,6 +245,7 @@ async function verifyOneProof(
   document: Record<string, unknown>,
   proof: Record<string, unknown>,
   resolve: IssuerKeyResolver,
+  pins: ReadonlyArray<ResolvedMultikey>
 ): Promise<EcdsaProofResult> {
   const method = typeof proof.verificationMethod === 'string'
     ? proof.verificationMethod : ''
@@ -245,6 +254,23 @@ async function verifyOneProof(
   const named = { verificationMethod: method, proofValue }
   if (!method) {
     return { ...named, result: failResult('proof has no verificationMethod') }
+  }
+
+  // Canonicalised once for every key tried below.
+  let prepared: PreparedDerivedProof
+  try {
+    prepared = await prepareDerivedProof({ ...document, proof })
+  } catch (err) {
+    return { ...named, result: failResult(describeError(err)) }
+  }
+
+  // The keys the page pins come first: a proof that verifies
+  // under one needs no key document read.
+  for (const pin of pins) {
+    const result = await verifyPreparedProof(prepared, pin.bytes)
+    if (result.verified) {
+      return { ...named, keyMultibase: pin.multibase, result }
+    }
   }
 
   let key: ResolvedMultikey
@@ -264,8 +290,7 @@ async function verifyOneProof(
     key = retry
   }
 
-  const document_ = { ...document, proof }
-  let result = await verifyDerivedProof(document_, key.bytes)
+  let result = await verifyPreparedProof(prepared, key.bytes)
 
   // A proof that fails is as often a stale key document as a
   // bad signature, so re-resolve past every cache once and
@@ -275,7 +300,7 @@ async function verifyOneProof(
     const fresh = await refetchedKey(method, key, resolve)
     if (fresh) {
       key = fresh
-      result = await verifyDerivedProof(document_, fresh.bytes)
+      result = await verifyPreparedProof(prepared, fresh.bytes)
     }
   }
   return { ...named, keyMultibase: key.multibase, result }
@@ -329,9 +354,7 @@ async function resolveIssuerP256Key(
   const resolved = await resolveMultikey(method, options)
   const { bytes } = resolved
 
-  // P-256 Multikey: multicodec 0x8024 (p256-pub) prefix +
-  // 33-byte compressed point.
-  if (bytes.length !== 35 || bytes[0] !== 0x80 || bytes[1] !== 0x24) {
+  if (!isCurveMultikey(bytes, 'P-256')) {
     throw keyDocumentError('verificationMethod is not a P-256 Multikey')
   }
   return resolved
