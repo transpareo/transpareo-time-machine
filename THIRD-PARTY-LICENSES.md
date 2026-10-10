@@ -71,9 +71,11 @@ font sources:
 
 - Copyright (C) 2012 by Daniel Bruce,
   http://www.entypo.com.
-- License: the Entypo pictograms are CC BY-SA
-  (https://creativecommons.org/licenses/by-sa/4.0/); the
-  font file they were extracted from is SIL OFL 1.1.
+- License: the Entypo pictograms are CC BY-SA 3.0
+  (https://creativecommons.org/licenses/by-sa/3.0/), as
+  the Fontello Entypo set states
+  (https://github.com/fontello/entypo); the font file they
+  were extracted from is SIL OFL 1.1.
   The glyphs were modified: converted from font glyphs to
   an SVG symbol sprite. The Entypo-derived symbols remain
   under CC BY-SA; they are not relicensed under this
@@ -123,7 +125,9 @@ the project license: the rating smileys
 `icon-locked`, `icon-looking-glass`,
 `icon-exclamation-mark`, `icon-question-mark`,
 `icon-move`, `icon-down`, `icon-up`, `chevron-down`,
-`spinner`, and `icon-download`.
+`spinner`, and `icon-download`. The last three are the
+stroke-drawn symbols in the sprite's custom block, and
+`icon-download` takes nothing from Entypo's download glyph.
 
 ### SIL Open Font License 1.1
 
