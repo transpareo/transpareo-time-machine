@@ -34,12 +34,15 @@
  * Each fetched snapshot is verified via the
  * crypto/verify module and cached.
  *
- * URLs inside the manifest are resolved against the
- * manifest's own URL via `new URL(rel, base)`. The
- * renderer makes no assumption about the issuer's
- * bucket layout: forks, CDNs, and CNAME publishers can
- * use whatever path scheme they like as long as the
- * manifest is well-formed.
+ * References inside the manifest and the snapshots go
+ * through resolveReference: a root path (`/acme/dpp/...`)
+ * resolves against the asset host (the `asset-host`
+ * attribute, else the origin of `src`), any other relative
+ * reference against the document it was read from, and an
+ * absolute URL stands. The renderer makes no assumption
+ * about the issuer's bucket layout: forks, CDNs, and CNAME
+ * publishers can use whatever path scheme they like as
+ * long as the manifest is well-formed.
  */
 
 import { signal } from '@/reactive/signals'
@@ -63,6 +66,7 @@ import {
 } from '@/property-classify'
 import type { EpcisDocument } from '@/epcis'
 import { levelOf } from '@/passport-level'
+import { config } from '@/config'
 
 export type LoadState = 'idle' | 'loading' | 'ready' | 'error' | 'retired'
 
@@ -147,9 +151,12 @@ export async function bootFrom(src: string): Promise<void> {
 
   // Normalize to an absolute URL so URL resolution
   // against the manifest's sibling URLs works whether
-  // the host passed an absolute or document-relative
-  // src.
-  manifestUrl = new URL(src, window.location.href).toString()
+  // the host passed an absolute or relative src. A root
+  // path names a file on the asset host when the page
+  // names one; the previous boot's src must not decide.
+  const page = window.location.href
+  const srcBase = isRootPath(src) ? namedAssetHost(page) ?? page : page
+  manifestUrl = new URL(src, srcBase).toString()
 
   try {
     const data = await fetchSource(manifestUrl)
@@ -175,11 +182,11 @@ async function bootFromManifest(
   manifest.set(m)
   currentVersion.set(m.currentVersion)
 
-  const currentVersionUrl = resolveAgainst(
-    base,
+  const currentVersionUrl = resolveReference(
     m.versions.find((v) => v.number === m.currentVersion)?.url,
+    base
   )
-  const epcisUrl = resolveAgainst(base, m.epcisUrl)
+  const epcisUrl = resolveReference(m.epcisUrl, base)
   if (!currentVersionUrl) {
     throw new Error('manifest is missing the current version URL')
   }
@@ -194,7 +201,7 @@ async function bootFromManifest(
   // behind bytes the visitor has asked nothing of yet. On
   // the live demo that was most of a second.
   const feed = fetchEventsFeed(epcisUrl, epoch)
-  const dynamicUrl = resolveAgainst(base, m.dynamicDataUrl)
+  const dynamicUrl = resolveReference(m.dynamicDataUrl, base)
   if (dynamicUrl) fetchDynamicData(dynamicUrl, epoch)
   const current = await fetchJson<SignedSnapshot>(currentVersionUrl)
   if (epoch !== bootEpoch) return
@@ -366,7 +373,7 @@ export async function fetchSnapshot(
   if (!m || !manifestUrl) return null
   const entry = m.versions.find((v) => v.number === versionNumber)
   if (!entry) return null
-  const url = resolveAgainst(manifestUrl, entry.url)
+  const url = resolveReference(entry.url, manifestUrl)
   if (!url) return null
 
   const mode = options.reload ? 'reload' : 'default'
@@ -733,13 +740,13 @@ function buildPrivateRow(
 
 // Coerce a flat-string image entry to the {thumbnail,
 // large} pair the gallery reads, and resolve both
-// references against `base`, the URL the snapshot was
-// read from. Image references ship relative so a passport
-// stays portable across mirrors, and they belong to the
-// document that declares them: resolving them against the
-// surrounding page instead points them at a host that may
-// hold none of the media, and misses the preload the page
-// issued against the real one.
+// references. Image references ship as root paths so a
+// passport stays portable across mirrors: they land on the
+// asset host, and any other relative reference on `base`,
+// the URL the snapshot was read from. Resolving them
+// against the surrounding page instead points them at a
+// host that may hold none of the media, and misses the
+// preload the page issued against the real one.
 function normalizeImages(
   images: ReadonlyArray<SnapshotImage | string> | undefined,
   base?: string
@@ -750,7 +757,7 @@ function normalizeImages(
   // the references stand as they are, for the browser to
   // resolve against the document.
   const absolute = (url: string): string =>
-    base ? resolveAgainst(base, url) ?? url : url
+    base ? resolveReference(url, base) ?? url : url
 
   const after: SnapshotImage[] = []
   for (const entry of images) {
@@ -818,12 +825,51 @@ function isCrossOrigin(url: string): boolean {
   }
 }
 
-function resolveAgainst(base: string, relative: string | undefined): string | null {
-  if (!relative) return null
+// The base a root path resolves against: the `asset-host`
+// attribute, else the `src` the element booted from, both
+// read against the page, else the page itself. Undefined
+// outside a browser before any boot.
+export function assetBase(): string | undefined {
+  const page = pageHref()
+  return namedAssetHost(page) ?? manifestUrl ?? page
+}
+
+// Resolve a reference a passport file carries. A root path
+// names a file on the asset host; any other relative
+// reference belongs to the document it was read from; an
+// absolute one stands as written. `base` is the asset host,
+// a parameter so a caller holding its own reading of it can
+// pass that in.
+export function resolveReference(
+  ref: string | undefined, documentUrl: string,
+  base: string | undefined = assetBase()
+): string | null {
+  if (!ref) return null
+  const against = isRootPath(ref) ? base ?? documentUrl : documentUrl
+  return absoluteUrl(ref, against) ?? null
+}
+
+// One leading slash: `//host/x` is a scheme-relative URL,
+// which belongs to its document like any other reference.
+function isRootPath(ref: string): boolean {
+  return ref.startsWith('/') && !ref.startsWith('//')
+}
+
+function namedAssetHost(page: string | undefined): string | undefined {
+  return config.assetHost ? absoluteUrl(config.assetHost, page) : undefined
+}
+
+function pageHref(): string | undefined {
+  return typeof window === 'undefined' ? undefined : window.location?.href
+}
+
+function absoluteUrl(
+  ref: string, base: string | undefined
+): string | undefined {
   try {
-    return new URL(relative, base).toString()
+    return new URL(ref, base).toString()
   } catch {
-    return null
+    return undefined
   }
 }
 

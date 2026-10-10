@@ -48,7 +48,7 @@ export interface TimeMachineStateDetail {
 }
 
 /** The full passport renderer, `<transpareo-time-machine>`.
- *  Configured via attributes (src, icons-src,
+ *  Configured via attributes (src, asset-host, icons-src,
  *  pinned-platform-key, pinned-issuer-key,
  *  revoked-roots-src, show-verification-mark, verifier,
  *  logo-href, footer-copyright, footer-links); see the

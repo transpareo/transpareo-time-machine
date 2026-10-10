@@ -21,6 +21,9 @@
  *      retired-but-sound roots in the set).
  *   2. At boot the bundle fetches
  *      config.revokedRootsUrl (default:
+ *      /.well-known/dpp-revoked-roots.json on the host
+ *      `asset-host` names, which a static copy carries as
+ *      at packaging; without that attribute,
  *      https://transpareo.com/.well-known/dpp-revoked-roots.json).
  *   3. Each entry's fingerprint is compared against
  *      SHA-256(decoded multikey bytes) of every
@@ -45,13 +48,14 @@
  *      'unpinned'; the fetch is skipped because there
  *      is nothing to compare against.
  *
- * Forks: set `revokedRootsUrl: ''` to disable the
+ * Forks: set `revoked-roots-src=""` to disable the
  * fetch (e.g. dev / offline kiosks), or point it at
  * the fork's own well-known endpoint.
  */
 
 import { signal } from '@/reactive/signals'
 import { config } from '@/config'
+import { assetBase } from '@/host'
 import { decodeMultibaseBase58 } from '@/crypto/multibase'
 
 export type RevocationStatus =
@@ -61,8 +65,8 @@ export type RevocationStatus =
   | 'revoked'
   | 'unpinned'
 
-const DEFAULT_URL =
-  'https://transpareo.com/.well-known/dpp-revoked-roots.json'
+const REVOKED_ROOTS_PATH = '/.well-known/dpp-revoked-roots.json'
+const DEFAULT_HOST = 'https://transpareo.com'
 
 export const revocationStatus = signal<RevocationStatus>('pending')
 
@@ -74,26 +78,36 @@ interface RevokedRootsDoc {
 
 let started = false
 
-// Module-level kick-off. Called from bootstrap-spa so
-// the fetch races with the manifest fetch instead of
-// blocking it. Verdict downstream consults
-// revocationStatus() reactively.
+// One-shot kick-off, called from the element's setup()
+// once its pins are read, so the fetch races with the
+// manifest fetch instead of blocking it. Verdict
+// downstream consults revocationStatus() reactively.
 export function startRevokedRootsCheck(): void {
   if (started) return
   started = true
 
-  const url = config.revokedRootsUrl ?? DEFAULT_URL
   const pins = config.pinnedPlatformKeys
   if (!pins || pins.length === 0) {
     revocationStatus.set('unpinned')
     return
   }
+
+  // An empty attribute switches the check off.
+  const url = config.revokedRootsUrl ?? defaultUrl()
   if (!url) {
     revocationStatus.set('ok')
     return
   }
 
   void runCheck(url, pins)
+}
+
+// The list at its well-known path on the asset host the page
+// names, else on transpareo.com: a page without `asset-host`
+// reads the list where it always has.
+function defaultUrl(): string {
+  const base = config.assetHost ? assetBase() : undefined
+  return new URL(REVOKED_ROOTS_PATH, base ?? DEFAULT_HOST).toString()
 }
 
 async function runCheck(

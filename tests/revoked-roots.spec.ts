@@ -71,13 +71,17 @@ function feedResponse(fingerprints: string[]): Response {
 type RevokedRootsModule = typeof import('../src/revoked-roots');
 
 async function bootWithFetch(
-  fetchImpl: () => Promise<Response>,
+  fetchImpl: (input?: string | URL) => Promise<Response>,
   pins: string[] = [PIN],
+  settings: { assetHost?: string, revokedRootsUrl?: string } = {},
 ): Promise<RevokedRootsModule> {
   vi.resetModules();
   vi.stubGlobal('fetch', fetchImpl);
+  vi.stubGlobal('window', {
+    location: { href: 'https://shop.example/dpp/demo-2026-t001' },
+  });
   const { config } = await import('../src/config');
-  (config as { pinnedPlatformKeys?: string[] }).pinnedPlatformKeys = pins;
+  Object.assign(config, { pinnedPlatformKeys: pins, ...settings });
   const mod = await import('../src/revoked-roots');
   mod.startRevokedRootsCheck();
   return mod;
@@ -144,6 +148,57 @@ describe('startRevokedRootsCheck', () => {
     expect(await settledStatus(mod)).toBe('ok');
     expect(calls).toBe(2);
   }, 8000);
+
+  // A page without asset-host behaves as before the
+  // attribute existed, wherever its src points.
+  it('reads transpareo.com without asset-host', async () => {
+    const urls: string[] = [];
+    const mod = await bootWithFetch(async (input?: string | URL) => {
+      urls.push(String(input));
+      return feedResponse([]);
+    });
+    expect(await settledStatus(mod)).toBe('ok');
+    expect(urls).toEqual([
+      'https://transpareo.com/.well-known/dpp-revoked-roots.json',
+    ]);
+  });
+
+  it('reads the list from a named asset host', async () => {
+    const urls: string[] = [];
+    const mod = await bootWithFetch(async (input?: string | URL) => {
+      urls.push(String(input));
+      return feedResponse([]);
+    }, [PIN], { assetHost: 'https://cdn.example' });
+    expect(await settledStatus(mod)).toBe('ok');
+    expect(urls).toEqual([
+      'https://cdn.example/.well-known/dpp-revoked-roots.json',
+    ]);
+  });
+
+  it('reads it from the page origin under asset-host "/"', async () => {
+    const urls: string[] = [];
+    const mod = await bootWithFetch(async (input?: string | URL) => {
+      urls.push(String(input));
+      return feedResponse([]);
+    }, [PIN], { assetHost: '/' });
+    expect(await settledStatus(mod)).toBe('ok');
+    expect(urls).toEqual([
+      'https://shop.example/.well-known/dpp-revoked-roots.json',
+    ]);
+  });
+
+  it('prefers revoked-roots-src over the asset host', async () => {
+    const urls: string[] = [];
+    const mod = await bootWithFetch(async (input?: string | URL) => {
+      urls.push(String(input));
+      return feedResponse([]);
+    }, [PIN], {
+      assetHost: 'https://cdn.example',
+      revokedRootsUrl: 'https://forks.example/revoked.json',
+    });
+    expect(await settledStatus(mod)).toBe('ok');
+    expect(urls).toEqual(['https://forks.example/revoked.json']);
+  });
 
   it('settles unreachable only after both attempts fail', async () => {
     let calls = 0;

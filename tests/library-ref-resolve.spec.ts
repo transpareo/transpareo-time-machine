@@ -5,8 +5,9 @@
  *
  * What a `libraryRef` is allowed to be.
  *
- * The renderer resolves the ref against the manifest URL
- * and fetches whatever comes back, so the ref's shape is
+ * The renderer resolves the ref (a root path against the
+ * asset host, anything else relative against the manifest
+ * URL) and fetches whatever comes back, so the ref's shape is
  * the publisher's choice, not this codebase's. A hosted
  * issuer may emit an absolute URL on its own asset host; a
  * static bucket may emit a path beside the manifest; either
@@ -23,15 +24,22 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { resolveLibraryUrl } from '@/library-lookup'
-import { getManifestUrl } from '@/host'
+import { assetBase, getManifestUrl } from '@/host'
 
-vi.mock('@/host', () => ({ getManifestUrl: vi.fn() }))
+// The resolution itself is the real one; only the two
+// readings of where the element booted from are stubbed.
+vi.mock('@/host', async (importOriginal) => ({
+  ...await importOriginal<typeof import('@/host')>(),
+  getManifestUrl: vi.fn(),
+  assetBase: vi.fn(),
+}))
 
 const MANIFEST =
   'https://passports.example/acme/dpp/demo-2026-t001/manifest.json'
 
 beforeEach(() => {
   vi.mocked(getManifestUrl).mockReturnValue(MANIFEST)
+  vi.mocked(assetBase).mockReturnValue(MANIFEST)
 })
 
 describe('resolveLibraryUrl: shapes a publisher may emit', () => {
@@ -51,6 +59,14 @@ describe('resolveLibraryUrl: shapes a publisher may emit', () => {
   it('resolves a root-relative ref against the manifest origin', () => {
     expect(resolveLibraryUrl('/acme/components/shell.jsonld'))
       .toBe('https://passports.example/acme/components/shell.jsonld')
+  })
+
+  // The form a signed version carries: a root path, read
+  // from the page's asset host.
+  it('resolves a root-relative ref against the asset host', () => {
+    vi.mocked(assetBase).mockReturnValue('https://cdn.example/')
+    expect(resolveLibraryUrl('/acme/components/shell/v1.jsonld'))
+      .toBe('https://cdn.example/acme/components/shell/v1.jsonld')
   })
 
   // The shape the fixtures in this repo use: a path beside

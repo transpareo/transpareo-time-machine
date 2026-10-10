@@ -7,9 +7,10 @@
  * element's attributes.
  *
  * Every option is an attribute on the element
- * (icons-src, revoked-roots-src, show-verification-mark,
- * pinned-platform-key, pinned-issuer-key, verifier,
- * logo-href, footer-copyright, footer-links, archived-at).
+ * (asset-host, icons-src, revoked-roots-src,
+ * show-verification-mark, pinned-platform-key,
+ * pinned-issuer-key, verifier, logo-href,
+ * footer-copyright, footer-links, archived-at).
  * initConfigFromElement reads them once in the element's
  * setup(), before its subtree mounts, so the consumers
  * below (read at render time) see populated values.
@@ -143,10 +144,20 @@ export interface TimeMachineConfig {
 
   // From `revoked-roots-src`. URL the SPA fetches at boot to
   // check whether its pinned key has been revoked. Defaults
-  // to Transpareo's well-known endpoint; forks point at
-  // their own. Set to an empty string to disable the check
+  // to `/.well-known/dpp-revoked-roots.json` on the host
+  // `asset-host` names, else on transpareo.com. Set to an
+  // empty string to disable the check
   // entirely (useful for dev / offline).
   readonly revokedRootsUrl?: string
+
+  // From `asset-host`: the origin every root path the
+  // renderer meets resolves against (`src`, the manifest's
+  // version, events and live-data paths, images, component
+  // library refs) and where the revocation list is read when
+  // `revoked-roots-src` is not set. Kept as written and
+  // resolved against the page by host.ts, so "/" names the
+  // page's own origin. Absent, the origin of `src` serves.
+  readonly assetHost?: string
 }
 
 type Mutable<T> = { -readonly [K in keyof T]: T[K] }
@@ -175,6 +186,7 @@ export function initConfigFromElement(el: Element): void {
     iconsUrl: str('icons-src'),
     iconMapUrl: str('icon-map-src'),
     revokedRootsUrl: str('revoked-roots-src'),
+    assetHost: str('asset-host')?.trim() || undefined,
     logoHref: str('logo-href'),
     pinnedPlatformKeys: parseKeySet(el, 'pinned-platform-key'),
     pinnedIssuerKeys: parseKeySet(el, 'pinned-issuer-key'),

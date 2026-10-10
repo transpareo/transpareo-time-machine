@@ -124,6 +124,33 @@ describe('requested-level / requested-id parsing', () => {
   });
 });
 
+// The origin root paths resolve against. Kept as written:
+// "/" means the page's own origin, which only the page can
+// say, so resolving it is the host layer's work.
+describe('asset-host parsing', () => {
+  it('carries an origin through verbatim', () => {
+    mod.initConfigFromElement(fakeElement({
+      'asset-host': 'https://cdn.example',
+    }));
+    expect(mod.config.assetHost).toBe('https://cdn.example');
+  });
+
+  it('carries "/" through for the page origin', () => {
+    mod.initConfigFromElement(fakeElement({ 'asset-host': '/' }));
+    expect(mod.config.assetHost).toBe('/');
+  });
+
+  it('is undefined when the attribute is absent', () => {
+    mod.initConfigFromElement(fakeElement({}));
+    expect(mod.config.assetHost).toBeUndefined();
+  });
+
+  it.each(['', '   '])('is undefined for %j', (value) => {
+    mod.initConfigFromElement(fakeElement({ 'asset-host': value }));
+    expect(mod.config.assetHost).toBeUndefined();
+  });
+});
+
 // Set by the shell of a static archive: the day the copy
 // was made. A calendar date only, since the band prints a
 // day, and anything else leaves the archive line off.

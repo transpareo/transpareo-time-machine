@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * Per-composition-entry library lookup. Resolves the
- * snapshot's `libraryRef` (a relative or absolute URL)
- * against the manifest URL, fetches the JSON payload,
+ * snapshot's `libraryRef` (a root path, a relative or an
+ * absolute URL), fetches the JSON payload,
  * caches the result for the session, and returns the
  * `ComponentLookup` the modal renders below the snapshot-
  * frozen lead.
@@ -32,30 +32,26 @@
 
 import type { ComponentLookup, ComponentProperty } from '@/types'
 import { canonicalRating } from '@/types'
-import { getManifestUrl } from '@/host'
+import { assetBase, getManifestUrl, resolveReference } from '@/host'
 import { readJsonResponse } from '@/fetch-json'
 
 const cache = new Map<string, Promise<ComponentLookup | null>>()
 
 // Resolve a snapshot-carried `libraryRef` to a fully
-// qualified URL using the manifest URL as the base. Same
-// shape as the rest of the renderer (epcisUrl,
-// versions[n].url). Returns null when the
-// manifest URL is not yet known or the input is
-// malformed; callers should gate clickability on the
-// presence of `libraryRef`, not on this returning a
-// URL, so we never reach this branch from a real click.
+// qualified URL the way the rest of the renderer resolves
+// epcisUrl and versions[n].url: a root path against the
+// asset host, any other relative ref against the manifest
+// URL. Returns null when the manifest URL is not yet known
+// or the input is malformed; callers should gate
+// clickability on the presence of `libraryRef`, not on
+// this returning a URL, so we never reach this branch from
+// a real click.
 export function resolveLibraryUrl(
   ref: string | undefined,
 ): string | null {
-  if (!ref) return null
-  const base = getManifestUrl()
-  if (!base) return null
-  try {
-    return new URL(ref, base).toString()
-  } catch {
-    return null
-  }
+  const manifest = getManifestUrl()
+  if (!ref || !manifest) return null
+  return resolveReference(ref, manifest, assetBase())
 }
 
 export function lookupLibrary(
