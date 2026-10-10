@@ -38,7 +38,10 @@ import {
 } from '@/i18n'
 import { t } from '@/i18n/labels'
 import { bootstrapVerify, bootstrapHash } from '@/bootstrap'
-import { ensureEventsVerified, resetVerifyCaches } from '@/actions'
+import {
+  armRevocationGuard, ensureEventsVerified, resetVerifyCaches,
+} from '@/actions'
+import { startRevokedRootsCheck } from '@/revoked-roots'
 import {
   bootstrapPrivateRowsFetch, resetPrivateState,
 } from '@/private-properties'
@@ -171,6 +174,14 @@ class TranspareoTimeMachine extends BaseElement {
     // the mounted subtree).
     initConfigFromElement(this)
     this.configured = true
+
+    // The revocation check needs the pins just read, and both
+    // deliveries mount through here: the embed bundle loads no
+    // other boot module. Arm the guard first, so a verdict
+    // reached before the list lands is re-judged when it does.
+    // Both latch, so a second element starts nothing.
+    armRevocationGuard()
+    startRevokedRootsCheck()
 
     // The embedding page can pin the locale via `locale` (or
     // the older `lang`); the i18n bootstrap then prefers it

@@ -32,7 +32,8 @@ export default defineConfig({
     /withdrawal-band\.spec\.ts/,
     /events-off-critical-path\.spec\.ts/,
     /(gallery-turn|lightbox-turn)\.spec\.ts/,
-    /(live-data|passport-level-card)\.spec\.ts/
+    /(live-data|passport-level-card)\.spec\.ts/,
+    /revocation-gate\.spec\.ts/
   ],
   fullyParallel: false,
   retries: 0,

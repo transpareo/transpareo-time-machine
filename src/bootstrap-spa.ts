@@ -34,17 +34,7 @@
 import './styles/app.css'
 
 import './components/transpareo-time-machine'
-import { startRevokedRootsCheck } from './revoked-roots'
-import { armRevocationGuard } from './actions'
 import { bootstrapShowTokens } from './show-filter'
-
-// Arm the reactive revocation guard, then kick off the
-// revoked-roots fetch. The fetch races with the manifest
-// fetch; the guard re-derives any verdicts computed while
-// the fetch was still in flight, so a 'revoked' result
-// forces every snapshot to unauthenticated.
-armRevocationGuard()
-startRevokedRootsCheck()
 
 // Arm the popstate listener for the `?show=` namespace
 // gate. The signal already carries the initial value

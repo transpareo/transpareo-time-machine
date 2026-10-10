@@ -301,8 +301,8 @@ export function pinGatesOk(
 // async revocation fetch settles would otherwise keep a
 // stale green chip. This reactive guard closes that race;
 // versions verified after the check settles are caught
-// inline by the revocation gate. Armed once at boot from
-// bootstrap-spa.
+// inline by the revocation gate. Armed once, from the
+// element's setup().
 let revocationGuardArmed = false
 export function armRevocationGuard(): void {
   if (revocationGuardArmed) return
