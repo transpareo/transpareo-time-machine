@@ -35,6 +35,7 @@ export default defineConfig({
       'tests/logo-link.spec.ts',
       'tests/passport-level-card.spec.ts',
       'tests/revocation-gate.spec.ts',
+      'tests/show-history.spec.ts',
       'tests/snapshot.spec.ts',
       'tests/timeline-axis.spec.ts',
       'tests/verifier-measure.spec.ts',

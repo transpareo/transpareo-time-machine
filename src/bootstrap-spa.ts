@@ -34,11 +34,3 @@
 import './styles/app.css'
 
 import './components/transpareo-time-machine'
-import { bootstrapShowTokens } from './show-filter'
-
-// Arm the popstate listener for the `?show=` namespace
-// gate. The signal already carries the initial value
-// from module load; this picks up back/forward
-// navigation (a host page mutating `?show=` via
-// pushState calls refreshShowTokens() itself).
-bootstrapShowTokens()

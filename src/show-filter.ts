@@ -90,8 +90,8 @@ export function isUnlocked(
 }
 
 // Re-read window.location.search and update the signal.
-// Components don't call this; bootstrap does, plus
-// callers that mutate the URL via pushState (which
+// Components don't call this; the popstate listener does,
+// plus callers that mutate the URL via pushState (which
 // doesn't fire popstate).
 export function refreshShowTokens(): void {
   if (typeof window === 'undefined') return
@@ -100,6 +100,8 @@ export function refreshShowTokens(): void {
 
 let bootstrapped = false
 
+// Called from the element's setup(), so the lib entry and
+// the single-file embed both arm it.
 export function bootstrapShowTokens(): void {
   if (bootstrapped) return
   bootstrapped = true

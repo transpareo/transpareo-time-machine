@@ -42,6 +42,7 @@ import {
   armRevocationGuard, ensureEventsVerified, resetVerifyCaches,
 } from '@/actions'
 import { startRevokedRootsCheck } from '@/revoked-roots'
+import { bootstrapShowTokens } from '@/show-filter'
 import {
   bootstrapPrivateRowsFetch, resetPrivateState,
 } from '@/private-properties'
@@ -182,6 +183,10 @@ class TranspareoTimeMachine extends BaseElement {
     // Both latch, so a second element starts nothing.
     armRevocationGuard()
     startRevokedRootsCheck()
+
+    // Back and forward re-read `?show=` from here for the same
+    // reason. Latched like the two above.
+    bootstrapShowTokens()
 
     // The embedding page can pin the locale via `locale` (or
     // the older `lang`); the i18n bootstrap then prefers it
