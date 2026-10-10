@@ -10,6 +10,58 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Added
+
+- An asset host. The `asset-host` attribute names the
+  origin every root path the renderer meets resolves
+  against: a root-path `src`, the manifest's version,
+  events and live-data paths, a snapshot's image paths and
+  its composition entries' `libraryRef`. `asset-host="/"`
+  names the page's own origin, which is what a static
+  archive copy sets, so the copied folder works on any web
+  root. Without the attribute the origin of `src` serves
+  the files.
+  An absolute URL in a passport file stands as written,
+  and a path relative to its document still resolves
+  against that document, so older manifests read as
+  before.
+
+### Changed
+
+- Pinned keys first. A proof is tried under the keys the
+  page pins (`pinned-platform-key`, `pinned-issuer-key`)
+  before anything is fetched, under both cryptosuites, and
+  the document its `verificationMethod` names is read only
+  when no pin verifies it: a key minted after the page was
+  cached, or a page without pins. A pinned page verifies
+  without a single key request, a copy behind a firewall
+  waits on no key host, and a proof that verifies under a
+  pin is flagged pinned exactly as before. The manifest,
+  events and live-data signatures, the login-gated rows
+  and `<dpp-verifier>` all take their keys this way. In
+  the widget's strict count, an entry verified under a pin
+  no longer reports whether its method's host answers.
+- A page that sets `asset-host` and no `revoked-roots-src`
+  reads the revocation list for its pinned platform keys
+  from `/.well-known/dpp-revoked-roots.json` on that host,
+  so an archive copy under `asset-host="/"` checks the
+  list it carries. Without `asset-host` the list is read
+  from `transpareo.com` as before.
+- Under `archived-at`, login-gated rows are never
+  requested: a copy has no signed-in reader, and the
+  address the manifest names belongs to the app the copy
+  was made from.
+
+### Fixed
+
+- The single-file embed never checked the revocation list:
+  the check and the guard that re-judges earlier verdicts
+  were started by a boot module only the lib entry loads,
+  so a pinned page on `embed.js` verified under a revoked
+  key without knowing it. Both now start from the
+  element's own setup, once its pins are read, in either
+  delivery.
+
 ## [2.19.0] - 2026-10-09
 
 ### Added

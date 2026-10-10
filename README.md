@@ -195,9 +195,15 @@ bucket. A trimmed real manifest:
 Field notes:
 
 - `versions[]` - one entry per published version.
-  `url` points at the version's signed snapshot;
-  relative URLs resolve against the manifest's own
-  URL. `hashValue` (with optional `hashAlgorithm` /
+  `url` points at the version's signed snapshot. A
+  root path (`/acme/dpp/demo-2026-t001/v/6-1a2b.json`)
+  resolves against the asset host (the `asset-host`
+  attribute, else the origin of `src`), any other
+  relative URL against the manifest's own URL, and an
+  absolute URL stands as written. `epcisUrl`,
+  `dynamicDataUrl`, a snapshot's image paths and its
+  composition entries' `libraryRef` resolve the same
+  way. `hashValue` (with optional `hashAlgorithm` /
   `hashCanonicalForm`) is the snapshot's content
   hash; the next version's snapshot names it as
   `priorVersionHash`, the chain check that binds the
@@ -589,10 +595,12 @@ real cause as a CSP report.
   `did:web` hosts, which resolve to
   `https://<host>/.well-known/did.json`. Read them off a
   snapshot's `proof[].verificationMethod`;
+- the asset host, when `asset-host` names one;
 - the revocation endpoint when the page pins a platform
-  key: `https://transpareo.com` by default, or whatever
-  `revoked-roots-src` names (`revoked-roots-src=""`
-  disables the check and the fetch with it);
+  key: whatever `revoked-roots-src` names, else the host
+  `asset-host` names, else `https://transpareo.com`
+  (`revoked-roots-src=""` disables the check and the fetch
+  with it);
 - the hosts serving `icons-src` and `icon-map-src`, when
   those are set.
 
@@ -630,7 +638,9 @@ The full passport renderer.
 
 | Attribute | Required | Effect |
 |-----------|----------|--------|
-| `src` | yes | URL of the DPP manifest, of a single signed snapshot, or the passport URL of a publisher that serves JSON via content negotiation. Resolved against `document.location` if relative. Changing the attribute live triggers a re-fetch. |
+| `src` | yes | URL of the DPP manifest, of a single signed snapshot, or the passport URL of a publisher that serves JSON via content negotiation. A root path (`/acme/dpp/demo-2026-t001/manifest.json`) resolves against `asset-host` when the page sets it; otherwise a relative `src` resolves against `document.location`. Changing the attribute live triggers a re-fetch. |
+| `asset-host` | no | The origin every root path the renderer meets resolves against: a root-path `src`, the manifest's `versions[].url`, `epcisUrl` and `dynamicDataUrl`, image paths and `libraryRef`. Relative values resolve against the page, so `asset-host="/"` names the page's own origin, which is what a static archive copy sets. Absent, the origin of `src` serves. An absolute URL in a passport file stands as written, and a path relative to its document resolves against that document. |
+| `revoked-roots-src` | no | Where the revocation list for the pinned platform keys is read at boot. Absent, `/.well-known/dpp-revoked-roots.json` on the host `asset-host` names, and on `https://transpareo.com` when the page sets no `asset-host`. `revoked-roots-src=""` disables the check. Without `pinned-platform-key` nothing is read. |
 
 | Surface | Notes |
 |---------|-------|
@@ -640,7 +650,7 @@ The full passport renderer.
 | Properties | `state` (read-only): the same detail the `:state` event carries, or `null` before the manifest has loaded. |
 | CSS parts | None today. The element has an open shadow root, so host pages can reach inner DOM via `::shadow`-style selectors but doing so is unsupported and may break on any release. |
 | CSS custom properties | The publisher theming surface (see "Theming" below). Custom properties inherit through the shadow boundary, so any `--token` set on the host page applies inside. |
-| Attributes | `src` (DPP **manifest** URL, or a single signed **snapshot** URL; see "Single-snapshot mode" below), `icons-src` (decorative content sprite), `icon-map-src` (per-publisher JSON mapping each property's `propertyID` to a sprite symbol id; pairs with `icons-src`), `revoked-roots-src` (revocation endpoint; `''` disables the boot check), `show-verification-mark` (`false` always hides the verification chip, `true` always shows it; absent, the chip hides itself for a lone snapshot that carries no proof), `pinned-platform-key` (whitespace-separated Multikey set; the chip must see one of them among the verified entries; also keys the revoked-roots check), `pinned-issuer-key` (whitespace-separated Multikey set of the issuer's declared signing keys - under BYOK the customer's own registered keys; the chip requires a verified issuer entry under one of them), `verifier` (present: mount `<dpp-verifier>` in place of the renderer), `logo-href` (where the brandbar logo links to, typically the publisher's home page; absent, the logo stays plain artwork), `footer-copyright` + `footer-links` (footer chrome; `footer-links` is a JSON array of `{ label, url }`), `requested-level` + `requested-id` (set by a shell that answers a unit link in place with the lot or model passport: the level asked for, `item` or `lot`, and its serial or lot number; the card then says what was asked for and what is shown), `archived-at` (set by the shell of a static archive: the day the copy was made, as a calendar date such as `2026-10-08`; the card then reads "Archived on 8 October 2026" in the reader's language at the top of the withdrawal band, on every version; anything that is not a real calendar date leaves the line off). Read once in the element's `setup()` (`src/config.ts`). `locale` states which language to render in: a tag (`locale="de"`), `inherit` to follow the language surrounding the element, or `auto` (the default, and what an absent attribute means) to detect from the visitor's browser. It outranks the standard `lang` attribute, which is still read where no `locale` is given, so `locale="auto"` is how a page that templates `lang` everywhere keeps detection. Either pins the UI locale ahead of the browser preference and of a locale the visitor picked on another page; see "Localization" below. |
+| Attributes | `src` (DPP **manifest** URL, or a single signed **snapshot** URL; see "Single-snapshot mode" below), `icons-src` (decorative content sprite), `icon-map-src` (per-publisher JSON mapping each property's `propertyID` to a sprite symbol id; pairs with `icons-src`), `asset-host` (the origin root paths resolve against; see the table above), `revoked-roots-src` (revocation endpoint, by default `/.well-known/dpp-revoked-roots.json` on the host `asset-host` names, else on `https://transpareo.com`; `''` disables the boot check), `show-verification-mark` (`false` always hides the verification chip, `true` always shows it; absent, the chip hides itself for a lone snapshot that carries no proof), `pinned-platform-key` (whitespace-separated Multikey set; the chip must see one of them among the verified entries; also keys the revoked-roots check), `pinned-issuer-key` (whitespace-separated Multikey set of the issuer's declared signing keys - under BYOK the customer's own registered keys; the chip requires a verified issuer entry under one of them; every proof is tried under both pin sets first, and the document its `verificationMethod` names is read only when no pin verifies it), `verifier` (present: mount `<dpp-verifier>` in place of the renderer), `logo-href` (where the brandbar logo links to, typically the publisher's home page; absent, the logo stays plain artwork), `footer-copyright` + `footer-links` (footer chrome; `footer-links` is a JSON array of `{ label, url }`), `requested-level` + `requested-id` (set by a shell that answers a unit link in place with the lot or model passport: the level asked for, `item` or `lot`, and its serial or lot number; the card then says what was asked for and what is shown), `archived-at` (set by the shell of a static archive: the day the copy was made, as a calendar date such as `2026-10-08`; the card then reads "Archived on 8 October 2026" in the reader's language at the top of the withdrawal band, on every version, and no login-gated rows are requested; anything that is not a real calendar date leaves the line off). Read once in the element's `setup()` (`src/config.ts`). `locale` states which language to render in: a tag (`locale="de"`), `inherit` to follow the language surrounding the element, or `auto` (the default, and what an absent attribute means) to detect from the visitor's browser. It outranks the standard `lang` attribute, which is still read where no `locale` is given, so `locale="auto"` is how a page that templates `lang` everywhere keeps detection. Either pins the UI locale ahead of the browser preference and of a locale the visitor picked on another page; see "Localization" below. |
 
 #### The verification mark
 
@@ -1224,12 +1234,14 @@ that would rather not download Firefox.
    the current snapshot:
    - JCS-canonicalize the snapshot (without `proof`),
      SHA-256 the bytes.
-   - For each of the 5 proof entries: fetch the
-     verificationMethod's Multikey doc, import the
-     Ed25519 public key, `crypto.subtle.verify` the
-     signature against the document hash. Entries that
-     name the same document under different fragments
-     share one read.
+   - For each of the 5 proof entries: try the keys the
+     page pins (`pinned-platform-key`,
+     `pinned-issuer-key`) first; only when none of them
+     verifies, fetch the verificationMethod's Multikey
+     doc, import the Ed25519 public key and
+     `crypto.subtle.verify` the signature against the
+     document hash. Entries that name the same document
+     under different fragments share one read.
    - Apply the any-issuer-and-any-platform rule
      (default) or all-five (`{ mode: 'strict' }`) to
      produce the aggregate verdict.
