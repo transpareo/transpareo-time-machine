@@ -20,10 +20,14 @@ import { decodeMultibaseBase58 } from './multibase'
 interface MultikeyEntry {
   readonly id?: string
   readonly publicKeyMultibase?: string
+  readonly revoked?: unknown
 }
+type MethodReference = string | { readonly id?: string }
 interface ResolutionDoc {
+  readonly id?: string
   readonly publicKeyMultibase?: string
   readonly verificationMethod?: ReadonlyArray<MultikeyEntry>
+  readonly assertionMethod?: ReadonlyArray<MethodReference>
 }
 
 export interface ResolvedMultikey {
@@ -176,6 +180,20 @@ export function isKeyDocumentError(err: unknown): boolean {
   return err instanceof Error && err.name === 'KeyDocumentError'
 }
 
+// A DID document that names the key and withdraws it: the
+// method carries `revoked`, or `assertionMethod` leaves it
+// out. A proof under it is invalid, and a read past the
+// caches cannot change that: a withdrawn key never returns.
+function keyRefusedError(message: string): Error {
+  const err = new Error(message)
+  err.name = 'KeyRefusedError'
+  return err
+}
+
+export function isKeyRefusedError(err: unknown): boolean {
+  return err instanceof Error && err.name === 'KeyRefusedError'
+}
+
 // Both proof paths retry past the caches and both report the
 // same event, so the wording lives here rather than drifting
 // between them.
@@ -251,9 +269,13 @@ function didWebToUrl(did: string): string {
 
 // Pick the public key from a resolution document. A DID
 // document's verificationMethod array is selected by
-// fragment (or the first entry when none is given); a
-// single-key document exposes publicKeyMultibase at the
-// top and the fragment is decorative.
+// fragment (or the first entry when none is given), and its
+// key is taken only while the document still lets it sign:
+// no `revoked`, and listed under `assertionMethod`, the
+// relationship every proof here names. A retired key keeps
+// its place there and keeps verifying. A single-key document
+// exposes publicKeyMultibase at the top, carries no status,
+// and the fragment is decorative.
 function selectMultibase(
   doc: ResolutionDoc, fragment: string | undefined,
 ): string {
@@ -262,13 +284,36 @@ function selectMultibase(
       ? doc.verificationMethod.find((m) => fragmentMatches(m.id, fragment))
       : doc.verificationMethod[0]
     const mb = entry?.publicKeyMultibase
-    if (mb && mb.startsWith('z')) return mb
-    throw keyDocumentError('DID document has no matching verificationMethod')
+    if (!entry || !mb || !mb.startsWith('z')) {
+      throw keyDocumentError('DID document has no matching verificationMethod')
+    }
+    if (entry.revoked != null) {
+      throw keyRefusedError(`${entry.id} is revoked`)
+    }
+    if (!assertsWith(doc, entry)) {
+      throw keyRefusedError(`${entry.id} is not an assertionMethod`)
+    }
+    return mb
   }
   if (doc.publicKeyMultibase && doc.publicKeyMultibase.startsWith('z')) {
     return doc.publicKeyMultibase
   }
   throw keyDocumentError('resolution doc missing publicKeyMultibase')
+}
+
+// An `assertionMethod` entry names a method by reference,
+// absolute or relative to the document, or embeds one by id.
+function assertsWith(doc: ResolutionDoc, entry: MultikeyEntry): boolean {
+  if (!entry.id || !Array.isArray(doc.assertionMethod)) return false
+  const target = absoluteId(doc, entry.id)
+  return doc.assertionMethod.some((ref) => {
+    const id = typeof ref === 'string' ? ref : ref?.id
+    return !!id && absoluteId(doc, id) === target
+  })
+}
+
+function absoluteId(doc: ResolutionDoc, id: string): string {
+  return id.startsWith('#') ? `${doc.id ?? ''}${id}` : id
 }
 
 function fragmentMatches(

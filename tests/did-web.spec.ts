@@ -16,7 +16,7 @@
 import { describe, expect, it, vi, afterEach } from 'vitest';
 import {
   splitVerificationMethod, resolveMultikey, forgetKeyDocuments,
-  pinnedMultikeys,
+  pinnedMultikeys, isKeyRefusedError,
 } from '../src/crypto/did-web';
 import { encodeMultibaseBase58 } from '../src/crypto/multibase';
 
@@ -149,6 +149,8 @@ describe('resolveMultikey', () => {
           { id: 'https://example.com/keys.json#a', publicKeyMultibase: KEY },
           { id: 'https://example.com/keys.json#b', publicKeyMultibase: KEY },
         ],
+        assertionMethod: ['#a', '#b'],
+        id: 'https://example.com/keys.json',
       }),
     }));
     vi.stubGlobal('fetch', fetchMock);
@@ -199,5 +201,80 @@ describe('resolveMultikey', () => {
 
     const [url] = fetchMock.mock.calls[0] as unknown as [string];
     expect(url).toMatch(/^\/keys\/v1\.pub\?tm-fresh=[^#]+#key-1$/);
+  });
+});
+
+// The DID document the backend publishes: a compromised key
+// carries `revoked` and leaves `assertionMethod`, a retired one
+// carries `expires` and stays in it.
+describe('resolveMultikey: verification method status', () => {
+  const DID = 'did:web:example.com';
+
+  function serve(doc: object): void {
+    vi.stubGlobal('fetch', vi.fn(() => Promise.resolve({
+      ok: true,
+      json: () => Promise.resolve({ id: DID, ...doc }),
+    })));
+  }
+
+  function method(n: number, extra: object = {}): object {
+    return { id: `${DID}#key-${n}`, publicKeyMultibase: KEY, ...extra };
+  }
+
+  it('refuses a revoked key', async () => {
+    const revoked = { revoked: '2026-10-01T00:00:00Z' };
+    serve({
+      verificationMethod: [method(1, revoked)],
+      assertionMethod: [`${DID}#key-1`],
+    });
+
+    const pending = resolveMultikey(`${DID}#key-1`);
+    await expect(pending).rejects.toThrow(/is revoked/);
+    await expect(pending.catch(isKeyRefusedError)).resolves.toBe(true);
+  });
+
+  it('refuses a key absent from assertionMethod', async () => {
+    serve({
+      verificationMethod: [method(1), method(2)],
+      assertionMethod: [`${DID}#key-2`],
+    });
+
+    await expect(resolveMultikey(`${DID}#key-1`)).
+      rejects.toThrow(/not an assertionMethod/);
+  });
+
+  it('refuses every key of a document without assertionMethod', async () => {
+    serve({ verificationMethod: [method(1)] });
+
+    await expect(resolveMultikey(`${DID}#key-1`)).
+      rejects.toThrow(/not an assertionMethod/);
+  });
+
+  it('accepts a retired key that stays in assertionMethod', async () => {
+    const retired = { expires: '2026-10-01T00:00:00Z' };
+    serve({
+      verificationMethod: [method(1, retired), method(2)],
+      assertionMethod: [`${DID}#key-1`, `${DID}#key-2`],
+    });
+
+    const key = await resolveMultikey(`${DID}#key-1`);
+    expect(key.multibase).toBe(KEY);
+  });
+
+  it('reads relative and embedded assertionMethod entries', async () => {
+    serve({
+      verificationMethod: [method(1), method(2)],
+      assertionMethod: ['#key-1', { id: `${DID}#key-2` }],
+    });
+
+    await expect(resolveMultikey(`${DID}#key-1`)).resolves.toBeDefined();
+    await expect(resolveMultikey(`${DID}#key-2`)).resolves.toBeDefined();
+  });
+
+  it('leaves a bare Multikey document as it was', async () => {
+    serve({ publicKeyMultibase: KEY, revoked: '2026-10-01T00:00:00Z' });
+
+    const key = await resolveMultikey('https://example.com/keys/v1.pub');
+    expect(key.multibase).toBe(KEY);
   });
 });

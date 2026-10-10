@@ -13,12 +13,12 @@
  * ecdsa-sd.spec.ts and verify.spec.ts.
  */
 
-import { describe, expect, it, beforeAll } from 'vitest';
+import { describe, expect, it, beforeAll, afterEach, vi } from 'vitest';
 import {
   verifyDpp, dppIsAuthentic, verifySnapshotAnySuite,
 } from '../src/crypto/dispatch';
 import {
-  keyDocumentError, type ResolvedMultikey
+  keyDocumentError, forgetKeyDocuments, type ResolvedMultikey
 } from '../src/crypto/did-web';
 import { encodeMultibaseBase58 } from '../src/crypto/multibase';
 import {
@@ -31,6 +31,11 @@ let signer: SampleSigner;
 
 beforeAll(async () => {
   signer = await createSampleSigner();
+});
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+  forgetKeyDocuments();
 });
 
 // Resolver that records the method it was asked for and
@@ -103,6 +108,54 @@ describe('verifyDpp: routes ecdsa-sd-2023', () => {
     if (v.cryptosuite === 'ecdsa-sd-2023') {
       expect(v.results[0]?.result.reason).toMatch(/issuer key resolution failed: offline/);
     } else throw new Error('expected ecdsa-sd routing');
+  });
+
+  it('refuses a revoked key without a second read', async () => {
+    const doc = await signer.makeDerived(['recycled']);
+    const fetchMock = vi.fn(() => Promise.resolve({
+      ok: true,
+      json: () => Promise.resolve({
+        id: 'https://ex.dpp/issuer',
+        verificationMethod: [{
+          id: '#key-1',
+          publicKeyMultibase: encodeMultibaseBase58(signer.issuer.multikey),
+          revoked: '2026-10-01T00:00:00Z'
+        }],
+        assertionMethod: []
+      })
+    }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const v = await verifyDpp(doc);
+    expect(dppIsAuthentic(v)).toBe(false);
+    if (v.cryptosuite !== 'ecdsa-sd-2023') {
+      throw new Error('expected ecdsa-sd routing');
+    }
+    expect(v.results[0]?.result.reason).toMatch(/is revoked/);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('names the refusal the origin answers past a stale cache', async () => {
+    const doc = await signer.makeDerived(['recycled']);
+    const method = {
+      id: '#key-1',
+      publicKeyMultibase: encodeMultibaseBase58(signer.issuer.multikey),
+      revoked: '2026-10-01T00:00:00Z'
+    };
+
+    // The cached copy lacks the key; the origin's marks it.
+    vi.stubGlobal('fetch', vi.fn((url: string) => Promise.resolve({
+      ok: true,
+      json: () => Promise.resolve(url.includes('tm-fresh')
+        ? { verificationMethod: [method], assertionMethod: [] }
+        : { verificationMethod: [] })
+    })));
+
+    const v = await verifyDpp(doc);
+    if (v.cryptosuite !== 'ecdsa-sd-2023') {
+      throw new Error('expected ecdsa-sd routing');
+    }
+    expect(v.results[0]?.result.reason).toMatch(/is revoked/);
   });
 
   it('reports a proof with no verificationMethod', async () => {

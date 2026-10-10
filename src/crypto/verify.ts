@@ -20,7 +20,9 @@
  *      pins is tried first; only when none verifies is
  *      `verificationMethod` resolved: a did:web method maps
  *      to its did.json and the key is selected from the
- *      verificationMethod array by fragment; an http(s) or
+ *      verificationMethod array by fragment, refused when
+ *      it carries `revoked` or is missing from
+ *      `assertionMethod`; an http(s) or
  *      relative URL is fetched and its publicKeyMultibase
  *      read directly.
  *   5. Decode `proofValue` (multibase base58 "z" prefix +
@@ -61,7 +63,7 @@ import { decodeMultibaseBase58 } from './multibase'
 import { proofConfig, joinHashes } from './eddsa-jcs'
 import {
   resolveMultikey, warnKeyChangedPastCaches,
-  keyDocumentError, isKeyDocumentError,
+  keyDocumentError, isKeyDocumentError, isKeyRefusedError,
   isCurveMultikey, pinnedMultikeys, type ResolvedMultikey
 } from './did-web'
 import { asBuffer } from './buffer'
@@ -362,23 +364,12 @@ async function verifyEntry(
 
   let resolved: ResolvedKey
   try {
-    resolved = await resolveVerificationKey(proof.verificationMethod)
+    resolved = await entryKey(proof.verificationMethod)
   } catch (err) {
-    // A document that carries no key for this method can be a
-    // cache answering from before the key was added, so it is
-    // worth one look past them. A host that did not answer at
-    // all is not: the retry would only spend a second timeout.
-    const retry = isKeyDocumentError(err)
-      ? await freshKey(proof.verificationMethod)
-      : undefined
-    if (!retry) {
-      return {
-        ...base,
-        status: 'unreachable',
-        reason: describeError(err)
-      }
-    }
-    resolved = retry
+    // A key its own document withdraws is invalid. Reported as
+    // unreachable, an unpinned page would tolerate it.
+    const status = isKeyRefusedError(err) ? 'invalid' : 'unreachable'
+    return { ...base, status, reason: describeError(err) }
   }
 
   let hashData: Uint8Array
@@ -518,14 +509,32 @@ function resolveVerificationKey(
   return pending
 }
 
+// The key an entry's method resolves to. A document that
+// carries no key for this method can be a cache answering
+// from before the key was added, so it is worth one look past
+// them. A host that did not answer at all is not: the retry
+// would only spend a second timeout.
+async function entryKey(method: string): Promise<ResolvedKey> {
+  try {
+    return await resolveVerificationKey(method)
+  } catch (err) {
+    if (!isKeyDocumentError(err)) throw err
+    const fresh = await freshKey(method)
+    if (!fresh) throw err
+    return fresh
+  }
+}
+
 // The key a method resolves to past every cache, or nothing
-// when the origin cannot answer either.
+// when the origin cannot answer either. A key the origin
+// withdraws is passed on, since that answer is final.
 async function freshKey(method: string): Promise<ResolvedKey | undefined> {
   try {
     const fresh = await resolveVerificationKey(method, true)
     warnKeyChangedPastCaches(method)
     return fresh
-  } catch {
+  } catch (err) {
+    if (isKeyRefusedError(err)) throw err
     return undefined
   }
 }

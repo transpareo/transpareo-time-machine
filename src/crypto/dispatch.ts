@@ -28,7 +28,7 @@ import {
 import { EDDSA_JCS_2022 } from './eddsa-jcs'
 import {
   resolveMultikey, warnKeyChangedPastCaches,
-  keyDocumentError, isKeyDocumentError,
+  keyDocumentError, isKeyDocumentError, isKeyRefusedError,
   isCurveMultikey, pinnedMultikeys,
   type ResolvedMultikey, type ResolveOptions
 } from './did-web'
@@ -275,19 +275,10 @@ async function verifyOneProof(
 
   let key: ResolvedMultikey
   try {
-    key = await resolve(method)
+    key = await issuerKey(method, resolve)
   } catch (err) {
-    // Same reasoning as the eddsa path: a document carrying
-    // no key for this method is worth one look past the
-    // caches, a host that never answered is not.
-    const retry = isKeyDocumentError(err)
-      ? await freshKey(method, resolve)
-      : undefined
-    if (!retry) {
-      const reason = `issuer key resolution failed: ${describeError(err)}`
-      return { ...named, result: failResult(reason) }
-    }
-    key = retry
+    const reason = `issuer key resolution failed: ${describeError(err)}`
+    return { ...named, result: failResult(reason) }
   }
 
   let result = await verifyPreparedProof(prepared, key.bytes)
@@ -306,8 +297,26 @@ async function verifyOneProof(
   return { ...named, keyMultibase: key.multibase, result }
 }
 
+// The issuer key a method resolves to. Same reasoning as the
+// eddsa path: a document carrying no key for this method is
+// worth one look past the caches, a host that never answered
+// is not.
+async function issuerKey(
+  method: string, resolve: IssuerKeyResolver
+): Promise<ResolvedMultikey> {
+  try {
+    return await resolve(method)
+  } catch (err) {
+    if (!isKeyDocumentError(err)) throw err
+    const fresh = await freshKey(method, resolve)
+    if (!fresh) throw err
+    return fresh
+  }
+}
+
 // The key a method resolves to past every cache, or nothing
-// when the origin cannot answer either.
+// when the origin cannot answer either. A key the origin
+// withdraws is passed on, since that answer is final.
 async function freshKey(
   method: string, resolve: IssuerKeyResolver
 ): Promise<ResolvedMultikey | undefined> {
@@ -315,7 +324,8 @@ async function freshKey(
     const fresh = await resolve(method, { bypassCache: true })
     warnKeyChangedPastCaches(method)
     return fresh
-  } catch {
+  } catch (err) {
+    if (isKeyRefusedError(err)) throw err
     return undefined
   }
 }

@@ -1241,7 +1241,11 @@ that would rather not download Firefox.
      doc, import the Ed25519 public key and
      `crypto.subtle.verify` the signature against the
      document hash. Entries that name the same document
-     under different fragments share one read.
+     under different fragments share one read. A key from
+     a DID document is refused, and its entry invalid,
+     when the method carries `revoked` or is missing from
+     `assertionMethod`; a retired key stays listed there
+     and keeps verifying.
    - Apply the any-issuer-and-any-platform rule
      (default) or all-five (`{ mode: 'strict' }`) to
      produce the aggregate verdict.

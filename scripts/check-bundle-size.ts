@@ -45,10 +45,12 @@ const BUDGETS: ReadonlyArray<Budget> = [
   // model and lot passports: the walk-up band, the
   // unit-passport line, their labels and four context terms.
   { file: 'transpareo-time-machine.js', maxGzipBytes: 74 * 1024, dir: 'dist' },
-  // 32 KB for the same reason: the bundled English catalog
-  // and the Transpareo context ride every entry whole. It
-  // went to 31 KB when the withdrawal sentences joined.
-  { file: 'dpp-verifier.js', maxGzipBytes: 32 * 1024, dir: 'dist' },
+  // 33 KB since a DID document can withdraw a key: the
+  // `revoked` and `assertionMethod` checks. 32 KB came with
+  // the key selection above (the bundled English catalog and
+  // the Transpareo context ride every entry whole), 31 KB
+  // with the withdrawal sentences.
+  { file: 'dpp-verifier.js', maxGzipBytes: 33 * 1024, dir: 'dist' },
   { file: 'embed.js', maxGzipBytes: 72 * 1024, dir: 'dist-embed' },
 ]
 

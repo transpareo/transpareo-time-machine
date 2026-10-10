@@ -253,9 +253,20 @@ describe('verifySnapshot: happy path', () => {
 });
 
 describe('verifySnapshot: did:web resolution', () => {
-  it('resolves a did:web method via its did.json by fragment', async () => {
+  const DID = 'did:web:issuer.test';
+  const DID_URL = 'https://issuer.test/.well-known/did.json';
+  const didMethod = `${DID}#key-1`;
+
+  // The issuer signs under its did:web method only, the
+  // platform under its key paths. The DID document holds two
+  // keys, so the proof's #key-1 fragment must select the
+  // matching one; `issuerKey` adds a status to that entry.
+  async function runDid(options: {
+    issuerKey?: object;
+    assertionMethod?: string[];
+    pinIssuer?: boolean;
+  } = {}): Promise<{ result: VerificationResult; didReads: number }> {
     const setup = await buildSignedSnapshot();
-    const didMethod = 'did:web:issuer.test#key-1';
     const body = {
       version: setup.snapshot.version,
       publishedAt: setup.snapshot.publishedAt,
@@ -269,27 +280,30 @@ describe('verifySnapshot: did:web resolution', () => {
         ),
       ],
     };
+    const doc = {
+      id: DID,
+      verificationMethod: [
+        {
+          id: `${DID}#key-0`,
+          type: 'Multikey',
+          publicKeyMultibase: setup.platform.publicKeyMultibase,
+        },
+        {
+          id: didMethod,
+          type: 'Multikey',
+          publicKeyMultibase: setup.issuer.publicKeyMultibase,
+          ...options.issuerKey,
+        },
+      ],
+      assertionMethod: options.assertionMethod ?? [`${DID}#key-0`, didMethod],
+    };
 
+    let didReads = 0;
     vi.stubGlobal('fetch', async (input: string | URL): Promise<Response> => {
       const url = typeof input === 'string' ? input : input.toString();
-      if (url === 'https://issuer.test/.well-known/did.json') {
-        // Two keys in the document; the proof's #key-1
-        // fragment must select the matching one.
-        return new Response(JSON.stringify({
-          id: 'did:web:issuer.test',
-          verificationMethod: [
-            {
-              id: 'did:web:issuer.test#key-0',
-              type: 'Multikey',
-              publicKeyMultibase: setup.platform.publicKeyMultibase,
-            },
-            {
-              id: 'did:web:issuer.test#key-1',
-              type: 'Multikey',
-              publicKeyMultibase: setup.issuer.publicKeyMultibase,
-            },
-          ],
-        }), { status: 200, headers: { 'content-type': 'application/json' } });
+      if (url.startsWith(DID_URL)) {
+        didReads++;
+        return new Response(JSON.stringify(doc), { status: 200 });
       }
       if ((PLATFORM_URLS as readonly string[]).includes(url)) {
         return new Response(JSON.stringify({
@@ -301,14 +315,61 @@ describe('verifySnapshot: did:web resolution', () => {
     });
 
     const verifySnapshot = await freshVerifier();
-    const result = await verifySnapshot(snapshot);
+    const pinnedIssuerKeys = options.pinIssuer
+      ? [setup.issuer.publicKeyMultibase]
+      : undefined;
+    const result = await verifySnapshot(snapshot, { pinnedIssuerKeys });
+    return { result, didReads };
+  }
 
-    const didEntry = result.entries.find(
-      (e) => e.verificationMethod === didMethod,
-    );
-    expect(didEntry?.status).toBe('verified');
+  function didEntry(result: VerificationResult) {
+    return result.entries.find((e) => e.verificationMethod === didMethod);
+  }
+
+  it('resolves a did:web method via its did.json by fragment', async () => {
+    const { result } = await runDid();
+
+    expect(didEntry(result)?.status).toBe('verified');
     expect(result.verdict).toBe('authentic');
     expect(result.verifiedAuthorityCount).toBe(2);
+  });
+
+  it('refuses a key the document marks revoked', async () => {
+    const issuerKey = { revoked: '2026-10-01T00:00:00Z' };
+    const { result } = await runDid({ issuerKey, assertionMethod: [] });
+
+    // Invalid, not unreachable: an unpinned page tolerates an
+    // unreachable artefact key, and must not tolerate this.
+    expect(didEntry(result)?.status).toBe('invalid');
+    expect(didEntry(result)?.reason).toMatch(/is revoked/);
+    expect(result.verdict).toBe('unauthenticated');
+  });
+
+  it('refuses a key absent from assertionMethod', async () => {
+    const { result } = await runDid({ assertionMethod: [`${DID}#key-0`] });
+
+    expect(didEntry(result)?.status).toBe('invalid');
+    expect(didEntry(result)?.reason).toMatch(/not an assertionMethod/);
+    expect(result.verdict).toBe('unauthenticated');
+  });
+
+  it('accepts a retired key that stays in assertionMethod', async () => {
+    const issuerKey = { expires: '2026-10-01T00:00:00Z' };
+    const { result } = await runDid({ issuerKey });
+
+    expect(didEntry(result)?.status).toBe('verified');
+    expect(result.verdict).toBe('authentic');
+  });
+
+  it('verifies under a pinned key without reading its status', async () => {
+    const issuerKey = { revoked: '2026-10-01T00:00:00Z' };
+    const { result, didReads } = await runDid({
+      issuerKey, assertionMethod: [], pinIssuer: true,
+    });
+
+    expect(didEntry(result)?.status).toBe('verified');
+    expect(didEntry(result)?.issuerPinned).toBe(true);
+    expect(didReads).toBe(0);
   });
 });
 
@@ -1088,6 +1149,7 @@ describe('a key document that carries no key for the method', () => {
               verificationMethod: [
                 { id: `#${fragment ?? 'key-1'}`, publicKeyMultibase: key },
               ],
+              assertionMethod: [`#${fragment ?? 'key-1'}`],
             }
           : { id: addr, verificationMethod: [] };
         return new Response(JSON.stringify(doc), { status: 200 });
@@ -1098,6 +1160,36 @@ describe('a key document that carries no key for the method', () => {
 
       expect(result.verdict).toBe('authentic');
     });
+
+  it('reports a key the origin withdraws as invalid', async () => {
+    const setup = await buildSignedSnapshot();
+    const current = fullResolverMap(setup);
+
+    // The cached copy lacks the key, the origin's copy marks
+    // it revoked: the retry past the caches finds the refusal.
+    vi.stubGlobal('fetch', async (input: string | URL): Promise<Response> => {
+      const url = typeof input === 'string' ? input : input.toString();
+      const plain = url.replace(/[?&]tm-fresh=[^&#]*/, '');
+      const [addr, fragment] = plain.split('#');
+      const key = current.get(plain);
+      if (!key) return new Response('not found', { status: 404 });
+      const method = {
+        id: `#${fragment ?? 'key-1'}`,
+        publicKeyMultibase: key,
+        revoked: '2026-10-01T00:00:00Z',
+      };
+      const doc = url.includes('tm-fresh')
+        ? { id: addr, verificationMethod: [method], assertionMethod: [] }
+        : { id: addr, verificationMethod: [] };
+      return new Response(JSON.stringify(doc), { status: 200 });
+    });
+
+    const verifySnapshot = await freshVerifier();
+    const result = await verifySnapshot(setup.snapshot);
+
+    expect(result.entries.every((e) => e.status === 'invalid')).toBe(true);
+    expect(result.entries[0].reason).toMatch(/is revoked/);
+  });
 
   it('does not spend a second timeout on a host that never answered',
     async () => {
