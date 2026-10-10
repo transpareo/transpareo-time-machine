@@ -10,6 +10,27 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.20.1] - 2026-10-10
+
+### Fixed
+
+- A key read from a DID document is refused when its
+  verification method carries `revoked` or is missing from
+  the document's `assertionMethod`, under both cryptosuites:
+  the proof under it is invalid. A retired key keeps its
+  place in `assertionMethod` and keeps verifying, a key the
+  page pins verifies before any document is read, and a
+  single-key document, which carries no status, reads as
+  before.
+- On a page loading `embed.js`, a back or forward step that
+  changed `?show=` left the on-demand rows as they were:
+  the listener that re-reads the parameter was armed by a
+  boot module only the lib entry loads. It now starts from
+  the element's own setup, in either delivery.
+- `THIRD-PARTY-LICENSES.md` gives the Entypo pictograms as
+  CC BY-SA 3.0, the license the Fontello Entypo set states,
+  where it named 4.0.
+
 ## [2.20.0] - 2026-10-09
 
 ### Added
