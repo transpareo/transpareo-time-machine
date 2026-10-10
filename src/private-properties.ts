@@ -128,6 +128,11 @@ interface PrivateResponseBody {
 export async function fetchPrivateRows(
   versionNumber: number, url: string,
 ): Promise<PrivateFetchState['status']> {
+  // A static archive has no signed-in reader, and the
+  // address belongs to the app the copy was made from: no
+  // request, no state, so no sign-in button either.
+  if (config.archivedAt) return 'empty'
+
   if (isCrossSiteUrl(url)) {
     // The manifest advertised a read URL outside the page's
     // registrable domain (a relative URL resolves to the page

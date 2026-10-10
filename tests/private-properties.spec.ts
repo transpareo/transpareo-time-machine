@@ -26,6 +26,7 @@ import {
   parseLoginUrl, isSameRegistrableSite,
   fetchPrivateRows, fetchStateByVersion,
 } from '../src/private-properties'
+import { config } from '../src/config'
 
 const verifyDpp = vi.fn()
 const dppIsAuthentic = vi.fn()
@@ -203,6 +204,25 @@ describe('fetchPrivateRows: verification gate + wire shape', () => {
     if (state?.status === 'ok') {
       expect(state.rows.map((r) => r.key)).toEqual(['a:secret'])
     }
+  })
+
+  // A static copy has no signed-in reader and no endpoint of
+  // its own: the address a manifest names belongs to the
+  // running app the copy was made from.
+  it('never fetches under archived-at', async () => {
+    vi.stubGlobal('window', { location: { href: 'https://acme.com/dpp', hostname: 'acme.com' } })
+    const fetchSpy = vi.fn()
+    vi.stubGlobal('fetch', fetchSpy)
+    Object.assign(config, { archivedAt: '2026-10-08' })
+
+    try {
+      await fetchPrivateRows(7, '/api/private/7')
+    } finally {
+      Object.assign(config, { archivedAt: undefined })
+    }
+
+    expect(fetchSpy).not.toHaveBeenCalled()
+    expect(fetchStateByVersion.peek()[7]).toBeUndefined()
   })
 
   it('fails closed to an error state when the derived proof does not verify, rendering nothing', async () => {
