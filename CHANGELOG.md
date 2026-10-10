@@ -10,6 +10,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.20.0] - 2026-10-09
+
 ### Added
 
 - An asset host. The `asset-host` attribute names the
