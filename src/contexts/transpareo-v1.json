@@ -234,6 +234,10 @@
     "lotManufacturedOn": {
       "@id": "https://transpareo.com/vocab/transpareo/v1#lotManufacturedOn",
       "@type": "xsd:date"
+    },
+    "cnCode": {
+      "@id": "https://transpareo.com/vocab/transpareo/v1#cnCode",
+      "@type": "xsd:string"
     }
   }
 }

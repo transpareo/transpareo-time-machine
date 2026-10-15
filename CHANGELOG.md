@@ -10,6 +10,15 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Added
+
+- The CN code. A passport carrying `cnCode`, the 8-digit
+  code of the EU Combined Nomenclature, verifies under
+  `ecdsa-sd-2023`: the term is defined in the bundled
+  `transpareo/v1` context, which has to ship before a
+  publisher emits it. `hsCode` stays undefined there, so
+  every credential issued so far keeps verifying.
+
 ## [2.20.1] - 2026-10-10
 
 ### Fixed

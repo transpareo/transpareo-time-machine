@@ -59,4 +59,24 @@ describe('the bundled Transpareo context', () => {
       `<https://publisher.test/dpp/a> <${TRANSPAREO}${term}> ${object} .\n`,
     )
   })
+
+  // The CN code is a Transpareo term. The HS code is defined
+  // in neither context, and every credential issued so far
+  // signed it through the VC context's @vocab.
+  it('expands the customs codes to the IRIs the publisher signs', async () => {
+    const doc = {
+      '@context': [VC_CONTEXT_URL, TRANSPAREO_CONTEXT_URL],
+      '@id': 'https://publisher.test/dpp/a',
+      hsCode: '610910',
+      cnCode: '61091000',
+    }
+    const quads = await canonicalize(doc, { contexts: DPP_CONTEXTS })
+
+    expect(quads).toContain(
+      `<https://publisher.test/dpp/a> <${TRANSPAREO}cnCode> "61091000" .\n`,
+    )
+    expect(quads).toContain(
+      `<https://publisher.test/dpp/a> <${VC_CONTEXT_URL}#hsCode> "610910" .\n`,
+    )
+  })
 })
