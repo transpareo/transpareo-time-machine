@@ -34,6 +34,15 @@ async function bootVolturra(page: Page, hash = ''): Promise<void> {
   })
 }
 
+// A rewritten read can still be in flight when a test ends,
+// and the closing context drops the body it fetched. Every
+// route here is hit while the test runs, so a broken handler
+// fails it there; only reads still in flight at the end are
+// let go.
+test.afterEach(async ({ page }) => {
+  await page.unrouteAll({ behavior: 'ignoreErrors' })
+})
+
 // The version chip settled on verified: the snapshot rows
 // without a value are signed like every other row.
 function verifiedChip(): boolean {

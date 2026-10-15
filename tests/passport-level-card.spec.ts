@@ -40,6 +40,16 @@ async function bootLot(page: Page, attrs = ''): Promise<void> {
   })
 }
 
+// The rewritten snapshot misses the manifest's hash, so the
+// verdict reads it again past the HTTP cache, and that read
+// can land as a test ends, when the closing context drops the
+// body it fetched. Both routes are hit while the test runs,
+// so a broken handler fails it there; only reads still in
+// flight at the end are let go.
+test.afterEach(async ({ page }) => {
+  await page.unrouteAll({ behavior: 'ignoreErrors' })
+})
+
 function shadow(page: Page, selector: string) {
   return page.locator('transpareo-time-machine').locator(selector)
 }

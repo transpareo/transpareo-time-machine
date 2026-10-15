@@ -42,6 +42,15 @@ async function pinned(page: Page, url: string): Promise<string[]> {
   return requests
 }
 
+// A rewritten read can still be in flight when a test ends,
+// and the closing context drops the body it fetched. Every
+// route here is hit while the test runs, so a broken handler
+// fails it there; only reads still in flight at the end are
+// let go.
+test.afterEach(async ({ page }) => {
+  await page.unrouteAll({ behavior: 'ignoreErrors' })
+})
+
 for (const [entry, url] of [['lib', '/'], ['embed', EMBED_URL]]) {
   test(`a pinned page reads the revocation list once (${entry})`, async ({
     page,

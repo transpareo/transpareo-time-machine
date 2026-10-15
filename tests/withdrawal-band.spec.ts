@@ -58,6 +58,15 @@ async function archived(page: Page, day: string) {
   })
 }
 
+// A rewritten read can still be in flight when a test ends,
+// and the closing context drops the body it fetched. Every
+// route here is hit while the test runs, so a broken handler
+// fails it there; only reads still in flight at the end are
+// let go.
+test.afterEach(async ({ page }) => {
+  await page.unrouteAll({ behavior: 'ignoreErrors' })
+})
+
 function band(page: Page) {
   return page.evaluate(() => {
     const root = document.querySelector('transpareo-time-machine')?.shadowRoot
