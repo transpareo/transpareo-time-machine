@@ -10,6 +10,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.20.2] - 2026-10-15
+
 ### Added
 
 - The CN code. A passport carrying `cnCode`, the 8-digit
