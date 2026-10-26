@@ -10,7 +10,8 @@
 # What release.yml does on the pushed tag:
 #   - npm run check / lint / test
 #   - npm run build + build:embed
-#   - npm run emit:sri / check:bundle-size / check:reproducible
+#   - npm run emit:sri / check:bundle-size / check:prefixes /
+#     check:reproducible
 #   - npx playwright install + npm run seed + npm run a11y
 #   - check the tag matches package.json, then
 #     npm publish --provenance --access public

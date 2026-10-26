@@ -65,6 +65,7 @@
     "check": "tsc --noEmit -p tsconfig.app.json && tsc -p tsconfig.node.json && tsc -p tsconfig.tests.json",
     "check:fixtures": "tsx scripts/seed/validate.ts",
     "check:bundle-size": "tsx scripts/check-bundle-size.ts",
+    "check:prefixes": "tsx scripts/check-css-prefixes.ts",
     "check:reproducible": "bash scripts/check-reproducible.sh",
     "emit:sri": "tsx scripts/emit-sri.ts",
     "browser": "playwright test --project=chromium",

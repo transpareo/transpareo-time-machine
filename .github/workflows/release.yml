@@ -74,6 +74,7 @@ jobs:
       - run: npm run build:embed
       - run: npm run emit:sri
       - run: npm run check:bundle-size
+      - run: npm run check:prefixes
       - run: npm run check:reproducible
       # The browser suite, WCAG 2.2 AA gate included. Runs
       # only on the release path

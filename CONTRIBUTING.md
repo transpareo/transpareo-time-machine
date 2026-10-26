@@ -15,6 +15,11 @@ will save round-trips on review:
   (JCS canonicalization, multibase, eddsa-jcs-2022
   verifier) and the reactive runtime. CI runs all
   three on every push and PR.
+- In a stylesheet, write a vendor-prefixed declaration
+  before its standard form: the minifier keeps only the
+  last of the pair. After `npm run build:all`,
+  `npm run check:prefixes` fails a bundle that lost the
+  standard form.
 - Keep commit titles under 80 characters and write
   in the imperative ("Fix X", "Add Y"), see
   `git log --oneline` for the in-repo style.

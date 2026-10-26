@@ -38,8 +38,8 @@ dpp-brandbar {
   &.stuck {
     background: var(--header-color, color-mix(
       in oklab, var(--background-color, #fff) 92%, transparent));
-    backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
     border-bottom-color: color-mix(
       in oklab, var(--font-color, #222) 14%, transparent);
   }

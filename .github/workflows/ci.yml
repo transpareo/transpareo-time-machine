@@ -52,6 +52,9 @@ jobs:
       # so the embed build must run before the size gate.
       - run: npm run emit:sri
       - run: npm run check:bundle-size
+      # Every vendor-prefixed declaration in the bundle keeps
+      # its standard form (see scripts/check-css-prefixes.ts).
+      - run: npm run check:prefixes
       # Reproducible-build gate: build a second time and
       # diff the integrity manifest against the first
       # build. Runs only on Node 22 (the publish target)

@@ -10,6 +10,15 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Fixed
+
+- The brand bar blurs the page behind it in Chromium once
+  it sticks. The bundle had kept only the prefixed
+  `-webkit-backdrop-filter`, which Chromium ignores; the
+  stylesheet now writes the standard form last, and
+  `npm run check:prefixes` fails a build that drops the
+  standard form of any prefixed pair.
+
 ## [2.20.2] - 2026-10-15
 
 ### Added
