@@ -10,6 +10,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.20.4] - 2026-10-26
+
 ### Fixed
 
 - The brand bar blurs the page behind it in Chromium once
