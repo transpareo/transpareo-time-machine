@@ -175,6 +175,7 @@
   "passportLevel.item": "hộ chiếu đơn vị",
   "walkUp.body": "Không có {asked} cho {id}. {served} này bao gồm nó.",
   "unitPassports.note": "Mỗi đơn vị có {level} riêng.",
+  "staffBar.open": "Mở trong trình quản lý ứng dụng",
   "lot.manufacturedOn": "Lô sản xuất ngày",
   "properties.loadError": "Dữ liệu sản phẩm bổ sung tạm thời không khả dụng",
   "properties.retry": "Thử lại",

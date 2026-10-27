@@ -174,6 +174,7 @@
   "passportLevel.item": "egységútlevél",
   "walkUp.body": "A(z) {id} számára nincs {asked}. Ez a {served} lefedi.",
   "unitPassports.note": "Minden egységnek saját {level} van.",
+  "staffBar.open": "Megnyitás az alkalmazáskezelőben",
   "lot.manufacturedOn": "Tétel gyártási dátuma",
   "properties.loadError": "A további termékadatok átmenetileg nem érhetők el",
   "properties.retry": "Újra",

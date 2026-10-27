@@ -174,6 +174,7 @@
   "passportLevel.item": "pașaportul unității",
   "walkUp.body": "Nu există {asked} pentru {id}. Acest {served} îl acoperă.",
   "unitPassports.note": "Fiecare unitate are propriul {level}.",
+  "staffBar.open": "Deschide în managerul de aplicații",
   "lot.manufacturedOn": "Lot fabricat la",
   "properties.loadError": "Date suplimentare despre produs temporar indisponibile",
   "properties.retry": "Reîncearcă",

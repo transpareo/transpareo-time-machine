@@ -57,6 +57,7 @@ import { playHandover, travellerRect } from '@/handover'
 
 import './dpp-verifier'
 import './dpp-brandbar'
+import './dpp-staff-bar'
 import './dpp-withdrawal'
 import './dpp-hero'
 import './dpp-timeline'
@@ -376,6 +377,7 @@ class TranspareoTimeMachine extends BaseElement {
         <dpp-deck>
           <article class="card">
             <dpp-brandbar></dpp-brandbar>
+            <dpp-staff-bar></dpp-staff-bar>
             <dpp-withdrawal></dpp-withdrawal>
             <dpp-walkup></dpp-walkup>
             <div class="card-content">

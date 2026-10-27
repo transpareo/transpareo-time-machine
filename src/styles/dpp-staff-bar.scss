@@ -1,0 +1,31 @@
+/*
+ * transpareo-time-machine - open-source DPP renderer
+ * Copyright (C) 2026 Transpareo AG
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ *
+ * The staff bar: one link across the card under the brandbar,
+ * in the walk-up band's column and tint (dpp-passport-level),
+ * so it reads as a note on the card and covers nothing above.
+ */
+
+@use 'dpp';
+
+dpp-staff-bar {
+  display: block;
+}
+
+.staff-bar {
+  display: block;
+  padding: var(--space-4, 16px) 25px;
+  background: color-mix(
+    in oklab, var(--font-color, #222) 8%, var(--background-color, #fff));
+  @include dpp.sm-semibold;
+  line-height: 1.45;
+  color: var(--action-color, #255dba);
+  text-decoration: none;
+
+  &:hover,
+  &:focus-visible {
+    text-decoration: underline;
+  }
+}

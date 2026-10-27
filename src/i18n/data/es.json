@@ -174,6 +174,7 @@
   "passportLevel.item": "pasaporte de artículo",
   "walkUp.body": "No existe un {asked} para {id}. Este {served} lo cubre.",
   "unitPassports.note": "Cada unidad tiene su propio {level}.",
+  "staffBar.open": "Abrir en el gestor de la aplicación",
   "lot.manufacturedOn": "Lote fabricado el",
   "properties.loadError": "Datos adicionales del producto no disponibles temporalmente",
   "properties.retry": "Reintentar",

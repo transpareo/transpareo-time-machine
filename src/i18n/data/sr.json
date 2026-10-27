@@ -175,6 +175,7 @@
   "passportLevel.item": "пасош јединице",
   "walkUp.body": "За {id} не постоји {asked}. Овај {served} га обухвата.",
   "unitPassports.note": "Свака јединица има сопствени {level}.",
+  "staffBar.open": "Отвори у менаџеру апликације",
   "lot.manufacturedOn": "Серија произведена",
   "properties.loadError": "Додатни подаци о производу привремено нису доступни",
   "properties.retry": "Поново покушај",

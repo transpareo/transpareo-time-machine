@@ -38,6 +38,7 @@ export default defineConfig({
       'tests/revocation-gate.spec.ts',
       'tests/show-history.spec.ts',
       'tests/snapshot.spec.ts',
+      'tests/staff-bar.spec.ts',
       'tests/timeline-axis.spec.ts',
       'tests/verifier-measure.spec.ts',
       'tests/verifier-theme.spec.ts',

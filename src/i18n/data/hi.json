@@ -174,6 +174,7 @@
   "passportLevel.item": "इकाई पासपोर्ट",
   "walkUp.body": "{id} के लिए कोई {asked} नहीं है। यह {served} इसे शामिल करता है।",
   "unitPassports.note": "हर इकाई का अपना {level} है।",
+  "staffBar.open": "एप्लिकेशन मैनेजर में खोलें",
   "lot.manufacturedOn": "लॉट निर्माण तिथि",
   "properties.loadError": "अतिरिक्त उत्पाद डेटा अस्थायी रूप से अनुपलब्ध",
   "properties.retry": "पुनः प्रयास करें",

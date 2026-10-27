@@ -34,7 +34,7 @@ export default defineConfig({
     /(gallery-turn|lightbox-turn)\.spec\.ts/,
     /(live-data|passport-level-card)\.spec\.ts/,
     /(revocation-gate|show-history)\.spec\.ts/,
-    /background-pattern\.spec\.ts/
+    /(background-pattern|staff-bar)\.spec\.ts/
   ],
   fullyParallel: false,
   retries: 0,

@@ -175,6 +175,7 @@
   "passportLevel.item": "einingarvegabréf",
   "walkUp.body": "Ekkert {asked} er til fyrir {id}. Þetta {served} nær yfir það.",
   "unitPassports.note": "Hver eining hefur sitt eigið {level}.",
+  "staffBar.open": "Opna í forritsstjóra",
   "lot.manufacturedOn": "Lota framleidd",
   "properties.loadError": "Viðbótar vörugögn tímabundið óaðgengileg",
   "properties.retry": "Endurtaka",
