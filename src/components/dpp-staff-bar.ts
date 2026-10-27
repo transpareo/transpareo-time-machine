@@ -18,6 +18,7 @@ import { el } from '@/reactive/dom'
 import * as host from '@/host'
 import { i18n } from '@/i18n'
 import { t } from '@/i18n/labels'
+import { icon } from '@/icons'
 
 export const STAFF_BAR_KEY = 'transpareo:passport-admin'
 
@@ -37,6 +38,7 @@ class DppStaffBar extends LightElement {
         return
       }
       const link = el('a', 'staff-bar', t(i18n.labels, 'staffBar.open'))
+      link.prepend(icon('key'), ' ')
       link.href = href
       this.replaceChildren(link)
     })

@@ -78,6 +78,36 @@ test('links staff to the passport in the back office', async ({ page }) => {
   expect(href).toBe(`${lookup}?code=${await code(page)}`)
 })
 
+// The content sprite is blocked and `data-icons` dropped, as on
+// a host that ships no sprite, so only a glyph from the bundled
+// functional sprite can draw.
+test('opens with an icon that needs no content sprite', async ({ page }) => {
+  await page.route('**/icons.svg', (route) => route.fulfill({ status: 404 }))
+  await boot(page, '/admin/dpps/resolve')
+  await expect(shadow(page, '.staff-bar')).toBeVisible()
+
+  const glyph = await page.evaluate(() => {
+    const host = document.querySelector('transpareo-time-machine')!
+    const root = host.shadowRoot!
+    host.removeAttribute('data-icons')
+    const svg = root.querySelector('.staff-bar')!.firstElementChild
+    const id = svg?.querySelector('use')?.getAttribute('href') ?? ''
+    return {
+      tag: svg?.localName,
+      functional: svg?.classList.contains('icon--fn'),
+      display: svg ? getComputedStyle(svg).display : null,
+      symbol: id !== '' && root.querySelector(`symbol${id}`) !== null
+    }
+  })
+
+  expect(glyph).toEqual({
+    tag: 'svg',
+    functional: true,
+    display: 'inline-block',
+    symbol: true
+  })
+})
+
 test('never links away from the passport origin', async ({ page }) => {
   await boot(page, 'https://elsewhere.example/admin')
   await expect(shadow(page, '.staff-bar')).toHaveCount(0)
