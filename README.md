@@ -810,9 +810,10 @@ internals or forking the bundle.
 - **Method**: `tm.openModal({ title, body, onClose? })`.
   Opens a modal styled with the same chrome as the
   SPA's own modals (overlay, header with close button,
-  scroll-locked body, Escape and click-outside
-  dismissal). Returns `{ close }` for programmatic
-  dismissal. The `onClose` callback fires on whichever
+  full screen up to 830px wide, scroll-locked body,
+  Escape and click-outside dismissal). Returns
+  `{ close }` for programmatic dismissal. The
+  `onClose` callback fires on whichever
   close path triggers first; calling `close()` more
   than once is a no-op. At most one modal at a time:
   a second `openModal` call before the first is closed

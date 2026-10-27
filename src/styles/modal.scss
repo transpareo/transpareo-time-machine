@@ -26,7 +26,8 @@
 :where(
   dpp-verification-modal,
   dpp-event-modal,
-  dpp-library-modal
+  dpp-library-modal,
+  dpp-modal
 ) {
   position: fixed;
   inset: 0;
@@ -53,8 +54,7 @@
   &.open { display: flex; }
 }
 
-// The overlay itself is the scroll container, for the
-// generic .dpp-modal-overlay host too: a swipe anywhere,
+// The overlay itself is the scroll container: a swipe anywhere,
 // the gutters beside the dialog included, moves the
 // dialog instead of dead-ending. `contain` stops the
 // scroll from chaining to the locked page behind.
@@ -65,7 +65,7 @@
   dpp-verification-modal,
   dpp-event-modal,
   dpp-library-modal,
-  .dpp-modal-overlay
+  dpp-modal
 ) {
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -100,6 +100,7 @@
 dpp-event-modal        { --modal-max-width: 720px; }
 dpp-verification-modal { --modal-max-width: 640px; }
 dpp-library-modal      { --modal-max-width: 560px; }
+dpp-modal              { --modal-max-width: 640px; }
 
 // ─── Dialog box ───────────────────────────────────
 .modal {
@@ -229,7 +230,8 @@ dpp-library-modal      { --modal-max-width: 560px; }
   :where(
     dpp-verification-modal,
     dpp-event-modal,
-    dpp-library-modal
+    dpp-library-modal,
+    dpp-modal
   ).open {
     --modal-overlay-pad-top: 0px;
     padding: 0;

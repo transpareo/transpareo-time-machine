@@ -6,10 +6,10 @@
  * <dpp-modal>, the generic modal host that backs the
  * `tm.openModal(...)` public method on the
  * <transpareo-time-machine> custom element. Lives in
- * the SPA's shadow tree so the existing
- * .modal / .modal-header / .modal-body / .modal-close
- * styles reach the rendered dialog without a separate
- * stylesheet injection.
+ * the SPA's shadow tree and is one more host of the
+ * shared chrome in modal.scss, so an integration's
+ * modal looks and behaves like the SPA's own ones,
+ * full screen on a phone included.
  *
  * One modal at a time: a second openModal call replaces
  * the first and fires the previous handle's onClose so
@@ -95,9 +95,6 @@ export function openModal(opts: ModalOpenOptions): ModalHandle {
 
 class DppModal extends LightElement {
   protected setup(): void {
-    this.className = 'dpp-modal-overlay'
-    this.style.display = 'none'
-
     bindModalChrome(this, this.effect.bind(this), {
       isOpen: () => active() != null,
       onClose: () => {
@@ -109,16 +106,16 @@ class DppModal extends LightElement {
     this.effect(() => {
       const cur = active()
       if (!cur) {
-        this.style.display = 'none'
+        this.classList.remove('open')
         this.replaceChildren()
         return
       }
-      this.style.display = ''
       this.replaceChildren(buildModal({
         title: cur.title,
         body: cur.body,
         onClose: cur.close,
       }))
+      this.classList.add('open')
     })
   }
 }
