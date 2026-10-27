@@ -10,6 +10,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.21.0] - 2026-10-26
+
 ### Added
 
 - The workspace's background pattern. A branding stylesheet
