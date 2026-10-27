@@ -175,7 +175,7 @@
   "walkUp.body": "Tidak ada {asked} untuk {id}. {served} ini mencakupnya.",
   "unitPassports.note": "Setiap unit memiliki {level} sendiri.",
   "staffBar.open": "Buka di pengelola aplikasi",
-  "lot.manufacturedOn": "Lot diproduksi pada",
+  "lot.manufacturedOn": "Diproduksi pada",
   "properties.loadError": "Data produk tambahan sementara tidak tersedia",
   "properties.retry": "Coba lagi",
   "auth.connecting": "Menghubungkan…",

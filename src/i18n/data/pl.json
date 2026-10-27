@@ -175,7 +175,7 @@
   "walkUp.body": "Dla {id} nie istnieje {asked}. Ten {served} go obejmuje.",
   "unitPassports.note": "Każda jednostka ma własny {level}.",
   "staffBar.open": "Otwórz w menedżerze aplikacji",
-  "lot.manufacturedOn": "Partia wyprodukowana",
+  "lot.manufacturedOn": "Wyprodukowano",
   "properties.loadError": "Dodatkowe dane produktu chwilowo niedostępne",
   "properties.retry": "Spróbuj ponownie",
   "auth.connecting": "Łączenie…",

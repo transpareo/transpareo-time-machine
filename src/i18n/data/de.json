@@ -176,7 +176,7 @@
   "walkUp.body": "Für {id} gibt es keinen eigenen {asked}. Dieser {served} gilt dafür.",
   "unitPassports.note": "Jede Einheit hat ihren eigenen {level}.",
   "staffBar.open": "Im Applikations-Manager öffnen",
-  "lot.manufacturedOn": "Charge hergestellt am",
+  "lot.manufacturedOn": "Hergestellt am",
   "properties.loadError": "Zusätzliche Produktdaten vorübergehend nicht verfügbar",
   "properties.retry": "Erneut versuchen",
   "auth.connecting": "Verbindung wird hergestellt…",

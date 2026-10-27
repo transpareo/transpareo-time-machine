@@ -175,7 +175,7 @@
   "walkUp.body": "Для {id} нет отдельного документа ({asked}). Этот {served} его охватывает.",
   "unitPassports.note": "У каждой единицы есть собственный {level}.",
   "staffBar.open": "Открыть в менеджере приложения",
-  "lot.manufacturedOn": "Партия изготовлена",
+  "lot.manufacturedOn": "Изготовлено",
   "properties.loadError": "Дополнительные данные о продукте временно недоступны",
   "properties.retry": "Повторить",
   "auth.connecting": "Подключение…",

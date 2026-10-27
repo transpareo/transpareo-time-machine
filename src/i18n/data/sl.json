@@ -175,7 +175,7 @@
   "walkUp.body": "Za {id} ne obstaja {asked}. Ta {served} ga pokriva.",
   "unitPassports.note": "Vsaka enota ima svoj {level}.",
   "staffBar.open": "Odpri v upravitelju aplikacije",
-  "lot.manufacturedOn": "Serija izdelana",
+  "lot.manufacturedOn": "Izdelano",
   "properties.loadError": "Dodatni podatki o izdelku začasno niso na voljo",
   "properties.retry": "Poskusi znova",
   "auth.connecting": "Povezovanje…",

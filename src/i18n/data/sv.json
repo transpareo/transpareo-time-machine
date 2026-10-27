@@ -175,7 +175,7 @@
   "walkUp.body": "Det finns inget {asked} för {id}. Detta {served} täcker det.",
   "unitPassports.note": "Varje enhet har sitt eget {level}.",
   "staffBar.open": "Öppna i applikationshanteraren",
-  "lot.manufacturedOn": "Batch tillverkad den",
+  "lot.manufacturedOn": "Tillverkad den",
   "properties.loadError": "Ytterligare produktdata tillfälligt otillgängliga",
   "properties.retry": "Försök igen",
   "auth.connecting": "Ansluter…",

@@ -175,7 +175,7 @@
   "walkUp.body": "{id} の{asked}はありません。この{served}が対象です。",
   "unitPassports.note": "各ユニットには個別の{level}があります。",
   "staffBar.open": "アプリケーションマネージャーで開く",
-  "lot.manufacturedOn": "ロット製造日",
+  "lot.manufacturedOn": "製造日",
   "properties.loadError": "追加の製品データは一時的に利用できません",
   "properties.retry": "再試行",
   "auth.connecting": "接続中…",

@@ -79,10 +79,10 @@ test('dates the lot in a tile after the others', async ({ page }) => {
   const tile = shadow(page, '.dpp-metrics > .dpp-metric').last()
 
   await expect(tile.locator('.dpp-metric-label'))
-    .toHaveText('Lot manufactured on')
+    .toHaveText('Manufactured on')
   await expect(tile.locator('.dpp-metric-label svg.icon-calendar'))
     .toHaveCount(1)
   await expect(tile.locator('.dpp-metric-value')).toHaveText('March 1, 2026')
   const rows = shadow(page, '.dpp-property-row')
-  await expect(rows.filter({ hasText: 'Lot manufactured on' })).toHaveCount(0)
+  await expect(rows.filter({ hasText: 'Manufactured on' })).toHaveCount(0)
 })

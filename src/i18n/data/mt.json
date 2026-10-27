@@ -175,7 +175,7 @@
   "walkUp.body": "M'hemmx {asked} għal {id}. Dan il-{served} ikopriha.",
   "unitPassports.note": "Kull unità għandha l-{level} tagħha.",
   "staffBar.open": "Iftaħ fil-maniġer tal-applikazzjoni",
-  "lot.manufacturedOn": "Lott manifatturat fi",
+  "lot.manufacturedOn": "Manifatturat nhar",
   "properties.loadError": "Dejta addizzjonali tal-prodott mhux disponibbli temporanjament",
   "properties.retry": "Erġa’ pprova",
   "auth.connecting": "Qed jgħaqqad…",

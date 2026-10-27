@@ -176,7 +176,7 @@
   "walkUp.body": "Nuk ekziston {asked} për {id}. Kjo {served} e mbulon.",
   "unitPassports.note": "Çdo njësi ka {level} e vet.",
   "staffBar.open": "Hap në menaxherin e aplikacionit",
-  "lot.manufacturedOn": "Loti u prodhua më",
+  "lot.manufacturedOn": "Prodhuar më",
   "properties.loadError": "Të dhëna shtesë për produktin përkohësisht të pa disponueshme",
   "properties.retry": "Përpiqu përsëri",
   "auth.connecting": "Po lidhet…",

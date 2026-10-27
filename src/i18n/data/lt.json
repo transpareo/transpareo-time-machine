@@ -175,7 +175,7 @@
   "walkUp.body": "{id} neturi atskiro paso ({asked}). Šis {served} jį apima.",
   "unitPassports.note": "Kiekvienas vienetas turi savo {level}.",
   "staffBar.open": "Atidaryti programos tvarkytuvėje",
-  "lot.manufacturedOn": "Partija pagaminta",
+  "lot.manufacturedOn": "Pagaminta",
   "properties.loadError": "Papildomi produkto duomenys laikinai nepasiekiami",
   "properties.retry": "Bandyti dar kartą",
   "auth.connecting": "Jungiamasi…",

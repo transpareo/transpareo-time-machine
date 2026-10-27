@@ -176,7 +176,7 @@
   "walkUp.body": "За {id} не постоји {asked}. Овај {served} га обухвата.",
   "unitPassports.note": "Свака јединица има сопствени {level}.",
   "staffBar.open": "Отвори у менаџеру апликације",
-  "lot.manufacturedOn": "Серија произведена",
+  "lot.manufacturedOn": "Произведено",
   "properties.loadError": "Додатни подаци о производу привремено нису доступни",
   "properties.retry": "Поново покушај",
   "auth.connecting": "Повезивање…",

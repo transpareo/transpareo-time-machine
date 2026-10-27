@@ -175,7 +175,7 @@
   "walkUp.body": "{id} nav savas pases ({asked}). Šī {served} to aptver.",
   "unitPassports.note": "Katrai vienībai ir sava {level}.",
   "staffBar.open": "Atvērt lietojumprogrammas pārvaldniekā",
-  "lot.manufacturedOn": "Partija ražota",
+  "lot.manufacturedOn": "Ražots",
   "properties.loadError": "Papildu produkta dati īslaicīgi nav pieejami",
   "properties.retry": "Mēģināt vēlreiz",
   "auth.connecting": "Savienojas…",

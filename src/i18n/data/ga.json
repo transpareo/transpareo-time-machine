@@ -175,7 +175,7 @@
   "walkUp.body": "Níl {asked} ann do {id}. Clúdaíonn an {served} seo é.",
   "unitPassports.note": "Tá a {level} féin ag gach aonad.",
   "staffBar.open": "Oscail i mbainisteoir an fheidhmchláir",
-  "lot.manufacturedOn": "Baisc déanta ar",
+  "lot.manufacturedOn": "Déanta ar",
   "properties.loadError": "Sonraí breise táirge nach bhfuil ar fáil go sealadach",
   "properties.retry": "Bain triail eile",
   "auth.connecting": "Ag ceangal…",

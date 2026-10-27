@@ -175,7 +175,7 @@
   "walkUp.body": "Não existe {asked} para {id}. Este {served} abrange-o.",
   "unitPassports.note": "Cada unidade tem o seu próprio {level}.",
   "staffBar.open": "Abrir no gestor da aplicação",
-  "lot.manufacturedOn": "Lote fabricado em",
+  "lot.manufacturedOn": "Fabricado em",
   "properties.loadError": "Dados adicionais do produto temporariamente indisponíveis",
   "properties.retry": "Tentar novamente",
   "auth.connecting": "A ligar…",

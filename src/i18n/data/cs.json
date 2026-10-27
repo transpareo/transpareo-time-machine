@@ -175,7 +175,7 @@
   "walkUp.body": "Pro {id} neexistuje {asked}. Tento {served} ho pokrývá.",
   "unitPassports.note": "Každá jednotka má vlastní {level}.",
   "staffBar.open": "Otevřít ve správci aplikace",
-  "lot.manufacturedOn": "Šarže vyrobena",
+  "lot.manufacturedOn": "Vyrobeno",
   "properties.loadError": "Další údaje o produktu jsou dočasně nedostupné",
   "properties.retry": "Zkusit znovu",
   "auth.connecting": "Připojování…",

@@ -175,7 +175,7 @@
   "walkUp.body": "{id} için {asked} yok. Bu {served} onu kapsar.",
   "unitPassports.note": "Her birimin kendi {level} vardır.",
   "staffBar.open": "Uygulama yöneticisinde aç",
-  "lot.manufacturedOn": "Parti üretim tarihi",
+  "lot.manufacturedOn": "Üretim tarihi",
   "properties.loadError": "Ek ürün verileri geçici olarak kullanılamıyor",
   "properties.retry": "Yeniden dene",
   "auth.connecting": "Bağlanıyor…",

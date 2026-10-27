@@ -175,7 +175,7 @@
   "walkUp.body": "Δεν υπάρχει {asked} για το {id}. Αυτό το {served} το καλύπτει.",
   "unitPassports.note": "Κάθε μονάδα έχει το δικό της {level}.",
   "staffBar.open": "Άνοιγμα στον διαχειριστή εφαρμογής",
-  "lot.manufacturedOn": "Η παρτίδα κατασκευάστηκε στις",
+  "lot.manufacturedOn": "Κατασκευάστηκε στις",
   "properties.loadError": "Πρόσθετα δεδομένα προϊόντος προσωρινά μη διαθέσιμα",
   "properties.retry": "Επανάληψη",
   "auth.connecting": "Σύνδεση…",

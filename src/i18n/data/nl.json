@@ -175,7 +175,7 @@
   "walkUp.body": "Er bestaat geen {asked} voor {id}. Dit {served} dekt het.",
   "unitPassports.note": "Elke eenheid heeft een eigen {level}.",
   "staffBar.open": "Openen in de applicatiemanager",
-  "lot.manufacturedOn": "Partij geproduceerd op",
+  "lot.manufacturedOn": "Geproduceerd op",
   "properties.loadError": "Aanvullende productgegevens tijdelijk niet beschikbaar",
   "properties.retry": "Opnieuw proberen",
   "auth.connecting": "Verbinden…",

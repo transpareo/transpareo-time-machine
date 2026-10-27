@@ -175,7 +175,7 @@
   "walkUp.body": "{id} jaoks pole omaette passi ({asked}). See {served} hõlmab seda.",
   "unitPassports.note": "Igal ühikul on oma {level}.",
   "staffBar.open": "Ava rakenduse halduris",
-  "lot.manufacturedOn": "Partii valmistatud",
+  "lot.manufacturedOn": "Valmistatud",
   "properties.loadError": "Täiendavad tooteandmed pole ajutiselt saadaval",
   "properties.retry": "Proovi uuesti",
   "auth.connecting": "Ühendamine…",

@@ -175,7 +175,7 @@
   "walkUp.body": "Der findes intet {asked} for {id}. Dette {served} dækker det.",
   "unitPassports.note": "Hver enhed har sit eget {level}.",
   "staffBar.open": "Åbn i applikationsmanageren",
-  "lot.manufacturedOn": "Batch produceret den",
+  "lot.manufacturedOn": "Produceret den",
   "properties.loadError": "Yderligere produktdata midlertidigt utilgængelige",
   "properties.retry": "Prøv igen",
   "auth.connecting": "Forbinder…",

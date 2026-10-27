@@ -175,7 +175,7 @@
   "walkUp.body": "Il n'existe pas de {asked} pour {id}. Ce {served} le couvre.",
   "unitPassports.note": "Chaque unité a son propre {level}.",
   "staffBar.open": "Ouvrir dans le gestionnaire d'application",
-  "lot.manufacturedOn": "Lot fabriqué le",
+  "lot.manufacturedOn": "Fabriqué le",
   "properties.loadError": "Données produit supplémentaires temporairement indisponibles",
   "properties.retry": "Réessayer",
   "auth.connecting": "Connexion…",
