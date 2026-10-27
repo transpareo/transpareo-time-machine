@@ -390,6 +390,20 @@ button.dpp-comp-name-trigger {
   }
 }
 
+// ─── External Link ──────────────────────────
+// A link out of the passport: a URL in a section's text, a
+// document row. The colour is the publisher's link token,
+// as app.css gives `a` outside the shadow root.
+.dpp-ext-link {
+  color: var(--link-color, #{$dpp-accent});
+  text-decoration: none;
+
+  &:hover,
+  &:focus-visible {
+    text-decoration: underline;
+  }
+}
+
 // ─── Accordion Sections ─────────────────────
 .dpp-accordion {
   margin-bottom: 20px;

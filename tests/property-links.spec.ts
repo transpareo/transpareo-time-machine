@@ -58,6 +58,18 @@ describe('a restricted document row', () => {
     expect(link?.rel).toBe('noopener noreferrer')
   })
 
+  it('is a property row holding the shared link and nothing else', () => {
+    fetchStateByVersion.set({ 1: { status: 'ok', rows: [testReport] } })
+    const list = mount()
+
+    const row = list.querySelector('.dpp-property-row')
+    const link = row?.querySelector('.dpp-ext-link')
+    expect(row?.children.length).toBe(1)
+    expect(row?.firstElementChild).toBe(link)
+    expect(link?.querySelector('svg')).toBeNull()
+    expect(list.querySelector('[style]:not(.dpp-properties)')).toBeNull()
+  })
+
   it('leaves a script URL as plain text', () => {
     const value = { type: 'link', href: 'javascript:alert(1)' } as const
     const row = { ...testReport, value }
@@ -65,8 +77,8 @@ describe('a restricted document row', () => {
     const list = mount()
 
     expect(list.querySelector('a')).toBeNull()
-    const label = list.querySelector('.dpp-property-label')
-    expect(label?.textContent).toBe('Test report')
+    const cell = list.querySelector('.dpp-property-row')
+    expect(cell?.textContent).toBe('Test report')
   })
 })
 

@@ -10,6 +10,15 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Fixed
+
+- A document row in the property list read in the browser's
+  default link style: blue, underlined, smaller than the
+  rows around it, with an external-link icon. It now reads
+  at the row's size in the publisher's link colour,
+  underlined on hover and keyboard focus, and a link in a
+  section's text takes the same colour.
+
 ## [2.21.1] - 2026-10-26
 
 ### Fixed

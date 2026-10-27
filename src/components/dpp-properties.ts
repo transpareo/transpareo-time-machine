@@ -59,7 +59,6 @@ import {
 } from '@/types'
 import { showTokens, isUnlocked } from '@/show-filter'
 import { safeLinkHref } from '@/safe-url'
-import { icon } from '@/icons'
 import {
   fetchStateByVersion,
   type PrivateFetchState,
@@ -163,24 +162,23 @@ function buildRow(row: DetailRow): HTMLElement {
   return buildPair(label, formatValue(row.value), row.dynamic === true)
 }
 
-// A document: its label opens it in a new tab. A URL with a
-// scheme that could run script stays inert text.
+// A document: its name opens it in a new tab, at the row's
+// own size. A URL with a scheme that could run script stays
+// inert text.
 function buildLinkRow(row: LinkRow): HTMLElement {
   const label = tx(row.name, i18n.locale)
   const href = safeLinkHref(row.value.href)
-  const cell = el('div', 'dpp-property-label')
-  if (href) {
-    const a = el('a', 'dpp-ext-link', label)
-    a.href = href
-    a.target = '_blank'
-    a.rel = 'noopener noreferrer'
-    a.append(' ', icon('link-ext'))
-    cell.append(a)
-  } else {
-    cell.append(label)
-  }
   const wrap = el('div', 'dpp-property-row')
-  wrap.append(cell)
+  if (!href) {
+    wrap.append(label)
+    return wrap
+  }
+
+  const a = el('a', 'dpp-ext-link', label)
+  a.href = href
+  a.target = '_blank'
+  a.rel = 'noopener noreferrer'
+  wrap.append(a)
   return wrap
 }
 
