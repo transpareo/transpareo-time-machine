@@ -21,6 +21,7 @@ export default defineConfig({
     // runner.
     exclude: [
       'tests/a11y.spec.ts',
+      'tests/background-pattern.spec.ts',
       'tests/boot-shell-passthrough.spec.ts',
       'tests/card-render.spec.ts',
       'tests/embed-smoke.spec.ts',

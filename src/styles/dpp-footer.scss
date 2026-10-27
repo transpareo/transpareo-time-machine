@@ -92,6 +92,14 @@ dpp-footer:empty {
     border-color: var(--footer-text-color, #777);
     outline: none;
   }
+
+  // On the workspace's background pattern the control
+  // fills with the body colour, so the tile does not run
+  // through it.
+  :host([data-pattern]) & {
+    background: color-mix(
+      in oklab, var(--font-color) 4%, var(--body-background));
+  }
 }
 
 .locale-menu {

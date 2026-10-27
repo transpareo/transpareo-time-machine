@@ -196,6 +196,7 @@ class TranspareoTimeMachine extends BaseElement {
     void warmLabels()
 
     this.addStyle(css)
+    this.markPattern()
 
     // Functional icons ship inline; the decorative content
     // sprite is fetched when configured. Both inject into
@@ -297,6 +298,7 @@ class TranspareoTimeMachine extends BaseElement {
         // the two layouts are measured rather than matched.
         const from = travellerRect(this)
 
+        this.markPattern()
         this.dropTree()
         container.replaceChildren()
         this.mountReady(container)
@@ -344,6 +346,18 @@ class TranspareoTimeMachine extends BaseElement {
       try { d() } catch (_) { /* noop */ }
     }
     this.treeDisposers.length = 0
+  }
+
+  // The stylesheet draws the workspace's background pattern
+  // only on a host marked here, since a tile of `none` would
+  // leave the layer unmasked and paint it solid. Read again
+  // on every mount, for a branding stylesheet that arrived
+  // after the element connected.
+  private markPattern(): void {
+    const tile = getComputedStyle(this)
+      .getPropertyValue('--background-pattern')
+      .trim()
+    this.toggleAttribute('data-pattern', tile !== '' && tile !== 'none')
   }
 
   disconnectedCallback(): void {

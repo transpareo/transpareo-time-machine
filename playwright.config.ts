@@ -33,7 +33,8 @@ export default defineConfig({
     /events-off-critical-path\.spec\.ts/,
     /(gallery-turn|lightbox-turn)\.spec\.ts/,
     /(live-data|passport-level-card)\.spec\.ts/,
-    /(revocation-gate|show-history)\.spec\.ts/
+    /(revocation-gate|show-history)\.spec\.ts/,
+    /background-pattern\.spec\.ts/
   ],
   fullyParallel: false,
   retries: 0,

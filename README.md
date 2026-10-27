@@ -1370,6 +1370,18 @@ without yet being read by the SPA stylesheets; this is
 deliberate, the branding export is treated as a complete
 theme, not trimmed to current usage.
 
+A branding stylesheet that sets `--background-pattern` to
+a tile (`url(...)`) gets it drawn over `--body-background`,
+behind the card, the timeline band and the footer text. The
+tile serves as a shape only: it is filled with
+`--pattern-color` at `--pattern-opacity` and repeated at
+`--pattern-size` wide. The layer covers the element and
+scrolls with it, and print leaves it out. With the token
+unset or `none` nothing is drawn. While a pattern is drawn
+the element forms its own stacking context, so the
+renderer's modals stack against the host page at the
+element's level.
+
 The typeface follows the same token model: the SPA
 bundles no webfont and makes no external font request.
 A publisher's `branding.css` sets `--font-family` and,

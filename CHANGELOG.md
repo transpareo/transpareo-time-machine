@@ -10,6 +10,17 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Added
+
+- The workspace's background pattern. A branding stylesheet
+  that names a tile in `--background-pattern` gets it drawn
+  over the body background behind the passport, filled with
+  `--pattern-color` at `--pattern-opacity` and tiled at
+  `--pattern-size`. The card, the timeline band and the
+  modals cover it, the language picker fills with the body
+  colour, and print leaves it out. Unset or `none`, the
+  page renders as before.
+
 ## [2.20.4] - 2026-10-26
 
 ### Fixed
