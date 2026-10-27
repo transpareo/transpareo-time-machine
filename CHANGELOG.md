@@ -10,6 +10,15 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Fixed
+
+- 2.21.0 was tagged but never published: its release run
+  stopped on a browser check that expected the pattern
+  layer's `mask-size` as `24px auto`, while the Chromium the
+  release runs on writes the same value as `24px`. The check
+  accepts both forms, and 2.21.1 is the first release on npm
+  to carry the background pattern.
+
 ## [2.21.0] - 2026-10-26
 
 ### Added

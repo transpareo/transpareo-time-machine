@@ -96,10 +96,14 @@ test('the pattern tokens draw a masked layer behind the passport', async ({ page
   expect(l.zIndex).toBe('-1')
   expect(l.isolation).toBe('isolate')
   expect(l.pointerEvents).toBe('none')
-  expect(l.color).toBe('rgb(17, 34, 51)')
-  expect(l.opacity).toBe('0.25')
+  expect(l.color).toMatch(/^rgba?\(17, 34, 51(, 1)?\)$/)
+  expect(Number(l.opacity)).toBe(0.25)
   expect(l.mask).toContain('data:image/svg+xml')
-  expect(l.maskSize).toBe('24px auto')
+
+  // The height defaults to auto, and engines differ on writing
+  // it out: Chromium 149 serializes `24px`, Chromium 152 and
+  // Gecko `24px auto`.
+  expect(l.maskSize).toMatch(/^24px( auto)?$/)
 })
 
 test('the stuck brand bar keeps its blur over the pattern', async ({ page }) => {
