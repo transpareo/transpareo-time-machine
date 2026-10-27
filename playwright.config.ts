@@ -35,7 +35,7 @@ export default defineConfig({
     /(live-data|passport-level-card)\.spec\.ts/,
     /(revocation-gate|show-history)\.spec\.ts/,
     /(background-pattern|staff-bar)\.spec\.ts/,
-    /open-modal\.spec\.ts/
+    /(open-modal|modal-disclosure)\.spec\.ts/
   ],
   fullyParallel: false,
   retries: 0,

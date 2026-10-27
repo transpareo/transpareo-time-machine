@@ -34,6 +34,7 @@ export default defineConfig({
       'tests/live-data.spec.ts',
       'tests/locale-picker.spec.ts',
       'tests/logo-link.spec.ts',
+      'tests/modal-disclosure.spec.ts',
       'tests/open-modal.spec.ts',
       'tests/passport-level-card.spec.ts',
       'tests/revocation-gate.spec.ts',

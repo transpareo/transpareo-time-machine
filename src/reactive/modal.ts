@@ -18,6 +18,7 @@
  */
 
 import { icon } from '@/icons'
+import { el } from '@/reactive/dom'
 import { i18n } from '@/i18n'
 import { t } from '@/i18n/labels'
 
@@ -309,6 +310,34 @@ export function buildModal(opts: ModalOptions): HTMLElement {
   dialog.appendChild(body)
 
   return dialog
+}
+
+// The reader's fold of a modal's disclosure, owned by the
+// modal element and reset when it closes.
+export interface Fold {
+  folded: boolean
+}
+
+// A folding section inside a modal body: `.prefix >
+// summary.prefix-summary (span.prefix-label + .chevron)`.
+// It stands open unless the reader folded it since the
+// modal opened, so a re-render keeps the reader's choice.
+export function buildDisclosure(
+  fold: Fold, prefix: string, label: string,
+): HTMLDetailsElement {
+  const details = el('details', prefix)
+  details.open = !fold.folded
+
+  // Read on the click, which runs before the summary flips
+  // `open`: the async `toggle` event can land after a
+  // re-render or the modal's close has replaced the element.
+  const summary = el('summary', `${prefix}-summary`)
+  summary.addEventListener('click', () => {
+    fold.folded = details.open
+  })
+  summary.append(el('span', `${prefix}-label`, label), el('span', 'chevron'))
+  details.appendChild(summary)
+  return details
 }
 
 function buildHeader(opts: ModalOptions): HTMLElement {

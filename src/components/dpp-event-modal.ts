@@ -18,7 +18,9 @@
 import { LightElement } from '@/reactive/element'
 import { signal } from '@/reactive/signals'
 import { el } from '@/reactive/dom'
-import { bindModalChrome, buildModal } from '@/reactive/modal'
+import {
+  bindModalChrome, buildDisclosure, buildModal, type Fold,
+} from '@/reactive/modal'
 import { sortedEvents, epcisByEventId, snapshotForVersion } from '@/state'
 import { manifest as manifestSignal, epcisDocument } from '@/host'
 import { i18n, formatShortDate } from '@/i18n'
@@ -36,6 +38,8 @@ import { downloadJson, slugForFilename } from '@/download'
 export const eventModalEventId = signal<string | null>(null)
 
 class DppEventModal extends LightElement {
+  private readonly fold: Fold = { folded: false }
+
   protected setup(): void {
     this.setAttribute('aria-labelledby', 'event-modal-title')
 
@@ -51,6 +55,7 @@ class DppEventModal extends LightElement {
     const id = eventModalEventId()
     const evt = id ? sortedEvents().find((e) => e.id === id) : null
     if (!evt) {
+      this.fold.folded = false
       this.classList.remove('open')
       this.replaceChildren()
       return
@@ -62,7 +67,7 @@ class DppEventModal extends LightElement {
     const changeSet = buildChangeSetSection(evt)
     if (changeSet) body.appendChild(changeSet)
     if (evt.description) body.appendChild(buildDescriptionSection(evt))
-    if (epcis) body.appendChild(buildEpcisSection(epcis))
+    if (epcis) body.appendChild(buildEpcisSection(this.fold, epcis))
 
     const dialog = buildModal({
       title: tr('event.title'),
@@ -190,20 +195,14 @@ function buildDescriptionSection(evt: DppEvent): HTMLElement {
   return section
 }
 
-function buildEpcisSection(ev: EpcisObjectEvent): HTMLElement {
-  // EPCIS is consumer-noise (URIs, CBV tokens, GLNs, ISO
-  // timestamps). Wrap it in a closed-by-default <details>
-  // labelled "Technical details" so the main modal stays
-  // simple and only readers who want the machine-readable
-  // record have to look at it.
+// The machine-readable record (URIs, CBV tokens, GLNs, ISO
+// timestamps) sits under "Technical details", open when the
+// modal opens and foldable by the reader.
+function buildEpcisSection(fold: Fold, ev: EpcisObjectEvent): HTMLElement {
   const section = el('section', 'event-modal-section')
-  const details = el('details', 'event-modal-disclosure')
-  const summary = el('summary', 'event-modal-disclosure-summary')
-  summary.append(
-    el('span', 'event-modal-disclosure-label', tr('epcis.title')),
-    el('span', 'chevron'),
-  )
-  details.append(summary, buildEpcisCard(ev))
+  const label = tr('epcis.title')
+  const details = buildDisclosure(fold, 'event-modal-disclosure', label)
+  details.appendChild(buildEpcisCard(ev))
   section.appendChild(details)
   return section
 }

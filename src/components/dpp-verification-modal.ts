@@ -41,17 +41,18 @@
  * window while the timeline is open), and the rest when
  * this modal opens: automatically up to
  * AUTO_VERIFY_LIMIT versions, via the "Verify all"
- * button beyond that. The disclosure stays closed by
- * default because the chain detail is the part visitors
- * actually want; the per-version breakdown is for the
- * curious.
+ * button beyond that. The disclosure stands open each
+ * time the modal opens; a reader who folds it keeps it
+ * folded until the modal closes.
  */
 
 import { LightElement } from '@/reactive/element'
 import { signal } from '@/reactive/signals'
 import { el } from '@/reactive/dom'
 import { safeLinkHref } from '@/safe-url'
-import { bindModalChrome, buildModal } from '@/reactive/modal'
+import {
+  bindModalChrome, buildDisclosure, buildModal, type Fold,
+} from '@/reactive/modal'
 import {
   manifest as manifestSignal,
   versionStates, events, focusedEventId, timelineState,
@@ -89,6 +90,8 @@ export const proofModalOpen = signal(false)
 type StatesMap = Record<number, VersionState>
 
 class DppVerificationModal extends LightElement {
+  private readonly fold: Fold = { folded: false }
+
   protected setup(): void {
     this.setAttribute('aria-labelledby', 'proof-title')
 
@@ -121,6 +124,7 @@ class DppVerificationModal extends LightElement {
     const open = proofModalOpen()
     const m = manifestSignal()
     if (!open) {
+      this.fold.folded = false
       this.classList.remove('open')
       this.replaceChildren()
       return
@@ -173,7 +177,9 @@ class DppVerificationModal extends LightElement {
       ))
     }
     body.append(
-      buildVerificationDisclosure(m, states, activeVersion, activeState),
+      buildVerificationDisclosure(
+        this.fold, m, states, activeVersion, activeState,
+      ),
     )
 
     const dialog = buildModal({
@@ -667,20 +673,15 @@ function orderForKind(kind: AuthorityKind): number {
 // K keys in your browser." statement, so consumers know
 // the headline result without expanding.
 function buildVerificationDisclosure(
+  fold: Fold,
   manifest: DppManifest,
   states: StatesMap,
   activeVersion: number,
   activeState: VersionState | undefined,
 ): HTMLElement {
   const section = el('section', 'proof-section')
-  const details = el('details', 'proof-disclosure')
-  const summary = el('summary', 'proof-disclosure-summary')
-  summary.append(
-    el('span', 'proof-disclosure-label', tr('cryptoProof.versionsCheck')),
-    el('span', 'chevron'),
-  )
-  details.appendChild(summary)
-
+  const label = tr('cryptoProof.versionsCheck')
+  const details = buildDisclosure(fold, 'proof-disclosure', label)
   details.appendChild(buildDisclosureSubtitle(activeVersion, activeState))
   details.appendChild(buildChainSection(activeState))
   if (manifest.versions.length > AUTO_VERIFY_LIMIT) {
