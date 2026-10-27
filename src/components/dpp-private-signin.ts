@@ -19,6 +19,7 @@ import { el } from '@/reactive/dom'
 import { activeVersionNumber } from '@/state'
 import { i18n } from '@/i18n'
 import { t, type LabelKey } from '@/i18n/labels'
+import { icon } from '@/icons'
 import {
   fetchStateByVersion,
   requestPrivateRowsFetch,
@@ -57,6 +58,7 @@ function buildSignInButton(loginUrl: string): HTMLElement {
     'button', 'dpp-properties-affordance', tr('properties.signInForData'),
   ) as HTMLButtonElement
   btn.type = 'button'
+  btn.prepend(icon('key'), ' ')
 
   // Full-page hand-off: send the whole page to the authorising
   // system's login, carrying a return target so it can bring
