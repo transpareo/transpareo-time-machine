@@ -52,9 +52,7 @@ import {
 } from '@/state'
 import { dynamicData, dynamicDataPending, composeLiveRows } from '@/host'
 import { liveDataIsShowable } from '@/actions'
-import {
-  i18n, formatNumber, formatDateTime, formatLongDate,
-} from '@/i18n'
+import { i18n, formatNumber, formatDateTime } from '@/i18n'
 import { t, type LabelKey } from '@/i18n/labels'
 import {
   tx, propertyIsKind, type LiveRow, type PropertyValue, type PropertyValueOf,
@@ -80,9 +78,7 @@ class DppProperties extends LightElement {
       const state = fetchStateByVersion()[ver]
       const privateRows = visiblePrivateRows(state)
 
-      const children: HTMLElement[] = [
-        ...buildLotDate(), ...publicRows.map(buildRow),
-      ]
+      const children: HTMLElement[] = publicRows.map(buildRow)
       children.push(...buildLiveSection())
       if (privateRows.length > 0) {
         children.push(buildHeading(tr('properties.additionalHeading')))
@@ -122,15 +118,6 @@ function visiblePrivateRows(
   state: PrivateFetchState | undefined,
 ): ReadonlyArray<ScalarRow> {
   return state?.status === 'ok' ? detailRows(state.rows) : []
-}
-
-// The day the passport's lot was made, on every passport
-// frozen from a lot.
-function buildLotDate(): HTMLElement[] {
-  const date = activeSnapshot().lotManufacturedOn
-  if (!date) return []
-  const label = tr('lot.manufacturedOn')
-  return [buildPair(label, formatLongDate(date, i18n.locale), false)]
 }
 
 // The live section: heading, when the readings were

@@ -74,8 +74,15 @@ test('shows no walk-up on an ordinary visit', async ({ page }) => {
   await expect(shadow(page, '.walkup')).toHaveCount(0)
 })
 
-test('dates the lot', async ({ page }) => {
+test('dates the lot in a tile after the others', async ({ page }) => {
   await bootLot(page)
-  await expect(shadow(page, '.dpp-property-row').first())
-    .toHaveText('Lot manufactured onMarch 1, 2026')
+  const tile = shadow(page, '.dpp-metrics > .dpp-metric').last()
+
+  await expect(tile.locator('.dpp-metric-label'))
+    .toHaveText('Lot manufactured on')
+  await expect(tile.locator('.dpp-metric-label svg.icon-calendar'))
+    .toHaveCount(1)
+  await expect(tile.locator('.dpp-metric-value')).toHaveText('March 1, 2026')
+  const rows = shadow(page, '.dpp-property-row')
+  await expect(rows.filter({ hasText: 'Lot manufactured on' })).toHaveCount(0)
 })

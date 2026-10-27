@@ -7,15 +7,16 @@
  * for scalar product attributes (article number, weight,
  * footprint figures, etc.). Filters the active version's
  * presentation rows to scalars with no namespace and
- * renders one tile per row. Hidden when the filtered
- * list is empty.
+ * renders one tile per row, then a tile for the day the
+ * lot was made on a passport frozen from a lot. Hidden
+ * when no tile applies.
  */
 
 import { LightElement } from '@/reactive/element'
 import { el } from '@/reactive/dom'
 import { icon, iconForProperty } from '@/icons'
-import { renderedPresentation } from '@/state'
-import { i18n, formatNumber } from '@/i18n'
+import { activeSnapshot, renderedPresentation } from '@/state'
+import { i18n, formatNumber, formatLongDate } from '@/i18n'
 import { t } from '@/i18n/labels'
 import {
   propertyIsKind, tx, type PropertyValueOf,
@@ -37,22 +38,22 @@ class DppPropertyCards extends LightElement {
       const rows = renderedPresentation()
         .filter(propertyIsKind('scalar'))
         .filter((p) => !p.namespace)
-      wrap.style.display = rows.length ? '' : 'none'
-      wrap.replaceChildren(...rows.map(buildCard))
+      const cards = rows.map(buildCard)
+      const lotDate = activeSnapshot().lotManufacturedOn
+      if (lotDate) cards.push(buildLotCard(lotDate))
+      wrap.style.display = cards.length ? '' : 'none'
+      wrap.replaceChildren(...cards)
     })
   }
 }
 
 function buildCard(row: Scalar): HTMLElement {
-  const card = el('div', 'dpp-metric')
   const v = row.value
   const value = v.numeric != null
     ? formatNumber(v.numeric) : tx(v.value, i18n.locale)
   const text = v.unit ? `${value} ${v.unit}` : value
-  card.append(
-    buildLabel(row),
-    el('div', 'dpp-metric-value', text),
-  )
+  const label = tx(row.name, i18n.locale)
+  const card = buildTile(iconForProperty(row.key), label, text)
 
   // Only a past version shows a row marked dynamic here; its
   // value is the reading sealed at publish.
@@ -63,15 +64,23 @@ function buildCard(row: Scalar): HTMLElement {
   return card
 }
 
-function buildLabel(row: Scalar): HTMLElement {
-  const label = el('div', 'dpp-metric-label')
-  const iconId = iconForProperty(row.key)
-  if (iconId) {
-    label.appendChild(icon(iconId))
-    label.append(' ')
-  }
-  label.append(tx(row.name, i18n.locale))
-  return label
+// The day the passport's lot was made, on every passport
+// frozen from a lot. No property stands behind it, so its
+// glyph is fixed instead of looked up in the icon map.
+function buildLotCard(date: string): HTMLElement {
+  const label = t(i18n.labels, 'lot.manufacturedOn')
+  return buildTile('calendar', label, formatLongDate(date, i18n.locale))
+}
+
+function buildTile(
+  iconId: string | null, label: string, value: string
+): HTMLElement {
+  const card = el('div', 'dpp-metric')
+  const head = el('div', 'dpp-metric-label')
+  if (iconId) head.append(icon(iconId), ' ')
+  head.append(label)
+  card.append(head, el('div', 'dpp-metric-value', value))
+  return card
 }
 
 customElements.define('dpp-property-cards', DppPropertyCards)
