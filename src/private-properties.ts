@@ -30,6 +30,8 @@
  *          surfaces the sign-in affordance, which redirects
  *          to loginUrl. A 401 with no (or a cross-site) login
  *          URL leaves loginUrl undefined and no button shows.
+ *          Every later version takes the same state with no
+ *          request of its own.
  *   anything else -> { status: 'error', reason }; the
  *          renderer surfaces a "temporarily unavailable"
  *          affordance with a retry button.
@@ -143,6 +145,13 @@ export async function fetchPrivateRows(
     console.warn(`[private] cross-site URL ignored: ${url}`)
     return 'error'
   }
+
+  // A 401 means no session, for every version alike, and the
+  // browser logs each failed request to the console. Signing
+  // in reloads the page, which starts this state afresh.
+  const unauth = Object.values(fetchStateByVersion.peek())
+    .find((s) => s.status === 'unauth')
+  if (unauth) return setState(versionNumber, unauth)
 
   setState(versionNumber, { status: 'pending' })
   let res: Response

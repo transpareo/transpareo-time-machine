@@ -24,7 +24,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   parseLoginUrl, isSameRegistrableSite,
-  fetchPrivateRows, fetchStateByVersion,
+  fetchPrivateRows, fetchStateByVersion, resetPrivateState,
 } from '../src/private-properties'
 import { config } from '../src/config'
 
@@ -223,6 +223,28 @@ describe('fetchPrivateRows: verification gate + wire shape', () => {
 
     expect(fetchSpy).not.toHaveBeenCalled()
     expect(fetchStateByVersion.peek()[7]).toBeUndefined()
+  })
+
+  // A 401 says the reader has no session, which holds for
+  // every version of the passport: asking again per version
+  // only adds a failed request to the console each time.
+  it('answers a later version from an earlier 401 without fetching', async () => {
+    vi.stubGlobal('window', { location: { href: 'https://acme.com/dpp', hostname: 'acme.com' } })
+    const unauth = res(401, { 'X-Auth-Url': '/en/passport/login' })
+    const fetchSpy = vi.fn().mockResolvedValue(unauth)
+    vi.stubGlobal('fetch', fetchSpy)
+
+    try {
+      await fetchPrivateRows(5, '/api/private/5')
+      const status = await fetchPrivateRows(4, '/api/private/4')
+
+      expect(status).toBe('unauth')
+      expect(fetchSpy).toHaveBeenCalledTimes(1)
+      expect(fetchStateByVersion.peek()[4])
+        .toEqual({ status: 'unauth', loginUrl: '/en/passport/login' })
+    } finally {
+      resetPrivateState()
+    }
   })
 
   it('fails closed to an error state when the derived proof does not verify, rendering nothing', async () => {
