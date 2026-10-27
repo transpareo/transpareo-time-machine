@@ -58,6 +58,8 @@ import {
   tx, propertyIsKind, type LiveRow, type PropertyValue, type PropertyValueOf,
 } from '@/types'
 import { showTokens, isUnlocked } from '@/show-filter'
+import { safeLinkHref } from '@/safe-url'
+import { icon } from '@/icons'
 import {
   fetchStateByVersion,
   type PrivateFetchState,
@@ -93,30 +95,32 @@ class DppProperties extends LightElement {
 }
 
 type ScalarRow = PropertyValueOf<'scalar'>
+type LinkRow = PropertyValueOf<'link'>
+type DetailRow = ScalarRow | LinkRow
 
-// The detail table shows namespaced scalar rows.
-// Tiles, badges, accordions, and donuts have their own
-// renderers and pull the rest of the flat list. Public rows come
-// from snapshot.properties; private rows arrive
-// post-auth via the privateProperties endpoint and use
+// The detail table shows namespaced scalar rows and every
+// document link. Tiles, badges, accordions, and donuts have
+// their own renderers and pull the rest of the flat list.
+// Public rows come from snapshot.properties; private rows
+// arrive post-auth via the privateProperties endpoint and use
 // the same filter so the two sides compose.
 function detailRows(
   rows: ReadonlyArray<PropertyValue>,
-): ReadonlyArray<ScalarRow> {
+): ReadonlyArray<DetailRow> {
   const tokens = showTokens()
   return rows
-    .filter(propertyIsKind('scalar'))
-    .filter((r) => r.namespace != null)
+    .filter((r): r is DetailRow => r.value.type === 'link'
+      || (r.value.type === 'scalar' && r.namespace != null))
     .filter((r) => !r.onDemand || isUnlocked(r.namespace, tokens))
 }
 
-function visiblePublicRows(): ReadonlyArray<ScalarRow> {
+function visiblePublicRows(): ReadonlyArray<DetailRow> {
   return detailRows(renderedPresentation())
 }
 
 function visiblePrivateRows(
   state: PrivateFetchState | undefined,
-): ReadonlyArray<ScalarRow> {
+): ReadonlyArray<DetailRow> {
   return state?.status === 'ok' ? detailRows(state.rows) : []
 }
 
@@ -153,9 +157,31 @@ function buildLiveRow(row: LiveRow): HTMLElement {
 
 // A row marked dynamic outside the live block is a past
 // version's: its value is the reading sealed at publish.
-function buildRow(row: ScalarRow): HTMLElement {
+function buildRow(row: DetailRow): HTMLElement {
+  if (propertyIsKind('link')(row)) return buildLinkRow(row)
   const label = tx(row.name, i18n.locale)
   return buildPair(label, formatValue(row.value), row.dynamic === true)
+}
+
+// A document: its label opens it in a new tab. A URL with a
+// scheme that could run script stays inert text.
+function buildLinkRow(row: LinkRow): HTMLElement {
+  const label = tx(row.name, i18n.locale)
+  const href = safeLinkHref(row.value.href)
+  const cell = el('div', 'dpp-property-label')
+  if (href) {
+    const a = el('a', 'dpp-ext-link', label)
+    a.href = href
+    a.target = '_blank'
+    a.rel = 'noopener noreferrer'
+    a.append(' ', icon('link-ext'))
+    cell.append(a)
+  } else {
+    cell.append(label)
+  }
+  const wrap = el('div', 'dpp-property-row')
+  wrap.append(cell)
+  return wrap
 }
 
 function formatValue(v: ScalarRow['value']): string {

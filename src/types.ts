@@ -335,6 +335,7 @@ export interface CompositionEntry {
 //   list         -> badge group    (dpp-badge-lists)
 //   longText     -> accordion      (dpp-accordions)
 //   composition  -> donut          (dpp-compositions)
+//   link         -> linked row     (dpp-properties)
 //
 // The classification is by content shape, never by a
 // separate render-hint field. The snapshot's signed
@@ -383,6 +384,13 @@ export type PropertyValueKind =
       readonly type: 'composition'
       readonly entries: ReadonlyArray<CompositionEntry>
       readonly unit?: string
+    }
+
+  // A document reference (EN 18223 Link). The row's label
+  // names the document; `href` is where it lives.
+  | {
+      readonly type: 'link'
+      readonly href: string
     }
 
 // The flat data row the snapshot ships. Each row

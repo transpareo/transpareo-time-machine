@@ -275,6 +275,34 @@ describe('classifyWireValue: composition', () => {
   });
 });
 
+// A document reference (EN 18223 Link) as the derived
+// credential carries it: the selective-disclosure step gives
+// the nested object an `@id`, so every key is a string.
+describe('classifyWireValue: document links', () => {
+  const href = 'https://cdn.example.com/media/demo/test_report.pdf';
+
+  it('reads a Link object as a link to its href', () => {
+    const raw = {
+      '@id': 'https://acme.example/dpp/x#property/testreport/value',
+      '@type': 'Link',
+      href,
+      mediaType: 'application/pdf',
+    };
+    expect(classifyWireValue(raw, undefined)).toEqual({ type: 'link', href });
+  });
+
+  it('reads a short Link without @id or mediaType the same way', () => {
+    const raw = { '@type': 'Link', href: 'https://a.example/d.pdf' };
+    expect(classifyWireValue(raw, undefined))
+      .toEqual({ type: 'link', href: 'https://a.example/d.pdf' });
+  });
+
+  it('leaves a Link without an href to the blank fallback', () => {
+    expect(classifyWireValue({ '@type': 'Link' }, undefined))
+      .toEqual({ type: 'scalar', value: '' });
+  });
+});
+
 describe('classifyWireValue: malformed', () => {
   it('degrades an unexpected shape to a blank scalar', () => {
     expect(classifyWireValue(null, undefined)).toEqual({ type: 'scalar', value: '' });

@@ -14,6 +14,7 @@
  *   language-tagged array   -> scalar / longText (folded to a hash)
  *   array of texts          -> list        (badge group)
  *   array of substances     -> composition (donut)
+ *   Link object             -> link        (linked row)
  *
  * A value's datatype is data, not a render hint, so the
  * one discriminator the classifier does read is the
@@ -74,6 +75,14 @@ function isSubstanceLike(v: unknown): boolean {
   if (!v || typeof v !== 'object' || Array.isArray(v)) return false
   const obj = v as Record<string, unknown>
   return 'value' in obj || obj['@type'] === 'Substance'
+}
+
+// A document reference as the publisher signs it:
+// `{ '@type': 'Link', href, mediaType? }`, with an `@id`
+// once selective disclosure has derived it.
+function isLinkObject(v: unknown): v is Readonly<Record<string, unknown>> {
+  if (!v || typeof v !== 'object' || Array.isArray(v)) return false
+  return (v as Record<string, unknown>)['@type'] === 'Link'
 }
 
 // The signed wire form for a non-string PropertyValue/
@@ -232,6 +241,15 @@ export function classifyWireValue(
   // never an accordion.
   if (isRegionLiteral(raw)) {
     return { type: 'scalar', value: raw, ...(unit ? { unit } : {}) }
+  }
+
+  // A document reference. Every key of the object is a
+  // string, so it must be caught before isLocaleHash reads
+  // it as a translation.
+  if (isLinkObject(raw)) {
+    const href = raw.href
+    if (typeof href === 'string' && href) return { type: 'link', href }
+    return { type: 'scalar', value: '' }
   }
   if (isTypedLiteral(raw)) {
     return scalarOrLongText(raw['@value'], unit)
