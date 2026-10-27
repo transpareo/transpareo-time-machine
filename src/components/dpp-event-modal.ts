@@ -18,9 +18,7 @@
 import { LightElement } from '@/reactive/element'
 import { signal } from '@/reactive/signals'
 import { el } from '@/reactive/dom'
-import {
-  bindModalChrome, buildDisclosure, buildModal, type Fold,
-} from '@/reactive/modal'
+import { bindModalChrome, buildModal } from '@/reactive/modal'
 import { sortedEvents, epcisByEventId, snapshotForVersion } from '@/state'
 import { manifest as manifestSignal, epcisDocument } from '@/host'
 import { i18n, formatShortDate } from '@/i18n'
@@ -38,8 +36,6 @@ import { downloadJson, slugForFilename } from '@/download'
 export const eventModalEventId = signal<string | null>(null)
 
 class DppEventModal extends LightElement {
-  private readonly fold: Fold = { folded: false }
-
   protected setup(): void {
     this.setAttribute('aria-labelledby', 'event-modal-title')
 
@@ -55,7 +51,6 @@ class DppEventModal extends LightElement {
     const id = eventModalEventId()
     const evt = id ? sortedEvents().find((e) => e.id === id) : null
     if (!evt) {
-      this.fold.folded = false
       this.classList.remove('open')
       this.replaceChildren()
       return
@@ -67,7 +62,7 @@ class DppEventModal extends LightElement {
     const changeSet = buildChangeSetSection(evt)
     if (changeSet) body.appendChild(changeSet)
     if (evt.description) body.appendChild(buildDescriptionSection(evt))
-    if (epcis) body.appendChild(buildEpcisSection(this.fold, epcis))
+    if (epcis) body.appendChild(buildEpcisSection(epcis))
 
     const dialog = buildModal({
       title: tr('event.title'),
@@ -196,14 +191,13 @@ function buildDescriptionSection(evt: DppEvent): HTMLElement {
 }
 
 // The machine-readable record (URIs, CBV tokens, GLNs, ISO
-// timestamps) sits under "Technical details", open when the
-// modal opens and foldable by the reader.
-function buildEpcisSection(fold: Fold, ev: EpcisObjectEvent): HTMLElement {
+// timestamps) under its own "Technical details" heading.
+function buildEpcisSection(ev: EpcisObjectEvent): HTMLElement {
   const section = el('section', 'event-modal-section')
-  const label = tr('epcis.title')
-  const details = buildDisclosure(fold, 'event-modal-disclosure', label)
-  details.appendChild(buildEpcisCard(ev))
-  section.appendChild(details)
+  section.append(
+    el('h3', 'event-modal-subtitle', tr('epcis.title')),
+    buildEpcisCard(ev),
+  )
   return section
 }
 

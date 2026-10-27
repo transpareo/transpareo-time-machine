@@ -118,43 +118,9 @@
   color: var(--color-text);
 }
 
-// ─── Technical-details disclosure ─────────────────
-// Native <details> wrapping the EPCIS data. Chevron
-// uses the same CSS-triangle pattern as the
-// dpp-accordion, rotates 180° on [open].
-.event-modal-disclosure {
-  // Strip the default disclosure triangle so our
-  // chevron is the only marker.
-  summary { list-style: none; }
-  summary::-webkit-details-marker { display: none; }
-  summary::marker { content: ''; }
-}
-
-.event-modal-disclosure-summary {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  cursor: pointer;
-  user-select: none;
-  font-family: var(--font-sans);
-}
-
-.event-modal-disclosure-label {
-  @include dpp.eyebrow;
-  color: var(--color-muted);
-}
-
-.event-modal-disclosure[open] .event-modal-disclosure-summary
-  .chevron {
-  transform: rotate(180deg);
-}
-
 // The grey card holding the EPCIS field grid + raw
-// JSON. Sits inside the disclosure so it's only
-// rendered when expanded.
+// JSON, under the "Technical details" heading.
 .epcis-card {
-  margin-top: 12px;
   padding: 14px 16px;
   background: color-mix(
     in oklab, var(--font-color) 4%, transparent);

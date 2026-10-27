@@ -4,7 +4,7 @@
  * Copyright (C) 2026 Transpareo AG
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
- * The version-checks disclosure subtitle picks between
+ * The version-checks subtitle picks between
  * three sentences: the pending notice, the generic
  * "verified against N keys" count, and the two-authorities
  * wording that names the issuer and the platform. The
@@ -18,7 +18,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import * as host from '../src/host';
 import {
-  buildDisclosureSubtitle, buildChainSection,
+  buildChecksSubtitle, buildChainSection,
 } from '../src/components/dpp-verification-modal';
 import type { DppSnapshot } from '../src/types';
 import type { VersionState } from '../src/archive';
@@ -60,14 +60,14 @@ beforeEach(() => {
   });
 });
 
-describe('buildDisclosureSubtitle', () => {
+describe('buildChecksSubtitle', () => {
   it('renders the pending notice without a state', () => {
-    expect(buildDisclosureSubtitle(4, undefined).textContent).
+    expect(buildChecksSubtitle(4, undefined).textContent).
       toBe('Verifying snapshot proofs in your browser...');
   });
 
   it('renders the pending notice while verifying', () => {
-    expect(buildDisclosureSubtitle(4, { status: 'pending' }).textContent).
+    expect(buildChecksSubtitle(4, { status: 'pending' }).textContent).
       toBe('Verifying snapshot proofs in your browser...');
   });
 
@@ -76,7 +76,7 @@ describe('buildDisclosureSubtitle', () => {
       entry(ISS_URL, 'zIssuer'),
       entry(PLAT_URL, 'zPlatform'),
     ]);
-    expect(buildDisclosureSubtitle(4, state).textContent).toBe(
+    expect(buildChecksSubtitle(4, state).textContent).toBe(
       'Version v4 verified against 2 keys in your browser, '
       + '1 from the issuer (Volturra Energia) and 1 from Transpareo.',
     );
@@ -90,7 +90,7 @@ describe('buildDisclosureSubtitle', () => {
       entry(`${PLAT_URL}#did-web`, 'zPlat'),
       entry(PLAT_URL, 'zPlat'),
     ]);
-    expect(buildDisclosureSubtitle(6, state).textContent).toBe(
+    expect(buildChecksSubtitle(6, state).textContent).toBe(
       'Version v6 verified against 5 keys in your browser, '
       + '3 from the issuer (Volturra Energia) and 2 from Transpareo.',
     );
@@ -98,7 +98,7 @@ describe('buildDisclosureSubtitle', () => {
 
   it('uses the singular sentence for one key', () => {
     const state = verified([entry(ISS_URL, 'zIss')]);
-    expect(buildDisclosureSubtitle(1, state).textContent).
+    expect(buildChecksSubtitle(1, state).textContent).
       toBe('Version v1 verified against 1 key in your browser.');
   });
 
@@ -110,7 +110,7 @@ describe('buildDisclosureSubtitle', () => {
       entry(ISS_URL, 'zIssA'),
       entry(`${ISS_URL}#did-web`, 'zIssB'),
     ]);
-    expect(buildDisclosureSubtitle(2, state).textContent).
+    expect(buildChecksSubtitle(2, state).textContent).
       toBe('Version v2 verified against 2 keys in your browser.');
   });
 
@@ -126,7 +126,7 @@ describe('buildDisclosureSubtitle', () => {
       chain: { status: 'broken' },
       reason: 'signature mismatch',
     } as unknown as VersionState;
-    expect(buildDisclosureSubtitle(4, state).textContent).toBe(
+    expect(buildChecksSubtitle(4, state).textContent).toBe(
       'Version v4 verified against 2 keys in your browser, '
       + '1 from the issuer (Volturra Energia) and 1 from Transpareo.',
     );

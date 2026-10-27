@@ -31,8 +31,8 @@
  *      aliases into one row, an ecdsa-sd credential carries
  *      one derived proof per authority. Each row shows the
  *      verificationMethod URL and a status badge (verified /
- *      unreachable / invalid / pending). Wrapped in a
- *      "Versions check" disclosure with the per-version
+ *      unreachable / invalid / pending). Shown in the
+ *      "Version checks" section with the per-version
  *      aggregate verdicts so the visitor can browse the
  *      chain.
  *
@@ -41,18 +41,14 @@
  * window while the timeline is open), and the rest when
  * this modal opens: automatically up to
  * AUTO_VERIFY_LIMIT versions, via the "Verify all"
- * button beyond that. The disclosure stands open each
- * time the modal opens; a reader who folds it keeps it
- * folded until the modal closes.
+ * button beyond that.
  */
 
 import { LightElement } from '@/reactive/element'
 import { signal } from '@/reactive/signals'
 import { el } from '@/reactive/dom'
 import { safeLinkHref } from '@/safe-url'
-import {
-  bindModalChrome, buildDisclosure, buildModal, type Fold,
-} from '@/reactive/modal'
+import { bindModalChrome, buildModal } from '@/reactive/modal'
 import {
   manifest as manifestSignal,
   versionStates, events, focusedEventId, timelineState,
@@ -90,8 +86,6 @@ export const proofModalOpen = signal(false)
 type StatesMap = Record<number, VersionState>
 
 class DppVerificationModal extends LightElement {
-  private readonly fold: Fold = { folded: false }
-
   protected setup(): void {
     this.setAttribute('aria-labelledby', 'proof-title')
 
@@ -110,7 +104,7 @@ class DppVerificationModal extends LightElement {
     // verification for the rest of the chain, but only
     // if the version count is small enough to be free.
     // Larger DPPs show a "Verify all N versions" button
-    // inside the disclosure so the user can opt in.
+    // in the version checks so the user can opt in.
     this.effect(() => {
       if (!proofModalOpen()) return
       const m = manifestSignal.peek()
@@ -124,7 +118,6 @@ class DppVerificationModal extends LightElement {
     const open = proofModalOpen()
     const m = manifestSignal()
     if (!open) {
-      this.fold.folded = false
       this.classList.remove('open')
       this.replaceChildren()
       return
@@ -177,9 +170,7 @@ class DppVerificationModal extends LightElement {
       ))
     }
     body.append(
-      buildVerificationDisclosure(
-        this.fold, m, states, activeVersion, activeState,
-      ),
+      buildChecksSection(m, states, activeVersion, activeState),
     )
 
     const dialog = buildModal({
@@ -210,7 +201,7 @@ class DppVerificationModal extends LightElement {
     } else {
       const state = versionStates()[activeVersionNumber()]
       body.append(
-        buildDisclosureSubtitle(activeVersionNumber(), state),
+        buildChecksSubtitle(activeVersionNumber(), state),
         buildChainSection(state),
       )
     }
@@ -664,31 +655,27 @@ function orderForKind(kind: AuthorityKind): number {
   return 2
 }
 
-// ─── Unified verification details ────────────────────
-// One disclosure covers every verification artefact:
-// per-authority chain rows for the active version,
-// per-version aggregate table, and the manifest
-// signature block. The visible subtitle on the summary
-// row carries the one-line "Version vN verified against
-// K keys in your browser." statement, so consumers know
-// the headline result without expanding.
-function buildVerificationDisclosure(
-  fold: Fold,
+// ─── Version checks ──────────────────────────────────
+// One section for the chain: per-authority rows for the
+// active version and the per-version aggregate table. The
+// subtitle under the heading carries the one-line "Version
+// vN verified against K keys in your browser." statement.
+function buildChecksSection(
   manifest: DppManifest,
   states: StatesMap,
   activeVersion: number,
   activeState: VersionState | undefined,
 ): HTMLElement {
-  const section = el('section', 'proof-section')
-  const label = tr('cryptoProof.versionsCheck')
-  const details = buildDisclosure(fold, 'proof-disclosure', label)
-  details.appendChild(buildDisclosureSubtitle(activeVersion, activeState))
-  details.appendChild(buildChainSection(activeState))
+  const section = el('section', 'proof-section proof-checks')
+  section.append(
+    el('h3', undefined, tr('cryptoProof.versionsCheck')),
+    buildChecksSubtitle(activeVersion, activeState),
+    buildChainSection(activeState),
+  )
   if (manifest.versions.length > AUTO_VERIFY_LIMIT) {
-    details.appendChild(buildVerifyAllButton(manifest, states))
+    section.appendChild(buildVerifyAllButton(manifest, states))
   }
-  details.appendChild(buildVersionsList(manifest, states))
-  section.appendChild(details)
+  section.appendChild(buildVersionsList(manifest, states))
   return section
 }
 
@@ -696,10 +683,10 @@ function buildVerificationDisclosure(
 // notice, the generic count sentence, and the naming
 // two-authorities wording is behaviour worth pinning
 // without mounting the whole element.
-export function buildDisclosureSubtitle(
+export function buildChecksSubtitle(
   version: number, state: VersionState | undefined,
 ): HTMLElement {
-  const p = el('p', 'proof-disclosure-subtitle')
+  const p = el('p', 'proof-checks-subtitle')
   if (!state || state.status === 'pending') {
     p.textContent = tr('cryptoProof.chainPending')
     return p

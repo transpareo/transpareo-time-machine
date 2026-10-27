@@ -41,8 +41,8 @@ $dpp-card-shadow: 0 1px 4px color-mix(in oklab, var(--font-color, #3D3C3B) 8%, t
 // fallback names that token first, in the same order.
 //
 // Eyebrow = the recurring uppercase tracked-letter
-// label used for dt cells, section sub-titles, the
-// disclosure label, etc. Colour is left to the call
+// label used for dt cells, section sub-titles,
+// etc. Colour is left to the call
 // site since a few callers (buttons, chips) override.
 
 @mixin xs       { font-size: var(--font-xs, 12px); }
@@ -436,8 +436,8 @@ button.dpp-comp-name-trigger {
 }
 
 // CSS-drawn down-chevron used as a "tap to open"
-// indicator: locale picker, event modal, proof
-// disclosure. Tints with the parent text colour;
+// indicator, as on the locale picker. Tints with the
+// parent text colour;
 // open-state rotation is per surface.
 .chevron {
   width: 0;

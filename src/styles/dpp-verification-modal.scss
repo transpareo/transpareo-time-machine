@@ -205,45 +205,16 @@ code {
   &:hover { filter: brightness(0.92); }
 }
 
-// ─── Versions disclosure ──────────────────────────
-// Native <details> wrapping the per-version hash list.
-// Chevron uses the CSS-triangle pattern from dpp.scss;
-// rotates 180° when the disclosure is open.
-.proof-disclosure {
-  summary { list-style: none; }
-  summary::-webkit-details-marker { display: none; }
-  summary::marker { content: ''; }
-
-  &[open] .proof-disclosure-summary .chevron {
-    transform: rotate(180deg);
-  }
-
-  // The active-version chain block is a nested .proof-section;
-  // drop its inline padding so the cryptosuite line and the
-  // authority rows align with the subtitle above instead of
-  // indenting a second time.
-  > .proof-section {
-    padding-inline: 0;
-  }
+// ─── Version checks ───────────────────────────────
+// The active-version chain block is a nested .proof-section;
+// drop its inline padding so the cryptosuite line and the
+// authority rows align with the subtitle above instead of
+// indenting a second time.
+.proof-checks > .proof-section {
+  padding-inline: 0;
 }
 
-.proof-disclosure-summary {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  cursor: pointer;
-  user-select: none;
-}
-
-.proof-disclosure-label {
-  font-family: var(--font-sans);
-  @include dpp.eyebrow;
-  font-weight: 800;
-  color: var(--color-muted, #777);
-}
-
-.proof-disclosure-subtitle {
+.proof-checks-subtitle {
   margin: 8px 0 12px;
   @include dpp.sm;
   color: var(--font-color);
