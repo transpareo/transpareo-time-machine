@@ -1,0 +1,36 @@
+/*
+ * transpareo-time-machine - open-source DPP renderer
+ * Copyright (C) 2026 Transpareo AG
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ *
+ * The icons src/icons.ts draws, for every shadow root that
+ * shows one: the passport page and the verifier widget.
+ */
+
+// Components render icons as <svg class="icon icon-X">
+// elements that reference an injected sprite by bare
+// `#id` (see src/icons.ts; the decorative content sprite
+// comes from the element's icons-src attribute). The svg
+// sizes to 1em x 1em and inherits the parent text colour
+// via `fill: currentColor`, so the icon glyph follows
+// whatever font-size its parent (or a `.icon { @include … }`
+// override) sets.
+svg.icon {
+  width: 1em;
+  height: 1em;
+  fill: currentColor;
+  display: inline-block;
+  vertical-align: -0.125em;
+}
+
+// Decorative icons come from the externally supplied
+// content sprite. With no sprite configured the host
+// carries no `data-icons`, so they collapse to no box and a
+// publisher or fork without a sprite shows no empty icon
+// gaps. Functional icons (`.icon--fn`) ship inline with the
+// bundle and always render.
+:host(:not([data-icons])) svg.icon:not(.icon--fn) {
+  display: none;
+}
+
+.icon { margin-right: 5px; }
