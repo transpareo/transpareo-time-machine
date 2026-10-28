@@ -33,7 +33,10 @@ test('fills the screen on a phone', async ({ page }) => {
   expect(box!.x).toBe(0)
   expect(box!.y).toBe(0)
   expect(box!.width).toBe(390)
-  expect(box!.height).toBeGreaterThanOrEqual(844)
+
+  // WebKit resolves 100vh as 8.44 times 100 in single precision
+  // and truncates it to its 1/64 px layout grid: 843.984375.
+  expect(box!.height).toBeGreaterThan(844 - 0.5)
   await expect(page.locator('dpp-modal .modal-close')).toBeVisible()
 })
 
