@@ -10,6 +10,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.23.0] - 2026-10-28
+
 ### Added
 
 - `sign-in-url`: where a reader signs in for the rows a
