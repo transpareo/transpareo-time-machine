@@ -7,7 +7,7 @@
  * publisher's own staff: a link that opens this passport in
  * their back office. While one of them is signed in, the back
  * office on the passport's own origin keeps the address of its
- * lookup by code in localStorage under STAFF_BAR_KEY; the band
+ * lookup by code in localStorage (session-hints.ts); the band
  * shows only while it is there, so every other reader sees the
  * page unchanged. No server is asked, and the back office still
  * decides who opens what.
@@ -19,12 +19,11 @@ import * as host from '@/host'
 import { i18n } from '@/i18n'
 import { t } from '@/i18n/labels'
 import { icon } from '@/icons'
-
-export const STAFF_BAR_KEY = 'transpareo:passport-admin'
+import { storedStaffLink } from '@/session-hints'
 
 class DppStaffBar extends LightElement {
   protected setup(): void {
-    const stored = readStored()
+    const stored = storedStaffLink()
 
     // A framed passport sits inside another page, a preview or
     // an embed, and draws no band there.
@@ -61,14 +60,6 @@ export function staffBarHref(
   if (url.origin !== new URL(page).origin) return null
   url.searchParams.set('code', code)
   return url.href
-}
-
-function readStored(): string | null {
-  try {
-    return window.localStorage.getItem(STAFF_BAR_KEY)
-  } catch {
-    return null
-  }
 }
 
 customElements.define('dpp-staff-bar', DppStaffBar)

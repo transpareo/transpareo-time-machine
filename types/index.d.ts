@@ -51,7 +51,7 @@ export interface TimeMachineStateDetail {
  *  Configured via attributes (src, asset-host, icons-src,
  *  pinned-platform-key, pinned-issuer-key,
  *  revoked-roots-src, show-verification-mark, verifier,
- *  logo-href, footer-copyright, footer-links); see the
+ *  logo-href, sign-in-url, footer-copyright, footer-links); see the
  *  README's "Public API" section. */
 export interface TranspareoTimeMachineElement extends HTMLElement {
   openModal(options: ModalOpenOptions): ModalHandle

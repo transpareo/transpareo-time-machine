@@ -247,6 +247,80 @@ describe('fetchPrivateRows: verification gate + wire shape', () => {
     }
   })
 
+  // A host naming its sign-in page lets the renderer show the
+  // button without a request that answers 401 to everyone who
+  // never signed in. It asks only while the host marks a
+  // session: the reader cookie its sign-in sets, or the staff
+  // link the back office stores while an operator is signed in.
+  describe('with a sign-in-url', () => {
+    const LOGIN = 'https://acme.com/passport/login'
+
+    function onPage(cookie: string, staffLink: string | null): void {
+      vi.stubGlobal('window', {
+        location: { href: 'https://acme.com/dpp', hostname: 'acme.com' },
+        localStorage: { getItem: () => staffLink },
+      })
+      vi.stubGlobal('document', { cookie })
+    }
+
+    function withSignIn(url: string, run: () => Promise<void>) {
+      return async () => {
+        Object.assign(config, { signInUrl: url })
+        try {
+          await run()
+        } finally {
+          Object.assign(config, { signInUrl: undefined })
+          resetPrivateState()
+        }
+      }
+    }
+
+    it('offers the sign-in without asking when no session is marked', withSignIn(LOGIN, async () => {
+      onPage('theme=dark', null)
+      const fetchSpy = vi.fn()
+      vi.stubGlobal('fetch', fetchSpy)
+
+      const status = await fetchPrivateRows(3, '/api/private/3')
+
+      expect(status).toBe('unauth')
+      expect(fetchSpy).not.toHaveBeenCalled()
+      expect(fetchStateByVersion.peek()[3])
+        .toEqual({ status: 'unauth', loginUrl: LOGIN })
+    }))
+
+    it('asks while the reader cookie is set', withSignIn(LOGIN, async () => {
+      onPage('theme=dark; transpareo_passport_reader=1', null)
+      const fetchSpy = vi.fn().mockResolvedValue(res(204, {}))
+      vi.stubGlobal('fetch', fetchSpy)
+
+      const status = await fetchPrivateRows(3, '/api/private/3')
+
+      expect(status).toBe('empty')
+      expect(fetchSpy).toHaveBeenCalledTimes(1)
+    }))
+
+    it('asks while an operator staff link is stored', withSignIn(LOGIN, async () => {
+      onPage('', '/admin/dpps/resolve')
+      const fetchSpy = vi.fn().mockResolvedValue(res(204, {}))
+      vi.stubGlobal('fetch', fetchSpy)
+
+      await fetchPrivateRows(3, '/api/private/3')
+
+      expect(fetchSpy).toHaveBeenCalledTimes(1)
+    }))
+
+    it('drops a cross-site sign-in address, showing no button', withSignIn('https://evil.example/login', async () => {
+      onPage('', null)
+      const fetchSpy = vi.fn()
+      vi.stubGlobal('fetch', fetchSpy)
+
+      await fetchPrivateRows(3, '/api/private/3')
+
+      expect(fetchSpy).not.toHaveBeenCalled()
+      expect(fetchStateByVersion.peek()[3]).toEqual({ status: 'unauth' })
+    }))
+  })
+
   it('fails closed to an error state when the derived proof does not verify, rendering nothing', async () => {
     vi.stubGlobal('window', { location: { href: 'https://acme.com/dpp', hostname: 'acme.com' } })
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse(derivedCredentialBody())))

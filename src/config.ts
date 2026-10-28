@@ -9,7 +9,7 @@
  * Every option is an attribute on the element
  * (asset-host, icons-src, revoked-roots-src,
  * show-verification-mark, pinned-platform-key,
- * pinned-issuer-key, verifier, logo-href,
+ * pinned-issuer-key, verifier, logo-href, sign-in-url,
  * footer-copyright, footer-links, archived-at).
  * initConfigFromElement reads them once in the element's
  * setup(), before its subtree mounts, so the consumers
@@ -63,6 +63,13 @@ export interface TimeMachineConfig {
   // its top on every version. Anything that is not a real
   // calendar date leaves it undefined, and the line off.
   readonly archivedAt?: string
+
+  // From `sign-in-url`: where a reader signs in for the rows a
+  // version's `privateProperties.url` serves. Set, the renderer
+  // offers that sign-in without asking the endpoint first, and
+  // asks only while the host marks a session (see
+  // private-properties.ts). Absent, a 401's X-Auth-Url names it.
+  readonly signInUrl?: string
 
   // URL for the decorative content sprite (the publisher's
   // icon vocabulary, addressed by name from snapshot data).
@@ -188,6 +195,7 @@ export function initConfigFromElement(el: Element): void {
     revokedRootsUrl: str('revoked-roots-src'),
     assetHost: str('asset-host')?.trim() || undefined,
     logoHref: str('logo-href'),
+    signInUrl: str('sign-in-url'),
     pinnedPlatformKeys: parseKeySet(el, 'pinned-platform-key'),
     pinnedIssuerKeys: parseKeySet(el, 'pinned-issuer-key'),
     verifier: el.hasAttribute('verifier') || undefined,

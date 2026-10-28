@@ -36,6 +36,11 @@
  *          renderer surfaces a "temporarily unavailable"
  *          affordance with a retry button.
  *
+ * A host that names its sign-in (`sign-in-url`) skips that
+ * 401: with no session marked on the page's origin
+ * (session-hints.ts), the version takes `unauth` with that
+ * login URL and no request is made.
+ *
  * Both the read URL and the login URL must share a
  * registrable domain with location.origin: the session lives
  * on the publisher's own host, and the login redirect is held
@@ -57,6 +62,7 @@ import type { PropertyValue } from '@/types'
 import { describeError } from '@/errors'
 import { verifyDpp, dppIsAuthentic } from '@/crypto/dispatch'
 import { config } from '@/config'
+import { sessionHinted } from '@/session-hints'
 
 // Per-version state of the private-properties fetch. Drives
 // the renderer's per-version branch (merge, show-nothing,
@@ -153,6 +159,14 @@ export async function fetchPrivateRows(
     .find((s) => s.status === 'unauth')
   if (unauth) return setState(versionNumber, unauth)
 
+  // A host naming its sign-in (`sign-in-url`) is asked only
+  // while it marks a session; any other reader gets the sign-in
+  // at once, with no request that answers 401.
+  if (config.signInUrl && !sessionHinted()) {
+    const loginUrl = sameSiteLoginUrl(config.signInUrl)
+    return setState(versionNumber, unauthState(loginUrl))
+  }
+
   setState(versionNumber, { status: 'pending' })
   let res: Response
   try {
@@ -171,11 +185,8 @@ export async function fetchPrivateRows(
     // Not signed in. The endpoint names where to authenticate;
     // the affordance redirects the whole page there. Evict any
     // rows cached under a now-expired session.
-    const loginUrl = parseLoginUrl(res)
     evictAllOkEntries()
-    return setState(versionNumber, {
-      status: 'unauth', ...(loginUrl ? { loginUrl } : {}),
-    })
+    return setState(versionNumber, unauthState(parseLoginUrl(res)))
   }
 
   if (!res.ok) {
@@ -238,13 +249,22 @@ export async function requestPrivateRowsFetch(): Promise<void> {
 // URL resolves to the page origin and passes. Exported for
 // unit testing.
 export function parseLoginUrl(res: Response): string | null {
-  const url = res.headers.get('X-Auth-Url')
+  return sameSiteLoginUrl(res.headers.get('X-Auth-Url'))
+}
+
+// The login URL a 401 or the host's `sign-in-url` names, held
+// to the page's registrable site as parseLoginUrl says.
+function sameSiteLoginUrl(url: string | null): string | null {
   if (!url) return null
   if (isCrossSiteUrl(url)) {
     console.warn(`[private] cross-site login URL ignored: ${url}`)
     return null
   }
   return url
+}
+
+function unauthState(loginUrl: string | null): PrivateFetchState {
+  return { status: 'unauth', ...(loginUrl ? { loginUrl } : {}) }
 }
 
 function setState(

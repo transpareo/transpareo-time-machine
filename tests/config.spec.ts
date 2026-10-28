@@ -108,6 +108,20 @@ describe('icon-map-src parsing', () => {
   });
 });
 
+describe('sign-in-url parsing', () => {
+  it('reads the sign-in address off the attribute', () => {
+    mod.initConfigFromElement(fakeElement({
+      'sign-in-url': 'https://acme.com/passport/login',
+    }));
+    expect(mod.config.signInUrl).toBe('https://acme.com/passport/login');
+  });
+
+  it('is undefined when the attribute is absent', () => {
+    mod.initConfigFromElement(fakeElement({}));
+    expect(mod.config.signInUrl).toBeUndefined();
+  });
+});
+
 // Set by the HTML shell when it answers a unit link with the
 // passport one level up.
 describe('requested-level / requested-id parsing', () => {
