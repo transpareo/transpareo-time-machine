@@ -10,8 +10,40 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Added
+
+- `sign-in-url`: where a reader signs in for the rows a
+  version's `privateProperties.url` serves. Set, the sign-in
+  button shows without a request, and the renderer asks for
+  those rows only while the page's origin marks a session:
+  the `transpareo_passport_reader` cookie a reader sign-in
+  sets, or the staff link a signed-in operator's back office
+  stores. A visitor who never signed in no longer logs a 401.
+  Absent, the renderer asks as before and reads the sign-in
+  from the 401's `X-Auth-Url`.
+- From 2.22.0, which was tagged but never published: a staff
+  bar under the brand bar that opens the passport in the
+  publisher's back office while one of its staff is signed
+  in there; the lot date as a tile among the other facts,
+  labelled "Manufactured on"; document links as rows of the
+  property list; a key glyph on the staff bar and on the
+  sign-in button; `openModal` in the chrome of the
+  renderer's own modals.
+
+### Changed
+
+- From 2.22.0: "Version checks" and "Technical details"
+  are plain sections of their modals, always shown; one 401
+  per visit instead of one per version.
+
 ### Fixed
 
+- 2.22.0 stopped on the bundle-size gate (74.21 KB gzipped
+  over 74 KB). The `<dpp-verifier>` stylesheet carried every
+  rule of the passport page, which the full bundle then
+  shipped twice; it now carries the widget's own rules and
+  the icon rules alone, about 1.5 KB less gzipped in each
+  bundle.
 - A document row in the property list read in the browser's
   default link style: blue, underlined, smaller than the
   rows around it, with an external-link icon. It now reads
