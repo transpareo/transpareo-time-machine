@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * <dpp-badge-lists>, boxed lists of short string values
- * (intended use, available sizes, certifications, etc.).
+ * (intended use, care instructions, certifications, etc.).
  * One card per list, each with an icon-titled header and
  * a flat <ul>.
  */

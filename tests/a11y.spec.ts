@@ -311,13 +311,19 @@ test.describe('language of parts', () => {
     await page.locator('.dpp-accordion-header').first().click()
 
     const pairs = await textLangs(page)
+    const disposal = 'At end of life, separate the cotton body '
+      + '(home-compostable in industrial composting) from any sewn-in '
+      + 'care label. Drop off at a textile collection point or send '
+      + 'back to Nordic Wear via the prepaid return label.'
     const english = [
       'Essential Crew Neck T-Shirt',
       'T-Shirts',
       'Colour',
       'Indigo Blue',
+      'Disposal & recycling',
+      disposal,
       'Care instructions',
-      'Wash at 30 C; line dry; iron at low heat.',
+      'Wash 30 °C',
       'Intended use',
       'Daily wear',
       'Material composition',

@@ -189,19 +189,25 @@ product:
       country_code: PT
       icon: globe
   lists:
-    - key: sizes
+    - key: care
       label:
-        en: Available sizes
-        de: Verfügbare Größen
-        fr: Tailles disponibles
+        en: Care instructions
+        de: Pflegehinweise
+        fr: Instructions d'entretien
       values:
-        - XS
-        - S
-        - M
-        - L
-        - XL
-        - XXL
-      icon: sliders
+        - en: Wash 30 °C
+          de: Wäsche 30 °C
+          fr: Lavage 30 °C
+        - en: No dryer
+          de: Lufttrocknen
+          fr: Sans séchoir
+        - en: Iron on low
+          de: Kühl bügeln
+          fr: Fer doux
+        - en: No bleach
+          de: Ohne Bleiche
+          fr: Sans javel
+      icon: thermometer
     - key: functions
       label:
         en: Intended use
@@ -229,16 +235,6 @@ product:
         - Fair Trade
       icon: certificate
   accordions:
-    - key: care
-      label:
-        en: Care instructions
-        de: Pflegehinweise
-        fr: Instructions d'entretien
-      icon: leaf
-      body:
-        en: Wash at 30 C; line dry; iron at low heat.
-        de: Bei 30 °C waschen; an der Luft trocknen; bei niedriger Temperatur bügeln.
-        fr: Laver à 30 °C ; sécher à l'air libre ; repasser à basse température.
     - key: disposal
       label:
         en: Disposal & recycling

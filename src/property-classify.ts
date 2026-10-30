@@ -52,10 +52,11 @@ import {
 export const LONG_TEXT_GATE = 60
 
 // Longest entry a list may carry and still flow inline as
-// pills. Real data separates widely: sizes run 2 to 3
-// characters, certifications 21 to 25, an intended-use
-// phrase 42 in German, so the line sits in open space and
-// still admits token sets like 'IP67' or '2 Jahre'.
+// pills. Real data separates widely: codes run 2 to 4
+// characters, care instructions up to 12, certifications
+// 21 to 25, an intended-use phrase 42 in German, so the
+// line admits token sets like 'IP67', '2 Jahre' or
+// 'Wäsche 30 °C' and keeps every phrase out.
 export const COMPACT_GATE = 12
 
 // A locale-hash maps locale codes to plain strings
@@ -162,8 +163,8 @@ function languageEntries(
     Object.fromEntries(complete.map(([lang, l]) => [lang, l[i]])))
 }
 
-// A list of short tokens (sizes, codes) flows inline as
-// pills; anything longer stays one entry per line. The
+// A list of short tokens (codes, care instructions) flows
+// inline as pills; anything longer stays one entry per line. The
 // longest entry decides for the whole card, so a single
 // phrase among tokens does not leave one wide pill beside
 // several tiny ones. Measured across every locale, like the

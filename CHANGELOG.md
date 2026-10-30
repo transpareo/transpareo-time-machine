@@ -23,6 +23,13 @@ and this project adheres to
   once. Passports signed under v1 keep verifying. The demo
   seed signs its ecdsa-sd passport under v2.
 
+### Changed
+
+- The Nordic Wear demo shows its care instructions as chips
+  where it listed available sizes: a garment size is a
+  product with a passport of its own. The care accordion,
+  which said the same in a sentence, is gone.
+
 ### Fixed
 
 - Accessibility, checked against WCAG 2.2 AA. The collapsed

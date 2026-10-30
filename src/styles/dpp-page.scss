@@ -303,17 +303,17 @@ button.dpp-comp-name-trigger {
 
   li { padding: 3px 0; }
 
-  // Token-length entries (sizes, codes) flow inline as
-  // badges rather than stacking four lines for four
-  // characters. The classifier sets the flag from the
+  // Token-length entries (codes, care instructions) flow
+  // inline as badges rather than stacking four short lines.
+  // The classifier sets the flag from the
   // longest entry across every locale, so the shape holds
   // through a language switch. The tint mixed against the
   // surface follows .chip, so a publisher palette carries
   // through with no new tokens.
   //
   // A fully round radius would size itself off each
-  // badge's height, turning 'S' into a circle beside an
-  // oval 'XL'. The fixed corner keeps one shape across the
+  // badge's height, turning 'A' into a circle beside an
+  // oval 'IP67'. The fixed corner keeps one shape across the
   // row, with width the only thing that varies.
   &.compact {
     display: flex;

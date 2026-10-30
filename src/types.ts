@@ -385,8 +385,8 @@ export type PropertyValueKind =
       readonly items: ReadonlyArray<SnapshotLocalizedText>
 
       // Every entry is short enough to read as a token
-      // (sizes, codes), so the card flows them inline as
-      // pills instead of one per line. Set by the
+      // (codes, care instructions), so the card flows them
+      // inline as pills instead of one per line. Set by the
       // classifier from the longest entry across every
       // locale, so switching language never reflows the
       // card. See COMPACT_GATE in property-classify.ts.
