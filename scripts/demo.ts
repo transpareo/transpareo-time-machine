@@ -103,7 +103,6 @@ const BEATS: ReadonlyArray<Beat> = [
   { click: '.open-full-btn', hold: 1400 },
   { click: '[data-event-id="evt-6"]', hold: 2400 },
   { click: '.event-details-card', hold: 2200 },
-  { click: '.event-modal-disclosure-summary', hold: 2200 },
   { wheel: 320, hold: 2600 },
   { click: '.modal-close', hold: 1600 },
   { click: '[data-event-id="evt-1"]', hold: 2600 },
