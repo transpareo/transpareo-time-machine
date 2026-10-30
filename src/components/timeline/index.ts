@@ -253,12 +253,7 @@ class DppTimeline extends LightElement {
 
     const onKey = (e: KeyboardEvent): void => {
       if (timelineState.peek() === 'hidden') return
-      if (e.target instanceof HTMLElement) {
-        const t = e.target
-        if (t.matches('input, textarea, select, [contenteditable]')) {
-          return
-        }
-      }
+      if (keyBelongsElsewhere(e)) return
       if (e.key === 'ArrowLeft') {
         e.preventDefault()
         this.navStep(-1)
@@ -776,18 +771,33 @@ function buildEvent(
 ): HTMLButtonElement {
   const btn = el('button', 'event')
   btn.type = 'button'
-  if (active) btn.classList.add('active')
+  if (active) {
+    btn.classList.add('active')
+    btn.setAttribute('aria-current', 'true')
+  }
   if (hovered) btn.classList.add('hovered')
   btn.dataset.eventId = evt.id
 
-  // Use the localised event-type label so screen-reader
-  // users hear "Lifecycle" / "Repair", not the raw enum
-  // value (`lifecycle_transition` / `repair`).
-  const tagKey = `eventType.${evt.eventType}` as LabelKey
-  btn.setAttribute('aria-label', t(i18n.labels, tagKey))
+  // The localised event type and its date: screen-reader
+  // users hear "Repair, 03/02/2025" and can tell four
+  // lifecycle steps apart.
+  btn.setAttribute('aria-label', eventName(evt))
   btn.style.left = `${x}px`
   btn.style.setProperty('--event-color', colorForEventType(evt.eventType))
   return btn
+}
+
+// A key typed into a field, or pressed inside an open
+// dialog, is that control's to handle. The listener sits on
+// window, where a key from the shadow root arrives
+// retargeted to the host, so the path is read in place of
+// the target.
+const KEY_OWNERS =
+  'input, textarea, select, [contenteditable], [aria-modal="true"]'
+
+function keyBelongsElsewhere(e: KeyboardEvent): boolean {
+  return e.composedPath()
+    .some((n) => n instanceof HTMLElement && n.matches(KEY_OWNERS))
 }
 
 // One-shot expanding ring fired the moment a dot becomes
@@ -798,6 +808,13 @@ function buildPulse(x: number, color: string): HTMLSpanElement {
   p.style.left = `${x}px`
   p.style.setProperty('--event-color', color)
   return p
+}
+
+// What an event is called where it has to stand alone: its
+// type and the day it happened.
+function eventName(evt: DppEvent): string {
+  const tag = t(i18n.labels, `eventType.${evt.eventType}` as LabelKey)
+  return `${tag}, ${formatShortDate(evt.occurredAt, i18n.locale)}`
 }
 
 // The prose line shared by the expanded details panel and
@@ -820,7 +837,12 @@ function buildDetails(evt: DppEvent): HTMLDivElement {
   wrap.style.setProperty('--event-color', colorForEventType(evt.eventType))
   wrap.setAttribute('role', 'button')
   wrap.setAttribute('tabindex', '0')
-  wrap.setAttribute('aria-label', t(i18n.labels, 'event.details.aria'))
+
+  // The name leads with the event the card shows, so the live
+  // region announces the step and a voice user can say the
+  // tag they see.
+  const action = t(i18n.labels, 'event.details.aria')
+  wrap.setAttribute('aria-label', `${eventName(evt)}, ${action}`)
   const openModal = (): void => eventModalEventId.set(evt.id)
   wrap.addEventListener('click', openModal)
   wrap.addEventListener('keydown', (e) => {

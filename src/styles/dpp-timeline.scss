@@ -80,7 +80,7 @@ dpp-timeline[data-state='full'] .versions-toggle {
   // Close action sits on the trough, so it reads from
   // the timeline label palette (matching the year
   // labels) rather than the footer text colour.
-  color: var(--timeline-label-color, var(--footer-text-color, #777));
+  color: var(--timeline-label-color, var(--footer-text-color, #5F5E5D));
   .versions-show-icon { display: none; }
   .versions-hide-icon { display: inline-block; }
 }
@@ -89,12 +89,15 @@ dpp-timeline[data-state='full'] .versions-toggle {
 // only the link survives, labels / ticks / strip
 // fade out so the link reads as the only handle. The
 // trough switches to flex centring so the link's top
-// and bottom margins are visually equal.
+// and bottom margins are visually equal. Hidden also
+// takes the dots out of the tab order, so focus never
+// lands on a ring nobody can see.
 dpp-timeline[data-state='hidden'] {
   .tick-labels,
   .ticks,
   .strip {
     opacity: 0;
+    visibility: hidden;
     pointer-events: none;
     max-height: 0;
     overflow: hidden;
@@ -108,10 +111,13 @@ dpp-timeline[data-state='hidden'] {
   .versions-toggle { margin: 0 auto; }
 }
 
+// Visibility rides the fade, so the strip stays drawn
+// until its opacity has run out.
 .tick-labels, .strip {
   transition:
     max-height 280ms ease,
-    opacity 200ms ease;
+    opacity 200ms ease,
+    visibility 200ms;
 }
 
 .strip { overflow: hidden; }
@@ -319,8 +325,11 @@ dpp-timeline[data-fade-left] .timeline::before { opacity: 1; }
   margin-left: 6px;
   @include dpp.sm-bold;
   font-style: italic;
+
+  // 80% keeps the label muted and still 4.5:1 on a trough
+  // derived from a light body.
   color: var(--timeline-label-color, color-mix(
-    in oklab, var(--font-color) 55%, transparent));
+    in oklab, var(--font-color) 80%, transparent));
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 
@@ -474,8 +483,10 @@ dpp-timeline[data-fade-left] .timeline::before { opacity: 1; }
     border-radius: 50%;
 
     /* Non-active dots dim down so the active and
-       hovered ones read as the primary anchors. */
-    opacity: 0.55;
+       hovered ones read as the primary anchors; the ring
+       carries that, so the dim stops where the default
+       palette still holds 3:1 on the trough. */
+    opacity: 0.85;
     transition: opacity 160ms ease;
   }
 
@@ -786,9 +797,11 @@ dpp-timeline[data-state='full'] .open-full-btn {
   flex-wrap: wrap;
 }
 
+// Dates and actors are muted at 75%, the least that still
+// reads 4.5:1 at this size on a light card.
 .event-details-date {
   @include dpp.xs;
-  color: color-mix(in oklab, var(--timeline-card-text, var(--font-color)) 60%, transparent);
+  color: color-mix(in oklab, var(--timeline-card-text, var(--font-color)) 75%, transparent);
 }
 
 .event-details-desc {
@@ -816,7 +829,7 @@ dpp-timeline[data-state='full'] .open-full-btn {
 .event-details-actor {
   margin: 0;
   @include dpp.xs;
-  color: color-mix(in oklab, var(--timeline-card-text, var(--font-color)) 60%, transparent);
+  color: color-mix(in oklab, var(--timeline-card-text, var(--font-color)) 75%, transparent);
 }
 
 // In hidden state the details panel collapses with
@@ -936,7 +949,7 @@ dpp-timeline[data-state='hidden'] .event-details {
 .panel-card-date {
   @include dpp.xs;
   color: color-mix(
-    in oklab, var(--timeline-card-text, var(--font-color)) 60%,
+    in oklab, var(--timeline-card-text, var(--font-color)) 75%,
     transparent);
 }
 
@@ -956,7 +969,7 @@ dpp-timeline[data-state='hidden'] .event-details {
   margin: 4px 0 0;
   @include dpp.xs;
   color: color-mix(
-    in oklab, var(--timeline-card-text, var(--font-color)) 60%,
+    in oklab, var(--timeline-card-text, var(--font-color)) 75%,
     transparent);
   white-space: nowrap;
   overflow: hidden;

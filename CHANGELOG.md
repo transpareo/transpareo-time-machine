@@ -10,6 +10,33 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Fixed
+
+- Accessibility, checked against WCAG 2.2 AA. The collapsed
+  timeline no longer takes keyboard focus on dots nobody can
+  see. Every control draws a focus ring: the language picker,
+  its rows, the event modal's download button and the icon
+  rows of the proof modal showed a faint tint or nothing.
+  Focus stays put when the picture pager redraws (it fell out
+  of the lightbox's dialog), when Escape closes the language
+  menu, and when a picked language re-renders the passport.
+  The arrow keys inside an open dialog no longer also step
+  the version behind it.
+- What a screen reader hears: each timeline dot names its
+  event and date and marks the version shown, the details
+  card names the event it shows, the verification verdict
+  and the "Copied" confirmation are announced, a modal opened
+  through `openModal` is named by its title, the language
+  menu is a proper listbox with each native name tagged with
+  its own language, and the event's raw JSON can be scrolled
+  from the keyboard.
+- The renderer's own colours, used where a publisher sets
+  none, reach 4.5:1 for text and 3:1 for the timeline dots:
+  the footer grey is the Style Editor's default `#5F5E5D`,
+  and the timeline's muted labels, dates and unselected dots
+  are less faded. A long word such as a German compound
+  heading wraps inside the card at 320px.
+
 ## [2.23.0] - 2026-10-28
 
 ### Added

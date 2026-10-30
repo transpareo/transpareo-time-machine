@@ -298,11 +298,13 @@ class TranspareoTimeMachine extends BaseElement {
         // card has been laid out. See handover.ts for why
         // the two layouts are measured rather than matched.
         const from = travellerRect(this)
+        const keep = focusKeyIn(root)
 
         this.markPattern()
         this.dropTree()
         container.replaceChildren()
         this.mountReady(container)
+        if (keep) refocus(root, keep)
         if (from) playHandover(this, from)
       } else {
         container.replaceChildren(
@@ -403,6 +405,20 @@ class TranspareoTimeMachine extends BaseElement {
     `
     tpl.mount(container, this.registerTreeEffect)
   }
+}
+
+// A remount replaces every node, so the control a visitor
+// was on is gone with it. One that marks itself with
+// `data-keep-focus` gets focus back in the new tree: the
+// language picker, whose pick is what remounts the tree.
+function focusKeyIn(root: ShadowRoot): string | null {
+  const active = root.activeElement as HTMLElement | null
+  return active?.dataset.keepFocus ?? null
+}
+
+function refocus(root: ShadowRoot, key: string): void {
+  const sel = `[data-keep-focus="${CSS.escape(key)}"]`
+  root.querySelector<HTMLElement>(sel)?.focus({ preventScroll: true })
 }
 
 // Pre-mount surface. For loading/idle we render a

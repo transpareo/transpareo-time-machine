@@ -32,8 +32,10 @@ dpp-footer:empty {
 
   // The footer sits on the body background, so it takes
   // the publisher's muted-on-body token rather than
-  // --color-muted, which is mixed against the card.
-  color: var(--footer-text-color, #777);
+  // --color-muted, which is mixed against the card. The
+  // fallback is the Style Editor's default, 5:1 or more
+  // on the default body and trough.
+  color: var(--footer-text-color, #5F5E5D);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -56,7 +58,7 @@ dpp-footer:empty {
 
 .sep {
   color: color-mix(
-    in oklab, var(--footer-text-color, #777) 50%, transparent);
+    in oklab, var(--footer-text-color, #5F5E5D) 50%, transparent);
 }
 
 .locale-wrap {
@@ -69,7 +71,7 @@ dpp-footer:empty {
   gap: 6px;
   padding: 4px 10px;
   background: color-mix(in oklab, var(--font-color) 4%, transparent);
-  color: var(--footer-text-color, #777);
+  color: var(--footer-text-color, #5F5E5D);
   font: inherit;
   letter-spacing: 0.04em;
 
@@ -78,19 +80,22 @@ dpp-footer:empty {
   // rising to full opacity on hover / keyboard focus.
   border: 1px solid color-mix(
     in oklab,
-    var(--footer-text-color, #777) 60%,
+    var(--footer-text-color, #5F5E5D) 60%,
     transparent);
   border-radius: 4px;
   cursor: pointer;
 
-  // Hover and keyboard focus share one visual: the border
-  // goes opaque, no background tint. The global
-  // `button:focus-visible { outline }` from app.css is
-  // suppressed so the border is the sole indicator.
+  // Hover and keyboard focus both take the border opaque;
+  // focus also draws the ring the filter input draws, since
+  // a border gaining 40% alpha is too faint to find.
   &:hover,
   &:focus-visible {
-    border-color: var(--footer-text-color, #777);
-    outline: none;
+    border-color: var(--footer-text-color, #5F5E5D);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--action-color);
+    outline-offset: 1px;
   }
 
   // On the workspace's background pattern the control
@@ -118,7 +123,7 @@ dpp-footer:empty {
   border: 1px solid color-mix(
     in oklab,
     var(--body-background, #000) 50%,
-    var(--footer-text-color, #777));
+    var(--footer-text-color, #5F5E5D));
   border-radius: 8px;
   box-shadow: 0 6px 20px color-mix(
     in oklab, var(--font-color, #222) 14%, transparent);
@@ -211,16 +216,17 @@ dpp-footer:empty {
     white-space: nowrap;
 
     // Hover and keyboard focus share the same tinted
-    // background. The global `button:focus-visible {
-    // outline }` from app.css would draw a partly-
-    // clipped ring against the menu's overflow:hidden,
-    // so suppress it, the background change is the
-    // visible indicator.
+    // background; focus adds a ring drawn inside the row,
+    // where the menu's overflow:hidden cannot clip it.
     &:hover,
     &:focus-visible {
       background: color-mix(
         in oklab, var(--font-color, #222) 8%, transparent);
-      outline: none;
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--action-color);
+      outline-offset: -2px;
     }
 
     &.active {

@@ -95,6 +95,8 @@ export function openModal(opts: ModalOpenOptions): ModalHandle {
 
 class DppModal extends LightElement {
   protected setup(): void {
+    this.setAttribute('aria-labelledby', 'generic-modal-title')
+
     bindModalChrome(this, this.effect.bind(this), {
       isOpen: () => active() != null,
       onClose: () => {
@@ -112,6 +114,7 @@ class DppModal extends LightElement {
       }
       this.replaceChildren(buildModal({
         title: cur.title,
+        titleId: 'generic-modal-title',
         body: cur.body,
         onClose: cur.close,
       }))

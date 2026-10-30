@@ -158,8 +158,12 @@ dpp-verifier {
   }
 }
 
+// A word wider than its column (a German compound at 320px,
+// or under widened letter spacing) breaks instead of running
+// out of the card.
 .card-content {
   padding: 0 25px 16px;
+  overflow-wrap: break-word;
 }
 
 /* With no brandbar rendered (no themed logo and no chip)

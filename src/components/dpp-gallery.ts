@@ -107,7 +107,7 @@ class DppGallery extends LightElement {
 
     if (total > 1) {
       nav.style.display = ''
-      nav.replaceChildren(navFragment(idx, total))
+      renderNav(nav, idx, total)
     } else {
       nav.style.display = 'none'
     }
@@ -223,16 +223,47 @@ function applyRenditions(
   img.sizes = HERO_SIZES
 }
 
+// Redraw the pagination strip into `nav`. Exported so
+// <dpp-lightbox> reuses the exact same DOM and class
+// names; different colours come from CSS scoped to the
+// lightbox host.
+//
+// A redraw replaces the control a keyboard user just
+// pressed, which would drop focus onto the page (out of
+// the lightbox's dialog, too). Focus moves to the same
+// control in the new strip, or to the current page when
+// that control can no longer step.
+export function renderNav(
+  nav: HTMLElement, currentIdx: number, total: number
+): void {
+  const root = nav.getRootNode() as Document | ShadowRoot
+  const held = root.activeElement as HTMLElement | null
+  const key = held && nav.contains(held) ? navKey(held) : null
+
+  nav.replaceChildren(navFragment(currentIdx, total))
+  if (!key) return
+
+  const same = nav.querySelector<HTMLElement>(key)
+  const target = same && same.tabIndex >= 0
+    ? same
+    : nav.querySelector<HTMLElement>('[aria-current="true"]')
+  target?.focus()
+}
+
+function navKey(control: HTMLElement): string | null {
+  const { action, page } = control.dataset
+  if (action) return `[data-action="${action}"]`
+  if (page) return `[data-page="${page}"]`
+  return null
+}
+
 // Pure builder for the `< 1 2 … N >` pagination strip.
-// Used here and re-exported so <dpp-lightbox> reuses the
-// exact same DOM and class names, different colours
-// come from CSS scoped to the lightbox host. Returns a
-// DocumentFragment rather than an HTML string so the
-// pattern is safe-by-default against XSS regressions
+// Returns a DocumentFragment rather than an HTML string so
+// the pattern is safe-by-default against XSS regressions
 // (a future contributor adding a localised string or
 // user-provided label can't accidentally introduce a
 // rendering surface that interprets the value as HTML).
-export function navFragment(
+function navFragment(
   currentIdx: number, total: number,
 ): DocumentFragment {
   const frag = document.createDocumentFragment()

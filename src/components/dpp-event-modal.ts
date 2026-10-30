@@ -328,6 +328,10 @@ function buildCopyButton(ev: EpcisObjectEvent): HTMLButtonElement {
   const btn = el('button', 'epcis-copy')
   btn.type = 'button'
   btn.textContent = tr('epcis.copy')
+
+  // "Copied" replaces the label under the visitor's focus,
+  // so the button announces its own text change.
+  btn.setAttribute('aria-live', 'polite')
   btn.addEventListener('click', async () => {
     await navigator.clipboard.writeText(
       JSON.stringify(eventDocument(ev), null, 2),
@@ -343,9 +347,15 @@ function buildCopyButton(ev: EpcisObjectEvent): HTMLButtonElement {
   return btn
 }
 
+// The block scrolls inside the modal, so it takes focus
+// for a keyboard user to scroll it, and a name to say what
+// they landed on.
 function buildJsonBlock(ev: EpcisObjectEvent): HTMLElement {
   const pre = el('pre', 'epcis-json')
   pre.textContent = JSON.stringify(eventDocument(ev), null, 2)
+  pre.tabIndex = 0
+  pre.setAttribute('role', 'region')
+  pre.setAttribute('aria-label', tr('epcis.rawJson'))
   return pre
 }
 

@@ -77,6 +77,26 @@ describe('locale picker rows', () => {
       toEqual(['English', 'German', 'Spanish'])
   })
 
+  it('tags each native name with its own language', () => {
+    // "Deutsch" read with English phonemes is noise; the
+    // name in the viewer's language carries no tag of its own.
+    const footer = mount(['en', 'de'], 'en')
+    const spans = [...footer.querySelectorAll('.locale-list span')]
+    const tagged = spans.map((s) => [s.textContent, s.getAttribute('lang')])
+    expect(tagged).toEqual([
+      ['English', 'en'], ['German', null], ['Deutsch', 'de']
+    ])
+  })
+
+  it('builds a listbox of options with nothing in between', () => {
+    const footer = mount(['en', 'de'], 'en')
+    const list = footer.querySelector('[role="listbox"]')!
+    expect(list.getAttribute('aria-labelledby')).toBe('locale-switch')
+    expect(footer.querySelector('#locale-switch')).not.toBeNull()
+    const items = [...list.children].map((li) => li.getAttribute('role'))
+    expect(items).toEqual(['none', 'none'])
+  })
+
   it('marks the active row for assistive tech', () => {
     const footer = mount(['en', 'de'], 'de')
     const active = footer.querySelector('button[aria-selected="true"]')

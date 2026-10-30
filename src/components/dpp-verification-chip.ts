@@ -55,6 +55,11 @@ class DppVerificationChip extends LightElement {
     const btn = this.querySelector('.chip') as HTMLButtonElement
     const lbl = this.querySelector('.label-text')!
 
+    // The verdict lands after the page is up and changes with
+    // every version, so the chip is a polite status region: a
+    // screen reader hears "Verified" without moving there.
+    this.setAttribute('role', 'status')
+
     // A draft is unsigned by design, so there is no proof
     // chain to open: the chip stays inert (no pointer, no
     // modal) in that state. An unverifiable snapshot is

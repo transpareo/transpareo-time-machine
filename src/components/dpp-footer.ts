@@ -88,14 +88,27 @@ class DppFooter extends LightElement {
   ): PickerRefs {
     const wrap = this.querySelector('.locale-wrap')!
     const withFilter = locales.length > FILTER_THRESHOLD
+
+    // The listbox takes its name from the trigger, which
+    // reads the current language.
     wrap.innerHTML = `
-      <button type="button" class="locale-switch" aria-haspopup="listbox">
+      <button
+        type="button"
+        id="locale-switch"
+        class="locale-switch"
+        aria-haspopup="listbox"
+        data-keep-focus="locale-switch"
+      >
         <span class="locale-label"></span>
         <span class="chevron" aria-hidden="true"></span>
       </button>
       <div class="locale-menu">
         ${withFilter ? '<input type="search" class="locale-filter" />' : ''}
-        <ul class="locale-list" role="listbox"></ul>
+        <ul
+          class="locale-list"
+          role="listbox"
+          aria-labelledby="locale-switch"
+        ></ul>
         <div class="locale-empty" hidden></div>
       </div>
     `
@@ -152,6 +165,11 @@ class DppFooter extends LightElement {
       if (!code) return
       pickLocale(code)
       this.open.set(false)
+
+      // Closing drops the row that held focus. The trigger
+      // takes it, and keeps it when the passport re-renders
+      // in the picked language (see data-keep-focus).
+      refs.btn.focus()
     })
 
     refs.filterInput?.addEventListener('input', () => {
@@ -169,17 +187,20 @@ class DppFooter extends LightElement {
     })
   }
 
-  // Escape closes the menu; arrows move focus through
-  // the filtered list; Enter on the filter input
-  // commits the first remaining match. Enter on a
-  // focused option button fires its native click and
-  // needs no extra handling.
+  // Escape closes the menu and puts focus back on the
+  // trigger, from the trigger or from inside the menu;
+  // arrows move focus through the filtered list; Enter on
+  // the filter input commits the first remaining match.
+  // Enter on a focused option button fires its native
+  // click and needs no extra handling.
   private bindPickerKeyboard(refs: PickerRefs): void {
     const root = this.getRootNode() as Document | ShadowRoot
-    refs.menu.addEventListener('keydown', (e) => {
+    refs.wrap.addEventListener('keydown', (e) => {
+      if (!this.open.peek()) return
       if (e.key === 'Escape') {
         e.preventDefault()
         this.open.set(false)
+        refs.btn.focus()
         return
       }
       if (e.key === 'ArrowDown') {
@@ -357,7 +378,10 @@ function sortForViewer(
 // "PT-BR" beside "Brazilian Portuguese" reads as data
 // leaking into the UI, not as a language.
 function localeOption(code: string, current: string): HTMLLIElement {
+  // The item is layout only: a listbox owns options, and a
+  // list item between the two breaks that tie.
   const li = el('li')
+  li.setAttribute('role', 'none')
   const active = code === current
   const btn = el('button', active ? 'active' : undefined)
   btn.type = 'button'
@@ -366,9 +390,16 @@ function localeOption(code: string, current: string): HTMLLIElement {
   btn.setAttribute('aria-selected', String(active))
   const localized = localizedName(code, current)
   const native = nativeNameOrNull(code)
-  btn.appendChild(el('span', undefined, localized ?? nativeName(code)))
+  const lead = el('span', undefined, localized ?? nativeName(code))
+
+  // A native name is written in its own language and says so,
+  // for a screen reader to voice it that way.
+  if (!localized && native) lead.lang = code
+  btn.appendChild(lead)
   if (localized && native) {
-    btn.appendChild(el('span', 'locale-hint', native))
+    const hint = el('span', 'locale-hint', native)
+    hint.lang = code
+    btn.appendChild(hint)
   }
   li.appendChild(btn)
   return li

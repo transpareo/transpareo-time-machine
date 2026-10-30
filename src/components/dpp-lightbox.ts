@@ -21,7 +21,7 @@ import { signal } from '@/reactive/signals'
 import { bindModalChrome } from '@/reactive/modal'
 import { i18n } from '@/i18n'
 import { t } from '@/i18n/labels'
-import { markPending, navFragment } from './dpp-gallery'
+import { markPending, renderNav } from './dpp-gallery'
 import type { SnapshotImage } from '@/types'
 import { WHEEL_AXIS_LOCK_PX } from '@/gestures'
 
@@ -259,7 +259,7 @@ class DppLightbox extends LightElement {
     markPending(this, img)
 
     if (this.images.length > 1) {
-      nav.replaceChildren(navFragment(this.index, this.images.length))
+      renderNav(nav, this.index, this.images.length)
     } else {
       nav.replaceChildren()
     }
