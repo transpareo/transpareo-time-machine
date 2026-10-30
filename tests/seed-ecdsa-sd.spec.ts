@@ -8,7 +8,13 @@ import { fileURLToPath } from 'node:url';
 import { buildEcdsaSdIssuer } from '../scripts/seed/ecdsa-sd-signing';
 import { verifyDpp, dppIsAuthentic } from '../src/crypto/dispatch';
 import { decodeMultibaseBase58 } from '../src/crypto/multibase';
+import {
+  TRANSPAREO_V2_CONTEXT_URL, VC_CONTEXT_URL,
+} from '../src/crypto/dpp-contexts';
 import type { ResolvedMultikey } from '../src/crypto/did-web';
+
+const DOCUMENT_TYPE =
+  'https://transpareo.com/vocab/transpareo/v2#document-type';
 
 // Resolve each proof's key from the emitted Multikey doc: the
 // platform proof verifies against platform-p256.json, every
@@ -58,6 +64,53 @@ describe('seed ecdsa-sd issuer', () => {
       resolveIssuerKey: keyResolver(join(dir, 'acme/dpp/abc12345/keys')),
     });
     expect(v.cryptosuite).toBe('ecdsa-sd-2023');
+    expect(dppIsAuthentic(v)).toBe(true);
+  });
+
+  // A passport published today names the v2 edition, which
+  // defines the download terms.
+  it('issues a v2 credential with a download the verifier accepts', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'sd-'));
+    const issuer = await buildEcdsaSdIssuer(
+      dir, 'acme', 'abc12345', '2026-05-01T12:00:00Z',
+      'did:web:acme.example', 'did:web:platform.example',
+    );
+    const download = {
+      '@type': 'Link',
+      href: '/media/acme/files/9f86d081.pdf',
+      mediaType: 'application/pdf',
+      fileDigest: 'sha256-n4bQgYhMfWWaL+qgxVrQFaO/TxsrC4Is0V1sFbDwCgg=',
+      name: [
+        { '@value': 'Prüfbericht', '@language': 'de' },
+        { '@value': 'Test report', '@language': 'en' },
+      ],
+      fileLanguages: ['de'],
+      documentType: { '@value': 'test_report', '@type': DOCUMENT_TYPE },
+      documentIssuer: 'Hohenstein Institute',
+      documentNumber: 'HS-2026-0412',
+      documentValidFrom: '2026-01-01',
+      documentValidUntil: '2028-12-31',
+      fileVersions: [{
+        '@type': 'Link',
+        href: '/media/acme/files/60303ae2.pdf',
+        mediaType: 'application/pdf',
+        fileDigest: 'sha256-YDA64iuZiGMqUIwKmMDLYyFqBnnSZrAFBYxDGSnrUEg=',
+        fileLanguages: ['en'],
+      }],
+    };
+    const vc = await issuer.issue({
+      '@context': ['ignored'],
+      '@type': 'dpp:DigitalProductPassport',
+      '@id': 'https://acme.example/dpp/abc12345',
+      passportAlias: 'abc12345',
+      version: 1,
+      product: { '@type': 'Product', name: 'Pulse 2000', downloads: [download] },
+    });
+    const v = await verifyDpp(vc, {
+      resolveIssuerKey: keyResolver(join(dir, 'acme/dpp/abc12345/keys')),
+    });
+
+    expect(vc['@context']).toEqual([VC_CONTEXT_URL, TRANSPAREO_V2_CONTEXT_URL]);
     expect(dppIsAuthentic(v)).toBe(true);
   });
 });

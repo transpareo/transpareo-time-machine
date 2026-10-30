@@ -21,24 +21,22 @@
  * custody and any issuer HTTPS host machinery.
  */
 
-import { mkdir, writeFile, readFile } from 'node:fs/promises';
+import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { webcrypto } from 'node:crypto';
 import { canonicalize } from '../../src/crypto/rdfc.ts';
 import { encodeBase64url } from '../../src/crypto/base64url.ts';
 import { encodeMultibaseBase58 } from '../../src/crypto/multibase.ts';
 
+// The renderer's own context copies, so the seed and the
+// renderer canonicalize identically. A credential names the
+// edition a passport published today names.
+import {
+  DPP_CONTEXTS, TRANSPAREO_V2_CONTEXT_URL, VC_CONTEXT_URL,
+} from '../../src/crypto/dpp-contexts.ts';
+
 const { subtle } = webcrypto;
 type CryptoKey = webcrypto.CryptoKey;
-
-// The two hosted contexts a DPP VC references by URL,
-// loaded from the SPA's cached copies so the seed and the
-// renderer canonicalize identically. Hardcoded here rather
-// than imported from src/crypto/dpp-contexts, whose JSON
-// imports are an app-config concern.
-const VC_CONTEXT_URL = 'https://transpareo.com/vocab/vc/v1';
-const TRANSPAREO_CONTEXT_URL = 'https://transpareo.com/vocab/transpareo/v1';
-const CONTEXTS_DIR = join(import.meta.dirname, '..', '..', 'src', 'contexts');
 
 // Demo-only issuer key. NOT a production key; it exists so
 // `npm run seed` can issue a self-verifying ecdsa-sd fixture
@@ -78,7 +76,6 @@ export async function buildEcdsaSdIssuer(
   issuerDid: string,
   platformDid: string,
 ): Promise<EcdsaSdIssuer> {
-  const contexts = await loadContexts();
   const authorities = [
     await setupAuthority(
       ISSUER_JWK, publicDir, issuerHandle, code, 'issuer-p256.json', issuerDid,
@@ -98,7 +95,7 @@ export async function buildEcdsaSdIssuer(
       // one per authority key: issuer, then platform.
       const proof = await Promise.all(
         authorities.map((a) => deriveAllMandatory(
-          vc, a.key, a.verificationMethod, createdAt, contexts,
+          vc, a.key, a.verificationMethod, createdAt,
         )),
       );
       return { ...vc, proof };
@@ -147,15 +144,6 @@ async function setupAuthority(
   return { key, verificationMethod };
 }
 
-async function loadContexts(): Promise<Record<string, unknown>> {
-  const read = async (f: string): Promise<unknown> =>
-    JSON.parse(await readFile(join(CONTEXTS_DIR, f), 'utf8'));
-  return {
-    [VC_CONTEXT_URL]: await read('vc-v1.json'),
-    [TRANSPAREO_CONTEXT_URL]: await read('transpareo-v1.json'),
-  };
-}
-
 // ─── VC envelope + stable @ids ──────────────────────
 
 function buildCredential(
@@ -178,7 +166,7 @@ function buildCredential(
     // signed value carries is written absolute, so there is
     // nothing here for one processor to expand and another
     // to leave alone.
-    '@context': [VC_CONTEXT_URL, TRANSPAREO_CONTEXT_URL],
+    '@context': [VC_CONTEXT_URL, TRANSPAREO_V2_CONTEXT_URL],
     '@id': `${subjectIri}#credential`,
     type: ['VerifiableCredential', 'dpp:DigitalProductPassport'],
     issuer: issuerDid,
@@ -264,8 +252,8 @@ const DERIVED_TAG = [0xd9, 0x5d, 0x01];
 async function deriveAllMandatory(
   vc: Record<string, unknown>, issuerKey: CryptoKey,
   verificationMethod: string, createdAt: string,
-  contexts: Record<string, unknown>,
 ): Promise<Record<string, unknown>> {
+  const contexts = { contexts: DPP_CONTEXTS };
   const options = {
     type: 'DataIntegrityProof',
     cryptosuite: 'ecdsa-sd-2023',
@@ -275,10 +263,10 @@ async function deriveAllMandatory(
   };
   const proofConfig = { '@context': vc['@context'], ...options };
   const proofHash = await sha256(utf8(
-    (await canonicalize(proofConfig, { contexts })).join(''),
+    (await canonicalize(proofConfig, contexts)).join(''),
   ));
 
-  const nquads = await canonicalize(vc, { contexts });
+  const nquads = await canonicalize(vc, contexts);
   const mandatoryHash = await sha256(utf8(nquads.join('')));
 
   // A proof-scoped key still binds the base signature even

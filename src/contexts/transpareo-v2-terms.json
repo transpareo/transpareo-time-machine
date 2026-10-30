@@ -1,0 +1,42 @@
+{
+  "unpublishedChanges": {
+    "@id": "https://transpareo.com/vocab/transpareo/v1#unpublishedChanges",
+    "@type": "xsd:boolean"
+  },
+  "downloads": {
+    "@id": "https://transpareo.com/vocab/transpareo/v2#downloads"
+  },
+  "fileDigest": {
+    "@id": "https://transpareo.com/vocab/transpareo/v2#fileDigest",
+    "@type": "xsd:string"
+  },
+  "fileVersions": {
+    "@id": "https://transpareo.com/vocab/transpareo/v2#fileVersions"
+  },
+  "fileLanguages": {
+    "@id": "https://transpareo.com/vocab/transpareo/v2#fileLanguages",
+    "@type": "xsd:language"
+  },
+  "documentType": {
+    "@id": "https://transpareo.com/vocab/transpareo/v2#documentType"
+  },
+  "documentIssuer": {
+    "@id": "https://transpareo.com/vocab/transpareo/v2#documentIssuer",
+    "@type": "xsd:string"
+  },
+  "documentNumber": {
+    "@id": "https://transpareo.com/vocab/transpareo/v2#documentNumber",
+    "@type": "xsd:string"
+  },
+  "documentValidFrom": {
+    "@id": "https://transpareo.com/vocab/transpareo/v2#documentValidFrom",
+    "@type": "xsd:date"
+  },
+  "documentValidUntil": {
+    "@id": "https://transpareo.com/vocab/transpareo/v2#documentValidUntil",
+    "@type": "xsd:date"
+  },
+  "document-type": {
+    "@id": "https://transpareo.com/vocab/transpareo/v2#document-type"
+  }
+}

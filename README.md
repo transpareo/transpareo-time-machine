@@ -916,10 +916,12 @@ verifier dispatches on it, so one build verifies either:
   uses this.
 
 Both verifiers are hand-written and vendored under
-`src/crypto/`, with no runtime dependencies. The two cached
+`src/crypto/`, with no runtime dependencies. The cached
 JSON-LD contexts the ecdsa-sd path canonicalizes against
-(`src/contexts/`) ship with the bundle, so verification stays
-fully offline.
+(`src/contexts/`: the VC context and both editions of the
+Transpareo vocabulary, `transpareo/v1` and `transpareo/v2`)
+ship with the bundle, so verification stays fully offline. A
+passport signed before v2 names v1 and keeps verifying.
 
 **Verify it yourself.** The proof modal (opened from the
 verification chip) prints, for the active version, the
