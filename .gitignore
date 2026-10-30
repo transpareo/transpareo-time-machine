@@ -49,6 +49,7 @@ dist-ssr
 /public/*/branding.css
 /public/*/branding/
 /public/*/icon-map.json
+/public/*/files/
 
 # Session-local planning artifacts (drafts, session
 # handoffs, todos). These live in `.todo/` per the

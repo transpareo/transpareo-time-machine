@@ -1,0 +1,56 @@
+/*
+ * transpareo-time-machine - open-source DPP renderer
+ * Copyright (C) 2026 Transpareo AG
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ *
+ * The Downloads section (dpp-downloads) and the document row
+ * it shares with the property list: a property row whose
+ * label is the file's link, its type opposite, and the
+ * details the publisher recorded on a line beneath.
+ */
+
+dpp-downloads {
+  display: block;
+}
+
+// A one-word type name as long as the Finnish one for a
+// declaration of conformity (28 letters) would otherwise
+// hold the column open past a phone's width.
+.dpp-document-type {
+  color: var(--color-muted);
+  font-size: var(--font-sm);
+  text-align: end;
+  overflow-wrap: anywhere;
+}
+
+.dpp-document-details {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 16px;
+  margin: 0;
+  font-size: var(--font-sm);
+  overflow-wrap: anywhere;
+
+  div {
+    display: flex;
+    gap: 4px;
+  }
+
+  dt {
+    color: var(--color-muted);
+  }
+
+  dd {
+    margin: 0;
+  }
+}
+
+.dpp-document-expired {
+  padding: 0 6px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text);
+  font-size: var(--font-xs);
+  font-weight: 600;
+}

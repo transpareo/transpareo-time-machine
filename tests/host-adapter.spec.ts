@@ -244,6 +244,82 @@ describe('toRenderModel: image references', () => {
   });
 });
 
+// The public files a passport pinned ride as product.downloads,
+// one Link per file with its language versions inside, their
+// references root paths like the images'.
+describe('toRenderModel: downloads', () => {
+  const SNAPSHOT = 'https://cdn.example.com/dpp/p1/v/3-abc.jsonld.gz';
+
+  const manual = {
+    '@type': 'Link',
+    href: '/media/acme/files/9f86.pdf',
+    mediaType: 'application/pdf',
+    fileDigest: 'sha256-n4bQgYhMfWWaL+qgxVrQFaO/TxsrC4Is0V1sFbDwCgg=',
+    name: [{ '@value': 'Care guide', '@language': 'en' }],
+    documentType: {
+      '@value': 'manual',
+      '@type': 'https://transpareo.com/vocab/transpareo/v2#document-type',
+    },
+    fileVersions: [{
+      '@type': 'Link',
+      href: '/media/acme/files/4e07.pdf',
+      fileLanguages: ['de'],
+    }],
+  };
+
+  function withDownloads(downloads: unknown): SignedSnapshot {
+    return wire([], {
+      product: {
+        '@type': 'Product', name: { en: 'X' }, brand: 'B',
+        properties: [], downloads,
+      },
+    });
+  }
+
+  it('reads each download with its files resolved', () => {
+    const model = toRenderModel(withDownloads([manual]), SNAPSHOT);
+    expect(model.product.downloads).toEqual([{
+      name: { en: 'Care guide' },
+      type: 'manual',
+      files: [
+        { href: 'https://cdn.example.com/media/acme/files/9f86.pdf' },
+        {
+          href: 'https://cdn.example.com/media/acme/files/4e07.pdf',
+          languages: ['de'],
+        },
+      ],
+    }]);
+  });
+
+  it('leaves out an entry naming no file', () => {
+    const model = toRenderModel(
+      withDownloads([{ '@type': 'Link' }, 'x', manual]), SNAPSHOT
+    );
+    expect(model.product.downloads).toHaveLength(1);
+  });
+
+  it('names no downloads for a snapshot that carries none', () => {
+    expect(toRenderModel(wire([]), SNAPSHOT).product).
+      not.toHaveProperty('downloads');
+    expect(toRenderModel(withDownloads([]), SNAPSHOT).product).
+      not.toHaveProperty('downloads');
+  });
+
+  it('resolves the file a property points at like a download', () => {
+    const doc: WireProperty = {
+      propertyID: 'declarationOfConformity',
+      name: { en: 'Declaration of conformity' },
+      value: manual,
+    };
+    const value = toRenderModel(wire([doc]), SNAPSHOT).properties[0].value;
+    expect(value).toMatchObject({
+      type: 'link',
+      href: 'https://cdn.example.com/media/acme/files/9f86.pdf',
+      document: { type: 'manual' },
+    });
+  });
+});
+
 describe('adaptPrivateRows: post-auth tiers', () => {
   it('keeps only legitimateInterest rows', () => {
     const out = adaptPrivateRows([

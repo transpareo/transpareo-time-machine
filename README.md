@@ -338,6 +338,24 @@ Field notes:
   item, `/10/` lot), a band under the brandbar says so.
   The four terms are defined in the bundled
   `transpareo/v1` context.
+- Downloads live in the snapshot too. `product.downloads`
+  lists the files the passport pinned as `Link` objects:
+  `href` (a root path, resolved like an image's), `name`,
+  `fileDigest` (the SHA-256 of the bytes, `sha256-<base64>`),
+  `documentType` (a code typed with
+  `https://transpareo.com/vocab/transpareo/v2#document-type`:
+  `certificate`, `declaration_of_conformity`, `test_report`,
+  `manual`, `safety_data_sheet` or `other`), the optional
+  `documentIssuer`, `documentNumber`, `documentValidFrom` and
+  `documentValidUntil`, and `fileVersions`, the language
+  versions, each naming its `fileLanguages`. The card lists
+  them under "Downloads" after the accordions, opening the
+  version in the reader's language where there is one, naming
+  the type in that language and marking a document whose
+  `documentValidUntil` has passed. A property whose value is
+  such a Link (one carrying `fileDigest`) shows the same row in
+  the property list; a Link without a digest stays a plain
+  link. The terms are defined in `transpareo/v2`.
 - `signature` - a W3C Data Integrity proof
   (`eddsa-jcs-2022`, platform key) over the manifest
   body. The renderer verifies it and folds the
@@ -1062,6 +1080,9 @@ public/<id>/                              # gitignored
   branding/{logo.svg, favicon.ico}            # copied assets
   icon-map.json                               # row key -> sprite symbol table
   <fixture-image>.jpg                         # downloaded images
+  files/<sha256>.pdf                          # the fixture's documents,
+                                                one page each, under
+                                                their own digest
   dpp/<code>/
     manifest.json                             # entry point: versions[].url
                                                 + epcisUrl + signature
@@ -1084,6 +1105,15 @@ public/<id>/
     snapshot.json                             # one frozen version; with
                                                 proof_suite: none, no proof
 ```
+
+A fixture's files are declared in a top-level `documents:`
+map: a name, a type from the code list, the optional issuer,
+number and validity dates, and one or more `files`, each a
+line of Latin-1 `text` the seed renders as a one-page PDF,
+with `languages` on a language version. `product.downloads`
+names the keys listed under Downloads, and a metric's
+`document:` points a property at one. The Nordic Wear demo
+pins three, one of them expired.
 
 No shipped fixture is out of circulation, so the
 withdrawal band takes a local edit to see. Add either
@@ -1296,6 +1326,7 @@ src/
   icons.ts, config.ts
   revoked-roots.ts            boot-time pinned-key revocation check
   types.ts                    localized-scalar tx() + shared types
+  document-types.ts           the document-type code list
   errors.ts                   describeError() for failure messages
   crypto/
     jcs.ts                    RFC 8785 canonicalizer
@@ -1321,6 +1352,8 @@ src/
     dpp-property-cards.ts
     dpp-badge-lists.ts
     dpp-accordions.ts
+    dpp-downloads.ts            pinned files, and the row a
+                                file-backed property shares
     dpp-manufacturer.ts
     dpp-timeline.ts             shim that imports ./timeline/index
     timeline/                   index.ts (class), layout.ts (math),

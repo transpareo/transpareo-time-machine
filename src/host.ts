@@ -55,14 +55,15 @@ import type {
 import type {
   DppSnapshot, DppProduct, DppManufacturer, SnapshotImage, ImageVariant,
   PropertyValue, PropertyValueKind, SnapshotLocalizedText, SnapshotProof,
-  ChangeSet, LiveRow,
+  ChangeSet, LiveRow, DppDocument,
 } from '@/types'
 import {
   canonicalRating, canonicalStatus, foldLocale, propertyIsKind,
   regionLiteral,
 } from '@/types'
 import {
-  classifyWireValue, bridgeLongTextGroups, numericWireValue,
+  classifyWireValue, bridgeLongTextGroups, numericWireValue, documentOf,
+  literalString,
 } from '@/property-classify'
 import type { EpcisDocument } from '@/epcis'
 import { levelOf } from '@/passport-level'
@@ -460,6 +461,7 @@ interface WireProduct {
     | { readonly value?: unknown; readonly unitCode?: string }
   readonly weightUnit?: string
   readonly images?: ReadonlyArray<SnapshotImage | string>
+  readonly downloads?: unknown
   readonly manufacturer?: WireManufacturer
   readonly properties?: ReadonlyArray<WireProperty>
   readonly rating?: unknown
@@ -544,6 +546,8 @@ export function toRenderModel(
   const level = levelOf(w.passportLevel)
   const unitLevel = levelOf(w.unitPassportLevel)
   const lotDate = literalString(w.lotManufacturedOn)
+  const absolute = resolverFor(base)
+  const rows = w.product?.properties ?? w.properties ?? []
   return {
     version: w.version,
     publishedAt: w.publishedAt,
@@ -552,9 +556,9 @@ export function toRenderModel(
     issuer: w.issuer,
     platform: w.platform,
     product: adaptProduct(
-      w.product, w.rating, w.identifiers?.gtin ?? w.gtin, base
+      w.product, w.rating, w.identifiers?.gtin ?? w.gtin, absolute
     ),
-    properties: adaptProperties(w.product?.properties ?? w.properties ?? []),
+    properties: adaptProperties(rows, absolute),
     ...(typeof w.priorVersion === 'number' ? { priorVersion: w.priorVersion } : {}),
     ...(w.priorVersionHash ? { priorVersionHash: w.priorVersionHash } : {}),
     ...(changed ? { changedProperties: changed } : {}),
@@ -565,21 +569,14 @@ export function toRenderModel(
   }
 }
 
-// A string value, bare or as a typed literal.
-function literalString(raw: unknown): string | undefined {
-  if (typeof raw === 'string') return raw || undefined
-  if (!raw || typeof raw !== 'object') return undefined
-  const value = (raw as { '@value'?: unknown })['@value']
-  return typeof value === 'string' && value ? value : undefined
-}
-
 function adaptProduct(
-  p: WireProduct | undefined, topRating?: unknown, gtin?: string,
-  base?: string
+  p: WireProduct | undefined, topRating: unknown, gtin: string | undefined,
+  absolute: Resolver
 ): DppProduct {
   // Rating is top-level in the contract; fall back to
   // product.rating for snapshots that carry it there.
   const rating = canonicalRating(topRating ?? p?.rating)
+  const downloads = adaptDownloads(p?.downloads, absolute)
   return {
     name: foldLocale(p?.name),
     brand: p?.brand ?? '',
@@ -587,10 +584,22 @@ function adaptProduct(
     ...(p?.category != null ? { category: foldLocale(p.category) } : {}),
     ...(gtin ? { gtin } : {}),
     ...adaptWeight(p),
-    images: normalizeImages(p?.images, base),
+    images: normalizeImages(p?.images, absolute),
     manufacturer: adaptManufacturer(p?.manufacturer),
+    ...(downloads.length ? { downloads } : {}),
     ...(rating ? { rating } : {}),
   }
+}
+
+// One document per Link that names a file. Anything else on
+// the list is left out, since it would draw as a dead row.
+function adaptDownloads(
+  raw: unknown, absolute: Resolver
+): ReadonlyArray<DppDocument> {
+  if (!Array.isArray(raw)) return []
+  return raw
+    .map((entry) => documentOf(entry, absolute))
+    .filter((d): d is DppDocument => !!d)
 }
 
 // Read the product weight from either a QuantitativeValue
@@ -637,11 +646,11 @@ function adaptManufacturer(
 // shape, then a grouping pass keeps accordion runs
 // coherent.
 function adaptProperties(
-  rows: ReadonlyArray<WireProperty>,
+  rows: ReadonlyArray<WireProperty>, absolute: Resolver,
 ): ReadonlyArray<PropertyValue> {
   const isPublic = (r: WireProperty): boolean =>
     r.access !== 'legitimateInterest' && r.access !== 'authorities'
-  return buildRows(rows.filter(isPublic), buildPublicRow)
+  return buildRows(rows.filter(isPublic), buildPublicRow, absolute)
 }
 
 // Adapt the rows the post-auth endpoint returns into the
@@ -702,11 +711,13 @@ export function composeLiveRows(
 function buildRows(
   rows: ReadonlyArray<WireProperty>,
   build: (r: WireProperty, value: PropertyValueKind) => PropertyValue,
+  absolute?: Resolver,
 ): ReadonlyArray<PropertyValue> {
   const kinds = bridgeLongTextGroups(
-    rows.map((r) =>
-      classifyWireValue(r.value, r.unitText ?? unitCodeToText(r.unitCode)),
-    ),
+    rows.map((r) => {
+      const unit = r.unitText ?? unitCodeToText(r.unitCode)
+      return classifyWireValue(r.value, unit, absolute)
+    }),
   )
   return rows.map((r, i) => build(r, kinds[i]))
 }
@@ -738,26 +749,29 @@ function buildPrivateRow(
   }
 }
 
+type Resolver = (ref: string) => string
+
+// Media references ship as root paths so a passport stays
+// portable across mirrors: they land on the asset host, and
+// any other relative reference on `base`, the URL the
+// snapshot was read from. Resolving them against the
+// surrounding page instead points them at a host that may
+// hold none of the media, and misses the preload the page
+// issued against the real one. With no base (a bare adapter
+// call outside a fetch) the references stand as they are,
+// for the browser to resolve against the document.
+function resolverFor(base: string | undefined): Resolver {
+  return (ref) => base ? resolveReference(ref, base) ?? ref : ref
+}
+
 // Coerce a flat-string image entry to the {thumbnail,
 // large} pair the gallery reads, and resolve both
-// references. Image references ship as root paths so a
-// passport stays portable across mirrors: they land on the
-// asset host, and any other relative reference on `base`,
-// the URL the snapshot was read from. Resolving them
-// against the surrounding page instead points them at a
-// host that may hold none of the media, and misses the
-// preload the page issued against the real one.
+// references.
 function normalizeImages(
   images: ReadonlyArray<SnapshotImage | string> | undefined,
-  base?: string
+  absolute: Resolver
 ): ReadonlyArray<SnapshotImage> {
   if (!images || images.length === 0) return []
-
-  // With no base (a bare adapter call outside a fetch)
-  // the references stand as they are, for the browser to
-  // resolve against the document.
-  const absolute = (url: string): string =>
-    base ? resolveReference(url, base) ?? url : url
 
   const after: SnapshotImage[] = []
   for (const entry of images) {

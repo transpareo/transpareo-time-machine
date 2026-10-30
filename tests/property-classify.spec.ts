@@ -19,6 +19,7 @@ import {
   COMPACT_GATE,
 } from '../src/property-classify';
 import { REGION_DATATYPE } from '../src/types';
+import { DOCUMENT_TYPE_DATATYPE } from '../src/document-types';
 import type { PropertyValueKind } from '../src/types';
 
 describe('classifyWireValue: scalars', () => {
@@ -300,6 +301,105 @@ describe('classifyWireValue: document links', () => {
   it('leaves a Link without an href to the blank fallback', () => {
     expect(classifyWireValue({ '@type': 'Link' }, undefined))
       .toEqual({ type: 'scalar', value: '' });
+  });
+
+  it('resolves the href through the resolver it is handed', () => {
+    const raw = { '@type': 'Link', href: '/media/acme/files/a.pdf' };
+    const absolute = (ref: string): string => `https://cdn.example.com${ref}`;
+    expect(classifyWireValue(raw, undefined, absolute)).toEqual({
+      type: 'link', href: 'https://cdn.example.com/media/acme/files/a.pdf',
+    });
+  });
+});
+
+// A property pointing at a file the passport pinned: the Link
+// carries the digest of the file's bytes and the details the
+// publisher recorded, the same shape as a download.
+describe('classifyWireValue: file-backed links', () => {
+  const file = {
+    '@type': 'Link',
+    href: '/media/acme/files/9f86.pdf',
+    mediaType: 'application/pdf',
+    fileDigest: 'sha256-n4bQgYhMfWWaL+qgxVrQFaO/TxsrC4Is0V1sFbDwCgg=',
+    name: [
+      { '@value': 'EU declaration of conformity', '@language': 'en' },
+      { '@value': 'EU-Konformitätserklärung', '@language': 'de' },
+    ],
+    documentType: {
+      '@value': 'declaration_of_conformity',
+      '@type': DOCUMENT_TYPE_DATATYPE,
+    },
+    documentIssuer: 'Nordic Wear Lda.',
+    documentNumber: 'DoC-NW-2024-001',
+    documentValidFrom: '2024-01-01',
+    documentValidUntil: '2029-12-31',
+    fileVersions: [{
+      '@type': 'Link',
+      href: '/media/acme/files/4e07.pdf',
+      mediaType: 'application/pdf',
+      fileDigest: 'sha256-TgdAhWK+24tgzgXB3s/jrRa3IjCWfeAfZAt+Rym0n84=',
+      fileLanguages: ['de'],
+    }],
+  };
+
+  it('keeps the document details beside the href', () => {
+    expect(classifyWireValue(file, undefined)).toEqual({
+      type: 'link',
+      href: '/media/acme/files/9f86.pdf',
+      document: {
+        name: {
+          en: 'EU declaration of conformity',
+          de: 'EU-Konformitätserklärung',
+        },
+        type: 'declaration_of_conformity',
+        issuer: 'Nordic Wear Lda.',
+        number: 'DoC-NW-2024-001',
+        validUntil: '2029-12-31',
+        files: [
+          { href: '/media/acme/files/9f86.pdf' },
+          { href: '/media/acme/files/4e07.pdf', languages: ['de'] },
+        ],
+      },
+    });
+  });
+
+  it('resolves every file of the document', () => {
+    const absolute = (ref: string): string => `https://cdn.example.com${ref}`;
+    const k = classifyWireValue(file, undefined, absolute);
+    const files = k.type === 'link' ? k.document?.files : undefined;
+    expect(files?.map((f) => f.href)).toEqual([
+      'https://cdn.example.com/media/acme/files/9f86.pdf',
+      'https://cdn.example.com/media/acme/files/4e07.pdf',
+    ]);
+  });
+
+  // A code is read as a document type only when its datatype
+  // says so; an unknown code of that list reads as `other`.
+  it('reads the type from the code list alone', () => {
+    const typed = (value: string, type: string): unknown => ({
+      ...file, documentType: { '@value': value, '@type': type },
+    });
+    const typeOf = (raw: unknown): unknown => {
+      const k = classifyWireValue(raw, undefined);
+      return k.type === 'link' ? k.document?.type : k.type;
+    };
+    expect(typeOf(typed('expert_opinion', DOCUMENT_TYPE_DATATYPE)))
+      .toBe('other');
+    expect(typeOf(typed('manual', 'xsd:string'))).toBeUndefined();
+    expect(typeOf({ ...file, documentType: 'manual' })).toBeUndefined();
+  });
+
+  it('drops a language version that names no file', () => {
+    const raw = { ...file, fileVersions: [{ '@type': 'Link' }, 'x'] };
+    const k = classifyWireValue(raw, undefined);
+    const files = k.type === 'link' ? k.document?.files : undefined;
+    expect(files).toEqual([{ href: '/media/acme/files/9f86.pdf' }]);
+  });
+
+  it('keeps a Link without a digest a plain link', () => {
+    const { fileDigest: _, ...unpinned } = file;
+    expect(classifyWireValue(unpinned, undefined))
+      .toEqual({ type: 'link', href: '/media/acme/files/9f86.pdf' });
   });
 });
 

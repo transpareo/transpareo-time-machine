@@ -22,6 +22,17 @@ and this project adheres to
   bundle composes it from the v1 copy, so the v1 terms ship
   once. Passports signed under v1 keep verifying. The demo
   seed signs its ecdsa-sd passport under v2.
+- A Downloads section after the accordions lists the files a
+  passport pinned (`product.downloads`). Each row opens the
+  file in the reader's language where the publisher holds a
+  version in it, else the file for every language, and shows
+  the document's type in the reader's language, its issuer,
+  number and validity, with an "Expired" mark once the last
+  valid day has passed by the reader's clock. A property
+  pointing at a file (a Link carrying `fileDigest`) draws the
+  same row under the property's name. The six type names and
+  the section's labels ship in all 40 locales. A passport
+  without files renders as before.
 
 ### Changed
 
@@ -29,6 +40,12 @@ and this project adheres to
   where it listed available sizes: a garment size is a
   product with a passport of its own. The care accordion,
   which said the same in a sentence, is gone.
+- The Nordic Wear demo pins three files: a REACH test report
+  its property points at, a care guide with a German and a
+  French version, and a certificate whose validity ran out.
+  The seed renders each as a one-page PDF served under its
+  SHA-256, the way the platform serves a frozen copy, and the
+  demo's snapshots name the v2 vocabulary.
 - The lib bundle loads the `<dpp-verifier>` widget only when
   an element mounts in verifier mode. No passport page mounts
   it, and the platform's verifier page loads the standalone
@@ -38,6 +55,9 @@ and this project adheres to
 
 ### Fixed
 
+- A document link's root path (`/media/...`) resolves against
+  the asset host like an image's, where it resolved against
+  the page.
 - The bundle-size gate follows a minified static import
   (`from"./x.js"`); it counted only the entry file of a build
   that split one off.

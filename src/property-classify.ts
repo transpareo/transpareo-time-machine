@@ -43,11 +43,14 @@
 
 import type {
   PropertyValueKind, CompositionEntry, SnapshotLocalizedText,
-  WireLangValue,
+  WireLangValue, DocumentFile, DppDocument,
 } from '@/types'
 import {
   canonicalRating, isLanguageArray, foldLocale, isRegionLiteral,
 } from '@/types'
+import {
+  DOCUMENT_TYPES, DOCUMENT_TYPE_DATATYPE, type DocumentType,
+} from '@/document-types'
 
 export const LONG_TEXT_GATE = 60
 
@@ -84,6 +87,61 @@ function isSubstanceLike(v: unknown): boolean {
 function isLinkObject(v: unknown): v is Readonly<Record<string, unknown>> {
   if (!v || typeof v !== 'object' || Array.isArray(v)) return false
   return (v as Record<string, unknown>)['@type'] === 'Link'
+}
+
+// A string value, bare or as a typed literal.
+export function literalString(raw: unknown): string | undefined {
+  if (typeof raw === 'string') return raw || undefined
+  if (!raw || typeof raw !== 'object') return undefined
+  const value = (raw as { '@value'?: unknown })['@value']
+  return typeof value === 'string' && value ? value : undefined
+}
+
+// The resolver of a caller that knows no document URL: every
+// reference stands as written.
+const asWritten = (ref: string): string => ref
+
+// A file the passport pinned, as a Link carries it: the file
+// it names (`href`), the digest of its bytes, the details the
+// publisher recorded, and its language versions in
+// `fileVersions`. Undefined for anything naming no file.
+export function documentOf(
+  raw: unknown, absolute = asWritten,
+): DppDocument | undefined {
+  const file = fileOf(raw, absolute)
+  if (!file) return undefined
+  const link = raw as Readonly<Record<string, unknown>>
+  const versions = Array.isArray(link.fileVersions) ? link.fileVersions : []
+  const others = versions.map((v) => fileOf(v, absolute))
+  return {
+    name: link.name == null ? undefined : foldLocale(link.name),
+    type: documentTypeOf(link.documentType),
+    issuer: literalString(link.documentIssuer),
+    number: literalString(link.documentNumber),
+    validUntil: literalString(link.documentValidUntil),
+    files: [file, ...others.filter((f): f is DocumentFile => !!f)],
+  }
+}
+
+function fileOf(
+  raw: unknown, absolute: typeof asWritten,
+): DocumentFile | undefined {
+  if (!isLinkObject(raw)) return undefined
+  const { href, fileLanguages } = raw
+  if (typeof href !== 'string' || !href) return undefined
+  const languages = Array.isArray(fileLanguages)
+    ? fileLanguages.filter((l): l is string => typeof l === 'string')
+    : []
+  return { href: absolute(href), ...(languages.length ? { languages } : {}) }
+}
+
+// Only a code typed with the document-type code list is one:
+// a bare string says nothing about which list it is from.
+function documentTypeOf(raw: unknown): DocumentType | undefined {
+  if (!isTypedLiteral(raw) || raw['@type'] !== DOCUMENT_TYPE_DATATYPE) {
+    return undefined
+  }
+  return DOCUMENT_TYPES.find((t) => t === raw['@value']) ?? 'other'
 }
 
 // The signed wire form for a non-string PropertyValue/
@@ -225,9 +283,10 @@ function parsePercent(raw: unknown): number | undefined {
 // Classify one wire property value into the renderer's
 // kind union. `unit` is the already-resolved display unit
 // (from `unitText`, or a mapped `unitCode`), applied to
-// scalar tiles only.
+// scalar tiles only. `absolute` resolves a document's
+// references against where the snapshot was read from.
 export function classifyWireValue(
-  raw: unknown, unit: string | undefined,
+  raw: unknown, unit: string | undefined, absolute = asWritten,
 ): PropertyValueKind {
   const numeric = numericWireValue(raw)
   if (numeric != null) {
@@ -246,11 +305,13 @@ export function classifyWireValue(
 
   // A document reference. Every key of the object is a
   // string, so it must be caught before isLocaleHash reads
-  // it as a translation.
+  // it as a translation. A digest marks a file the passport
+  // pinned, which shows with its details.
   if (isLinkObject(raw)) {
-    const href = raw.href
-    if (typeof href === 'string' && href) return { type: 'link', href }
-    return { type: 'scalar', value: '' }
+    const href = fileOf(raw, absolute)?.href
+    if (!href) return { type: 'scalar', value: '' }
+    const document = raw.fileDigest ? documentOf(raw, absolute) : undefined
+    return { type: 'link', href, ...(document ? { document } : {}) }
   }
   if (isTypedLiteral(raw)) {
     return scalarOrLongText(raw['@value'], unit)

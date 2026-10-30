@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 import type { Organization } from './archive'
+import type { DocumentType } from './document-types'
 import { regionName } from './i18n/display-names'
 import type { PassportLevel } from './passport-level'
 
@@ -91,6 +92,27 @@ export function regionLiteral(
 ): SnapshotLocalizedText | undefined {
   if (!code) return undefined
   return { '@value': code, '@type': REGION_DATATYPE }
+}
+
+// One file of a document: the file for every language, or a
+// version in the languages it names.
+export interface DocumentFile {
+  readonly href: string
+  readonly languages?: ReadonlyArray<string>
+}
+
+// A file the passport pinned: a download, or the value of a
+// property pointing at a file. Issuer and number are what the
+// publisher typed, proper names and identifiers, shown as
+// they are. `files` starts with the file the Link names and
+// goes on with its language versions.
+export interface DppDocument {
+  readonly name?: SnapshotLocalizedText
+  readonly type?: DocumentType
+  readonly issuer?: string
+  readonly number?: string
+  readonly validUntil?: string
+  readonly files: ReadonlyArray<DocumentFile>
 }
 
 export function tx(
@@ -403,10 +425,12 @@ export type PropertyValueKind =
     }
 
   // A document reference (EN 18223 Link). The row's label
-  // names the document; `href` is where it lives.
+  // names the document; `href` is where it lives. A file the
+  // passport pinned by its digest carries its details too.
   | {
       readonly type: 'link'
       readonly href: string
+      readonly document?: DppDocument
     }
 
 // The flat data row the snapshot ships. Each row
@@ -718,6 +742,10 @@ export interface DppProduct {
   readonly weightUnit?: string
   readonly images: ReadonlyArray<SnapshotImage>
   readonly manufacturer: DppManufacturer
+
+  // The public files the passport pinned, other than those a
+  // property points at. Absent on a passport without any.
+  readonly downloads?: ReadonlyArray<DppDocument>
 
   // Aggregate sustainability rating for the product,
   // typically computed upstream from each component's

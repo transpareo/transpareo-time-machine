@@ -33,6 +33,41 @@ images:
   detail:
     thumbnail: https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=800&q=80&fm=jpg&fit=crop&auto=format
     large: https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=1600&q=85&fm=jpg&fit=crop&auto=format
+documents:
+  reach-report:
+    name:
+      en: REACH test report
+      de: REACH-Prüfbericht
+      fr: Rapport d'essai REACH
+    type: test_report
+    issuer: Atlantic Textile Testing
+    number: ATT-2024-0315
+    files:
+      - text: REACH test report ATT-2024-0315, Essential Crew Neck T-Shirt
+  care-guide:
+    name:
+      en: Care and repair guide
+      de: Pflege- und Reparaturanleitung
+      fr: Guide d'entretien et de réparation
+    type: manual
+    files:
+      - text: Care and repair guide, Essential Crew Neck T-Shirt
+      - text: Pflege- und Reparaturanleitung, Essential Rundhals-T-Shirt
+        languages: [de]
+      - text: Guide d'entretien et de réparation, T-shirt essentiel
+        languages: [fr]
+  textile-certificate:
+    name:
+      en: OEKO-TEX Standard 100 certificate
+      de: OEKO-TEX Standard 100 Zertifikat
+      fr: Certificat OEKO-TEX Standard 100
+    type: certificate
+    issuer: Atlantic Textile Testing
+    number: 23.ATT.41877
+    valid_from: 2023-07-01
+    valid_until: 2025-06-30
+    files:
+      - text: OEKO-TEX Standard 100 certificate 23.ATT.41877
 product:
   name:
     en: Essential Crew Neck T-Shirt
@@ -113,6 +148,12 @@ product:
         de: Konform
         fr: Conforme
       icon: shield
+    - key: reach_report
+      label:
+        en: REACH test report
+        de: REACH-Prüfbericht
+        fr: Rapport d'essai REACH
+      document: reach-report
     - key: colour
       label:
         en: Colour
@@ -255,6 +296,9 @@ product:
         en: Reinforce loose seams with a matching cotton thread (Tex 24). Replace neckline binding every 2-3 years if it loses elasticity.
         de: Lose Nähte mit passendem Baumwollgarn (Tex 24) verstärken. Die Halsausschnitt-Einfassung alle 2-3 Jahre erneuern, wenn sie an Elastizität verliert.
         fr: Renforcer les coutures qui se défont avec un fil de coton assorti (Tex 24). Remplacer la bordure de l'encolure tous les 2 à 3 ans si elle perd son élasticité.
+  downloads:
+    - care-guide
+    - textile-certificate
   manufacturer:
     name: Nordic Wear Lda.
     street: Rua das Flores 42

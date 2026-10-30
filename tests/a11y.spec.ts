@@ -198,6 +198,31 @@ test('every opened surface passes WCAG 2.2 AA (axe-core)', async ({
   }
 })
 
+// The demo pins three files: a test report its REACH property
+// points at, a care guide with a version per language, and a
+// certificate whose validity ran out in 2025. The page scans
+// above cover them only while they render, so that is checked
+// here first.
+test('the files a passport pinned pass WCAG 2.2 AA (axe-core)', async ({
+  page
+}) => {
+  await mount(page)
+
+  const downloads = page.locator('dpp-downloads')
+  const heading = downloads.getByRole('heading', { name: 'Downloads' })
+  await expect(heading).toBeVisible()
+  const guide = downloads.getByRole('link', { name: 'Care and repair guide' })
+  await expect(guide).toHaveAttribute('href', /\/files\/[0-9a-f]{64}\.pdf$/)
+  await expect(downloads.locator('.dpp-document-expired')).
+    toHaveText('Expired')
+
+  const report = page.locator('dpp-properties .dpp-document')
+  await expect(report.getByRole('link')).toHaveText('REACH test report')
+  await expect(report.locator('dl')).toContainText('ATT-2024-0315')
+
+  expect(await violations(page)).toEqual([])
+})
+
 // The renderer's own colours, with no branding stylesheet:
 // what a publisher gets for every token it leaves unset.
 // A publisher's own palette is theirs to check; these
@@ -327,7 +352,9 @@ test.describe('language of parts', () => {
       'Intended use',
       'Daily wear',
       'Material composition',
-      'Organic Cotton'
+      'Organic Cotton',
+      'REACH test report',
+      'Care and repair guide'
     ]
     for (const text of english) {
       const langs = langsOf(pairs, text)

@@ -15,7 +15,8 @@
  *   - Event coverage: every event type the feed can carry
  *     has a pill and a summary line, so a type the
  *     publisher starts emitting cannot reach the card as
- *     its own raw key.
+ *     its own raw key. The same holds for void reasons,
+ *     lifecycle stages and document types.
  *   - No markup: label values are plain text. Several
  *     components interpolate labels near innerHTML
  *     templates; keeping `<`, `>`, `"` and script-bearing
@@ -28,6 +29,7 @@ import { regionName } from '../src/i18n/display-names';
 import {
   EVENT_TYPES, LIFECYCLE_STATUSES, VOID_REASONS
 } from '../src/types';
+import { DOCUMENT_TYPES } from '../src/document-types';
 import { colorForEventType } from '../src/event-colors';
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -116,6 +118,17 @@ describe('locale catalogs', () => {
       .map((status) => `status.${status}`)
       .filter((key) => !catalog[key]);
     expect(missing, `${file} unnamed lifecycle stages`).toEqual([]);
+  });
+
+  // A download names its type through `documentType.*`, and
+  // an unknown code reads as `other`, so these six are every
+  // type name a passport can ask for.
+  it.each(files)('%s names every document type', (file) => {
+    const catalog = load(file);
+    const missing = DOCUMENT_TYPES
+      .map((type) => `documentType.${type}`)
+      .filter((key) => !catalog[key]);
+    expect(missing, `${file} unnamed document types`).toEqual([]);
   });
 
   // A type with no entry in the colour map draws in the

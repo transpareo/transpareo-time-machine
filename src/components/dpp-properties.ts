@@ -60,6 +60,7 @@ import {
 } from '@/types'
 import { showTokens, isUnlocked } from '@/show-filter'
 import { safeLinkHref } from '@/safe-url'
+import { buildDocumentRow } from '@/components/dpp-downloads'
 import {
   fetchStateByVersion,
   type PrivateFetchState,
@@ -158,7 +159,11 @@ function buildLiveRow(row: LiveRow): HTMLElement {
 // A row marked dynamic outside the live block is a past
 // version's: its value is the reading sealed at publish.
 function buildRow(row: DetailRow): HTMLElement {
-  if (propertyIsKind('link')(row)) return buildLinkRow(row)
+  if (propertyIsKind('link')(row)) {
+    const { document } = row.value
+    if (!document) return buildLinkRow(row)
+    return buildDocumentRow(txLang(row.name, i18n.locale), document)
+  }
   const label = txLang(row.name, i18n.locale)
   return buildPair(label, formatValue(row.value), row.dynamic === true)
 }

@@ -67,6 +67,7 @@ import './dpp-passport-level'
 import './dpp-badge-lists'
 import './dpp-manufacturer'
 import './dpp-accordions'
+import './dpp-downloads'
 import './dpp-private-signin'
 import './dpp-composition-donut'
 import './dpp-compositions'
@@ -397,6 +398,7 @@ class TranspareoTimeMachine extends BaseElement {
               <dpp-properties></dpp-properties>
               <dpp-badge-lists></dpp-badge-lists>
               <dpp-accordions></dpp-accordions>
+              <dpp-downloads></dpp-downloads>
               <dpp-private-signin></dpp-private-signin>
             </div>
           </article>

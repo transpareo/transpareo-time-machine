@@ -38,6 +38,9 @@ import {
 import { createHash } from 'node:crypto';
 import { join } from 'node:path';
 import { hexChainHashOfSnapshot } from '../../src/crypto/chain-hash.ts';
+import { TRANSPAREO_V2_CONTEXT_URL } from '../../src/crypto/dpp-contexts.ts';
+import { DOCUMENT_TYPE_DATATYPE } from '../../src/document-types.ts';
+import { onePagePdf } from './pdf.ts';
 import type { Fixture } from './schema.ts';
 
 type FixtureSnapshot = Fixture['snapshots'][number];
@@ -172,6 +175,10 @@ export async function emitFixture(
   // when the modal fetches it.
   writes.push(emitLibrary(id, dir));
 
+  // The files the snapshots pin, at the addresses their
+  // Links name.
+  writes.push(emitDocumentFiles(fixture));
+
   await Promise.all(writes);
 
   // Older runs may have written bundled TS modules into
@@ -203,6 +210,19 @@ async function emitLibrary(
   const exists = await stat(src).then(() => true).catch(() => false);
   if (!exists) return;
   await copyTree(src, dest);
+}
+
+// Cleared first for the reason emitLibrary clears its tree:
+// a document taken out of the fixture must stop being served.
+async function emitDocumentFiles(fixture: Fixture): Promise<void> {
+  const dir = join(PUBLIC_ROOT, fixture.id, 'files');
+  await rm(dir, { recursive: true, force: true });
+  const { files } = seedDocuments(fixture);
+  if (files.length === 0) return;
+  await mkdir(dir, { recursive: true });
+  await Promise.all(
+    files.map((f) => writeFile(join(PUBLIC_ROOT, f.path), f.bytes)),
+  );
 }
 
 // Mirror the authored tree, JSON only. A published bucket
@@ -246,7 +266,7 @@ const DPP_CONTEXT: ReadonlyArray<unknown> = [
   'https://schema.org',
   'https://w3id.org/security/data-integrity/v2',
   'https://ref.openepcis.io/extensions/common/core/dpp-core-context.jsonld',
-  'https://transpareo.com/vocab/transpareo/v1',
+  TRANSPAREO_V2_CONTEXT_URL,
   {
     // `name` and `description` ride the EN 18223 expanded
     // language-array form, so they carry their own
@@ -521,6 +541,8 @@ function buildPlatform(fixture: Fixture): Record<string, unknown> {
 // buildOneSnapshot, not here.
 function buildBaseProduct(fixture: Fixture): Record<string, unknown> {
   const p = fixture.product;
+  const { links } = seedDocuments(fixture);
+  const downloads = p.downloads.map((key) => links[key]);
   return {
     '@type': 'Product',
     name: toWireLocalized(p.name),
@@ -532,6 +554,7 @@ function buildBaseProduct(fixture: Fixture): Record<string, unknown> {
     // on the product.
     ...adaptWeight(p.weight, p.weight_unit),
     images: [],
+    ...(downloads.length ? { downloads } : {}),
     manufacturer: buildManufacturer(p.manufacturer),
   };
 }
@@ -620,10 +643,11 @@ function buildProperties(
   s: FixtureSnapshot,
 ): ReadonlyArray<Record<string, unknown>> {
   const p = fixture.product;
+  const { links } = seedDocuments(fixture);
   return [
     ...p.metrics
       .filter((m) => !m.private)
-      .map((m) => propertyRow(m.key, m.label, metricValue(m), m.unit)),
+      .map((m) => propertyRow(m.key, m.label, metricValue(m, links), m.unit)),
     ...p.lists.map((l) => propertyRow(l.key, l.label, listValue(l))),
     ...p.accordions.map((a) => propertyRow(a.key, a.label, a.body)),
 
@@ -731,9 +755,69 @@ function countryLiteral(code: string): Record<string, string> {
 
 function metricValue(
   metric: Fixture['product']['metrics'][number],
+  links: SeededDocuments['links'],
 ): unknown {
   if (metric.country_code) return countryLiteral(metric.country_code);
+  if (metric.document) return links[metric.document];
   return metric.value;
+}
+
+// ─── Documents ──────────────────────────────────────
+
+export interface SeededFile {
+  readonly path: string;
+  readonly bytes: Buffer;
+}
+
+export interface SeededDocuments {
+  // Each document's Link as the snapshot signs it, by key.
+  readonly links: Readonly<Record<string, Record<string, unknown>>>;
+
+  // Every file's bytes and its path under public/.
+  readonly files: ReadonlyArray<SeededFile>;
+}
+
+// The platform's shape for a pinned file: a Link naming the
+// file for every language, its SHA-256 in the Subresource
+// Integrity form, the details the publisher recorded, and
+// the language versions in `fileVersions`. The file is served
+// under its own digest, as the platform serves a frozen copy,
+// so the address changes whenever the bytes do. A pure
+// function of the fixture: the PDFs are the same bytes on
+// every run, so every caller gets the same Links.
+export function seedDocuments(fixture: Fixture): SeededDocuments {
+  const links: Record<string, Record<string, unknown>> = {};
+  const files: SeededFile[] = [];
+  const fileLink = (
+    file: Fixture['documents'][string]['files'][number],
+  ): Record<string, unknown> => {
+    const bytes = onePagePdf(file.text);
+    const digest = createHash('sha256').update(bytes).digest();
+    const path = `${fixture.id}/files/${digest.toString('hex')}.pdf`;
+    files.push({ path, bytes });
+    return {
+      '@type': 'Link',
+      href: `/${path}`,
+      mediaType: 'application/pdf',
+      fileDigest: `sha256-${digest.toString('base64')}`,
+      ...(file.languages ? { fileLanguages: file.languages } : {}),
+    };
+  };
+
+  for (const [key, doc] of Object.entries(fixture.documents)) {
+    const [general, ...versions] = doc.files.map(fileLink);
+    links[key] = {
+      ...general,
+      name: toWireLocalized(doc.name),
+      ...(versions.length ? { fileVersions: versions } : {}),
+      documentType: { '@value': doc.type, '@type': DOCUMENT_TYPE_DATATYPE },
+      ...(doc.issuer ? { documentIssuer: doc.issuer } : {}),
+      ...(doc.number ? { documentNumber: doc.number } : {}),
+      ...(doc.valid_from ? { documentValidFrom: doc.valid_from } : {}),
+      ...(doc.valid_until ? { documentValidUntil: doc.valid_until } : {}),
+    };
+  }
+  return { links, files };
 }
 
 // A country-valued list carries one typed literal per code,

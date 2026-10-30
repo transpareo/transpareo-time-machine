@@ -11,6 +11,7 @@
  */
 
 import { z } from 'zod';
+import { DOCUMENT_TYPES } from '../../src/document-types.ts';
 
 // Translatable string, single literal for one-locale
 // or a record keyed by locale code. Mirrors
@@ -79,6 +80,10 @@ const DppMetric = z.object({
   // ships in the signed bytes; the renderer names the
   // country in the viewer's language.
   country_code: z.string().regex(/^[A-Z]{2}$/).optional(),
+  // A property pointing at a file, authored as the key of an
+  // entry in the top-level `documents:` map instead of a
+  // `value`. Its value ships as the file's signed Link.
+  document: z.string().optional(),
   unit: z.string().optional(),
   icon: z.string().optional(),
   // A private row is dropped from the public snapshot and
@@ -87,8 +92,9 @@ const DppMetric = z.object({
   // the manifest carry that endpoint URL.
   private: z.boolean().optional(),
 }).refine(
-  (m) => (m.value === undefined) !== (m.country_code === undefined),
-  { message: 'metric needs exactly one of value / country_code' }
+  (m) => [m.value, m.country_code, m.document]
+    .filter((v) => v !== undefined).length === 1,
+  { message: 'metric needs exactly one of value / country_code / document' }
 );
 
 const DppList = z.object({
@@ -105,6 +111,34 @@ const DppList = z.object({
   (l) => (l.values === undefined) !== (l.country_codes === undefined),
   { message: 'list needs exactly one of values / country_codes' }
 );
+
+const IsoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, {
+  message: 'must be an ISO 8601 calendar date (e.g. 2028-12-31)',
+});
+
+// One file of a document. The seed renders `text` as a
+// one-page PDF in Helvetica, whose bare font reads one byte
+// per character, hence Latin-1. `languages` marks a language
+// version; the file without it is the one for every language.
+const DocumentFile = z.object({
+  text: z.string().regex(/^[\x20-\xff]+$/, {
+    message: 'must be Latin-1 text',
+  }),
+  languages: z.array(z.string()).min(1).optional(),
+});
+
+// A file the passport pins, with the details the platform
+// records on it. Its type is a code the renderer names in the
+// reader's language; issuer and number ship as typed.
+const Document = z.object({
+  name: LocalizedText,
+  type: z.enum(DOCUMENT_TYPES),
+  issuer: z.string().optional(),
+  number: z.string().optional(),
+  valid_from: IsoDate.optional(),
+  valid_until: IsoDate.optional(),
+  files: z.array(DocumentFile).min(1),
+});
 
 const DppAccordion = z.object({
   key: z.string(),
@@ -168,6 +202,9 @@ const Product = z.object({
   metrics: z.array(DppMetric),
   lists: z.array(DppList),
   accordions: z.array(DppAccordion),
+  // Keys of the top-level `documents:` map the passport lists
+  // under Downloads: every pinned file no property points at.
+  downloads: z.array(z.string()).default([]),
   manufacturer: Manufacturer,
   // Optional rolled-up sustainability rating.
   rating: Rating.optional(),
@@ -357,10 +394,36 @@ export const FixtureSchema = z.object({
     }),
     ImageSrc,
   ).default({}),
+  // The files the passport pins, keyed like the images. Named
+  // by `product.downloads` and by a metric's `document`.
+  documents: z.record(
+    z.string().regex(/^[A-Za-z0-9_-]+$/, {
+      message: 'document key must be alphanumeric with - or _',
+    }),
+    Document,
+  ).default({}),
   snapshots: z.array(Snapshot).min(1),
   events: z.array(Event),
   epcis: z.array(EpcisEvent).default([]),
 }).superRefine((f, ctx) => {
+  const unknownDocument = (key: string | undefined): boolean =>
+    key !== undefined && !Object.hasOwn(f.documents, key);
+  f.product.downloads.forEach((key, i) => {
+    if (!unknownDocument(key)) return;
+    ctx.addIssue({
+      code: 'custom',
+      path: ['product', 'downloads', i],
+      message: `no document '${key}' in the documents: map`,
+    });
+  });
+  f.product.metrics.forEach((m, i) => {
+    if (!unknownDocument(m.document)) return;
+    ctx.addIssue({
+      code: 'custom',
+      path: ['product', 'metrics', i, 'document'],
+      message: `no document '${m.document}' in the documents: map`,
+    });
+  });
   if (f.publication === 'single-snapshot') {
     if (f.snapshots.length !== 1) {
       ctx.addIssue({
