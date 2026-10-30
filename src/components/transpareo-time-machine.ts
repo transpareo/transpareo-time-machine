@@ -55,7 +55,6 @@ import { config, initConfigFromElement } from '@/config'
 import { installIcons } from '@/icons'
 import { playHandover, travellerRect } from '@/handover'
 
-import './dpp-verifier'
 import './dpp-brandbar'
 import './dpp-staff-bar'
 import './dpp-withdrawal'
@@ -237,7 +236,14 @@ class TranspareoTimeMachine extends BaseElement {
     // the <dpp-verifier> widget inline instead, propagating
     // the same pinned platform keys the chip would use
     // (no issuer pin: the widget verifies foreign DPPs).
+    //
+    // The widget's code loads here, on demand. A passport page
+    // never mounts it, and the platform's verifier page loads
+    // the standalone `dpp-verifier` entry instead, so every
+    // passport visitor would otherwise download it for
+    // nothing. The element upgrades once its module is in.
     if (config.verifier) {
+      void import('./dpp-verifier')
       const widget = document.createElement('dpp-verifier')
       if (config.pinnedPlatformKeys?.length) {
         widget.setAttribute(

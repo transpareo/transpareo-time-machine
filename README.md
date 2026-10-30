@@ -562,6 +562,10 @@ npm run build:all
 #   dist/dpp-verifier.{js,css}
 #   dist/locales/<lc>.js          (lazy locale chunks;
 #                                  English is in the main file)
+#   dist/locales/*.js             (shared code, plus the chunks
+#                                  loaded on demand: the
+#                                  verifier widget for verifier
+#                                  mode, the Ed25519 fallback)
 #
 # Embed delivery (one JS file, CSS inlined, script-tag
 # friendly):

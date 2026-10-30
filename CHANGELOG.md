@@ -29,9 +29,18 @@ and this project adheres to
   where it listed available sizes: a garment size is a
   product with a passport of its own. The care accordion,
   which said the same in a sentence, is gone.
+- The lib bundle loads the `<dpp-verifier>` widget only when
+  an element mounts in verifier mode. No passport page mounts
+  it, and the platform's verifier page loads the standalone
+  `dpp-verifier` entry, so passport visitors no longer
+  download it: 4.3 KB gzipped off the main bundle. The embed
+  bundle keeps it inline and stays one file.
 
 ### Fixed
 
+- The bundle-size gate follows a minified static import
+  (`from"./x.js"`); it counted only the entry file of a build
+  that split one off.
 - Accessibility, checked against WCAG 2.2 AA. The collapsed
   timeline no longer takes keyboard focus on dots nobody can
   see. Every control draws a focus ring: the language picker,

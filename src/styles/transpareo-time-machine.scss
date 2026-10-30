@@ -148,8 +148,11 @@ button, input, select, textarea {
  * own, so the shell states the content card's and centres
  * it the same way. Below that width it keeps a gutter
  * where the card goes flush: the widget has no padding
- * of its own, so its input would sit on the screen edge. */
+ * of its own, so its input would sit on the screen edge.
+ * Its code arrives on demand, so the box is a block before
+ * the widget upgrades and says so itself. */
 dpp-verifier {
+  display: block;
   max-width: var(--content-max-width, 830px);
   margin: var(--frame-width, 24px) auto 0;
 

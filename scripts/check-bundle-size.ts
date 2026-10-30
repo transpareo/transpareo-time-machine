@@ -75,13 +75,15 @@ async function bytesForEntry(entryPath: string): Promise<Buffer> {
     parts.push(bytes)
     const text = bytes.toString('utf8')
 
-    // Matches `from "x"` and the static `import "x"` form.
-    // Dynamic `import("x")` is intentionally NOT followed:
-    // those chunks (the per-locale label files) load on
-    // demand, and a visitor fetches the entry plus a single
-    // locale, not all of them. Counting every locale here
-    // would inflate the budget far past what is downloaded.
-    const re = /(?:from\s+|import\s+)["']([^"']+)["']/g
+    // Matches `from "x"` and the static `import "x"` form,
+    // with or without the space a minifier drops (the embed
+    // build writes `from"./x.js"`). Dynamic `import("x")` is
+    // intentionally NOT followed: those chunks (the
+    // per-locale label files) load on demand, and a visitor
+    // fetches the entry plus a single locale, not all of
+    // them. Counting every locale here would inflate the
+    // budget far past what is downloaded.
+    const re = /\b(?:from|import)\s*["']([^"']+)["']/g
     let m
     while ((m = re.exec(text)) != null) {
       const spec = m[1]

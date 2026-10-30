@@ -19,6 +19,12 @@
 
 import { describe, it, expect, afterEach, vi } from 'vitest'
 import '@/components/transpareo-time-machine'
+
+// The renderer loads the widget's module on demand. Defined
+// up front, a mount upgrades the widget at once, as it does
+// in the page once that module is in, so the clobber the
+// cases below guard against would happen inside the test.
+import '@/components/dpp-verifier'
 import { config } from '@/config'
 import { detectLocale, locale, setHostLocale } from '@/i18n'
 

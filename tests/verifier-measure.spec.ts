@@ -61,14 +61,16 @@ test('verifier mode hands the widget the card measure', async ({ page }) => {
 
   // A verifier shell page carries no `src`: there is no
   // manifest to fetch, the widget goes up in place of the
-  // passport tree.
+  // passport tree once its code, loaded on demand, is in.
   const box = await page.evaluate(async () => {
     const tm = document.createElement('transpareo-time-machine')
     tm.setAttribute('verifier', '')
     document.body.appendChild(tm)
     const widget = (): Element | null | undefined =>
       tm.shadowRoot?.querySelector('dpp-verifier')
-    for (let wait = 0; wait < 40 && !widget(); wait++) {
+    const drawn = (): boolean =>
+      !!widget()?.shadowRoot?.querySelector('.verifier-row')
+    for (let wait = 0; wait < 40 && !drawn(); wait++) {
       await new Promise((r) => setTimeout(r, 25))
     }
     const rect = widget()!.getBoundingClientRect()

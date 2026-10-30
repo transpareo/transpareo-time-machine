@@ -37,9 +37,16 @@
  * round-trip and without ordering risk.
  *
  * One file, one URL, one cache entry.
+ *
+ * The verifier widget the element mounts in verifier mode
+ * is imported here too. The lib entry loads it on demand,
+ * which in this build would split every module the two
+ * share into a chunk the page only discovers after this
+ * file has parsed.
  */
 import appCss from './styles/app.css?inline'
 import './components/transpareo-time-machine'
+import './components/dpp-verifier'
 
 const style = document.createElement('style')
 style.textContent = appCss
