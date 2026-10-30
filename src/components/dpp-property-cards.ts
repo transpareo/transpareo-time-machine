@@ -13,13 +13,13 @@
  */
 
 import { LightElement } from '@/reactive/element'
-import { el } from '@/reactive/dom'
+import { el, phrase } from '@/reactive/dom'
 import { icon, iconForProperty } from '@/icons'
 import { activeSnapshot, renderedPresentation } from '@/state'
 import { i18n, formatNumber, formatLongDate } from '@/i18n'
 import { t } from '@/i18n/labels'
 import {
-  propertyIsKind, tx, type PropertyValueOf,
+  propertyIsKind, txLang, type LangText, type PropertyValueOf,
 } from '@/types'
 
 type Scalar = PropertyValueOf<'scalar'>
@@ -49,11 +49,11 @@ class DppPropertyCards extends LightElement {
 
 function buildCard(row: Scalar): HTMLElement {
   const v = row.value
-  const value = v.numeric != null
-    ? formatNumber(v.numeric) : tx(v.value, i18n.locale)
+  const [value, lang]: LangText = v.numeric != null
+    ? [formatNumber(v.numeric)] : txLang(v.value, i18n.locale)
   const text = v.unit ? `${value} ${v.unit}` : value
-  const label = tx(row.name, i18n.locale)
-  const card = buildTile(iconForProperty(row.key), label, text)
+  const label = phrase(txLang(row.name, i18n.locale))
+  const card = buildTile(iconForProperty(row.key), label, text, lang)
 
   // Only a past version shows a row marked dynamic here; its
   // value is the reading sealed at publish.
@@ -73,13 +73,13 @@ function buildLotCard(date: string): HTMLElement {
 }
 
 function buildTile(
-  iconId: string | null, label: string, value: string
+  iconId: string | null, label: string | Node, value: string, lang?: string
 ): HTMLElement {
   const card = el('div', 'dpp-metric')
   const head = el('div', 'dpp-metric-label')
   if (iconId) head.append(icon(iconId), ' ')
   head.append(label)
-  card.append(head, el('div', 'dpp-metric-value', value))
+  card.append(head, el('div', 'dpp-metric-value', value, lang))
   return card
 }
 

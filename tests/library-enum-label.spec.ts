@@ -34,6 +34,10 @@ const DT = 'https://transpareo.com/vocab/transpareo/v1#iso3166-1-alpha2'
 const country = (label: Record<string, string>): EnumValue =>
   ({ type: 'enum', value: 'PT', label })
 
+// The words the cell shows; their language has its own
+// cases at the end.
+const textOf = (v: EnumValue): string => enumLabel(v)[0]
+
 beforeEach(() => {
   locale.set('en')
 })
@@ -42,12 +46,12 @@ describe('enumLabel: the publisher wrote this locale', () => {
   it('uses the baked label, deliberate wording and all', () => {
     locale.set('de')
     const v = country({ en: 'Portugal', de: 'Portugal (EU)' })
-    expect(enumLabel(v)).toBe('Portugal (EU)')
+    expect(textOf(v)).toBe('Portugal (EU)')
   })
 
   it('uses a plain string label as-is', () => {
     const v: EnumValue = { type: 'enum', value: 'PT', label: 'Portugal' }
-    expect(enumLabel(v)).toBe('Portugal')
+    expect(textOf(v)).toBe('Portugal')
   })
 })
 
@@ -58,13 +62,13 @@ describe('enumLabel: the publisher missed this locale', () => {
   // silently absent.
   it('names a country in the viewer language instead of English', () => {
     locale.set('zh')
-    expect(enumLabel(country({ en: 'Portugal', de: 'Portugal' })))
+    expect(textOf(country({ en: 'Portugal', de: 'Portugal' })))
       .toBe('葡萄牙')
   })
 
   it('still resolves for a locale the map does carry in English only', () => {
     locale.set('ro')
-    expect(enumLabel(country({ en: 'Portugal' }))).toBe('Portugalia')
+    expect(textOf(country({ en: 'Portugal' }))).toBe('Portugalia')
   })
 
   // No English entry means nothing vouches for the code
@@ -72,7 +76,7 @@ describe('enumLabel: the publisher missed this locale', () => {
   // guessed country name or a blank cell.
   it('shows the code when the map vouches for nothing', () => {
     locale.set('ja')
-    expect(enumLabel(country({}))).toBe('PT')
+    expect(textOf(country({}))).toBe('PT')
   })
 
   // Deliberate wording fails the check by design; the
@@ -80,7 +84,7 @@ describe('enumLabel: the publisher missed this locale', () => {
   // a label they chose.
   it('keeps a reworded English label rather than overriding it', () => {
     locale.set('ja')
-    expect(enumLabel(country({ en: 'Portugal (EU)' }))).toBe('Portugal (EU)')
+    expect(textOf(country({ en: 'Portugal (EU)' }))).toBe('Portugal (EU)')
   })
 })
 
@@ -94,12 +98,12 @@ describe('enumLabel: the row declares its datatype', () => {
 
   it('names the country without asking the label to vouch', () => {
     locale.set('ja')
-    expect(enumLabel(typed('PT', {}))).toBe('ポルトガル')
+    expect(textOf(typed('PT', {}))).toBe('ポルトガル')
   })
 
   it('resolves even where the English label is a synonym', () => {
     locale.set('de')
-    expect(enumLabel(typed('PT', { en: 'Portuguese Republic' })))
+    expect(textOf(typed('PT', { en: 'Portuguese Republic' })))
       .toBe('Portugal')
   })
 
@@ -109,7 +113,7 @@ describe('enumLabel: the row declares its datatype', () => {
   // whole reason the field was added.
   it('trusts the declaration even for a code that usually is not one', () => {
     locale.set('de')
-    expect(enumLabel(typed('NO', {}))).toBe('Norwegen')
+    expect(textOf(typed('NO', {}))).toBe('Norwegen')
   })
 
   // The declaration outranks the baked label even for the
@@ -118,7 +122,7 @@ describe('enumLabel: the row declares its datatype', () => {
   // particular wording wants a text row instead.
   it('resolves ahead of the publisher label for the active locale', () => {
     locale.set('de')
-    expect(enumLabel(typed('PT', { de: 'Portugal (EU)' }))).toBe('Portugal')
+    expect(textOf(typed('PT', { de: 'Portugal (EU)' }))).toBe('Portugal')
   })
 
   // The reason that ordering matters, rather than being a
@@ -127,20 +131,20 @@ describe('enumLabel: the row declares its datatype', () => {
   // decade while their codes held.
   it('renames a country whose label was frozen under the old name', () => {
     locale.set('en')
-    expect(enumLabel(typed('TR', { en: 'Turkey' }))).toBe('Türkiye')
-    expect(enumLabel(typed('CZ', { en: 'Czech Republic' }))).toBe('Czechia')
-    expect(enumLabel(typed('SZ', { en: 'Swaziland' }))).toBe('Eswatini')
+    expect(textOf(typed('TR', { en: 'Turkey' }))).toBe('Türkiye')
+    expect(textOf(typed('CZ', { en: 'Czech Republic' }))).toBe('Czechia')
+    expect(textOf(typed('SZ', { en: 'Swaziland' }))).toBe('Eswatini')
   })
 
   // Unresolvable, so the label is still the better answer.
   it('falls back to the label when a declared code names nothing', () => {
     locale.set('de')
-    expect(enumLabel(typed('QQ', { de: 'Irgendwo' }))).toBe('Irgendwo')
+    expect(textOf(typed('QQ', { de: 'Irgendwo' }))).toBe('Irgendwo')
   })
 
   it('falls back to the code when a declared value resolves to nothing', () => {
     locale.set('de')
-    expect(enumLabel(typed('QQ', {}))).toBe('QQ')
+    expect(textOf(typed('QQ', {}))).toBe('QQ')
   })
 })
 
@@ -162,8 +166,8 @@ describe('enumLabel: values that only look like country codes', () => {
     (code, english, country_) => {
       locale.set('de')
       const v: EnumValue = { type: 'enum', value: code, label: { en: english } }
-      expect(enumLabel(v)).toBe(english)
-      expect(enumLabel(v)).not.toBe(country_)
+      expect(textOf(v)).toBe(english)
+      expect(textOf(v)).not.toBe(country_)
     },
   )
 
@@ -172,12 +176,36 @@ describe('enumLabel: values that only look like country codes', () => {
     const v: EnumValue = {
       type: 'enum', value: 'XL', label: { en: 'Extra large' },
     }
-    expect(enumLabel(v)).toBe('Extra large')
+    expect(textOf(v)).toBe('Extra large')
   })
 
   it('falls back to the raw code when no label is usable', () => {
     locale.set('de')
     const v: EnumValue = { type: 'enum', value: 'A2', label: {} }
-    expect(enumLabel(v)).toBe('A2')
+    expect(textOf(v)).toBe('A2')
+  })
+})
+
+// WCAG 3.1.2: the publisher's fallback wording names its
+// language so the cell can declare it. A name the renderer
+// resolves, and a bare code, are in no other language.
+describe('enumLabel: the language of the label', () => {
+  it('names the language of a fallback label', () => {
+    locale.set('de')
+    const label = { en: 'Extra large' }
+    const v: EnumValue = { type: 'enum', value: 'XL', label }
+    expect(enumLabel(v)).toEqual(['Extra large', 'en'])
+  })
+
+  it('names none for a label in the viewer locale', () => {
+    locale.set('de')
+    const label = { de: 'Sehr groß' }
+    const v: EnumValue = { type: 'enum', value: 'XL', label }
+    expect(enumLabel(v)).toEqual(['Sehr groß'])
+  })
+
+  it('names none for a country the renderer names', () => {
+    locale.set('ro')
+    expect(enumLabel(country({ en: 'Portugal' }))).toEqual(['Portugalia'])
   })
 })

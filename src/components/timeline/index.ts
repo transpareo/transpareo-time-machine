@@ -37,7 +37,7 @@ import { colorForEventType } from '@/event-colors'
 import { eventTime } from '@/epcis'
 import { icon } from '@/icons'
 import { i18n, formatShortDate } from '@/i18n'
-import { tx, type DppEvent } from '@/types'
+import { txLang, type DppEvent, type LangText } from '@/types'
 import { t, type LabelKey } from '@/i18n/labels'
 import {
   type Projection, PAD_X, CARD_W, CARD_GAP, CARD_H,
@@ -824,12 +824,12 @@ function eventName(evt: DppEvent): string {
 // sentence rather than a bare tag + date. The summary takes
 // a `{status}` placeholder (the lifecycle-transition copy
 // names the new stage), filled from the event's statusTo.
-function eventBodyText(evt: DppEvent): string {
-  if (evt.description) return tx(evt.description, i18n.locale)
+function eventBodyText(evt: DppEvent): LangText {
+  if (evt.description) return txLang(evt.description, i18n.locale)
   const vars = evt.statusTo
     ? { status: t(i18n.labels, `status.${evt.statusTo}` as LabelKey) }
     : undefined
-  return t(i18n.labels, `eventSummary.${evt.eventType}` as LabelKey, vars)
+  return [t(i18n.labels, `eventSummary.${evt.eventType}` as LabelKey, vars)]
 }
 
 function buildDetails(evt: DppEvent): HTMLDivElement {
@@ -870,9 +870,9 @@ function buildDetails(evt: DppEvent): HTMLDivElement {
   // The modal keeps the structured status/version grid, so
   // this prose body and the modal complement rather than
   // repeat.
-  const desc = eventBodyText(evt)
+  const [desc, lang] = eventBodyText(evt)
   if (desc) {
-    wrap.appendChild(el('p', 'event-details-desc', desc))
+    wrap.appendChild(el('p', 'event-details-desc', desc, lang))
   }
 
   if (evt.actorLabel) {
@@ -914,9 +914,9 @@ function buildPanelCard(
 
   card.appendChild(buildPanelCardHead(evt))
 
-  const desc = eventBodyText(evt)
+  const [desc, lang] = eventBodyText(evt)
   if (desc) {
-    card.appendChild(el('p', 'panel-card-desc', desc))
+    card.appendChild(el('p', 'panel-card-desc', desc, lang))
   }
   if (evt.actorLabel) {
     card.appendChild(el('p', 'panel-card-actor', evt.actorLabel))

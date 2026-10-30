@@ -112,6 +112,37 @@ function focusedClass(page: Page): Promise<string> {
   })
 }
 
+// A dialog takes focus on the frame after it opens; until
+// then a key or a focus call still lands on the page.
+function focusInDialog(page: Page): Promise<boolean> {
+  return page.evaluate(() => {
+    let a = document.activeElement
+    while (a?.shadowRoot?.activeElement) a = a.shadowRoot.activeElement
+    return !!a?.closest('[aria-modal="true"]')
+  })
+}
+
+// The language the markup declares for each text in the
+// passport, in render order: a text's nearest `lang`.
+function textLangs(page: Page): Promise<Array<[string, string]>> {
+  return page.evaluate(() => {
+    const root = document.querySelector('transpareo-time-machine')!.shadowRoot!
+    const walk = document.createTreeWalker(root, NodeFilter.SHOW_TEXT)
+    const out: Array<[string, string]> = []
+    for (let n = walk.nextNode(); n; n = walk.nextNode()) {
+      const text = n.textContent!.trim()
+      const lang = n.parentElement?.closest('[lang]')?.getAttribute('lang')
+      if (text) out.push([text, lang ?? ''])
+    }
+    return out
+  })
+}
+
+// The languages a text is declared in, wherever it shows.
+function langsOf(pairs: Array<[string, string]>, text: string): string[] {
+  return pairs.filter(([t]) => t === text).map(([, lang]) => lang)
+}
+
 // The AA violations axe finds in what is on screen now.
 async function violations(page: Page, skip: string[] = []): Promise<string[]> {
   const results = await new AxeBuilder({ page })
@@ -257,6 +288,77 @@ test.describe('reflow at 320px', () => {
   })
 })
 
+// A workspace offers every language it speaks, also those a
+// publisher left rows untranslated in, and the reader of such
+// a row gets it in the fallback language. The demo carries
+// every row in each of its languages, so the manifest offers
+// one more here: in Italian every value falls back to English.
+test.describe('language of parts', () => {
+  test.use({ locale: 'it-IT' })
+
+  test.beforeEach(async ({ page }) => {
+    await page.route('**/manifest.json', async (route) => {
+      const response = await route.fetch()
+      const json = await response.json()
+      json.availableLocales.push('it')
+      await route.fulfill({ response, json })
+    })
+  })
+
+  test('untranslated text declares its language', async ({ page }) => {
+    await mount(page)
+    await expect(page.locator('.tm-content[lang="it"]')).toHaveCount(1)
+    await page.locator('.dpp-accordion-header').first().click()
+
+    const pairs = await textLangs(page)
+    const english = [
+      'Essential Crew Neck T-Shirt',
+      'T-Shirts',
+      'Colour',
+      'Indigo Blue',
+      'Care instructions',
+      'Wash at 30 C; line dry; iron at low heat.',
+      'Intended use',
+      'Daily wear',
+      'Material composition',
+      'Organic Cotton'
+    ]
+    for (const text of english) {
+      const langs = langsOf(pairs, text)
+      expect(langs.length, text).toBeGreaterThan(0)
+      expect(new Set(langs), text).toEqual(new Set(['en']))
+    }
+
+    // A country is named in the reader's language and
+    // inherits the page's.
+    expect(langsOf(pairs, 'Portogallo')).toEqual(['it'])
+  })
+
+  test('so does untranslated text in a dialog', async ({ page }) => {
+    await mount(page)
+    await page.locator('.dpp-comp-name-trigger').first().click()
+    await expect(page.locator('.dpp-library-panel:not(.loading)')).toBeVisible()
+
+    const pairs = await textLangs(page)
+    for (const text of ['Alternative names', 'Bio cotton', 'Origin']) {
+      expect(langsOf(pairs, text), text).toEqual(['en'])
+    }
+
+    // The dialog is named by its title, which says the
+    // component's name in that name's language.
+    const dialog = page.locator('dpp-library-modal')
+    const title = dialog.locator('.modal-title')
+    await expect(dialog).toHaveAttribute('aria-labelledby', /\S/)
+    await expect(title.locator('[lang="en"]')).toHaveText('Organic Cotton')
+    await page.keyboard.press('Escape')
+
+    await page.locator('.gallery-image').first().click()
+    const picture = page.locator('dpp-lightbox .gallery-image')
+    await expect(picture).toHaveAttribute('lang', 'en')
+    await expect(picture).toHaveAttribute('alt', /^Essential Crew Neck/)
+  })
+})
+
 test.describe('screen reader', () => {
   test('timeline dots name their event and mark the shown one', async ({
     page
@@ -393,10 +495,12 @@ test.describe('keyboard', () => {
     // keys; a dialog on top uses them for its own content.
     await page.locator('.gallery-image').click()
     await expect(page.locator('dpp-lightbox.open')).toBeVisible()
+    await expect.poll(() => focusInDialog(page)).toBe(true)
     await page.keyboard.press('ArrowLeft')
     await page.keyboard.press('Escape')
     await page.locator('.event-details-card').click()
     await expect(page.locator('dpp-event-modal.open')).toBeVisible()
+    await expect.poll(() => focusInDialog(page)).toBe(true)
     await page.keyboard.press('ArrowLeft')
     await page.keyboard.press('Escape')
     expect(await shown()).toBe(before)
@@ -421,6 +525,7 @@ test.describe('keyboard', () => {
     // out of the dialog onto the page behind it.
     await page.locator('.gallery-image').click()
     await expect(page.locator('dpp-lightbox.open')).toBeVisible()
+    await expect.poll(() => focusInDialog(page)).toBe(true)
     await page.locator('dpp-lightbox [data-action="prev"]').focus()
     await page.keyboard.press('Enter')
     expect(await focusedClass(page)).toBe('span.btn current')

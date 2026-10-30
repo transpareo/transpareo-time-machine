@@ -19,7 +19,7 @@ import { icon } from '@/icons'
 import { renderedProduct } from '@/state'
 import { i18n } from '@/i18n'
 import { t } from '@/i18n/labels'
-import { tx, type SnapshotImage } from '@/types'
+import { tx, txLang, type SnapshotImage } from '@/types'
 import { getPages } from '@/pagination'
 import { OPEN_EVENT, type OpenLightboxDetail } from './dpp-lightbox'
 
@@ -96,6 +96,10 @@ class DppGallery extends LightElement {
     wrap.style.display = ''
 
     const idx = Math.min(this.current(), total - 1)
+
+    // The image's name is the reader-language "View full
+    // size", so it takes no `lang` from a fallback product
+    // name, which only fills the alt and the tooltip.
     const alt = tx(product.name, i18n.locale)
     img.src = images[idx].thumbnail
     applyRenditions(img, images[idx])
@@ -164,7 +168,7 @@ class DppGallery extends LightElement {
     const detail: OpenLightboxDetail = {
       images,
       idx: this.current.peek(),
-      alt: tx(product.name, i18n.locale),
+      alt: txLang(product.name, i18n.locale),
     }
     this.dispatchEvent(new CustomEvent(OPEN_EVENT, {
       detail, bubbles: true, composed: true,

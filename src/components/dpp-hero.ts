@@ -12,7 +12,7 @@ import { LightElement } from '@/reactive/element'
 import { html } from '@/reactive/html'
 import { renderedProduct, activeSnapshot, isOnCurrent } from '@/state'
 import { i18n, formatNumber } from '@/i18n'
-import { tx } from '@/types'
+import { txLang, type LangText } from '@/types'
 import { t } from '@/i18n/labels'
 import { buildRatingRow } from '@/rating'
 import './dpp-gallery'
@@ -32,13 +32,19 @@ class DppHero extends LightElement {
             <span class="dpp-passport-date">${passportDate}</span>
           </div>
           <div class="dpp-brand">${() => renderedProduct().brand}</div>
-          <h1 class="dpp-product-name">${productName}</h1>
-          <div class="dpp-meta">${metaText}</div>
+          <h1 class="dpp-product-name" lang=${() => field('name')[1]}>
+            ${() => field('name')[0]}
+          </h1>
+          <div class="dpp-meta">
+            <span lang=${categoryLang}>${categoryText}</span>${metaText}
+          </div>
           <div class="dpp-historical-tag" style=${() => historicalDisplay()}>
             ${() => t(i18n.labels, 'historicalView')}
           </div>
           <div class="dpp-product-rating-slot"></div>
-          <div class="dpp-description">${descriptionText}</div>
+          <div class="dpp-description" lang=${() => field('description')[1]}>
+            ${() => field('description')[0]}
+          </div>
         </div>
       </div>
     `
@@ -68,13 +74,19 @@ function passportDate(): string {
   return fmt.format(new Date(activeSnapshot().publishedAt))
 }
 
-function productName(): string {
-  return tx(renderedProduct().name, i18n.locale)
+// A localized product field: its text, and its language
+// when the publisher left it untranslated. The template
+// binds the two to the text and the `lang` of one element.
+function field(key: 'name' | 'category' | 'description'): LangText {
+  return txLang(renderedProduct()[key], i18n.locale)
 }
 
 function categoryText(): string {
-  const cat = renderedProduct().category
-  return cat ? tx(cat, i18n.locale) : ''
+  return field('category')[0]
+}
+
+function categoryLang(): string | undefined {
+  return field('category')[1]
 }
 
 function gtinText(): string {
@@ -89,19 +101,14 @@ function weightText(): string {
   return `${formatNumber(p.weight)}\u00a0${unit}`
 }
 
-// One joined line, absent segments dropped, so a product
-// without a GTIN (or weight) never renders a dangling
-// separator dot. NBSP inside a segment keeps line wraps
-// at the separators only.
+// The line after the category, which sits in a span of its
+// own to declare its language. Absent segments are dropped,
+// so a product without a category, GTIN or weight never
+// renders a dangling separator dot. NBSP inside a segment
+// keeps line wraps at the separators only.
 function metaText(): string {
-  return [categoryText(), gtinText(), weightText()]
-    .filter(Boolean)
-    .join(' · ')
-}
-
-function descriptionText(): string {
-  const desc = renderedProduct().description
-  return desc ? tx(desc, i18n.locale) : ''
+  const rest = [gtinText(), weightText()].filter(Boolean).join(' · ')
+  return rest && categoryText() ? ` · ${rest}` : rest
 }
 
 function imageDisplay(): string {

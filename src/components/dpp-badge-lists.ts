@@ -10,12 +10,12 @@
  */
 
 import { LightElement } from '@/reactive/element'
-import { el } from '@/reactive/dom'
+import { el, phrase } from '@/reactive/dom'
 import { icon, iconForProperty } from '@/icons'
 import { renderedPresentation } from '@/state'
 import { i18n } from '@/i18n'
 import {
-  propertyIsKind, tx, type PropertyValueOf,
+  propertyIsKind, txLang, type PropertyValueOf,
 } from '@/types'
 
 type List = PropertyValueOf<'list'>
@@ -33,8 +33,8 @@ function buildCard(row: List): HTMLElement {
   const card = el('div', 'dpp-list-card')
   const ul = el('ul', row.value.compact ? 'dpp-list compact' : 'dpp-list')
   for (const v of row.value.items) {
-    const text = tx(v, i18n.locale)
-    ul.appendChild(el('li', undefined, text))
+    const [text, lang] = txLang(v, i18n.locale)
+    ul.appendChild(el('li', undefined, text, lang))
   }
   card.append(buildTitle(row), ul)
   return card
@@ -47,7 +47,7 @@ function buildTitle(row: List): HTMLElement {
     title.appendChild(icon(iconId))
     title.append(' ')
   }
-  title.append(tx(row.name, i18n.locale))
+  title.append(phrase(txLang(row.name, i18n.locale)))
   return title
 }
 

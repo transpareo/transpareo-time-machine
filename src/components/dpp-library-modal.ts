@@ -24,7 +24,7 @@
 
 import { LightElement } from '@/reactive/element'
 import { signal } from '@/reactive/signals'
-import { el } from '@/reactive/dom'
+import { el, phrase, appendPhrases } from '@/reactive/dom'
 import { safeLinkHref } from '@/safe-url'
 import { bindModalChrome, buildModal } from '@/reactive/modal'
 import {
@@ -33,7 +33,8 @@ import {
   type ComponentPropertyValue,
   type ComponentPropertyListItem,
   type CompositionEntry,
-  tx,
+  type LangText,
+  txLang,
   REGION_DATATYPE,
 } from '@/types'
 import { i18n, formatNumber } from '@/i18n'
@@ -60,6 +61,8 @@ function tr(key: LabelKey): string {
 
 class DppLibraryModal extends LightElement {
   protected setup(): void {
+    this.setAttribute('aria-labelledby', 'library-modal-title')
+
     bindModalChrome(this, this.effect.bind(this), {
       isOpen: () => selectedLibraryEntry() != null,
       onClose: close,
@@ -107,13 +110,9 @@ class DppLibraryModal extends LightElement {
       return
     }
 
-    const name = tx(entry.name, i18n.locale)
-    this.setAttribute(
-      'aria-label', `${name} ${tr('component.details.aria')}`,
-    )
-
     const dialog = buildModal({
-      title: name,
+      title: phrase(txLang(entry.name, i18n.locale)),
+      titleId: 'library-modal-title',
       body: buildBody(entry, lookupState()),
       onClose: close,
     })
@@ -174,8 +173,9 @@ function buildLibraryLoading(): HTMLElement {
 
 function buildPropertyRow(prop: ComponentProperty): HTMLElement {
   const row = el('div', 'dpp-library-row')
+  const [label, lang] = txLang(prop.label, i18n.locale)
   row.append(
-    el('div', 'dpp-library-row-label', tx(prop.label, i18n.locale)),
+    el('div', 'dpp-library-row-label', label, lang),
     buildPropertyValue(prop.value),
   )
   return row
@@ -185,7 +185,8 @@ function buildPropertyValue(
   value: ComponentPropertyValue,
 ): HTMLElement {
   if (value.type === 'list') return buildListValue(value.items)
-  return el('div', 'dpp-library-row-value', formatScalarValue(value))
+  const [text, lang] = formatScalarValue(value)
+  return el('div', 'dpp-library-row-value', text, lang)
 }
 
 function buildListValue(
@@ -208,7 +209,7 @@ function buildRatedList(
   for (const item of items) {
     const li = el('li', 'dpp-library-rated-item')
     if (item.rating) li.appendChild(ratingIcon(item.rating))
-    li.appendChild(document.createTextNode(tx(item.text, i18n.locale)))
+    li.append(phrase(txLang(item.text, i18n.locale)))
     ul.appendChild(li)
   }
   return ul
@@ -217,10 +218,9 @@ function buildRatedList(
 function buildInlineList(
   items: ReadonlyArray<ComponentPropertyListItem>,
 ): HTMLElement {
-  const text = items
-    .map((it) => tx(it.text, i18n.locale))
-    .join(', ')
-  return el('div', 'dpp-library-row-value', text)
+  const value = el('div', 'dpp-library-row-value')
+  appendPhrases(value, items.map((it) => txLang(it.text, i18n.locale)))
+  return value
 }
 
 function buildReferences(
@@ -232,7 +232,8 @@ function buildReferences(
   const list = el('ul', 'dpp-library-reference-list')
   for (const r of refs) {
     const li = el('li')
-    const a = el('a', 'dpp-library-reference', tx(r.label, i18n.locale))
+    const [label, lang] = txLang(r.label, i18n.locale)
+    const a = el('a', 'dpp-library-reference', label, lang)
     const safe = safeLinkHref(r.href)
     if (safe) {
       a.href = safe
@@ -248,16 +249,16 @@ function buildReferences(
 
 function formatScalarValue(
   value: Exclude<ComponentPropertyValue, { type: 'list' }>,
-): string {
+): LangText {
   switch (value.type) {
     case 'text':
-      return tx(value.value, i18n.locale)
+      return txLang(value.value, i18n.locale)
     case 'percent':
-      return `${formatNumber(value.value)}%`
+      return [`${formatNumber(value.value)}%`]
     case 'decimal':
-      return value.unit
+      return [value.unit
         ? `${formatNumber(value.value)} ${value.unit}`
-        : formatNumber(value.value)
+        : formatNumber(value.value)]
     case 'enum':
       return enumLabel(value)
   }
@@ -273,9 +274,11 @@ function formatScalarValue(
 //
 // The baked label wins wherever it carries the active
 // locale, since a publisher may have worded it deliberately.
+// Only the publisher's fallback wording names a language of
+// its own.
 export function enumLabel(
   value: Extract<ComponentPropertyValue, { type: 'enum' }>,
-): string {
+): LangText {
   // A declared country resolves before the baked label is
   // consulted, because the datatype's own definition puts
   // the naming on the reader, in the reader's language, and
@@ -286,19 +289,21 @@ export function enumLabel(
   // row, not a code-list value.
   if (value.dataType === REGION_DATATYPE) {
     const declared = regionName(value.value, i18n.locale)
-    if (declared) return declared
+    if (declared) return [declared]
   }
 
   const label = value.label
   const exact = typeof label === 'string' ? label : label?.[i18n.locale]
-  if (exact) return exact
+  if (exact) return [exact]
 
   const named = countryNameFromLabel(value)
-  if (named) return named
+  if (named) return [named]
 
-  // tx() answers '' for a map with nothing in it, so the
-  // code itself is the last resort rather than a blank cell.
-  return tx(label, i18n.locale) || value.value
+  // txLang() answers '' for a map with nothing in it; the
+  // code itself is the last resort, so the cell never
+  // stays blank.
+  const fallback = txLang(label, i18n.locale)
+  return fallback[0] ? fallback : [value.value]
 }
 
 // The viewer's name for an undeclared enum that is a

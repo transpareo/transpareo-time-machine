@@ -36,6 +36,18 @@ and this project adheres to
   and the timeline's muted labels, dates and unselected dots
   are less faded. A long word such as a German compound
   heading wraps inside the card at 320px.
+- Text a publisher left untranslated declares its language.
+  A reader whose language the passport offers but a row
+  lacks gets that row in English or the first language it
+  carries, and a screen reader spoke it with the reader's
+  pronunciation. Product name, category and description,
+  property names and values, body texts, lists, composition
+  names, the component dialog, the full-size picture, event
+  descriptions and the names in a change set carry `lang`
+  when they fall back; text in the reader's language
+  carries none. The component dialog is named by its title,
+  and a component name opening it keeps "View component
+  details" as its description.
 
 ## [2.23.0] - 2026-10-28
 

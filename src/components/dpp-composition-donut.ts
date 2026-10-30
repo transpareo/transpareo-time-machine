@@ -17,7 +17,7 @@
  */
 
 import { LightElement } from '@/reactive/element'
-import { el, SVG_NS } from '@/reactive/dom'
+import { el, phrase, SVG_NS } from '@/reactive/dom'
 import { icon, iconForProperty } from '@/icons'
 import { TrackedTween, type Track } from '@/reactive/tween'
 import { renderedPresentation } from '@/state'
@@ -28,7 +28,7 @@ import { ratingIcon } from '@/rating'
 import type {
   CompositionEntry, LocalizedText, PropertyValueOf,
 } from '@/types'
-import { tx } from '@/types'
+import { txLang } from '@/types'
 
 // Narrowed alias for readability inside the render
 // path; the donut keeps its 1:1 mapping to a row.
@@ -95,7 +95,6 @@ class DppCompositionDonut extends LightElement {
   private renderShell(row: Composition, quantified: boolean): void {
     const entries = row.value.entries
     const showDonut = quantified && entries.length > 1
-    const title = tx(row.name, i18n.locale)
 
     this.innerHTML = `
       <div class="dpp-composition">
@@ -124,7 +123,7 @@ class DppCompositionDonut extends LightElement {
       heading.appendChild(icon(iconId))
       heading.appendChild(document.createTextNode(' '))
     }
-    heading.appendChild(document.createTextNode(title))
+    heading.append(phrase(txLang(row.name, i18n.locale)))
 
     const table = this.querySelector('.dpp-composition-table')!
     for (const entry of entries) {
@@ -219,8 +218,6 @@ function buildRow(
 function buildNameCell(entry: CompositionEntry): HTMLDivElement {
   const cell = el('div', 'dpp-comp-name-cell')
 
-  const baseName = tx(entry.name, i18n.locale)
-
   // When the snapshot carries a `libraryRef`, the donut
   // name becomes an in-app trigger that opens the library
   // modal with the locale-resolved versioned data object
@@ -240,22 +237,22 @@ function buildNameCell(entry: CompositionEntry): HTMLDivElement {
   //
   // The rating smiley (if any) is prepended as a sibling
   // node so screen readers still see the bare name as
-  // the accessible label.
+  // the accessible label. The trigger's purpose rides as
+  // its description, so the name keeps its own language
+  // and the description the reader's.
   let host: HTMLElement
   if (entry.libraryRef) {
     const btn = el('button', 'dpp-comp-name dpp-comp-name-trigger')
     btn.type = 'button'
-    btn.setAttribute(
-      'aria-label',
-      `${baseName} ${t(i18n.labels, 'component.details.aria')}`,
-    )
+    const purpose = t(i18n.labels, 'component.details.aria')
+    btn.setAttribute('aria-description', purpose)
     btn.addEventListener('click', () => selectedLibraryEntry.set(entry))
     host = btn
   } else {
     host = el('span', 'dpp-comp-name')
   }
   if (entry.rating) host.appendChild(ratingIcon(entry.rating))
-  host.appendChild(document.createTextNode(baseName))
+  host.append(phrase(txLang(entry.name, i18n.locale)))
   cell.appendChild(host)
   return cell
 }

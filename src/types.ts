@@ -98,16 +98,32 @@ export function tx(
   locale: string,
   fallback = 'en',
 ): string {
-  if (text == null) return ''
-  if (typeof text === 'string') return text
+  return txLang(text, locale, fallback)[0]
+}
+
+// A resolved value and, when it is written in a language
+// other than the reader's, that language: the publisher
+// left the row untranslated and the reader gets the
+// fallback. The element showing the text carries it as its
+// `lang` (WCAG 3.1.2); text in the reader's language
+// inherits the page's and names none.
+export type LangText = readonly [text: string, lang?: string]
+
+export function txLang(
+  text: LocalizedText | undefined | null,
+  locale: string,
+  fallback = 'en',
+): LangText {
+  if (text == null) return ['']
+  if (typeof text === 'string') return [text]
 
   // A country code resolves to what the viewer's locale
   // calls that country, falling back to the bare code.
-  // Every render surface reaches values through tx(), so
+  // Every render surface reaches values through here, so
   // this one branch covers tiles, the detail table, badge
   // lists and the address strip alike.
   if (isRegionLiteral(text)) {
-    return regionName(text['@value'], locale) ?? text['@value']
+    return [regionName(text['@value'], locale) ?? text['@value']]
   }
 
   // A signed typed literal ({'@value', '@type'} - numeric
@@ -115,11 +131,11 @@ export function tx(
   // its lexical value, guaranteed rather than left to the
   // hash-key order the generic first-value fallback happens
   // to pick.
-  if (typeof text['@value'] === 'string') return text['@value']
-  return text[locale]
-    ?? text[fallback]
-    ?? Object.values(text)[0]
-    ?? ''
+  if (typeof text['@value'] === 'string') return [text['@value']]
+  const keys = [locale, fallback, ...Object.keys(text)]
+  const lang = keys.find((k) => typeof text[k] === 'string')
+  if (!lang) return ['']
+  return lang === locale ? [text[lang]] : [text[lang], lang]
 }
 
 // A localized literal in the wire's JSON-LD expanded form:

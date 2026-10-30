@@ -100,10 +100,10 @@
   color: $dpp-text;
 }
 
-// One pre-joined text line (see dpp-hero's metaText):
-// absent segments are dropped there, so no separator
-// logic lives here. NBSP inside each segment keeps line
-// wraps at the separators.
+// The category, then GTIN and weight pre-joined (see
+// dpp-hero's metaText): absent segments are dropped there,
+// so no separator logic lives here. NBSP inside each
+// segment keeps line wraps at the separators.
 .dpp-meta {
   @include sm;
   color: $dpp-muted;

@@ -45,7 +45,7 @@
  */
 
 import { LightElement } from '@/reactive/element'
-import { el } from '@/reactive/dom'
+import { el, phrase } from '@/reactive/dom'
 import {
   activeSnapshot, activeVersionNumber, isOnCurrent, dynamicDataProofState,
   renderedPresentation,
@@ -55,7 +55,8 @@ import { liveDataIsShowable } from '@/actions'
 import { i18n, formatNumber, formatDateTime } from '@/i18n'
 import { t, type LabelKey } from '@/i18n/labels'
 import {
-  tx, propertyIsKind, type LiveRow, type PropertyValue, type PropertyValueOf,
+  txLang, propertyIsKind, type LangText, type LiveRow, type PropertyValue,
+  type PropertyValueOf,
 } from '@/types'
 import { showTokens, isUnlocked } from '@/show-filter'
 import { safeLinkHref } from '@/safe-url'
@@ -150,7 +151,7 @@ function buildLiveSection(): HTMLElement[] {
 }
 
 function buildLiveRow(row: LiveRow): HTMLElement {
-  const label = tx(row.name, i18n.locale)
+  const label = txLang(row.name, i18n.locale)
   return buildPair(label, formatValue(row.value), !row.live)
 }
 
@@ -158,7 +159,7 @@ function buildLiveRow(row: LiveRow): HTMLElement {
 // version's: its value is the reading sealed at publish.
 function buildRow(row: DetailRow): HTMLElement {
   if (propertyIsKind('link')(row)) return buildLinkRow(row)
-  const label = tx(row.name, i18n.locale)
+  const label = txLang(row.name, i18n.locale)
   return buildPair(label, formatValue(row.value), row.dynamic === true)
 }
 
@@ -166,9 +167,9 @@ function buildRow(row: DetailRow): HTMLElement {
 // own size. A URL with a scheme that could run script stays
 // inert text.
 function buildLinkRow(row: LinkRow): HTMLElement {
-  const label = tx(row.name, i18n.locale)
+  const [label, lang] = txLang(row.name, i18n.locale)
   const href = safeLinkHref(row.value.href)
-  const wrap = el('div', 'dpp-property-row')
+  const wrap = el('div', 'dpp-property-row', undefined, lang)
   if (!href) {
     wrap.append(label)
     return wrap
@@ -182,23 +183,24 @@ function buildLinkRow(row: LinkRow): HTMLElement {
   return wrap
 }
 
-function formatValue(v: ScalarRow['value']): string {
-  const resolved = v.numeric != null
-    ? formatNumber(v.numeric) : tx(v.value, i18n.locale)
-  return v.unit ? `${resolved} ${v.unit}` : resolved
+function formatValue(v: ScalarRow['value']): LangText {
+  const [resolved, lang]: LangText = v.numeric != null
+    ? [formatNumber(v.numeric)] : txLang(v.value, i18n.locale)
+  return [v.unit ? `${resolved} ${v.unit}` : resolved, lang]
 }
 
 // A label and its value; a reading sealed at publish says
-// so beneath the value.
+// so beneath the value, in the reader's language.
 function buildPair(
-  label: string, value: string, atPublish: boolean,
+  [label, lang]: LangText, value: LangText, atPublish: boolean,
 ): HTMLElement {
   const wrap = el('div', 'dpp-property-row')
-  const cell = el('div', 'dpp-property-value', value)
+  const cell = el('div', 'dpp-property-value')
+  cell.append(phrase(value))
   if (atPublish) {
     cell.append(el('span', 'dpp-property-note', tr('properties.atPublish')))
   }
-  wrap.append(el('div', 'dpp-property-label', label), cell)
+  wrap.append(el('div', 'dpp-property-label', label, lang), cell)
   return wrap
 }
 

@@ -17,12 +17,12 @@
  */
 
 import { LightElement } from '@/reactive/element'
-import { el } from '@/reactive/dom'
+import { el, phrase } from '@/reactive/dom'
 import { icon, iconForProperty } from '@/icons'
 import { renderedPresentation } from '@/state'
 import { i18n } from '@/i18n'
 import {
-  propertyIsKind, tx, type PropertyValueOf,
+  propertyIsKind, txLang, type PropertyValueOf,
 } from '@/types'
 
 type LongText = PropertyValueOf<'longText'>
@@ -96,8 +96,8 @@ function buildItem(
   it.appendChild(buildHeader(row, isOpen))
 
   if (isOpen) {
-    const body = tx(row.value.body, i18n.locale)
-    const bodyEl = el('div', 'dpp-accordion-body')
+    const [body, lang] = txLang(row.value.body, i18n.locale)
+    const bodyEl = el('div', 'dpp-accordion-body', undefined, lang)
 
     // Inner wrapper so the expand animation can clip the
     // content while the body's grid row grows (dpp.scss).
@@ -162,7 +162,7 @@ function buildHeader(
     left.appendChild(icon(iconId))
     left.append(' ')
   }
-  left.append(tx(row.name, i18n.locale))
+  left.append(phrase(txLang(row.name, i18n.locale)))
 
   // Open/close toggle: the x glyph, rotated 45° by the
   // stylesheet while the section is closed so it reads as

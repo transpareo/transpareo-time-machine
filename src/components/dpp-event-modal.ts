@@ -17,7 +17,7 @@
 
 import { LightElement } from '@/reactive/element'
 import { signal } from '@/reactive/signals'
-import { el } from '@/reactive/dom'
+import { el, appendPhrases } from '@/reactive/dom'
 import { bindModalChrome, buildModal } from '@/reactive/modal'
 import { sortedEvents, epcisByEventId, snapshotForVersion } from '@/state'
 import { manifest as manifestSignal, epcisDocument } from '@/host'
@@ -25,7 +25,9 @@ import { i18n, formatShortDate } from '@/i18n'
 import { t, type LabelKey } from '@/i18n/labels'
 import { colorForEventType } from '@/event-colors'
 import { icon } from '@/icons'
-import { tx, type DppEvent, type PropertyValue } from '@/types'
+import {
+  txLang, type DppEvent, type LangText, type PropertyValue,
+} from '@/types'
 import {
   cbvLabel, glnFromUri, epcShortLabel,
   type EpcisObjectEvent,
@@ -152,10 +154,10 @@ function buildChangeSetSection(evt: DppEvent): HTMLElement | null {
   const names = (
     ids: ReadonlyArray<string>,
     rows: ReadonlyArray<PropertyValue> | undefined,
-  ): string => ids.map((id) => {
+  ): LangText[] => ids.map((id) => {
     const row = rows?.find((r) => r.key === id)
-    return row ? tx(row.name, i18n.locale) : id
-  }).join(', ')
+    return row ? txLang(row.name, i18n.locale) : [id]
+  })
 
   const section = el('section', 'event-modal-section')
   section.appendChild(el(
@@ -169,10 +171,9 @@ function buildChangeSetSection(evt: DppEvent): HTMLElement | null {
     rows: ReadonlyArray<PropertyValue> | undefined,
   ): void => {
     if (!ids.length) return
-    dl.append(
-      el('dt', `change-set-kind ${cls}`, tr(label)),
-      el('dd', 'change-set-names', names(ids, rows)),
-    )
+    const dd = el('dd', 'change-set-names')
+    appendPhrases(dd, names(ids, rows))
+    dl.append(el('dt', `change-set-kind ${cls}`, tr(label)), dd)
   }
   addRow('is-added', 'changeSet.added', cs.added, snap.properties)
   addRow('is-modified', 'changeSet.modified', cs.modified, snap.properties)
@@ -183,9 +184,10 @@ function buildChangeSetSection(evt: DppEvent): HTMLElement | null {
 
 function buildDescriptionSection(evt: DppEvent): HTMLElement {
   const section = el('section', 'event-modal-section')
+  const [text, lang] = txLang(evt.description, i18n.locale)
   section.append(
     el('h3', 'event-modal-subtitle', tr('event.description')),
-    el('p', 'event-modal-description', tx(evt.description!, i18n.locale)),
+    el('p', 'event-modal-description', text, lang),
   )
   return section
 }

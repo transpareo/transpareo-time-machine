@@ -22,13 +22,15 @@ import { bindModalChrome } from '@/reactive/modal'
 import { i18n } from '@/i18n'
 import { t } from '@/i18n/labels'
 import { markPending, renderNav } from './dpp-gallery'
-import type { SnapshotImage } from '@/types'
+import type { LangText, SnapshotImage } from '@/types'
 import { WHEEL_AXIS_LOCK_PX } from '@/gestures'
 
 export interface OpenLightboxDetail {
   images: ReadonlyArray<SnapshotImage>
   idx: number
-  alt: string
+
+  // The product name, which names each picture here.
+  alt: LangText
 }
 
 export const OPEN_EVENT = 'dpp:open-lightbox'
@@ -42,7 +44,7 @@ const WHEEL_RESET_MS = 110
 class DppLightbox extends LightElement {
   private index = 0
   private images: ReadonlyArray<SnapshotImage> = []
-  private alt = ''
+  private alt: LangText = ['']
 
   private wheelAccum = 0
   private wheelLatched = false
@@ -249,8 +251,10 @@ class DppLightbox extends LightElement {
     const img = this.querySelector('.gallery-image') as HTMLImageElement
     const nav = this.querySelector('.navigation') as HTMLElement
 
+    const [name, lang] = this.alt
     img.src = this.images[this.index].large
-    img.alt = `${this.alt} (${this.index + 1} / ${this.images.length})`
+    img.alt = `${name} (${this.index + 1} / ${this.images.length})`
+    if (lang) img.lang = lang
 
     // The browser keeps painting the old picture until the
     // new bytes decode, and nothing is warmed ahead here,
