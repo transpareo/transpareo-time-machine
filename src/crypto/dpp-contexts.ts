@@ -25,11 +25,12 @@ export const TRANSPAREO_V2_CONTEXT_URL =
   'https://transpareo.com/vocab/transpareo/v2'
 
 // v2 is every v1 term at its v1 IRI plus the terms it adds,
-// as the publisher derives it. Composed from the v1 copy so
-// the bundle carries those terms once.
-const transpareoV2 = {
-  '@context': { ...transpareoV1['@context'], ...transpareoV2Terms }
-}
+// as the publisher derives it, but `description`: the W3C
+// credentials context a v2 credential lists first defines it
+// and protects it. Composed from the v1 copy so the bundle
+// carries those terms once.
+const { description: _description, ...v1Terms } = transpareoV1['@context']
+const transpareoV2 = { '@context': { ...v1Terms, ...transpareoV2Terms } }
 
 // URL -> context document, passed to the canonicalizer so a
 // `@context` URL entry resolves to its local term map.

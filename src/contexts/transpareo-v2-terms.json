@@ -36,6 +36,10 @@
     "@id": "https://transpareo.com/vocab/transpareo/v2#documentValidUntil",
     "@type": "xsd:date"
   },
+  "operatorId": {
+    "@id": "https://transpareo.com/vocab/transpareo/v2#operatorId",
+    "@type": "xsd:string"
+  },
   "document-type": {
     "@id": "https://transpareo.com/vocab/transpareo/v2#document-type"
   }

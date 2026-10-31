@@ -14,14 +14,17 @@ and this project adheres to
 
 - Passports naming the second edition of the Transpareo
   vocabulary (`https://transpareo.com/vocab/transpareo/v2`)
-  verify. It carries every v1 term at its v1 IRI plus the
-  terms of a passport's downloads: `downloads`, `fileDigest`,
-  `fileVersions`, `fileLanguages`, `documentType`,
-  `documentIssuer`, `documentNumber`, `documentValidFrom`,
-  `documentValidUntil` and the `document-type` datatype. The
-  bundle composes it from the v1 copy, so the v1 terms ship
-  once. Passports signed under v1 keep verifying. The demo
-  seed signs its ecdsa-sd passport under v2.
+  verify. It carries every v1 term at its v1 IRI but
+  `description`, which the W3C credentials context defines,
+  plus the terms of a passport's downloads: `downloads`,
+  `fileDigest`, `fileVersions`, `fileLanguages`,
+  `documentType`, `documentIssuer`, `documentNumber`,
+  `documentValidFrom`, `documentValidUntil` and the
+  `document-type` datatype, and `operatorId`, the identifier
+  of an organization. The bundle composes it from the v1
+  copy, so the v1 terms ship once. Passports signed under v1
+  keep verifying. The demo seed signs its ecdsa-sd passport
+  under v2.
 - A Downloads section after the accordions lists the files a
   passport pinned (`product.downloads`). Each row opens the
   file in the reader's language where the publisher holds a

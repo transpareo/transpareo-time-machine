@@ -38,10 +38,6 @@
       "@id": "https://transpareo.com/vocab/transpareo/v1#currentVersion",
       "@type": "xsd:integer"
     },
-    "description": {
-      "@id": "https://transpareo.com/vocab/transpareo/v1#description",
-      "@type": "xsd:string"
-    },
     "originCountry": {
       "@id": "https://transpareo.com/vocab/transpareo/v1#originCountry",
       "@type": "xsd:string"
@@ -275,6 +271,10 @@
     "documentValidUntil": {
       "@id": "https://transpareo.com/vocab/transpareo/v2#documentValidUntil",
       "@type": "xsd:date"
+    },
+    "operatorId": {
+      "@id": "https://transpareo.com/vocab/transpareo/v2#operatorId",
+      "@type": "xsd:string"
     },
     "document-type": {
       "@id": "https://transpareo.com/vocab/transpareo/v2#document-type"
