@@ -10,6 +10,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.24.0] - 2026-10-30
+
 ### Added
 
 - Passports whose `@context` starts with the W3C credentials
