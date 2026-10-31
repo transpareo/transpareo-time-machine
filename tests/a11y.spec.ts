@@ -292,7 +292,7 @@ test.describe('default theme contrast', () => {
     expect(await contrast()).toEqual([])
 
     await page.locator('.versions-toggle').click()
-    await page.waitForTimeout(500)
+    await settled(page, 'dpp-timeline')
     expect(await contrast()).toEqual([])
   })
 
@@ -302,7 +302,7 @@ test.describe('default theme contrast', () => {
   test('the timeline text reaches 4.5:1 on the trough', async ({ page }) => {
     await mount(page)
     await page.locator('.versions-toggle').click()
-    await page.waitForTimeout(500)
+    await settled(page, 'dpp-timeline')
 
     for (const sel of ['.tick-label', '.event-details-date', '.versions-label']) {
       const lowest = Math.min(...await ratios(page, sel, 'text'))
@@ -310,7 +310,7 @@ test.describe('default theme contrast', () => {
     }
 
     await page.locator('.open-full-btn').click()
-    await page.waitForTimeout(500)
+    await settled(page, 'dpp-timeline')
     const cards = await ratios(page, '.panel-card-date', 'text')
     expect(cards.length).toBeGreaterThan(0)
     expect(Math.min(...cards)).toBeGreaterThanOrEqual(4.5)
@@ -319,7 +319,7 @@ test.describe('default theme contrast', () => {
   test('timeline dots reach 3:1 on the trough', async ({ page }) => {
     await mount(page)
     await page.locator('.versions-toggle').click()
-    await page.waitForTimeout(500)
+    await settled(page, 'dpp-timeline')
 
     const dots = await ratios(page, '.strip .event:not(.active)', 'dot')
     expect(dots.length).toBeGreaterThan(0)
@@ -505,9 +505,13 @@ test.describe('keyboard', () => {
     await page.keyboard.press('Tab')
     expect(await focusedClass(page)).toBe('button.versions-toggle')
 
-    // Opened, the dots are stops again, ahead of the toggle.
+    // Opening keeps focus on the toggle. The strip stays
+    // hidden until its fade starts, which waits on the next
+    // frame, so the dots are stops again, ahead of the
+    // toggle, once they show.
     await page.keyboard.press('Enter')
-    await page.waitForTimeout(400)
+    expect(await focusedClass(page)).toBe('button.versions-toggle')
+    await expect(page.locator('.strip .event').last()).toBeVisible()
     await page.keyboard.press('Shift+Tab')
     await page.keyboard.press('Shift+Tab')
     await page.keyboard.press('Shift+Tab')
