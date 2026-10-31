@@ -112,8 +112,8 @@ function focusedClass(page: Page): Promise<string> {
   })
 }
 
-// A dialog takes focus on the frame after it opens; until
-// then a key or a focus call still lands on the page.
+// Whether keyboard focus sits inside an open dialog, read
+// through the shadow root the passport renders into.
 function focusInDialog(page: Page): Promise<boolean> {
   return page.evaluate(() => {
     let a = document.activeElement
@@ -206,9 +206,11 @@ test.describe('every opened surface passes WCAG 2.2 AA (axe-core)', () => {
     expect(await violations(page, ['target-size'])).toEqual([])
   })
 
-  // A dialog is scanned once it has settled and its content
-  // is in (the library panel fetches its entry), and Escape
-  // closes it.
+  // A dialog opened from the keyboard takes focus and keeps
+  // it while its content comes in (the library panel fetches
+  // its entry, the proof drawer redraws per verdict). It is
+  // scanned once settled, and Escape closes it and hands
+  // focus back to the control that opened it.
   const openers: Array<[string, string]> = [
     ['.event-details-card', 'dpp-event-modal.open'],
     ['.chip.clickable', 'dpp-verification-modal.open'],
@@ -218,14 +220,20 @@ test.describe('every opened surface passes WCAG 2.2 AA (axe-core)', () => {
   for (const [opener, surface] of openers) {
     test(surface, async ({ page }) => {
       const dialog = page.locator(surface)
-      await page.locator(opener).first().click()
+      const trigger = page.locator(opener).first()
+      await trigger.focus()
+      await page.keyboard.press('Enter')
       await expect(dialog).toBeVisible()
+      await expect.poll(() => focusInDialog(page)).toBe(true)
+
       await expect(dialog.locator('.loading')).toHaveCount(0)
       await settled(page, surface)
+      await expect.poll(() => focusInDialog(page)).toBe(true)
       expect(await violations(page, ['target-size'])).toEqual([])
 
       await page.keyboard.press('Escape')
       await expect(dialog).toBeHidden()
+      await expect(trigger).toBeFocused()
       await expect.poll(() => modalEntryOnTop(page)).toBe(false)
     })
   }

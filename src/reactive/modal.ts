@@ -67,16 +67,67 @@ function focusableWithin(host: HTMLElement): HTMLElement[] {
   ).filter((node) => node.offsetParent !== null)
 }
 
+// The control a keyboard user is on, told apart from its
+// twins: a dialog that redraws builds the same controls
+// anew, so the match in the new content is found by key.
+interface HeldControl {
+  node: HTMLElement
+  key: string
+  nth: number
+}
+
+// What a control is, as far as a redrawn dialog can tell:
+// its tag, its classes and the name it carries.
+function controlKey(node: HTMLElement): string {
+  const name = node.getAttribute('aria-label') ?? node.textContent
+  return `${node.tagName}.${node.className}|${name}`
+}
+
+function holdControl(host: HTMLElement, node: HTMLElement): HeldControl {
+  const key = controlKey(node)
+  const twins = focusableWithin(host).filter((n) => controlKey(n) === key)
+  return { node, key, nth: Math.max(twins.indexOf(node), 0) }
+}
+
+// Focus the held control's match in the dialog's current
+// content, or its first control, or the dialog itself.
+function focusInside(host: HTMLElement, held: HeldControl | null): void {
+  const focusables = focusableWithin(host)
+  const twins = focusables.filter((n) => controlKey(n) === held?.key)
+  const target = twins[held?.nth ?? 0] ?? twins[0] ?? focusables[0] ?? host
+  target.focus()
+}
+
+// Focus falls onto the page itself when the focused node
+// is removed; anywhere else it was put there on purpose.
+function focusDropped(): boolean {
+  const active = document.activeElement
+  return !active || active === document.body
+}
+
 // Keep keyboard focus inside an open dialog: move focus in
-// on open, wrap Tab/Shift-Tab at the boundaries, and
-// restore focus to the previously-focused element on close.
-// Without this the asserted aria-modal="true" lies to
-// assistive tech, since Tab would walk into the still-live
-// page behind the overlay.
+// on open, keep it on its control when the dialog redraws,
+// wrap Tab/Shift-Tab at the boundaries, and restore focus
+// to the previously-focused element on close. Without this
+// the asserted aria-modal="true" lies to assistive tech,
+// since Tab would walk into the still-live page behind the
+// overlay.
 function bindFocusTrap(
   host: HTMLElement, effect: Effect, opts: ModalChrome,
 ): void {
   let previouslyFocused: HTMLElement | null = null
+  let held: HeldControl | null = null
+
+  const onFocusin = (e: FocusEvent): void => {
+    held = holdControl(host, e.target as HTMLElement)
+  }
+
+  // A dialog redraws its whole content when data lands,
+  // which detaches the control a keyboard user is on.
+  const observer = new MutationObserver(() => {
+    if (!opts.isOpen() || !held || held.node.isConnected) return
+    if (focusDropped()) focusInside(host, held)
+  })
 
   const onKeydown = (e: KeyboardEvent): void => {
     if (e.key !== 'Tab' || !opts.isOpen()) return
@@ -103,15 +154,21 @@ function bindFocusTrap(
     if (!opts.isOpen()) return
     const root = host.getRootNode() as Document | ShadowRoot
     previouslyFocused = root.activeElement as HTMLElement | null
-    // Defer so the dialog body is mounted before the search
-    // for an initial focus target.
-    requestAnimationFrame(() => {
-      if (!opts.isOpen()) return
-      ;(focusableWithin(host)[0] ?? host).focus()
+
+    // Every dialog renders its content in the pass that opens
+    // it, so the content is mounted by the next microtask. A
+    // frame would wait on whatever else keeps the page busy.
+    queueMicrotask(() => {
+      if (opts.isOpen()) focusInside(host, null)
     })
     host.addEventListener('keydown', onKeydown)
+    host.addEventListener('focusin', onFocusin)
+    observer.observe(host, { childList: true, subtree: true })
     return () => {
+      observer.disconnect()
+      host.removeEventListener('focusin', onFocusin)
       host.removeEventListener('keydown', onKeydown)
+      held = null
       previouslyFocused?.focus?.()
       previouslyFocused = null
     }
