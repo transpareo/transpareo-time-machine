@@ -41,6 +41,11 @@ export default defineConfig({
   retries: 0,
   use: {
     baseURL: 'http://localhost:5173',
+
+    // A failed test leaves its trace in test-results/, which
+    // the release workflow uploads, so a failure on an engine
+    // nobody runs locally can be replayed.
+    trace: 'retain-on-failure'
   },
 
   // All three engines gate a release, because the renderer
