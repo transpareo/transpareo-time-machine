@@ -30,12 +30,14 @@ declare global {
 
 // Mount, then attach a recorder the way a late-loading
 // integration script would: well after the first dispatch has
-// come and gone.
+// come and gone, and after the events feed that lands behind
+// the card has drawn the timeline's dots.
 async function attachLate(page: Page): Promise<void> {
-  await page.goto('/', { waitUntil: 'networkidle' })
+  await page.goto('/')
   await page.waitForFunction(() => {
-    const tm = document.querySelector('transpareo-time-machine')
-    return tm?.shadowRoot?.querySelector('dpp-hero') != null
+    const root = document.querySelector('transpareo-time-machine')?.shadowRoot
+    return root?.querySelector('dpp-hero') != null
+      && root.querySelector('[data-event-id]') != null
   })
   await page.evaluate((ev) => {
     const tm = document.querySelector('transpareo-time-machine')!

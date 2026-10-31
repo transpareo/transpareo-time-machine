@@ -16,11 +16,14 @@ import { test, expect, type Page } from '@playwright/test'
 const PROOF = 'dpp-verification-modal'
 const EVENT = 'dpp-event-modal'
 
+// The events feed lands behind the card; a step to an event
+// needs its dot.
 async function mount(page: Page): Promise<void> {
-  await page.goto('/', { waitUntil: 'networkidle' })
+  await page.goto('/')
   await page.waitForFunction(() => {
-    const tm = document.querySelector('transpareo-time-machine')
-    return tm?.shadowRoot?.querySelector('dpp-hero') != null
+    const root = document.querySelector('transpareo-time-machine')?.shadowRoot
+    return root?.querySelector('dpp-hero') != null
+      && root.querySelector('[data-event-id]') != null
   })
 }
 

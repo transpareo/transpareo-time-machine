@@ -28,13 +28,18 @@ import { test, expect, type Page } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
 
 // The custom element mounts the SPA into its shadow root
-// once `host.loadState === 'ready'`. Wait for the mounted
-// stage so a check reads the rendered tree.
+// once `host.loadState === 'ready'`; the events feed, the
+// verdict and the fonts land after the stage. Wait for all
+// of them so a check reads the passport the way it settles.
 async function mount(page: Page): Promise<void> {
-  await page.goto('http://localhost:5173/', { waitUntil: 'networkidle' })
+  await page.goto('http://localhost:5173/')
   await page.waitForFunction(() => {
-    const el = document.querySelector('transpareo-time-machine')
-    return !!(el?.shadowRoot?.querySelector('.stage'))
+    const root = document.querySelector('transpareo-time-machine')?.shadowRoot
+    const chip = root?.querySelector('dpp-verification-chip .chip')
+    return !!root?.querySelector('.stage')
+      && !!root.querySelector('[data-event-id]')
+      && !!chip && !chip.classList.contains('state-verifying')
+      && document.fonts.status === 'loaded'
   })
 }
 

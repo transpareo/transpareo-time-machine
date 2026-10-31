@@ -20,7 +20,7 @@ const EMBED_URL = 'http://localhost:5175/'
 test('embed bundle registers the element and inlines its CSS', async ({
   page,
 }) => {
-  await page.goto(EMBED_URL, { waitUntil: 'networkidle' })
+  await page.goto(EMBED_URL)
 
   // Custom element is registered on import, no manifest
   // needed.

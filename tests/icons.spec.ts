@@ -28,13 +28,15 @@ import { test, expect } from '@playwright/test'
 test('functional icons render inline; decorative icons gate on a content sprite', async ({
   page,
 }) => {
-  await page.goto('/', { waitUntil: 'networkidle' })
+  await page.goto('/')
 
-  // Wait for the SPA tree to mount (a functional icon is
-  // present once the chrome has rendered).
+  // Wait for both tiers: a functional icon is present once the
+  // chrome has rendered, a decorative one once the icon map
+  // has given a property row its symbol.
   await page.waitForFunction(() => {
-    const host = document.querySelector('transpareo-time-machine')
-    return host?.shadowRoot?.querySelector('svg.icon--fn') != null
+    const root = document.querySelector('transpareo-time-machine')?.shadowRoot
+    return root?.querySelector('svg.icon--fn') != null
+      && root.querySelector('svg.icon:not(.icon--fn)') != null
   })
 
   const r = await page.evaluate(() => {
@@ -110,7 +112,7 @@ test('a hostile content sprite is scrubbed to bare symbols', async ({
     contentType: 'image/svg+xml',
     body: HOSTILE_SPRITE,
   }))
-  await page.goto('/', { waitUntil: 'networkidle' })
+  await page.goto('/')
   await page.waitForFunction(() => {
     const host = document.querySelector('transpareo-time-machine')
     return host?.shadowRoot?.querySelector('symbol#icon-evil') != null
@@ -157,15 +159,18 @@ test('a content sprite served with a non-SVG content-type injects nothing', asyn
     body: '<svg xmlns="http://www.w3.org/2000/svg">'
       + '<symbol id="icon-smuggled" viewBox="0 0 1 1"/></svg>',
   }))
-  await page.goto('/', { waitUntil: 'networkidle' })
+  const answered = page.waitForResponse('**/icons.svg')
+  await page.goto('/')
 
   // The bundled functional sprite still installs...
   await page.waitForFunction(() => {
     const host = document.querySelector('transpareo-time-machine')
     return host?.shadowRoot?.querySelector('symbol#icon-cancel') != null
   })
+  await (await answered).finished()
 
-  // ...but the mislabeled content sprite must not.
+  // ...but once it is answered, the mislabeled content sprite
+  // must not.
   const smuggled = await page.evaluate(() => {
     const root = document.querySelector('transpareo-time-machine')!.shadowRoot!
     return root.querySelector('symbol#icon-smuggled') != null

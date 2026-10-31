@@ -16,7 +16,7 @@ import { test, expect } from '@playwright/test'
 test('single snapshot renders, hides the timeline, and verifies', async ({
   page,
 }) => {
-  await page.goto('/snapshot.html', { waitUntil: 'networkidle' })
+  await page.goto('/snapshot.html')
 
   // Wait for the tree to mount and the chip to settle on a
   // verdict (verification fetches the proof keys).

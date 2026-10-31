@@ -20,7 +20,7 @@
 import { test, expect } from '@playwright/test'
 
 test('the host logo-href renders the logo as a link', async ({ page }) => {
-  await page.goto('/', { waitUntil: 'networkidle' })
+  await page.goto('/')
 
   await page.waitForFunction(() => {
     const root = document.querySelector('transpareo-time-machine')?.shadowRoot

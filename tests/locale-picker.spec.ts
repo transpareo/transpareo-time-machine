@@ -33,7 +33,7 @@ test.afterEach(async ({ page }) => {
 test('picker names are capitalized and hinted', async ({
   page,
 }) => {
-  await page.goto('http://localhost:5173/', { waitUntil: 'networkidle' })
+  await page.goto('http://localhost:5173/')
 
   // The element mounts the SPA into its shadow root once the
   // host reports ready; the picker is part of that tree.
@@ -81,7 +81,7 @@ test('the filter field carries an id, not autofill', async ({ page }) => {
     await route.fulfill({ json: body })
   })
 
-  await page.goto('http://localhost:5173/', { waitUntil: 'networkidle' })
+  await page.goto('http://localhost:5173/')
   await page.locator('.locale-switch').click()
 
   const filter = page.locator('.locale-filter')

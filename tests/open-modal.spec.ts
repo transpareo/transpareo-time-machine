@@ -12,7 +12,7 @@
 import { test, expect, type Page } from '@playwright/test'
 
 async function openGeneric(page: Page): Promise<void> {
-  await page.goto('/', { waitUntil: 'networkidle' })
+  await page.goto('/')
   await page.waitForFunction(() => {
     const tm = document.querySelector('transpareo-time-machine')
     return tm?.shadowRoot?.querySelector('dpp-modal') != null

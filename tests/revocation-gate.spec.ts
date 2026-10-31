@@ -38,7 +38,7 @@ async function pinned(page: Page, url: string): Promise<string[]> {
     )
     await route.fulfill({ response: res, body })
   })
-  await page.goto(url, { waitUntil: 'networkidle' })
+  await page.goto(url)
   return requests
 }
 
