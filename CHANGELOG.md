@@ -12,6 +12,17 @@ and this project adheres to
 
 ### Added
 
+- Passports whose `@context` starts with the W3C credentials
+  context (`https://www.w3.org/ns/credentials/v2`), followed
+  by `https://transpareo.com/vocab/vc/v2` and transpareo v2,
+  verify. The bundle carries the W3C document byte for byte,
+  and the canonicalizer reads the `@context` of a type
+  (VerifiableCredential, DataIntegrityProof) for that node's
+  properties and the `@context` of a property for its scalar
+  values (proofPurpose), so the envelope and the proof
+  configuration take the IRIs and datatypes the publisher
+  signed. Passports naming vc/v1 keep verifying. The verifier
+  entry's size budget goes from 33 to 34 KB for the copy.
 - Passports naming the second edition of the Transpareo
   vocabulary (`https://transpareo.com/vocab/transpareo/v2`)
   verify. It carries every v1 term at its v1 IRI but

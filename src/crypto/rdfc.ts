@@ -13,6 +13,13 @@
  * Supported input:
  *   - an @context that is a term map of prefix -> IRI,
  *     term -> IRI, or term -> { @id, @type?, @language? };
+ *   - a term's own @context, as the W3C credentials context
+ *     declares them: on a type it applies to the properties
+ *     of a node of that type and not to the nodes inside
+ *     them (VerifiableCredential, DataIntegrityProof); on a
+ *     property it applies to that property's scalar values
+ *     (proofPurpose). On a property holding a node, and an
+ *     @context of null, it is rejected;
  *   - nodes identified by an explicit @id (IRI, our docs
  *     carry one on every node), @type as a CURIE/IRI or an
  *     array of them, nested nodes, and arrays of values;
@@ -57,6 +64,9 @@ interface TermDef {
   readonly id: string
   readonly type?: string
   readonly language?: string
+
+  // The term's own @context, null where it clears the context.
+  readonly scoped?: Record<string, JsonLdValue> | null
 }
 
 interface Context {
@@ -113,8 +123,8 @@ export async function canonicalize(
 ): Promise<string[]> {
   const context = parseContext(document['@context'], options.contexts)
   const quads: Quad[] = []
-  const state: WalkState = { context, quads, nextBlank: 0 }
-  walkNode(document, state)
+  const state: WalkState = { quads, nextBlank: 0 }
+  walkNode(document, context, state)
   return canonicalizeQuads(quads, options.labelMap)
 }
 
@@ -130,19 +140,22 @@ export async function hashNQuads(
 }
 
 interface WalkState {
-  readonly context: Context
   readonly quads: Quad[]
   nextBlank: number
 }
 
 // Emit the quads for one node and return the RDF term
 // that stands for it (its @id IRI, or a fresh blank node).
+// `outer` is the context the node was reached with; its
+// properties read it with the node's type-scoped contexts on
+// top, and the nodes inside them read `outer` again.
 function walkNode(
-  rawNode: Record<string, JsonLdValue>, state: WalkState,
+  rawNode: Record<string, JsonLdValue>, outer: Context, state: WalkState,
 ): Term {
-  const node = normalizeKeywords(rawNode, state.context)
+  const context = withTypeScopes(rawNode, outer)
+  const node = normalizeKeywords(rawNode, context)
   rejectUnsupportedKeywords(node)
-  const subject = nodeSubject(node, state)
+  const subject = nodeSubject(node, context, state)
 
   if ('@type' in node) {
     for (const t of asArray(node['@type'])) {
@@ -150,7 +163,7 @@ function walkNode(
       state.quads.push({
         subject,
         predicate: { kind: 'iri', value: RDF_TYPE },
-        object: { kind: 'iri', value: expandIri(t, state.context, true) },
+        object: { kind: 'iri', value: expandIri(t, outer, true) },
       })
     }
   }
@@ -160,17 +173,49 @@ function walkNode(
     // A defined term carries its IRI (and any coercion); an
     // undefined term expands through @vocab, or is rejected
     // when no vocabulary grounds it.
-    const def = state.context.terms.get(term)
+    const def = context.terms.get(term)
     const predicate: Term = {
-      kind: 'iri', value: def ? def.id : expandIri(term, state.context, true),
+      kind: 'iri', value: def ? def.id : expandIri(term, context, true),
     }
+    const scope = { context: propertyScope(def, context), outer }
     for (const value of asArray(raw)) {
       state.quads.push({
-        subject, predicate, object: toObject(value, def, state),
+        subject, predicate, object: toObject(value, def, scope, state),
       })
     }
   }
   return subject
+}
+
+// The node's context with the @context of each of its types
+// applied, in lexicographic order of the type names.
+function withTypeScopes(
+  node: Record<string, JsonLdValue>, outer: Context,
+): Context {
+  const types: string[] = []
+  for (const [key, value] of Object.entries(node)) {
+    if (key !== '@type' && outer.aliases.get(key) !== '@type') continue
+    for (const t of asArray(value)) if (typeof t === 'string') types.push(t)
+  }
+  let context = outer
+  for (const t of types.sort()) {
+    const def = outer.terms.get(t)
+    if (def?.scoped === undefined) continue
+    if (def.scoped === null) throw new Error(`unsupported null @context: ${t}`)
+    context = extendContext(context, def.scoped)
+  }
+  return context
+}
+
+function propertyScope(def: TermDef | undefined, context: Context): Context {
+  if (def?.scoped === undefined) return context
+  if (def.scoped === null) throw new Error('unsupported null @context')
+  return extendContext(context, def.scoped)
+}
+
+interface Scope {
+  readonly context: Context
+  readonly outer: Context
 }
 
 // Rewrite aliased keys to their real keyword so the rest
@@ -187,7 +232,7 @@ function normalizeKeywords(
 }
 
 function nodeSubject(
-  node: Record<string, JsonLdValue>, state: WalkState,
+  node: Record<string, JsonLdValue>, context: Context, state: WalkState,
 ): Term {
   const id = node['@id']
   if (id === undefined) {
@@ -195,7 +240,7 @@ function nodeSubject(
   }
   if (typeof id !== 'string') throw new Error('@id must be a string')
   if (id.startsWith('_:')) return { kind: 'blank', value: id }
-  return { kind: 'iri', value: expandIri(id, state.context, false) }
+  return { kind: 'iri', value: expandIri(id, context, false) }
 }
 
 // Resolve a term value to an RDF object term. A nested
@@ -204,20 +249,24 @@ function nodeSubject(
 // IRI; a datatype coercion types a literal; otherwise the
 // JSON type decides.
 function toObject(
-  value: JsonLdValue, def: TermDef | undefined, state: WalkState,
+  value: JsonLdValue, def: TermDef | undefined, scope: Scope, state: WalkState,
 ): Term {
+  const { context } = scope
   if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
     const obj = value as Record<string, JsonLdValue>
-    if ('@value' in obj) return valueObject(obj, def, state.context)
-    return walkNode(obj, state)
+    if ('@value' in obj) return valueObject(obj, def, context)
+    if (def?.scoped !== undefined) {
+      throw new Error('unsupported property-scoped @context on a node')
+    }
+    return walkNode(obj, scope.outer, state)
   }
   // @id-coerced values expand as document IRIs; @vocab-coerced
   // ones through the vocabulary. Everything else is a literal.
   if (def?.type === '@id' || def?.type === '@vocab') {
     if (typeof value !== 'string') throw new Error('IRI value must be a string')
-    return { kind: 'iri', value: expandIri(value, state.context, def.type === '@vocab') }
+    return { kind: 'iri', value: expandIri(value, context, def.type === '@vocab') }
   }
-  return scalarLiteral(value, def, state.context)
+  return scalarLiteral(value, def, context)
 }
 
 function valueObject(
@@ -291,19 +340,29 @@ function expandIri(value: string, context: Context, vocab: boolean): string {
 function parseContext(
   raw: JsonLdValue, registry?: Readonly<Record<string, JsonLdValue>>,
 ): Context {
-  const terms = new Map<string, TermDef>()
-  const prefixes = new Map<string, string>()
-  const aliases = new Map<string, string>()
-  let vocab: string | undefined
+  let context: Context = {
+    terms: new Map(), prefixes: new Map(), aliases: new Map()
+  }
   for (const entry of asArray(raw)) {
     const map = resolveContextEntry(entry, registry)
-    if (!map) continue
-    for (const [term, def] of Object.entries(map)) {
-      if (term === '@vocab') {
-        if (typeof def === 'string') vocab = def
-      } else {
-        addContextTerm(term, def, terms, prefixes, aliases)
-      }
+    if (map) context = extendContext(context, map)
+  }
+  return context
+}
+
+// A copy of `base` with the definitions of `map` on top.
+function extendContext(
+  base: Context, map: Record<string, JsonLdValue>,
+): Context {
+  const terms = new Map(base.terms)
+  const prefixes = new Map(base.prefixes)
+  const aliases = new Map(base.aliases)
+  let vocab = base.vocab
+  for (const [term, def] of Object.entries(map)) {
+    if (term === '@vocab') {
+      if (typeof def === 'string') vocab = def
+    } else {
+      addContextTerm(term, def, terms, prefixes, aliases)
     }
   }
   return { terms, prefixes, aliases, vocab }
@@ -358,12 +417,24 @@ function addContextTerm(
   if (typeof id !== 'string') {
     throw new Error(`@context term without @id: ${term}`)
   }
+  const scoped = obj['@context']
   terms.set(term, {
     id: resolvePrefixed(id, prefixes),
     type: typeof obj['@type'] === 'string' ? obj['@type'] : undefined,
     language:
       typeof obj['@language'] === 'string' ? obj['@language'] : undefined,
+    ...(scoped === undefined ? {} : { scoped: scopedMap(term, scoped) }),
   })
+}
+
+function scopedMap(
+  term: string, scoped: JsonLdValue,
+): Record<string, JsonLdValue> | null {
+  if (scoped === null) return null
+  if (typeof scoped !== 'object' || Array.isArray(scoped)) {
+    throw new Error(`unsupported scoped @context: ${term}`)
+  }
+  return scoped as Record<string, JsonLdValue>
 }
 
 // A term's @id may itself be a CURIE against a prefix
