@@ -1,14 +1,15 @@
 # Continuous integration: type-check, run the test
-# suite, and build the lib bundle. Runs on every push
-# to main and on every pull request.
+# suite, build the lib bundle, and run the browser suite
+# on WebKit. Runs on every push to main and on every pull
+# request.
 #
-# `npm run seed` is intentionally NOT in this workflow.
-# It downloads fixture images from upstream CDNs
-# (Unsplash etc.) at runtime, which would make CI's
-# pass/fail signal depend on third-party availability.
-# Fixture schema regressions are caught by the
-# downstream `npm run build` (the SPA imports the
-# generated TS) and by local seed runs before pushing.
+# The check job runs no `npm run seed`. The seed downloads
+# fixture images from upstream CDNs (Unsplash etc.) at
+# runtime, so its pass/fail signal would depend on
+# third-party availability. Fixture schema regressions are
+# caught by `npm run check:fixtures` and by local seed
+# runs before pushing. The webkit job does seed, and
+# accepts that dependency in a job of its own.
 name: ci
 
 on:
@@ -61,13 +62,32 @@ jobs:
       # so we don't double-build twice in the matrix.
       - if: matrix.node == '22'
         run: npm run check:reproducible
-      # NOTE: the browser suite (`npm run browser`, which
-      # carries the WCAG 2.2 AA gate) is
-      # NOT in this workflow. axe-core requires a
-      # rendered SPA with fixture data, and `npm run
-      # seed` (which materialises the fixture manifests
-      # + branding stylesheets) downloads images from
-      # upstream CDNs at runtime; running it here would
-      # make CI's pass/fail signal depend on third-party
-      # availability. Local contributors run
-      # `npm run seed && npm run browser` before pushing.
+
+  # The browser suite on Safari's engine, the same steps the
+  # release workflow gates on. WebKit's Linux build needs
+  # libraries most local checkouts lack, so without this job
+  # a release was the first WebKit run. The suite needs seeded
+  # fixtures, so a CDN outage fails this job and leaves the
+  # check job's signal alone. Chromium and Firefox stay on
+  # the release path; contributors run them locally with
+  # `npm run seed && npm run browser`.
+  webkit:
+    name: browser (webkit)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: '22'
+          cache: 'npm'
+      - run: npm ci
+      - run: npx playwright install --with-deps webkit
+      - run: npm run seed
+      - run: npm run browser:webkit
+      - name: upload browser test results
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: test-results-${{ github.run_attempt }}
+          path: test-results/
+          if-no-files-found: ignore

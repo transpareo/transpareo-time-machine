@@ -76,13 +76,14 @@ jobs:
       - run: npm run check:bundle-size
       - run: npm run check:prefixes
       - run: npm run check:reproducible
-      # The browser suite, WCAG 2.2 AA gate included. Runs
-      # only on the release path
-      # because the seed step downloads fixture images
+      # The browser suite, WCAG 2.2 AA gate included. The
+      # Chromium and Firefox runs happen only on the release
+      # path because the seed step downloads fixture images
       # from upstream CDNs at runtime; a CDN flake would
       # otherwise spuriously block every PR. A release
       # is rare and human-supervised, so the trade-off
-      # of "depends on Unsplash" is acceptable here.
+      # of "depends on Unsplash" is acceptable here. The
+      # WebKit run also happens in CI, in a job of its own.
       - run: npx playwright install --with-deps chromium
       - run: npm run seed
       - run: npm run browser
