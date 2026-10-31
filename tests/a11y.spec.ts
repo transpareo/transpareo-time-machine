@@ -122,6 +122,25 @@ function focusInDialog(page: Page): Promise<boolean> {
   })
 }
 
+// Whether the history entry an open dialog pushes is still
+// on top. Closing pops it with a history.back() that lands
+// a task later.
+function modalEntryOnTop(page: Page): Promise<boolean> {
+  return page.evaluate(() =>
+    history.state?.transpareoTimeMachineModal === true)
+}
+
+// Wait out what a click set moving under `selector`, so a
+// scan or a measurement reads where it lands. An endless
+// animation never lands and is left out.
+function settled(page: Page, selector: string): Promise<void> {
+  return page.locator(selector).evaluate(async (el) => {
+    const moving = el.getAnimations({ subtree: true })
+      .filter((a) => a.effect?.getComputedTiming().endTime !== Infinity)
+    await Promise.allSettled(moving.map((a) => a.finished))
+  })
+}
+
 // The language the markup declares for each text in the
 // passport, in render order: a text's nearest `lang`.
 function textLangs(page: Page): Promise<Array<[string, string]>> {
@@ -161,27 +180,35 @@ test('dev demo passes WCAG 2.2 AA (axe-core)', async ({ page }) => {
 })
 
 // The closed page is a fraction of what a visitor reaches:
-// every surface that opens on demand gets the same scan.
-test('every opened surface passes WCAG 2.2 AA (axe-core)', async ({
-  page
-}) => {
-  await mount(page)
+// every surface that opens on demand gets the same scan,
+// each in a test of its own, over the open timeline.
+//
+// Close neighbours in time draw their dots closer than
+// 24px apart. The 2.5.8 exception for an equivalent
+// control covers them: the 32px arrows either side of
+// the details step through the same events one by one.
+test.describe('every opened surface passes WCAG 2.2 AA (axe-core)', () => {
+  test.beforeEach(async ({ page }) => {
+    await mount(page)
+    await page.locator('.versions-toggle').click()
+    await settled(page, 'dpp-timeline')
+  })
 
-  // Close neighbours in time draw their dots closer than
-  // 24px apart. The 2.5.8 exception for an equivalent
-  // control covers them: the 32px arrows either side of
-  // the details step through the same events one by one.
-  await page.locator('.versions-toggle').click()
-  await page.waitForTimeout(500)
-  expect(await violations(page, ['target-size'])).toEqual([])
-  const arrow = await page.locator('.nav-arrow-prev').boundingBox()
-  expect(Math.min(arrow!.width, arrow!.height)).toBeGreaterThanOrEqual(24)
+  test('the open timeline', async ({ page }) => {
+    expect(await violations(page, ['target-size'])).toEqual([])
+    const arrow = await page.locator('.nav-arrow-prev').boundingBox()
+    expect(Math.min(arrow!.width, arrow!.height)).toBeGreaterThanOrEqual(24)
+  })
 
-  await page.locator('.locale-switch').click()
-  expect(await violations(page, ['target-size'])).toEqual([])
-  await page.keyboard.press('Escape')
-  await page.locator('.locale-switch').click()
+  test('the language picker', async ({ page }) => {
+    await page.locator('.locale-switch').click()
+    await expect(page.locator('.locale-menu')).toBeVisible()
+    expect(await violations(page, ['target-size'])).toEqual([])
+  })
 
+  // A dialog is scanned once it has settled and its content
+  // is in (the library panel fetches its entry), and Escape
+  // closes it.
   const openers: Array<[string, string]> = [
     ['.event-details-card', 'dpp-event-modal.open'],
     ['.chip.clickable', 'dpp-verification-modal.open'],
@@ -189,12 +216,18 @@ test('every opened surface passes WCAG 2.2 AA (axe-core)', async ({
     ['.gallery-image', 'dpp-lightbox.open']
   ]
   for (const [opener, surface] of openers) {
-    await page.locator(opener).first().click()
-    await expect(page.locator(surface)).toBeVisible()
-    await page.waitForTimeout(300)
-    expect(await violations(page, ['target-size']), surface).toEqual([])
-    await page.keyboard.press('Escape')
-    await expect(page.locator(surface)).toBeHidden()
+    test(surface, async ({ page }) => {
+      const dialog = page.locator(surface)
+      await page.locator(opener).first().click()
+      await expect(dialog).toBeVisible()
+      await expect(dialog.locator('.loading')).toHaveCount(0)
+      await settled(page, surface)
+      expect(await violations(page, ['target-size'])).toEqual([])
+
+      await page.keyboard.press('Escape')
+      await expect(dialog).toBeHidden()
+      await expect.poll(() => modalEntryOnTop(page)).toBe(false)
+    })
   }
 })
 
