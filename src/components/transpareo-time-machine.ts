@@ -400,6 +400,7 @@ class TranspareoTimeMachine extends BaseElement {
               <dpp-accordions></dpp-accordions>
               <dpp-downloads></dpp-downloads>
               <dpp-private-signin></dpp-private-signin>
+              <dpp-manufacturer></dpp-manufacturer>
             </div>
           </article>
         </dpp-deck>

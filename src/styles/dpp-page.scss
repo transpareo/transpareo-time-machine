@@ -487,7 +487,9 @@ button.dpp-comp-name-trigger {
 
   span {
     display: inline;
-    &::after { content: ' \00b7 '; }
+    // A CSS escape takes one following space as its end, so
+    // the space after the dot is the second one.
+    &::after { content: ' \00b7  '; white-space: pre; }
     &:last-child::after { content: ''; }
   }
 }

@@ -726,6 +726,10 @@ export interface DppManufacturer {
   // Both resolve through tx() at render time, so the
   // address strip follows the viewer's language.
   readonly country: SnapshotLocalizedText
+
+  // The LEI, GLN or DID naming the manufacturer, as the wire
+  // carries it; empty without one.
+  readonly identifier: string
 }
 
 // Identity block on the snapshot: name, brand, images,

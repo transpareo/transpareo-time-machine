@@ -584,6 +584,7 @@ function buildManufacturer(
     street: m.street,
     city: m.city,
     countryCode: toCountryCode(m.country),
+    ...(m.operator_id ? { operatorId: m.operator_id } : {})
   };
 }
 

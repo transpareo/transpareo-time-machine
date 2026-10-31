@@ -25,6 +25,10 @@ and this project adheres to
   copy, so the v1 terms ship once. Passports signed under v1
   keep verifying. The demo seed signs its ecdsa-sd passport
   under v2.
+- The passport closes with its manufacturer: name, address
+  and the manufacturer's LEI, GLN or DID
+  (`manufacturer.operatorId`), the identifier kept out of
+  page translation. The Nordic Wear demo carries a GLN.
 - A Downloads section after the accordions lists the files a
   passport pinned (`product.downloads`). Each row opens the
   file in the reader's language where the publisher holds a

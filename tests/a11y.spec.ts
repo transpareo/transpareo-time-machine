@@ -363,8 +363,9 @@ test.describe('language of parts', () => {
     }
 
     // A country is named in the reader's language and
-    // inherits the page's.
-    expect(langsOf(pairs, 'Portogallo')).toEqual(['it'])
+    // inherits the page's, in a property row and in the
+    // manufacturer strip alike.
+    expect(langsOf(pairs, 'Portogallo')).toEqual(['it', 'it'])
   })
 
   test('so does untranslated text in a dialog', async ({ page }) => {

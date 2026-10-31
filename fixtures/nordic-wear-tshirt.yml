@@ -304,6 +304,7 @@ product:
     street: Rua das Flores 42
     city: 4050-228 Porto
     country: Portugal
+    operator_id: '5601234000009'
 snapshots:
   - version: 1
     published_at: 2024-01-15T10:00:00Z

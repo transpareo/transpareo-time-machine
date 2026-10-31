@@ -147,11 +147,13 @@ const DppAccordion = z.object({
   icon: z.string().optional(),
 });
 
+// `operator_id` is the manufacturer's LEI, GLN or DID.
 const Manufacturer = z.object({
   name: z.string(),
   street: z.string(),
   city: z.string(),
   country: z.string(),
+  operator_id: z.string().optional()
 });
 
 // Issuer block (the party publishing the DPP), in the

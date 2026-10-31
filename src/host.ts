@@ -473,6 +473,7 @@ interface WireManufacturer {
   readonly city?: string
   readonly country?: string
   readonly countryCode?: string
+  readonly operatorId?: string
 }
 
 export interface WireProperty {
@@ -632,6 +633,7 @@ function adaptManufacturer(
     street: m?.street ?? '',
     city: m?.city ?? '',
     country: m?.country ?? regionLiteral(m?.countryCode) ?? '',
+    identifier: m?.operatorId ?? ''
   }
 }
 
