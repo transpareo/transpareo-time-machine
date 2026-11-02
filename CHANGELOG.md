@@ -121,6 +121,24 @@ and this project adheres to
   the feed's verdict. A link into one event waits for that
   verdict and opens on the event.
 
+## [2.24.2] - 2026-10-31
+
+No user-facing changes of its own. It is the first release
+on npm since 2.20.4: the versions from 2.21.0 to 2.24.1
+never reached it, so the changes listed under them ship
+with this one.
+
+## [2.24.1] - 2026-10-31
+
+### Fixed
+
+- A dialog takes keyboard focus as soon as it opens; a busy
+  page could hold focus on the control that opened it for a
+  frame. When a dialog redraws its content as data lands,
+  focus stays on the same control in the new content, or
+  moves to its first control, where it fell back to the
+  page.
+
 ## [2.24.0] - 2026-10-30
 
 ### Added
@@ -272,6 +290,12 @@ and this project adheres to
   underlined on hover and keyboard focus, and a link in a
   section's text takes the same colour.
 
+## [2.22.0] - 2026-10-27
+
+2.22.0 was tagged but never published: its release run
+stopped on the bundle-size gate. Its changes are listed
+under 2.23.0.
+
 ## [2.21.1] - 2026-10-26
 
 ### Fixed
@@ -280,8 +304,8 @@ and this project adheres to
   stopped on a browser check that expected the pattern
   layer's `mask-size` as `24px auto`, while the Chromium the
   release runs on writes the same value as `24px`. The check
-  accepts both forms, and 2.21.1 is the first release on npm
-  to carry the background pattern.
+  accepts both forms. 2.21.1 was never tagged, and the
+  background pattern first reached npm in 2.24.2.
 
 ## [2.21.0] - 2026-10-26
 
@@ -306,6 +330,12 @@ and this project adheres to
   stylesheet now writes the standard form last, and
   `npm run check:prefixes` fails a build that drops the
   standard form of any prefixed pair.
+
+## [2.20.3] - 2026-10-15
+
+No user-facing changes of its own. 2.20.2 was tagged but
+never published: its release run stopped on a browser test.
+The CN code first reached npm with this release.
 
 ## [2.20.2] - 2026-10-15
 
