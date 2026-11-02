@@ -47,7 +47,8 @@
  *      (actions.ts forces every verdict to failed):
  *      the network attacker the pin defends against
  *      could otherwise keep a revoked key trusted by
- *      blocking exactly this fetch.
+ *      blocking exactly this fetch. A document that is
+ *      no revocation list settles 'unreachable' at once.
  *   6. No pin in config -> revocationStatus =
  *      'unpinned'; the fetch is skipped because there
  *      is nothing to compare against.
@@ -73,12 +74,6 @@ const REVOKED_ROOTS_PATH = '/.well-known/dpp-revoked-roots.json'
 const DEFAULT_HOST = 'https://transpareo.com'
 
 export const revocationStatus = signal<RevocationStatus>('pending')
-
-interface RevokedRootsDoc {
-  readonly revokedRoots?: ReadonlyArray<{
-    readonly fingerprint?: string
-  }>
-}
 
 // The number of the latest check. A check settles the status
 // only while it is the latest, so one the element before
@@ -133,7 +128,7 @@ async function runCheck(
     return 'unreachable'
   }
 
-  let doc: RevokedRootsDoc
+  let doc: unknown
   try {
     doc = await fetchRevokedRoots(url)
   } catch (err) {
@@ -141,19 +136,45 @@ async function runCheck(
     return 'unreachable'
   }
 
-  const entries = doc.revokedRoots ?? []
-  for (const entry of entries) {
-    if (!entry.fingerprint) continue
-    const fp = normalizeFingerprint(entry.fingerprint)
-    if (pinFps.has(fp)) {
-      console.warn(
-        `[revoked-roots] a pinned platform key is revoked (${fp}); `
-        + 'all verification verdicts will be forced to unauthenticated',
-      )
-      return 'revoked'
-    }
+  // A list of another shape judges the pins no more than one
+  // that will not load.
+  const listed = listedFingerprints(doc)
+  if (!listed) {
+    console.warn(`[revoked-roots] ${url} serves no revocation list`)
+    return 'unreachable'
   }
-  return 'ok'
+
+  const fp = listed.find((f) => pinFps.has(f))
+  if (!fp) return 'ok'
+  console.warn(
+    `[revoked-roots] a pinned platform key is revoked (${fp}); `
+    + 'all verification verdicts will be forced to unauthenticated',
+  )
+  return 'revoked'
+}
+
+// The fingerprints a list names, normalized, or null when the
+// document is no list: an object whose `revokedRoots`, when
+// present, is an array of objects whose `fingerprint`, when
+// present, is a string. An entry naming no fingerprint names
+// no key.
+function listedFingerprints(doc: unknown): string[] | null {
+  if (!isRecord(doc)) return null
+  const entries = doc.revokedRoots ?? []
+  if (!Array.isArray(entries)) return null
+
+  const listed: string[] = []
+  for (const entry of entries) {
+    if (!isRecord(entry)) return null
+    const fp = entry.fingerprint ?? ''
+    if (typeof fp !== 'string') return null
+    if (fp) listed.push(normalizeFingerprint(fp))
+  }
+  return listed
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
 // 'unreachable' fails closed on pinned builds, so a
@@ -164,7 +185,7 @@ async function runCheck(
 const RETRY_DELAY_MS = 2000
 const FETCH_TIMEOUT_MS = 15_000
 
-async function fetchRevokedRoots(url: string): Promise<RevokedRootsDoc> {
+async function fetchRevokedRoots(url: string): Promise<unknown> {
   try {
     return await fetchOnce(url)
   } catch {
@@ -173,7 +194,7 @@ async function fetchRevokedRoots(url: string): Promise<RevokedRootsDoc> {
   }
 }
 
-async function fetchOnce(url: string): Promise<RevokedRootsDoc> {
+async function fetchOnce(url: string): Promise<unknown> {
   // 'no-cache' revalidates on every boot: a revocation is
   // exactly the artefact that must not be served stale out
   // of the HTTP cache.
@@ -183,7 +204,7 @@ async function fetchOnce(url: string): Promise<RevokedRootsDoc> {
     signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
   })
   if (!res.ok) throw new Error(`HTTP ${res.status}`)
-  return await res.json() as RevokedRootsDoc
+  return await res.json()
 }
 
 function delay(ms: number): Promise<void> {

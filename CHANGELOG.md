@@ -103,6 +103,16 @@ and this project adheres to
   it still in flight landed and opened in the new element,
   a load error it ended in showed there, and a verifier
   element's `state` reported that passport.
+- A revocation list of another shape reads as unreachable,
+  so a build that pins a platform key fails its verdicts as
+  it does for a list that will not load: `null`, a
+  top-level array, a `revokedRoots` that is not an array,
+  an entry that is not an object, or a fingerprint that is
+  not a string. Most of these threw, so the check never
+  settled: the chip verified without the list, login-gated
+  rows were never asked for, and the console logged an
+  unhandled rejection. A `revokedRoots` string or a
+  top-level array read as a list revoking nothing.
 - A login-gated read still in flight when the passport
   reboots onto a new `src` writes nothing. Its answer landed
   on the new passport's version of the same number: a 401

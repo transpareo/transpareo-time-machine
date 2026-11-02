@@ -11,9 +11,10 @@
  *
  * startRevokedRootsCheck settles the revocationStatus
  * signal: 'ok' on a clean feed, 'revoked' on a fingerprint
- * match, and 'unreachable' only after a retry also fails
- * (pinned builds fail closed on 'unreachable', so one
- * transient blip must not brick the page).
+ * match, and 'unreachable' once a retry also fails (pinned
+ * builds fail closed on 'unreachable', so one transient
+ * blip must not brick the page) or at once on a document
+ * that is no revocation list.
  */
 
 import { describe, it, expect, vi, afterEach } from 'vitest';
@@ -97,6 +98,7 @@ async function settledStatus(
 
 describe('startRevokedRootsCheck', () => {
   afterEach(() => {
+    vi.restoreAllMocks();
     vi.unstubAllGlobals();
   });
 
@@ -197,6 +199,42 @@ describe('startRevokedRootsCheck', () => {
     });
     expect(await settledStatus(mod)).toBe('ok');
     expect(urls).toEqual(['https://forks.example/revoked.json']);
+  });
+
+  // A list of another shape clears the pins no more than one
+  // that will not load. Read again, it has the same shape, so
+  // it is read once.
+  it.each([
+    ['null', null],
+    ['a top-level array', []],
+    ['a revokedRoots that is not an array', { revokedRoots: 5 }],
+    ['a revokedRoots string', { revokedRoots: 'sha256:00' }],
+    ['an entry that is not an object', { revokedRoots: [null] }],
+    ['a fingerprint that is not a string',
+      { revokedRoots: [{ fingerprint: 7 }] }],
+  ])('settles unreachable on %s', async (_, body) => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    let calls = 0;
+    const mod = await bootWithFetch(async () => {
+      calls++;
+      return new Response(JSON.stringify(body), { status: 200 });
+    });
+    expect(await settledStatus(mod)).toBe('unreachable');
+    expect(calls).toBe(1);
+    expect(String(warn.mock.calls[0]?.[0])).toMatch(/no revocation list/);
+  });
+
+  // An entry naming no fingerprint names no key, and a list
+  // without entries revokes none.
+  it.each([
+    ['without revokedRoots', {}],
+    ['whose entries name no fingerprint',
+      { revokedRoots: [{}, { fingerprint: null }, { fingerprint: '' }] }],
+  ])('settles ok on a list %s', async (_, body) => {
+    const mod = await bootWithFetch(async () => (
+      new Response(JSON.stringify(body), { status: 200 })
+    ));
+    expect(await settledStatus(mod)).toBe('ok');
   });
 
   it('settles unreachable only after both attempts fail', async () => {
