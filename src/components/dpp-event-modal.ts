@@ -7,9 +7,8 @@
  * for the currently-focused DppEvent: the renderer's own
  * fields (type, status transition, actor, description,
  * version) plus, when this event was projected to the
- * public EPCIS file
- *   {publisher_slug}/dpp/{code}/events.jsonld.gz
- * the matching ObjectEvent and its raw JSON-LD payload.
+ * public EPCIS file the manifest names in `epcisUrl`, the
+ * matching ObjectEvent and its raw JSON-LD payload.
  *
  * Opened by the "Details" link in the timeline's event-
  * details card. Closed via Escape, X, or overlay-click.

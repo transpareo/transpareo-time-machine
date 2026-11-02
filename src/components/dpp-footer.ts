@@ -23,8 +23,8 @@ import { safeLinkHref } from '@/safe-url'
 
 // Above this many available locales the menu shows a
 // filter input so the visitor can type-ahead instead of
-// scrolling, useful when the full EU24 + non-EU set
-// (32 locales today) is shipped.
+// scrolling, useful when a passport offers the whole
+// catalog in src/i18n/data.
 const FILTER_THRESHOLD = 7
 
 class DppFooter extends LightElement {

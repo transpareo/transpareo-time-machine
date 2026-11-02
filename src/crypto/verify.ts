@@ -34,12 +34,14 @@
  * signature (unlike the older reduced profile, where the
  * aliases of one authority shared a single signature).
  *
- * The proof set has five entries today: three issuer
- * aliases (HTTPS host, did:web, HTTPS CDN fallback) and
- * two platform aliases (HTTPS host, did:web). The three
- * issuer aliases resolve to one key, the two platform
- * aliases to another; the CDN fallback keeps the issuer
- * side verifiable after the issuer's own hosts terminate.
+ * The platform issues ecdsa-sd-2023 snapshots now (see
+ * ./dispatch); this path verifies the eddsa-jcs-2022
+ * snapshots signed before. The latest of those carry one
+ * entry per authority, each naming its key's did:web
+ * entry; earlier ones carry several aliases per key: the
+ * issuer key under its HTTPS host, did:web and, on the
+ * earliest, an HTTPS CDN fallback; the platform key under
+ * its HTTPS host and did:web.
  *
  * Aggregate rules:
  *   - Default (any-issuer-and-any-Transpareo): a snapshot
@@ -128,9 +130,9 @@ export interface VerificationResult {
   // verify.
   readonly verifiedAuthorityCount: number
   // Total entries the snapshot carried, vs how many of
-  // them verified. Surfaced so the modal can show "5 of
-  // 5 verified" when everything resolved, "3 of 5
-  // verified" when the did:web hosts are offline, etc.
+  // them verified. Surfaced so a verdict can say how many
+  // entries verified, fewer than all when a key host is
+  // offline.
   readonly totalEntryCount: number
   readonly verifiedEntryCount: number
   // The mode this result was computed under. Strict
@@ -158,7 +160,7 @@ export type VerificationMode = 'default' | 'strict'
 export interface VerifyOptions {
   // 'default' (any-issuer-and-any-Transpareo): authentic
   // as long as one entry per signature group verifies.
-  // 'strict' (all-five): every entry must verify.
+  // 'strict' (all entries): every entry must verify.
   readonly mode?: VerificationMode
   // Optional pinned platform key set (multibase z58
   // Ed25519 Multikeys, the same encoding used in
@@ -279,11 +281,11 @@ async function entryHashData(
 }
 
 // Verify a manifest's single platform signature. Unlike a
-// snapshot (which carries a `proof` array of several
-// aliases), the manifest carries one signature under the
-// `signature` key, so the hashed body is the manifest minus
-// that field. A 'verified' status means the version list
-// itself (currentVersion, each version's url/hashValue,
+// snapshot (which carries a `proof` array), the manifest
+// carries one signature under the `signature` key, so the
+// hashed body is the manifest minus that field. A
+// 'verified' status means the version list itself
+// (currentVersion, each version's url/hashValue,
 // voidedAt, supersededBy) is authentic independently of any
 // publisher database, which the per-snapshot proofs do not
 // cover. Returns null when the manifest carries no

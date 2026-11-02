@@ -4,8 +4,9 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * EPCIS 2.0 JSON-LD type definitions for the public
- * events file the platform writes to
- *   {publisher_slug}/dpp/{code}/events.jsonld.gz
+ * events file the manifest names in `epcisUrl`; the
+ * platform writes it to
+ *   {publisher_slug}/dpp/{code}/events.json
  *
  * The file is an EPCISDocument carrying ObjectEvents for
  * the publishable subset of DppEvents. Only fields the
@@ -84,13 +85,13 @@ export interface EpcisDocument {
   // EPCIS 2.0 schema, whose document propertyNames reject a
   // bare `signature`. Same single-signature scheme as the
   // manifest, so the SPA verifies it with
-  // verifyManifestSignature. The issuer also signs each
-  // ObjectEvent individually (a `proof` array per event) for
-  // consumers pulling one event out of the bundle; the
-  // renderer reads the whole document, so the document-level
-  // signature is the relevant check and the per-event proofs
-  // ride along inside the signed body. Absent on unsigned
-  // feeds, which the verifier tolerates.
+  // verifyManifestSignature. The platform also signs each
+  // ObjectEvent individually under the same key (a `proof`
+  // array per event) for consumers pulling one event out of
+  // the bundle; the renderer reads the whole document, so the
+  // document-level signature is the relevant check and the
+  // per-event proofs ride along inside the signed body.
+  // Absent on unsigned feeds, which the verifier tolerates.
   readonly 'transpareo:signature'?: ManifestSignature
 
   // Older feeds carried the signature under the bare

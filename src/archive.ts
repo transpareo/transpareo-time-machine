@@ -26,8 +26,9 @@ export interface ManifestVersion {
 
   // Optional registry round-trip timestamp; may stay
   // null indefinitely (registry API not live yet, or
-  // publisher opted out). Surfaced in the verification
-  // modal when present, never used for scrubbing.
+  // publisher opted out). Nothing in the renderer reads it
+  // or `registrationProof` (SECURITY.md, "No freshness
+  // binding").
   readonly registeredAt?: string | null
   readonly reason: string
   readonly hashValue: string
@@ -160,12 +161,12 @@ export interface DynamicDataValue {
 // schema.org-style Organization block, used wherever
 // the manifest or a snapshot names a party (issuer,
 // platform). `did` is the Decentralized Identifier
-// for the entity (e.g. did:web:transpareo.com). The
-// durable platform fallback is the apex path form
-// `transpareo.com/dpp/{handle}/{code}`, NOT the
-// `{handle}.transpareo.com` subdomain: that subdomain is
-// torn down when a publisher is cancelled, while the apex
-// domain survives so historical DPPs stay resolvable.
+// for the entity (e.g. did:web:transpareo.com). When a
+// workspace that published passports is cancelled, its
+// hosts, `{handle}.{base}` among them, serve a static
+// archive of its passports until the retention date, DID
+// document included, so the issuer's did:web keeps
+// resolving for that long.
 // Reading `issuer.did` / `platform.did` literally is the
 // only correct way to match the chip identity against the
 // proof blocks.
@@ -177,19 +178,22 @@ export interface Organization {
 
 // A signed JSON-LD snapshot blob. The serializer is
 // minimal on purpose, the trust payload is identity +
-// version + the embedded eddsa-jcs-2022 proofs. Rendered
+// version + the embedded Data Integrity proofs. Rendered
 // product data lives in the SPA's own data layer.
 //
-// `proof` is a JSON-LD proof set of independent Data
-// Integrity proofs. The snapshot is signed by two
-// authorities, the issuer and the platform; each signs
-// several entries with different `verificationMethod` URLs
-// (HTTPS host, HTTPS CDN, did:web) that resolve to its one
-// key, so a verifier can reach the key by whichever URL it
-// can. The chip counts a snapshot as authentic when its
-// verified entries come from at least two distinct keys,
-// which a sound snapshot meets with the issuer's and the
-// platform's (crypto/verify `isAuthentic`).
+// `proof` is a set of independent Data Integrity proofs by
+// two authorities, the issuer and the platform, under the
+// cryptosuite crypto/dispatch picks:
+//   - ecdsa-sd-2023, which the platform issues: one derived
+//     proof per authority. Authentic when every proof
+//     verifies.
+//   - eddsa-jcs-2022, which older snapshots carry: one
+//     entry per authority, or on earlier ones several
+//     aliases each (HTTPS host, did:web, on the earliest
+//     an HTTPS CDN copy) resolving to its one key.
+//     Authentic when the verified entries come from at
+//     least two distinct keys (crypto/verify
+//     `isAuthentic`).
 export interface SignedSnapshot {
   readonly '@context'?:
     | string

@@ -65,10 +65,12 @@ form variants per locale (`cryptoProof.snapshotsVerifiedFew`,
 
 ### Brand name
 
-`Transpareo` is a brand name and is never translated,
-it appears verbatim in every locale file. Translators
-should keep the casing intact and not transliterate
-into local scripts.
+The catalogs name no brand. The platform's name reaches
+a label through a placeholder: `verifiedByPlatform` reads
+`Verified by {name}`, and `{name}` is the passport's
+`platform.name`, printed as published. Translators keep
+`{name}` as written; the placeholder-parity spec fails a
+catalog that drops or renames it.
 
 ### Regulatory enums
 

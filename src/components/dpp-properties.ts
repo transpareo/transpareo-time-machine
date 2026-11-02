@@ -29,19 +29,10 @@
  *      carry `onDemand: true`, so server-side privacy
  *      and client-side presentation gates compose.
  *
- * The component also surfaces an affordance based on
- * the per-version fetch state:
- *
- *   - unauth   -> "Sign in for additional product data"
- *                  button that opens the auth modal.
- *   - error    -> "Additional product data temporarily
- *                  unavailable" + retry button.
- *   - ok/empty -> nothing extra.
- *
- * The element is hidden entirely when no row, no
- * private affordance, and no error affordance applies,
- * so demos that haven't adopted the new schema get no
- * empty section.
+ * The sign-in and retry prompts for private rows live in
+ * <dpp-private-signin>. The element is hidden entirely
+ * when no section has a row, so a passport without
+ * properties gets no empty section.
  */
 
 import { LightElement } from '@/reactive/element'
@@ -67,7 +58,7 @@ import {
 } from '@/private-properties'
 
 // Short alias for the active-locale label lookup, used by
-// the private-tier rows below.
+// the section headings and the at-publish note below.
 const tr = (key: LabelKey): string => t(i18n.labels, key)
 
 class DppProperties extends LightElement {

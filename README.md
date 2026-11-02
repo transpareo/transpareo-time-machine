@@ -237,8 +237,9 @@ Field notes:
   and its proofs must clear the snapshot's revocation and
   pin gates; otherwise no row renders.
 - `versions[].registeredAt` / `registrationProof`
-  (optional) - EU-registry round-trip metadata,
-  surfaced in the proof modal when present.
+  (optional) - EU-registry round-trip metadata. The
+  renderer reads neither (see SECURITY.md, "No freshness
+  binding").
 - `availableLocales` - the locales this passport is
   published in; drives the footer language picker.
 - `epcisUrl` - the EPCIS 2.0 events document the
@@ -1300,25 +1301,34 @@ that would rather not download Firefox.
    is already in the visitor's language rather than
    opening in English and swapping.
 4. `src/actions.ensureVersionLoaded` runs
-   `verifySnapshot` from `src/crypto/verify.ts` against
-   the current snapshot:
+   `verifySnapshotAnySuite` from `src/crypto/dispatch.ts`
+   against the current snapshot, under the cryptosuite
+   its proof names. For `ecdsa-sd-2023`, which the
+   platform issues (`src/crypto/ecdsa-sd.ts`), each
+   derived proof, the issuer's and the platform's, is
+   tried under the P-256 keys the page pins first, else
+   under the key its verificationMethod resolves to; the
+   snapshot is authentic when every proof verifies. For
+   `eddsa-jcs-2022`, which older snapshots carry
+   (`src/crypto/verify.ts`):
    - JCS-canonicalize the snapshot (without `proof`),
      SHA-256 the bytes.
-   - For each of the 5 proof entries: try the keys the
+   - For each proof entry: try the keys the
      page pins (`pinned-platform-key`,
      `pinned-issuer-key`) first; only when none of them
      verifies, fetch the verificationMethod's Multikey
      doc, import the Ed25519 public key and
      `crypto.subtle.verify` the signature against the
      document hash. Entries that name the same document
-     under different fragments share one read. A key from
-     a DID document is refused, and its entry invalid,
-     when the method carries `revoked` or is missing from
-     `assertionMethod`; a retired key stays listed there
-     and keeps verifying.
+     under different fragments share one read.
    - Apply the any-issuer-and-any-platform rule
-     (default) or all-five (`{ mode: 'strict' }`) to
+     (default) or all-entries (`{ mode: 'strict' }`) to
      produce the aggregate verdict.
+   Under either suite, a key from a DID document is
+   refused, and its proof invalid, when the method
+   carries `revoked` or is missing from
+   `assertionMethod`; a retired key stays listed there
+   and keeps verifying.
    It also walks the priorVersionHash chain back to v1,
    checking each prior's bytes against the manifest's
    claim and the next version's claim. Every prior is
