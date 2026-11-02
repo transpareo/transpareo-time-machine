@@ -824,8 +824,13 @@ function eventName(evt: DppEvent): string {
 // sentence rather than a bare tag + date. The summary takes
 // a `{status}` placeholder (the lifecycle-transition copy
 // names the new stage), filled from the event's statusTo.
+// A transition to no stage this build knows gets no
+// summary, and the card keeps its tag and date.
 function eventBodyText(evt: DppEvent): LangText {
   if (evt.description) return txLang(evt.description, i18n.locale)
+  if (evt.eventType === 'lifecycle_transition' && !evt.statusTo) {
+    return ['']
+  }
   const vars = evt.statusTo
     ? { status: t(i18n.labels, `status.${evt.statusTo}` as LabelKey) }
     : undefined

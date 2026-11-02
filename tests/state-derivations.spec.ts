@@ -13,7 +13,7 @@
  * Driven through the real host signals.
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import * as host from '../src/host';
 import {
   activeSnapshot, activeVersionNumber, displayedEvent, focusedEventId,
@@ -22,7 +22,7 @@ import {
 } from '../src/state';
 import type { EpcisDocument } from '../src/epcis';
 import type { DppSnapshot } from '../src/types';
-import type { VersionState } from '../src/archive';
+import type { SignedSnapshot, VersionState } from '../src/archive';
 
 function ev(
   id: string, occurredAt: string, versionNumber?: number,
@@ -231,13 +231,29 @@ describe('verifyResult', () => {
     expect(verifyResult()).toBe('failed');
   });
 
-  // canonicalStatus falls back to 'draft' for an unknown
-  // dppStatus; a signed snapshot must still verify, never read
-  // as a draft just because its status didn't map.
+  // Only an unsigned draft is a preview; a signed snapshot
+  // goes through the verify whatever stage it names.
   it('verifies a signed snapshot even when status reads draft', () => {
     host.snapshots.set({ 2: snap(2, 'draft', true) });
     expect(verifyResult()).toBe('pending');
     versionStates.set({ 2: { status: 'verified' } as VersionState });
     expect(verifyResult()).toBe('verified');
+  });
+
+  // A stage this build does not know is no stage, so an
+  // unsigned passport naming one has nothing to verify and
+  // never reads as unpublished.
+  it('reads an unsigned unknown stage as unverifiable', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const model = host.toRenderModel({
+      version: 2,
+      publishedAt: '2026-01-01T00:00:00Z',
+      dppStatus: 'awaitingRecycler',
+      product: { name: { en: 'X' }, properties: [] },
+      proof: [],
+    } as unknown as SignedSnapshot);
+    warn.mockRestore();
+    host.snapshots.set({ 2: model });
+    expect(verifyResult()).toBe('unverifiable');
   });
 });

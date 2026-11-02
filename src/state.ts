@@ -366,14 +366,10 @@ export function verificationMarkVisible(): boolean {
 // 'pending' forever or tripping the proof gate into a
 // misleading 'failed'.
 //
-// Both conditions are required, not just the status: a
-// published snapshot always carries a proof, and
-// canonicalStatus falls back to 'draft' for an absent or
-// unrecognised dppStatus, so a status check alone would hide
-// a real verdict behind "draft" the moment a publisher adds
-// a lifecycle token this build doesn't know. Gating on the
-// empty proof set keeps the short-circuit to genuine,
-// unsigned previews.
+// Both conditions are required. A signed snapshot that
+// names the draft stage still shows its real verdict, and
+// an unsigned one that names another stage, or none this
+// build knows, reads as unverifiable below.
 export const verifyResult = computed<
   'pending' | 'verified' | 'failed' | 'draft' | 'unverifiable'
 >(() => {

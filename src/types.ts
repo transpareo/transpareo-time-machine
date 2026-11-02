@@ -289,11 +289,12 @@ export function canonicalRating(raw: unknown): Rating | undefined {
 
 // The wire lifecycle token (`dppStatus`) is camelCase
 // (`inUse`, `placedOnMarket`); the SPA's internal enum and
-// its i18n + colour maps are snake_case. canonicalStatus
-// maps either convention to the internal form. Already
-// snake_case input passes through; an unknown token falls
-// back to 'draft' so the renderer never breaks on an
-// unmapped lifecycle state.
+// its label keys are snake_case. canonicalStatus maps
+// either convention to the internal form. Already
+// snake_case input passes through. A missing token and one
+// this build does not know both map to undefined, and every
+// reader then leaves the stage out; the console names each
+// unknown token once per page.
 const STATUS_BY_WIRE: Readonly<Record<string, LifecycleStatus>> = {
   draft: 'draft',
   manufactured: 'manufactured',
@@ -310,9 +311,15 @@ const STATUS_BY_WIRE: Readonly<Record<string, LifecycleStatus>> = {
   suspended: 'suspended',
 }
 
-export function canonicalStatus(raw: unknown): LifecycleStatus {
-  if (typeof raw !== 'string') return 'draft'
-  return STATUS_BY_WIRE[raw] ?? 'draft'
+const unknownStatuses = new Set<string>()
+
+export function canonicalStatus(raw: unknown): LifecycleStatus | undefined {
+  if (typeof raw !== 'string') return undefined
+  if (Object.hasOwn(STATUS_BY_WIRE, raw)) return STATUS_BY_WIRE[raw]
+  if (unknownStatuses.has(raw)) return undefined
+  unknownStatuses.add(raw)
+  console.warn(`[status] unknown lifecycle token: ${JSON.stringify(raw)}`)
+  return undefined
 }
 
 // Line-item inside a composition's `entries` array
@@ -626,7 +633,10 @@ export interface DppSnapshot {
   readonly lotManufacturedOn?: string
 
   readonly code: string
-  readonly status: LifecycleStatus
+
+  // Absent when the snapshot names no lifecycle stage or
+  // one this build does not know.
+  readonly status?: LifecycleStatus
   readonly issuer: Organization
   readonly platform: Organization
   readonly product: DppProduct

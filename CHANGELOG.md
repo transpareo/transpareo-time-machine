@@ -72,6 +72,16 @@ and this project adheres to
   against (`data:x`), shows the load error. The boot threw
   before its error handling and the element stayed on its
   loading shell.
+- A lifecycle stage this build does not know shows as no
+  stage, and the console names its token once. The renderer
+  read any such token as "draft": the timeline card and the
+  event modal named the draft stage for a transition to it,
+  and an unsigned passport naming one read "Not yet
+  published" on the verification chip. The card now
+  carries no summary line for it, the modal leaves it out,
+  and the chip reads "Not verifiable". A transition naming
+  no stage at all printed the summary's `{status}`
+  placeholder and now carries no summary line either.
 
 ## [2.24.0] - 2026-10-30
 

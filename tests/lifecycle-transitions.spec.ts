@@ -1,3 +1,4 @@
+// @vitest-environment happy-dom
 /*
  * transpareo-time-machine - open-source DPP renderer
  * Copyright (C) 2026 Transpareo AG
@@ -13,22 +14,28 @@
  *
  *   - A stage nobody translated renders its own key, so the
  *     card reads "status.manufactured".
- *   - canonicalStatus folds a token it does not know onto
- *     'draft', so a stage this build has never heard of
- *     renders as a different, wrong stage instead of as a
- *     gap. That one is silent: the card reads a real word.
+ *   - A token this build does not know renders as another,
+ *     real stage ("draft"). That one is silent: the card
+ *     reads a real word.
  *
  * So the table below is the specification. Each pair goes
  * through the feed parse and comes back as itself, in both
  * spellings the wire uses, and every stage in it carries a
- * label.
+ * label. A token outside the table is no stage at all: the
+ * parse drops it, the card and the modal leave it out, and
+ * the console names it once.
  */
 
-import { describe, it, expect, afterEach } from 'vitest'
+import {
+  describe, it, expect, afterEach, beforeEach, vi, type MockInstance
+} from 'vitest'
 import * as host from '@/host'
-import { events } from '@/state'
+import { events, focusedEventId, timelineState } from '@/state'
+import { eventModalEventId } from '@/components/dpp-event-modal'
+import '@/components/timeline'
 import { LIFECYCLE_STATUSES, canonicalStatus } from '@/types'
 import type { LifecycleStatus } from '@/types'
+import type { SignedSnapshot } from '@/archive'
 import { t, englishLabels } from '@/i18n/labels'
 import type { LabelKey } from '@/i18n/labels'
 import type { EpcisDocument } from '@/epcis'
@@ -108,9 +115,8 @@ describe('lifecycle transitions', () => {
     expect(parsePair(camel(from), camel(to))).toEqual([from, to])
   })
 
-  // The fold that makes a gap look like a stage: without a
-  // wire entry, canonicalStatus answers 'draft' and the card
-  // names a stage the unit was never in.
+  // Without a wire entry a stage is no stage, so each one
+  // needs its own entry in both spellings.
   it.each([...LIFECYCLE_STATUSES])('%s is its own stage', (status) => {
     expect(canonicalStatus(status)).toBe(status)
     expect(canonicalStatus(camel(status))).toBe(status)
@@ -121,3 +127,113 @@ describe('lifecycle transitions', () => {
     expect(t(englishLabels, key)).not.toBe(key)
   })
 })
+
+// The console names each unknown token once per page, so
+// every case below spells its own token.
+describe('a stage this build does not know', () => {
+  let warn: MockInstance<typeof console.warn>
+
+  beforeEach(() => {
+    warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+  })
+
+  afterEach(() => {
+    warn.mockRestore()
+    document.body.replaceChildren()
+    eventModalEventId.set(null)
+    focusedEventId.set(null)
+    timelineState.set('hidden')
+  })
+
+  it('is no stage, named once in the console', () => {
+    expect(canonicalStatus('awaitingAudit')).toBeUndefined()
+    expect(canonicalStatus('awaitingAudit')).toBeUndefined()
+    expect(warn).toHaveBeenCalledOnce()
+    expect(String(warn.mock.calls[0][0])).toContain('"awaitingAudit"')
+  })
+
+  it('is no stage when the token is missing, silently', () => {
+    expect(canonicalStatus(undefined)).toBeUndefined()
+    expect(canonicalStatus(null)).toBeUndefined()
+    expect(canonicalStatus(3)).toBeUndefined()
+    expect(warn).not.toHaveBeenCalled()
+  })
+
+  // The wire table is a plain object; the names it inherits
+  // are no stages either.
+  it('is no stage for a name the wire table inherits', () => {
+    expect(canonicalStatus('constructor')).toBeUndefined()
+    expect(canonicalStatus('toString')).toBeUndefined()
+  })
+
+  it('drops out of a transition and leaves the known side', () => {
+    expect(parsePair('in_use', 'quarantined')).toEqual(['in_use', undefined])
+    expect(parsePair('onHold', 'inUse')).toEqual([undefined, 'in_use'])
+  })
+
+  it('is no stage on a snapshot', () => {
+    const model = host.toRenderModel(wireSnapshot('mothballed'))
+    expect(model.status).toBeUndefined()
+    expect(host.toRenderModel(wireSnapshot('inUse')).status).toBe('in_use')
+  })
+
+  // The summary line names the new stage; with none known
+  // it is left out, and the card keeps its tag and date.
+  it('leaves the card without a summary line', () => {
+    const card = expandedCard('in_use', 'in_use')
+    expect(card.textContent).toContain('new lifecycle stage: in use')
+
+    const unknown = expandedCard('in_use', 'retired')
+    expect(unknown.querySelector('.event-details-desc')).toBeNull()
+    expect(unknown.textContent).not.toContain('{status}')
+    expect(unknown.textContent).not.toContain('draft')
+    expect(unknown.querySelector('.event-tag')).not.toBeNull()
+  })
+
+  it('leaves the modal without the stage', () => {
+    const known = modalGrid('in_use', 'repair')
+    expect(known.querySelector('.event-modal-status')).not.toBeNull()
+
+    const to = modalGrid('in_use', 'scrapped')
+    expect(to.querySelector('.event-modal-status')).toBeNull()
+    expect(to.textContent).not.toContain('draft')
+
+    const from = modalGrid('dormant', 'repair')
+    expect(from.querySelector('.event-modal-status')).toBeNull()
+    expect(from.textContent).toContain('repair')
+    expect(from.textContent).not.toContain('draft')
+  })
+})
+
+function wireSnapshot(dppStatus: string): SignedSnapshot {
+  return {
+    version: 1,
+    publishedAt: '2026-01-01T00:00:00Z',
+    passportAlias: 'a1b2-c3d4-e5f6',
+    dppStatus,
+    issuer: { '@type': 'Organization', name: 'Issuer', did: 'did:web:i' },
+    platform: { '@type': 'Organization', name: 'Platform', did: 'did:web:p' },
+    product: { '@type': 'Product', name: { en: 'X' }, properties: [] },
+    proof: []
+  } as unknown as SignedSnapshot
+}
+
+// Both mount on a feed of the one event, loaded the way
+// the table loads its pairs.
+function expandedCard(from: string, to: string): HTMLElement {
+  document.body.replaceChildren()
+  parsePair(from, to)
+  focusedEventId.set('e1')
+  timelineState.set('expanded')
+  const timeline = document.createElement('dpp-timeline')
+  document.body.append(timeline)
+  return timeline.querySelector<HTMLElement>('.event-details')!
+}
+
+function modalGrid(from: string, to: string): HTMLElement {
+  document.body.replaceChildren()
+  parsePair(from, to)
+  document.body.append(document.createElement('dpp-event-modal'))
+  eventModalEventId.set('e1')
+  return document.querySelector<HTMLElement>('.event-modal-grid')!
+}
