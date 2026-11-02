@@ -26,6 +26,22 @@ and this project adheres to
   JSON-LD processor took terms from the extra context. The
   bundle holds the five contexts the platform signs under,
   and passports naming those verify as before.
+- A passport whose `@context` holds a map using a JSON-LD
+  feature the canonicalizer does not implement fails
+  verification: a map keyword such as `@base`, `@import`,
+  `@language` or `@propagate`, a term entry such as
+  `@reverse` or `@prefix`, a value under a term with a
+  list, graph, index or map container or of type `@json`,
+  a change to a term an earlier context protects, or a
+  term naming a prefix defined further down its own map.
+  The canonicalizer skipped each of these, so such a
+  passport verified while a JSON-LD processor read other
+  statements from the same bytes. `@vocab: null` now
+  clears the vocabulary and a term's datatype is fixed
+  where the term is defined, as JSON-LD reads both.
+  Passports signed under the five bundled contexts verify
+  as before. The verifier entry's size budget goes from 34
+  to 35 KB for these checks.
 - Login-gated rows render only from a credential naming the
   passport on the page: its page (`@id`), its issuer by DID
   and its version must match the version's public snapshot.

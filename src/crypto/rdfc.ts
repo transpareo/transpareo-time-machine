@@ -12,8 +12,15 @@
  *
  * Supported input:
  *   - an @context that is a term map of prefix -> IRI,
- *     term -> IRI, or term -> { @id, @type?, @language? },
- *     or a URL the offline registry resolves to one;
+ *     term -> IRI, or term -> { @id, @type?, @language?,
+ *     @context?, @container?, @protected? }, or a URL the
+ *     offline registry resolves to one. A map may also set
+ *     @version 1.1, @vocab and @protected. It is read as
+ *     JSON-LD reads it: keywords first, then each term
+ *     against the definitions above it. A later context may
+ *     restate a protected term, and change one only inside
+ *     a property's own @context. @container @set reads as no
+ *     container;
  *   - a term's own @context, as the W3C credentials context
  *     declares them: on a type it applies to the properties
  *     of a node of that type and not to the nodes inside
@@ -32,7 +39,13 @@
  * @reverse / @included / @nest, a context URL the offline
  * registry does not hold (nothing is fetched), a registered
  * context that lists further contexts, a @context on a node
- * below the root, non-integer JSON numbers (their RDF
+ * below the root, any other context keyword (@base, @import,
+ * @language, @direction, @propagate) or term entry
+ * (@reverse, @nest, @index, @prefix, @direction), a term
+ * naming one defined further down its own map, a changed
+ * protected term, a value under a term with any other
+ * container (@list, @graph, @index, a map) or of @type
+ * @json, an untyped non-integer JSON number (its RDF
  * datatype is ambiguous - typed decimals must arrive as a
  * string plus a datatype), and any blank-node graph whose
  * nodes do not separate under first-degree hashing.
@@ -65,8 +78,15 @@ const RDF_LANG_STRING =
 
 interface TermDef {
   readonly id: string
+
+  // A datatype IRI, expanded where the term is defined, or
+  // '@id', '@vocab' or '@json'.
   readonly type?: string
   readonly language?: string
+
+  // Any container but @set alone; a value under it is
+  // rejected.
+  readonly container?: string
 
   // The term's own @context, null where it clears the context.
   readonly scoped?: Record<string, JsonLdValue> | null
@@ -75,10 +95,16 @@ interface TermDef {
 interface Context {
   readonly terms: ReadonlyMap<string, TermDef>
   readonly prefixes: ReadonlyMap<string, string>
+
   // Keyword aliases: a term mapped to '@id' or '@type'.
   // Data Integrity proof blocks alias 'type' to '@type',
   // so canonicalizing proof options needs this.
   readonly aliases: ReadonlyMap<string, string>
+
+  // Protected terms (@protected), each with the definition it
+  // was protected under, as `addContextTerm` writes it down.
+  readonly protectedTerms: ReadonlyMap<string, string>
+
   // Default vocabulary (@vocab): a term with no definition
   // and no prefix expands to `vocab + term`. The DPP VC
   // base context sets one so every otherwise-undefined term
@@ -177,7 +203,7 @@ function walkNode(
     // A defined term carries its IRI (and any coercion); an
     // undefined term expands through @vocab, or is rejected
     // when no vocabulary grounds it.
-    const def = context.terms.get(term)
+    const def = readableTerm(term, context)
     const predicate: Term = {
       kind: 'iri', value: def ? def.id : expandIri(term, context, true),
     }
@@ -214,7 +240,18 @@ function withTypeScopes(
 function propertyScope(def: TermDef | undefined, context: Context): Context {
   if (def?.scoped === undefined) return context
   if (def.scoped === null) throw new Error('unsupported null @context')
-  return extendContext(context, def.scoped)
+  return extendContext(context, def.scoped, true)
+}
+
+// A term's definition, unless JSON-LD restructures its
+// values: a container (list, graph, index or map) or a JSON
+// literal.
+function readableTerm(term: string, context: Context): TermDef | undefined {
+  const def = context.terms.get(term)
+  if (def?.container !== undefined || def?.type === '@json') {
+    throw new Error(`unsupported value of term: ${term}`)
+  }
+  return def
 }
 
 interface Scope {
@@ -265,13 +302,15 @@ function toObject(
     }
     return walkNode(obj, scope.outer, state)
   }
+
   // @id-coerced values expand as document IRIs; @vocab-coerced
   // ones through the vocabulary. Everything else is a literal.
   if (def?.type === '@id' || def?.type === '@vocab') {
     if (typeof value !== 'string') throw new Error('IRI value must be a string')
-    return { kind: 'iri', value: expandIri(value, context, def.type === '@vocab') }
+    const vocab = def.type === '@vocab'
+    return { kind: 'iri', value: expandIri(value, context, vocab) }
   }
-  return scalarLiteral(value, def, context)
+  return scalarLiteral(value, def)
 }
 
 function valueObject(
@@ -284,14 +323,12 @@ function valueObject(
     return literal(String(value), expandIri(typeRaw, context, true))
   }
   if (language !== undefined) return langLiteral(String(value), language)
-  return scalarLiteral(value, def, context)
+  return scalarLiteral(value, def)
 }
 
-function scalarLiteral(
-  value: JsonLdValue, def: TermDef | undefined, context: Context,
-): Term {
+function scalarLiteral(value: JsonLdValue, def: TermDef | undefined): Term {
   if (def?.type && def.type !== '@id' && def.type !== '@vocab') {
-    return literal(String(value), expandIri(def.type, context, true))
+    return literal(String(value), def.type)
   }
   if (typeof value === 'string') {
     if (def?.language !== undefined) return langLiteral(value, def.language)
@@ -322,17 +359,19 @@ function langLiteral(value: string, language: string): Term {
 
 // Expand a term or reference to an IRI. A CURIE whose
 // prefix is defined expands against the prefix map; a
-// colon with an undefined prefix is already an absolute IRI
-// (https:, did:, urn:, and an xsd: whose prefix the context
-// leaves undefined) and passes through. A bare word expands
-// through the term map then @vocab in vocab position (a
-// predicate, a @type, a @vocab-coerced value); in @id
-// position it is a document reference and passes through.
+// colon with an undefined prefix, or followed by '//', is
+// already an absolute IRI (https:, did:, urn:, and an xsd:
+// whose prefix the context leaves undefined) and passes
+// through. A bare word expands through the term map then
+// @vocab in vocab position (a predicate, a @type, a
+// @vocab-coerced value); in @id position it is a document
+// reference and passes through.
 function expandIri(value: string, context: Context, vocab: boolean): string {
   const colon = value.indexOf(':')
   if (colon > 0) {
     const prefix = value.slice(0, colon)
-    const base = context.prefixes.get(prefix)
+    const absolute = value.startsWith('//', colon + 1)
+    const base = absolute ? undefined : context.prefixes.get(prefix)
     return base ? base + value.slice(colon + 1) : value
   }
   if (!vocab) return value
@@ -346,7 +385,8 @@ function parseContext(
   raw: JsonLdValue, registry?: Readonly<Record<string, JsonLdValue>>,
 ): Context {
   let context: Context = {
-    terms: new Map(), prefixes: new Map(), aliases: new Map()
+    terms: new Map(), prefixes: new Map(), aliases: new Map(),
+    protectedTerms: new Map()
   }
   for (const entry of asArray(raw)) {
     context = extendContext(context, resolveContextEntry(entry, registry))
@@ -354,22 +394,70 @@ function parseContext(
   return context
 }
 
-// A copy of `base` with the definitions of `map` on top.
+// A context while one map is read into it.
+interface ContextDraft {
+  readonly terms: Map<string, TermDef>
+  readonly prefixes: Map<string, string>
+  readonly aliases: Map<string, string>
+  readonly protectedTerms: Map<string, string>
+  vocab?: string
+}
+
+// How the terms of the map being read are defined.
+interface MapScope {
+  // The map's @protected, the default for its terms.
+  readonly protect: boolean
+
+  // A property-scoped context may change a protected term.
+  readonly override: boolean
+
+  // The map's terms not defined yet, the current one included.
+  readonly pending: Set<string>
+}
+
+// A copy of `base` with the definitions of `map` on top, read
+// as JSON-LD reads a context: the map's keywords first, then
+// each term against the definitions above it.
 function extendContext(
-  base: Context, map: Record<string, JsonLdValue>,
+  base: Context, map: Record<string, JsonLdValue>, override = false
 ): Context {
-  const terms = new Map(base.terms)
-  const prefixes = new Map(base.prefixes)
-  const aliases = new Map(base.aliases)
-  let vocab = base.vocab
-  for (const [term, def] of Object.entries(map)) {
-    if (term === '@vocab') {
-      if (typeof def === 'string') vocab = def
-    } else {
-      addContextTerm(term, def, terms, prefixes, aliases)
-    }
+  const draft: ContextDraft = {
+    terms: new Map(base.terms),
+    prefixes: new Map(base.prefixes),
+    aliases: new Map(base.aliases),
+    protectedTerms: new Map(base.protectedTerms),
+    vocab: base.vocab
   }
-  return { terms, prefixes, aliases, vocab }
+  const terms = Object.keys(map).filter((key) => !key.startsWith('@'))
+  const protect = readContextKeywords(map, draft)
+  const scope: MapScope = { protect, override, pending: new Set(terms) }
+  for (const term of terms) {
+    addContextTerm(term, map[term], draft, scope)
+    scope.pending.delete(term)
+  }
+  return draft
+}
+
+// The map's own keywords, read before its terms; returns its
+// @protected. @vocab null clears the vocabulary, a string
+// expands against the context before this map. Any other
+// keyword throws: @base, @import, @language, @direction and
+// @propagate each change what JSON-LD reads.
+function readContextKeywords(
+  map: Record<string, JsonLdValue>, draft: ContextDraft
+): boolean {
+  const {
+    '@version': version = 1.1, '@vocab': vocab,
+    '@protected': protect = false, ...terms
+  } = map
+  const valid = version === 1.1 && typeof protect === 'boolean'
+    && (vocab == null || typeof vocab === 'string')
+    && !Object.keys(terms).some((key) => key.startsWith('@'))
+  if (!valid) throw new Error('unsupported @context keyword')
+  if (vocab !== undefined) {
+    draft.vocab = vocab === null ? undefined : definitionIri(vocab, draft)
+  }
+  return protect
 }
 
 // A context entry is either an inline term map or a URL
@@ -395,44 +483,103 @@ function resolveContextEntry(
   return map as Record<string, JsonLdValue>
 }
 
+// One term as this canonicalizer reads it: a keyword alias,
+// or a definition plus whether the term also serves as a
+// prefix, which every simple string definition does.
+type Definition =
+  | { readonly alias: string }
+  | { readonly def: TermDef, readonly prefix: boolean }
+
+// Define one term over whatever it meant before. A protected
+// term stays as it is when restated and throws when changed,
+// unless the map is property-scoped.
 function addContextTerm(
-  term: string,
-  def: JsonLdValue,
-  terms: Map<string, TermDef>,
-  prefixes: Map<string, string>,
-  aliases: Map<string, string>,
+  term: string, raw: JsonLdValue, draft: ContextDraft, scope: MapScope
 ): void {
-  if (term.startsWith('@')) return
-  if (def === '@id' || def === '@type') {
-    aliases.set(term, def)
-    return
+  const [definition, protect] = parseTerm(term, raw, draft, scope)
+  const signature = JSON.stringify(definition)
+  const previous = draft.protectedTerms.get(term)
+  if (previous !== undefined && !scope.override) {
+    if (previous === signature) return
+    throw new Error(`protected term redefinition: ${term}`)
   }
-  if (typeof def === 'string') {
-    // A term may map to a CURIE against a prefix defined
-    // earlier in the same context; resolve it now. Every
-    // term doubles as a usable prefix, per JSON-LD compact
-    // IRI expansion.
-    const id = resolvePrefixed(def, prefixes)
-    prefixes.set(term, id)
-    terms.set(term, { id })
-    return
+  draft.terms.delete(term)
+  draft.prefixes.delete(term)
+  draft.aliases.delete(term)
+  draft.protectedTerms.delete(term)
+  if ('alias' in definition) {
+    draft.aliases.set(term, definition.alias)
+  } else {
+    draft.terms.set(term, definition.def)
+    if (definition.prefix) draft.prefixes.set(term, definition.def.id)
   }
-  if (def === null || typeof def !== 'object' || Array.isArray(def)) {
+  if (protect) draft.protectedTerms.set(term, signature)
+}
+
+const TYPE_KEYWORDS = new Set(['@id', '@vocab', '@json'])
+const CONTAINERS = new Set([
+  '@list', '@index', '@language', '@id', '@type', '@graph'
+])
+
+// A term definition and whether it is protected. A simple
+// string aliases @id or @type, or names the term's IRI. A
+// definition map holds @id, @type, @language, @context,
+// @container and @protected; the other JSON-LD entries
+// (@reverse, @nest, @index, @prefix, @direction) throw. A
+// @type keeps '@id', '@vocab' or '@json', and an IRI expands
+// here, where JSON-LD fixes it. @language null reads as an
+// absent one, and @container @set as none: RDF values form a
+// set already.
+function parseTerm(
+  term: string, raw: JsonLdValue, context: Context, scope: MapScope
+): [Definition, boolean] {
+  const { pending } = scope
+  if (raw === '@id' || raw === '@type') return [{ alias: raw }, scope.protect]
+  if (typeof raw === 'string') {
+    const id = definitionIri(raw, context, pending)
+    return [{ def: { id }, prefix: true }, scope.protect]
+  }
+  if (raw === null || typeof raw !== 'object' || Array.isArray(raw)) {
     throw new Error(`unsupported @context term: ${term}`)
   }
-  const obj = def as Record<string, JsonLdValue>
-  const id = obj['@id']
-  if (typeof id !== 'string') {
-    throw new Error(`@context term without @id: ${term}`)
+  const {
+    '@id': id, '@type': type, '@language': language,
+    '@context': scoped, '@container': container,
+    '@protected': protect = scope.protect, ...stray
+  } = raw as Record<string, JsonLdValue>
+  const kinds = asArray(container).filter((k) => k !== '@set')
+  const valid = typeof id === 'string' && typeof protect === 'boolean'
+    && (type === undefined || typeof type === 'string')
+    && (language == null || typeof language === 'string')
+    && kinds.every((k) => CONTAINERS.has(k as string))
+    && Object.keys(stray).length === 0
+  if (!valid) throw new Error(`unsupported @context term: ${term}`)
+  const def: TermDef = {
+    id: definitionIri(id, context, pending),
+    type: type === undefined || TYPE_KEYWORDS.has(type)
+      ? type : definitionIri(type, context, pending),
+    language: language ?? undefined,
+    container: kinds.length === 0 ? undefined : kinds.join(' '),
+    scoped: scoped === undefined ? undefined : scopedMap(term, scoped)
   }
-  const scoped = obj['@context']
-  terms.set(term, {
-    id: resolvePrefixed(id, prefixes),
-    type: typeof obj['@type'] === 'string' ? obj['@type'] : undefined,
-    language:
-      typeof obj['@language'] === 'string' ? obj['@language'] : undefined,
-    ...(scoped === undefined ? {} : { scoped: scopedMap(term, scoped) }),
-  })
+  return [{ def, prefix: false }, protect]
+}
+
+// An IRI inside a context (a term's @id or @type, @vocab),
+// expanded against the definitions above it as a vocabulary
+// IRI. JSON-LD defines a map's terms as a whole, so naming a
+// term further down the same map (`pending`, the term itself
+// included) throws instead of reading it two ways. So does a
+// keyword, and a blank node, which would be written as an IRI.
+function definitionIri(
+  value: string, context: Context, pending?: ReadonlySet<string>
+): string {
+  const colon = value.indexOf(':')
+  const head = colon > 0 ? value.slice(0, colon) : value
+  if (value.startsWith('@') || head === '_' || pending?.has(head)) {
+    throw new Error(`unsupported @context IRI: ${value}`)
+  }
+  return expandIri(value, context, true)
 }
 
 function scopedMap(
@@ -443,19 +590,6 @@ function scopedMap(
     throw new Error(`unsupported scoped @context: ${term}`)
   }
   return scoped as Record<string, JsonLdValue>
-}
-
-// A term's @id may itself be a CURIE against a prefix
-// defined earlier in the same context.
-function resolvePrefixed(
-  id: string, prefixes: ReadonlyMap<string, string>,
-): string {
-  const colon = id.indexOf(':')
-  if (colon > 0 && !id.includes('://')) {
-    const base = prefixes.get(id.slice(0, colon))
-    if (base) return base + id.slice(colon + 1)
-  }
-  return id
 }
 
 const SUPPORTED_KEYWORDS = new Set(['@context', '@id', '@type'])
