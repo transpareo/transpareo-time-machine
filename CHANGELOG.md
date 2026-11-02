@@ -68,6 +68,10 @@ and this project adheres to
   statements could not tell the two documents apart.
   Passports signed under the five bundled contexts verify
   as before.
+- A `__proto__` key in a passport reads as a term, as a
+  JSON-LD processor reads it. The canonicalizer dropped the
+  key and its value from its statements, so a passport
+  carrying one its signature left out verified.
 - Login-gated rows render only from a credential naming the
   passport on the page: its page (`@id`), its issuer by DID
   and its version must match the version's public snapshot.

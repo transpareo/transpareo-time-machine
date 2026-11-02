@@ -275,16 +275,14 @@ interface Scope {
 }
 
 // Rewrite aliased keys to their real keyword so the rest
-// of the walk sees '@id' / '@type' directly.
+// of the walk sees '@id' / '@type' directly. Every key comes
+// out an own property, "__proto__" included.
 function normalizeKeywords(
   node: Record<string, JsonLdValue>, context: Context,
 ): Record<string, JsonLdValue> {
-  if (context.aliases.size === 0) return node
-  const out: Record<string, JsonLdValue> = {}
-  for (const [key, value] of Object.entries(node)) {
-    out[context.aliases.get(key) ?? key] = value
-  }
-  return out
+  const entries = Object.entries(node)
+    .map(([key, value]) => [context.aliases.get(key) ?? key, value])
+  return Object.fromEntries(entries)
 }
 
 function nodeSubject(

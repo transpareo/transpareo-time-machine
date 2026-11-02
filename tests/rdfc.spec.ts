@@ -219,6 +219,28 @@ describe('canonicalize: literal escaping', () => {
   });
 });
 
+// JSON.parse keeps a "__proto__" key as an own property, and a
+// JSON-LD processor reads it as a term like any other. Read
+// through an alias, it must still come out a statement, so no
+// key a signature leaves out hides under the name.
+describe('canonicalize: a __proto__ key', () => {
+  const parsed = (value: string) => JSON.parse(`{
+    "@context": { "ex": "http://example.org/", "id": "@id",
+      "@vocab": "http://example.org/v#" },
+    "id": "ex:s",
+    "__proto__": ${value}
+  }`);
+  const proto = '<http://example.org/s> <http://example.org/v#__proto__>';
+
+  it.each([
+    ['a string', '"x"', '"x"'],
+    ['a node', '{ "id": "ex:o" }', '<http://example.org/o>'],
+  ])('reads one holding %s as a term', async (_label, value, object) => {
+    expect(await canonicalize(parsed(value)))
+      .toEqual([`${proto} ${object} .\n`]);
+  });
+});
+
 describe('canonicalize: fails closed on out-of-scope input', () => {
   it('rejects an unmapped term', async () => {
     const doc = { '@context': CTX, '@id': 'ex:s', mystery: 'x' };
