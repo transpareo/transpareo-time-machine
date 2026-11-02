@@ -61,7 +61,8 @@
 
 import { signal, effect } from '@/reactive/signals'
 import {
-  manifest, rawSnapshots, adaptPrivateRows, type WireProperty
+  manifest, rawSnapshots, adaptPrivateRows, currentBootEpoch,
+  type WireProperty
 } from '@/host'
 import { activeVersionNumber } from '@/state'
 import type { PropertyValue } from '@/types'
@@ -185,31 +186,46 @@ export async function fetchPrivateRows(
   }
 
   setState(versionNumber, { status: 'pending' })
+  const epoch = currentBootEpoch()
+  const state = await readPrivateRows(versionNumber, url)
+
+  // The page rebooted while the read was in flight (a new
+  // `src`, or an element taking over the page). The answer
+  // is the previous passport's, whose version numbers collide
+  // with this one's, so it writes nothing: no rows, no
+  // sign-in, no error.
+  if (epoch !== currentBootEpoch()) return state.status
+
+  // Not signed in: evict any rows cached under a now-expired
+  // session.
+  if (state.status === 'unauth') evictAllOkEntries()
+  return setState(versionNumber, state)
+}
+
+// One authenticated read of the version's rows, judged into
+// the state it leaves.
+async function readPrivateRows(
+  versionNumber: number, url: string
+): Promise<PrivateFetchState> {
   let res: Response
   try {
     res = await fetch(url, { credentials: 'include' })
   } catch (err) {
     const reason = describeError(err)
     console.warn(`[private] fetch failed: ${reason}`)
-    return setState(versionNumber, { status: 'error', reason })
+    return { status: 'error', reason }
   }
 
-  if (res.status === 204) {
-    return setState(versionNumber, { status: 'empty' })
-  }
+  if (res.status === 204) return { status: 'empty' }
 
-  if (res.status === 401) {
-    // Not signed in. The endpoint names where to authenticate;
-    // the affordance redirects the whole page there. Evict any
-    // rows cached under a now-expired session.
-    evictAllOkEntries()
-    return setState(versionNumber, unauthState(parseLoginUrl(res)))
-  }
+  // Not signed in. The endpoint names where to authenticate;
+  // the affordance redirects the whole page there.
+  if (res.status === 401) return unauthState(parseLoginUrl(res))
 
   if (!res.ok) {
     const reason = `HTTP ${res.status}`
     console.warn(`[private] ${reason} from ${url}`)
-    return setState(versionNumber, { status: 'error', reason })
+    return { status: 'error', reason }
   }
 
   let body: Record<string, unknown>
@@ -218,7 +234,7 @@ export async function fetchPrivateRows(
   } catch (err) {
     const reason = describeError(err)
     console.warn(`[private] bad JSON: ${reason}`)
-    return setState(versionNumber, { status: 'error', reason })
+    return { status: 'error', reason }
   }
 
   // This response is a signed derived credential, not a
@@ -229,13 +245,12 @@ export async function fetchPrivateRows(
   const rejected = await credentialRejection(body, versionNumber)
   if (rejected) {
     console.warn(`[private] ${rejected}`)
-    return setState(versionNumber, { status: 'error', reason: rejected })
+    return { status: 'error', reason: rejected }
   }
 
   const parsed = body as PrivateResponseBody
   const properties = parsed.credentialSubject?.product?.properties ?? []
-  const rows = adaptPrivateRows(properties)
-  return setState(versionNumber, { status: 'ok', rows })
+  return { status: 'ok', rows: adaptPrivateRows(properties) }
 }
 
 // Why a private-rows credential may not paint, or null once it

@@ -28,7 +28,7 @@ import { fileURLToPath } from 'node:url'
 import {
   parseLoginUrl, isSameRegistrableSite,
   fetchPrivateRows, fetchStateByVersion, resetPrivateState,
-  bootstrapPrivateRowsFetch,
+  bootstrapPrivateRowsFetch, type PrivateFetchState,
 } from '../src/private-properties'
 import { config } from '../src/config'
 import * as host from '../src/host'
@@ -463,6 +463,65 @@ describe('fetchPrivateRows: the public snapshot\'s gates', () => {
       expect(rowKeys(3)).toEqual([])
     },
   )
+})
+
+// A new `src` reboots the page and clears the private state,
+// and the new passport's version numbers collide with the old
+// one's. A read still in flight for the passport before must
+// leave the fresh state alone, whatever it answers.
+describe('fetchPrivateRows: a reboot mid-read', () => {
+  const URL_3 = '/api/private/3'
+  let answer: (res: Response) => void
+
+  beforeEach(() => {
+    vi.stubGlobal('window', PAGE)
+    pin([PLATFORM_KEY], [ISSUER_KEY])
+    host.rawSnapshots.set({ 3: SPECIMEN.public_view as SignedSnapshot })
+    revocationStatus.set('ok')
+    vi.stubGlobal('fetch', vi.fn((asked: string) => (
+      asked === URL_3
+        ? new Promise<Response>((resolve) => { answer = resolve })
+        : Promise.resolve(new Response(null, { status: 404 }))
+    )))
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+    vi.unstubAllGlobals()
+    pin(undefined, undefined)
+    host.rawSnapshots.set({})
+    revocationStatus.set('pending')
+    resetPrivateState()
+  })
+
+  // What the element does on a new `src`.
+  async function reboot(): Promise<void> {
+    await host.bootFrom('https://cdn.test/other/manifest.json')
+    resetPrivateState()
+  }
+
+  it('drops a 401, which keeps the new passport\'s rows', async () => {
+    const read = fetchPrivateRows(3, URL_3)
+    await reboot()
+    const rows: PrivateFetchState = { status: 'ok', rows: [] }
+    fetchStateByVersion.set({ 2: rows })
+
+    answer(res(401, { 'X-Auth-Url': '/login' }))
+    await read
+
+    expect(fetchStateByVersion.peek()).toEqual({ 2: rows })
+  })
+
+  it('drops a credential, which sets no error', async () => {
+    const read = fetchPrivateRows(3, URL_3)
+    await reboot()
+
+    answer(jsonResponse(SPECIMEN.view))
+    await read
+
+    expect(fetchStateByVersion.peek()).toEqual({})
+  })
 })
 
 // The rows are bound to the version's public snapshot and

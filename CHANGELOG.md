@@ -60,6 +60,13 @@ and this project adheres to
   removed one, or reconnects after its `src` changed, starts
   from cleared verdicts; it showed the verdicts of the
   passport before.
+- A login-gated read still in flight when the passport
+  reboots onto a new `src` writes nothing. Its answer landed
+  on the new passport's version of the same number: a 401
+  dropped that passport's rows and showed the sign-in, a
+  credential showed the retry affordance, and one whose
+  proofs were still being checked showed the previous
+  passport's rows.
 
 ## [2.24.0] - 2026-10-30
 
