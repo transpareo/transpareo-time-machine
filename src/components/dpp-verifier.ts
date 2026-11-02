@@ -49,8 +49,11 @@
  *                          foreign passport matches no pin
  *                          and still shows both of its
  *                          authorities. Without pins every
- *                          fetched key is equally trusted
- *                          (the default 2-of-2 rule).
+ *                          fetched key is equally trusted.
+ *                          Pinned or not, a snapshot is
+ *                          authentic when it carries a
+ *                          proof and every proof verifies,
+ *                          under either cryptosuite.
  *
  *   locale                 Optional. `de` renders the widget
  *                          in German (region stripped, and

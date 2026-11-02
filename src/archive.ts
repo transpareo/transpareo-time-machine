@@ -186,9 +186,10 @@ export interface Organization {
 // several entries with different `verificationMethod` URLs
 // (HTTPS host, HTTPS CDN, did:web) that resolve to its one
 // key, so a verifier can reach the key by whichever URL it
-// can. A snapshot counts as authentic when at least one
-// issuer entry AND at least one platform entry verifies
-// (2-of-2 across the authority pair).
+// can. The chip counts a snapshot as authentic when its
+// verified entries come from at least two distinct keys,
+// which a sound snapshot meets with the issuer's and the
+// platform's (crypto/verify `isAuthentic`).
 export interface SignedSnapshot {
   readonly '@context'?:
     | string

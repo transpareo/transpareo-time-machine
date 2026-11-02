@@ -371,11 +371,14 @@ export function armRevocationGuard(): void {
 // Verifies a snapshot's proof in the browser under whichever
 // cryptosuite it declares (see crypto/dispatch): the
 // eddsa-jcs-2022 multi-authority proof set, or the
-// ecdsa-sd-2023 derived proofs. The aggregate 2-of-2 verdict
-// drives the verification chip; the per-entry results power
-// the proof modal's chain rendering. Async so the chip flips
-// through "Verifying" to its outcome without blocking the
-// first paint.
+// ecdsa-sd-2023 derived proofs. The suite's verdict drives
+// the verification chip: an eddsa-jcs proof set is authentic
+// when its verified entries come from at least two distinct
+// keys, an ecdsa-sd credential when every proof it carries
+// verifies. The per-entry results power the proof modal's
+// chain rendering. Async so the chip flips through
+// "Verifying" to its outcome without blocking the first
+// paint.
 //
 // Snapshots not yet in the host cache get fetched
 // lazily via host.fetchSnapshot. The host module

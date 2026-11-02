@@ -755,8 +755,8 @@ given; for a lone snapshot it renders that one frozen
 version with no version timeline, history, or EPCIS events
 (a snapshot carries no version list), and the language
 picker is derived from the snapshot's own localized
-strings. The snapshot's own 2-of-2
-proof still verifies, so the chip reads "verified" on a
+strings. The snapshot's own proofs
+still verify, so the chip reads "verified" on a
 validly-signed snapshot. This is a weaker assurance than the
 manifest flow: with no signed version list and no
 cross-version chain, it proves the snapshot is authentic,
