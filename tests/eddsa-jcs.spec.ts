@@ -17,7 +17,9 @@
 import { describe, it, expect } from 'vitest';
 import { canonicalize } from '../src/crypto/jcs';
 import { decodeMultibaseBase58 } from '../src/crypto/multibase';
-import { proofConfig, joinHashes } from '../src/crypto/eddsa-jcs';
+import {
+  proofConfig, joinHashes, unsecuredDocument,
+} from '../src/crypto/eddsa-jcs';
 
 // Example 30: the unsecured document.
 const DOCUMENT = {
@@ -136,5 +138,50 @@ describe('eddsa-jcs-2022 construction (W3C vector)', () => {
       { name: 'Ed25519' }, key, asBuffer(signature), asBuffer(hashData),
     );
     expect(ok).toBe(true);
+  });
+});
+
+// Each artefact signs under one wrapper: a snapshot under its
+// `proof`, the manifest and the dynamic data under
+// `signature`, the events feed under `transpareo:signature`.
+// Only that key leaves the hashed body; any other key beside
+// it, a second wrapper name included, is signed.
+describe('unsecuredDocument', () => {
+  const BODY = { '@context': ['https://example.org/ctx'], id: 'urn:x' };
+
+  it('removes the wrapper a document carries', () => {
+    expect(unsecuredDocument({ ...BODY, proof: [] })).toEqual(BODY);
+    expect(unsecuredDocument({ ...BODY, signature: {} })).toEqual(BODY);
+    expect(unsecuredDocument({ ...BODY, 'transpareo:signature': {} }))
+      .toEqual(BODY);
+  });
+
+  it('returns a document without a wrapper whole', () => {
+    expect(unsecuredDocument(BODY)).toEqual(BODY);
+  });
+
+  it('unsecures the W3C secured document to the spec hash', async () => {
+    const proof = { ...PROOF_OPTIONS, proofValue: PROOF_VALUE };
+    const unsecured = unsecuredDocument({ ...DOCUMENT, proof });
+    expect(hex(await sha256Jcs(unsecured))).toBe(DOCUMENT_HASH_HEX);
+  });
+
+  it('signs a signature member beside a snapshot proof', () => {
+    const doc = { ...BODY, proof: [], signature: 'extra' };
+    expect(unsecuredDocument(doc))
+      .toEqual({ ...BODY, signature: 'extra' });
+  });
+
+  // The manifest's signature then sits inside its own hashed
+  // bytes, so it cannot verify.
+  it('keeps a manifest signature in the body beside a proof', () => {
+    const doc = { ...BODY, signature: { proofValue: 'z1' }, proof: [] };
+    expect(unsecuredDocument(doc))
+      .toEqual({ ...BODY, signature: { proofValue: 'z1' } });
+  });
+
+  it('signs a bare signature beside the events feed one', () => {
+    const doc = { ...BODY, 'transpareo:signature': {}, signature: {} };
+    expect(unsecuredDocument(doc)).toEqual({ ...BODY, signature: {} });
   });
 });

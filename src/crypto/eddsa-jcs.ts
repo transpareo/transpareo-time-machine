@@ -13,7 +13,7 @@
  *            || SHA-256(JCS(document))
  * with the proof-config hash FIRST (per the spec; this is
  * the opposite order to eddsa-rdfc-2022). The document is
- * the unsecured body, its `proof` / `signature` removed;
+ * the unsecured body, its one integrity wrapper removed;
  * the proofConfig is the proof options minus `proofValue`,
  * carrying the document's `@context`.
  */
@@ -35,19 +35,24 @@ export function proofConfig(
   return { '@context': context, ...options }
 }
 
-// The unsecured document the suite hashes: the body with
-// its integrity wrapper removed - `proof` for snapshots,
-// `signature` for manifests, `transpareo:signature` for the
+// The keys an integrity wrapper sits under, in the order the
+// verifiers look for one: `proof` for snapshots, then the
+// detached platform signature, `transpareo:signature` on the
 // EPCIS events document (namespaced so the file validates
-// against the EPCIS 2.0 schema). `@context` and every other
-// field stay, so the hash covers the full payload.
+// against the EPCIS 2.0 schema) and `signature` on the
+// manifest, the dynamic data and older events documents.
+const WRAPPERS = ['proof', 'transpareo:signature', 'signature']
+
+// The unsecured document the suite hashes: the body without
+// the first wrapper it carries. Every other key stays in the
+// hash, a second wrapper name too, so a key added beside the
+// signature breaks it.
 export function unsecuredDocument(
   document: Record<string, unknown>,
 ): Record<string, unknown> {
-  const {
-    proof: _proof, signature: _signature,
-    'transpareo:signature': _txSignature, ...body
-  } = document
+  const wrapper = WRAPPERS.find((key) => Object.hasOwn(document, key))
+  if (wrapper === undefined) return { ...document }
+  const { [wrapper]: _wrapper, ...body } = document
   return body
 }
 
