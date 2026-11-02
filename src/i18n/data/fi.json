@@ -161,6 +161,7 @@
   "verifier.entry.unreachable": "Avainta ei tavoiteta",
   "verifier.entry.invalid": "Allekirjoitus virheellinen",
   "verifier.verdict.partial": "Vain {verified}/{total} merkintää vahvistettu",
+  "verifier.verdict.oneParty": "Vain toinen kahdesta osapuolesta on allekirjoittanut",
   "verifier.verdict.manifestSignature": "Manifestin allekirjoitusta ei voitu vahvistaa",
   "verifier.verdict.chainBroken": "Versiohistorian ketju on katkennut",
   "verifier.verdict.consistentOnly": "Allekirjoitukset kelvollisia, allekirjoittajan henkilöllisyyttä ei vahvistettu",

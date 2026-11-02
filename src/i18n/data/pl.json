@@ -161,6 +161,7 @@
   "verifier.entry.unreachable": "Klucz niedostępny",
   "verifier.entry.invalid": "Nieprawidłowy podpis",
   "verifier.verdict.partial": "Zweryfikowano tylko {verified} z {total} wpisów",
+  "verifier.verdict.oneParty": "Podpisane tylko przez jedną z dwóch stron",
   "verifier.verdict.manifestSignature": "Nie udało się zweryfikować podpisu manifestu",
   "verifier.verdict.chainBroken": "Łańcuch historii wersji jest przerwany",
   "verifier.verdict.consistentOnly": "Podpisy ważne, tożsamość podpisującego niepotwierdzona",

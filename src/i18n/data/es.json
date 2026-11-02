@@ -161,6 +161,7 @@
   "verifier.entry.unreachable": "Clave inaccesible",
   "verifier.entry.invalid": "Firma no válida",
   "verifier.verdict.partial": "Solo {verified} de {total} entradas verificadas",
+  "verifier.verdict.oneParty": "Firmado solo por una de las dos partes",
   "verifier.verdict.manifestSignature": "La firma del manifiesto no se pudo verificar",
   "verifier.verdict.chainBroken": "La cadena del historial de versiones está rota",
   "verifier.verdict.consistentOnly": "Firmas válidas, identidad del firmante sin confirmar",

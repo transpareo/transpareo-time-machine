@@ -161,6 +161,7 @@
   "verifier.entry.unreachable": "কী-তে পৌঁছানো যায়নি",
   "verifier.entry.invalid": "স্বাক্ষর অবৈধ",
   "verifier.verdict.partial": "{total}টির মধ্যে কেবল {verified}টি এন্ট্রি যাচাই হয়েছে",
+  "verifier.verdict.oneParty": "দুই পক্ষের মধ্যে কেবল একটি পক্ষ স্বাক্ষর করেছে",
   "verifier.verdict.manifestSignature": "ম্যানিফেস্ট স্বাক্ষর যাচাই করা যায়নি",
   "verifier.verdict.chainBroken": "সংস্করণ ইতিহাসের শৃঙ্খল ভাঙা",
   "verifier.verdict.consistentOnly": "স্বাক্ষর বৈধ, স্বাক্ষরকারীর পরিচয় অনিশ্চিত",

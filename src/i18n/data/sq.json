@@ -162,6 +162,7 @@
   "verifier.entry.unreachable": "Çelësi i paarritshëm",
   "verifier.entry.invalid": "Nënshkrimi i pavlefshëm",
   "verifier.verdict.partial": "Vetëm {verified} nga {total} hyrje të verifikuara",
+  "verifier.verdict.oneParty": "Nënshkruar vetëm nga njëra prej dy palëve",
   "verifier.verdict.manifestSignature": "Nënshkrimi i manifestit nuk u verifikua",
   "verifier.verdict.chainBroken": "Zinxhiri i historikut të versioneve është i prishur",
   "verifier.verdict.consistentOnly": "Nënshkrimet janë të vlefshme, identiteti i nënshkruesit nuk është konfirmuar",

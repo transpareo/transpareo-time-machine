@@ -161,6 +161,7 @@
   "verifier.entry.unreachable": "Iċ-ċavetta mhix aċċessibbli",
   "verifier.entry.invalid": "Firma invalida",
   "verifier.verdict.partial": "Ġew vverifikati biss {verified} minn {total} entrati",
+  "verifier.verdict.oneParty": "Iffirmat minn waħda biss miż-żewġ partijiet",
   "verifier.verdict.manifestSignature": "Il-firma tal-manifest ma ġietx ivverifikata",
   "verifier.verdict.chainBroken": "Il-katina tal-istorja tal-verżjonijiet hija miksura",
   "verifier.verdict.consistentOnly": "Firem validi, l-identità tal-firmatarju mhix ikkonfermata",

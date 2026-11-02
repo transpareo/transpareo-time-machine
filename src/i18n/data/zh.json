@@ -161,6 +161,7 @@
   "verifier.entry.unreachable": "无法访问密钥",
   "verifier.entry.invalid": "签名无效",
   "verifier.verdict.partial": "{total} 个条目中仅 {verified} 个通过验证",
+  "verifier.verdict.oneParty": "仅由双方中的一方签名",
   "verifier.verdict.manifestSignature": "清单签名未通过验证",
   "verifier.verdict.chainBroken": "版本历史链已断裂",
   "verifier.verdict.consistentOnly": "签名有效，签署者身份未确认",

@@ -161,6 +161,7 @@
   "verifier.entry.unreachable": "कुंजी तक नहीं पहुँचा जा सका",
   "verifier.entry.invalid": "हस्ताक्षर अमान्य",
   "verifier.verdict.partial": "{total} में से केवल {verified} प्रविष्टियाँ सत्यापित",
+  "verifier.verdict.oneParty": "दो पक्षों में से केवल एक ने हस्ताक्षर किए",
   "verifier.verdict.manifestSignature": "मैनिफ़ेस्ट हस्ताक्षर सत्यापित नहीं हुआ",
   "verifier.verdict.chainBroken": "संस्करण इतिहास की श्रृंखला टूटी है",
   "verifier.verdict.consistentOnly": "हस्ताक्षर मान्य, हस्ताक्षरकर्ता की पहचान अपुष्ट",

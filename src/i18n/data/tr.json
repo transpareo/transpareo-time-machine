@@ -161,6 +161,7 @@
   "verifier.entry.unreachable": "Anahtara ulaşılamıyor",
   "verifier.entry.invalid": "Geçersiz imza",
   "verifier.verdict.partial": "{total} kayıttan yalnızca {verified} tanesi doğrulandı",
+  "verifier.verdict.oneParty": "İki taraftan yalnızca biri imzaladı",
   "verifier.verdict.manifestSignature": "Manifest imzası doğrulanamadı",
   "verifier.verdict.chainBroken": "Sürüm geçmişi zinciri kopuk",
   "verifier.verdict.consistentOnly": "İmzalar geçerli, imzalayanın kimliği doğrulanmadı",

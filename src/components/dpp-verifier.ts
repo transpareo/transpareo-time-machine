@@ -12,8 +12,9 @@
  * by the shared detector (artefact-detect.ts, the same
  * rule the SPA host layer boots by). A manifest runs the
  * same gates as the SPA chip in the browser: the snapshot
- * proof under whichever cryptosuite it declares (strict),
- * the manifest's own platform signature, the current
+ * proof under whichever cryptosuite it declares (strict:
+ * the chip's rule, and every proof must verify), the
+ * manifest's own platform signature, the current
  * snapshot's bytes against the manifest's hashValue for
  * it, and the priorVersionHash chain walk down to v1. A lone signed
  * snapshot (a DPP published without a manifest, matching
@@ -52,8 +53,10 @@
  *                          fetched key is equally trusted.
  *                          Pinned or not, a snapshot is
  *                          authentic when it carries a
- *                          proof and every proof verifies,
- *                          under either cryptosuite.
+ *                          proof and every proof verifies;
+ *                          an eddsa-jcs-2022 set also needs
+ *                          its proofs under at least two
+ *                          distinct keys, as on the chip.
  *
  *   locale                 Optional. `de` renders the widget
  *                          in German (region stripped, and

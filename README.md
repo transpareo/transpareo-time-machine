@@ -108,11 +108,12 @@ instead:
 - Treats the issuer and the platform as **two
   independent authorities**. The default
   "any-issuer-and-any-platform" verdict groups proof
-  entries by signature and requires one verified entry
-  per group; it does not, on its own, bind the platform
-  side to a particular key. Pin a platform key to bind
-  it, or use strict all-entries mode for high-trust
-  surfaces.
+  entries by the key they verify under and requires
+  verified entries under two distinct keys; it does not,
+  on its own, bind the platform side to a particular
+  key. Pin a platform key to bind it. Strict mode, which
+  the `<dpp-verifier>` widget runs, also requires every
+  entry to verify.
 - Ships **zero runtime dependencies**. The reactive
   runtime, the JCS canonicalizer, the multibase
   decoder, and the in-browser verifier are all
@@ -941,7 +942,11 @@ what was proven, in three identity tiers:
 
 Signature failures, a broken chain, or an invalid
 manifest signature fail the verdict outright in every
-tier.
+tier. Every proof the snapshot carries must verify, and
+an `eddsa-jcs-2022` proof set must also carry proofs
+under two distinct keys, as the chip requires; a set
+signed under one key reads "Signed by only one of the
+two parties".
 
 Same surface notes as `<transpareo-time-machine>` (open
 shadow root, CSS custom properties, no events). The widget
@@ -1322,8 +1327,9 @@ that would rather not download Firefox.
      document hash. Entries that name the same document
      under different fragments share one read.
    - Apply the any-issuer-and-any-platform rule
-     (default) or all-entries (`{ mode: 'strict' }`) to
-     produce the aggregate verdict.
+     (verified entries under two distinct keys) to
+     produce the aggregate verdict; `{ mode: 'strict' }`
+     also requires every entry to verify.
    Under either suite, a key from a DID document is
    refused, and its proof invalid, when the method
    carries `revoked` or is missing from

@@ -161,6 +161,7 @@
   "verifier.entry.unreachable": "Eochair do-shroichte",
   "verifier.entry.invalid": "Síniú neamhbhailí",
   "verifier.verdict.partial": "Níor fíoraíodh ach {verified} as {total} iontráil",
+  "verifier.verdict.oneParty": "Níor shínigh ach ceann amháin den dá pháirtí",
   "verifier.verdict.manifestSignature": "Níor fíoraíodh síniú an mhainifeist",
   "verifier.verdict.chainBroken": "Tá slabhra stair na leaganacha briste",
   "verifier.verdict.consistentOnly": "Sínithe bailí, aitheantas an tsínitheora gan deimhniú",

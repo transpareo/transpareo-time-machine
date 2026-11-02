@@ -68,8 +68,8 @@ security fixes for at least 6 months.
   `src/components/dpp-verification-modal.ts`,
   `src/components/dpp-verifier.ts`).
 - The aggregate-verdict rule (default
-  any-issuer-and-any-platform; strict all-entries) and
-  its inputs (proof grouping, key pinning).
+  any-issuer-and-any-platform; strict adds every entry
+  verifying) and its inputs (proof grouping, key pinning).
 - The seed-pipeline signing flow
   (`scripts/seed/signing.ts`, `scripts/seed/emit-artefacts.ts`)
   insofar as it produces artefacts the verifier

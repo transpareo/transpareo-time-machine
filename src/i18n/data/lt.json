@@ -161,6 +161,7 @@
   "verifier.entry.unreachable": "Raktas nepasiekiamas",
   "verifier.entry.invalid": "Negaliojantis parašas",
   "verifier.verdict.partial": "Patikrinta tik {verified} iš {total} įrašų",
+  "verifier.verdict.oneParty": "Pasirašė tik viena iš dviejų šalių",
   "verifier.verdict.manifestSignature": "Manifesto parašo nepavyko patikrinti",
   "verifier.verdict.chainBroken": "Versijų istorijos grandinė nutrūkusi",
   "verifier.verdict.consistentOnly": "Parašai galioja, pasirašiusiojo tapatybė nepatvirtinta",

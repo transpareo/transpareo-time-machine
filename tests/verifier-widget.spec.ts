@@ -24,6 +24,10 @@
  * The current version's bytes must hash to the manifest's
  * claim for it, as on the chip: a manifest whose snapshot
  * URL serves another validly signed passport fails.
+ *
+ * An eddsa-jcs proof set needs entries under two distinct
+ * keys, as on the chip: one proof that verifies on its own
+ * fails.
  */
 
 import { describe, it, expect, vi, beforeAll, afterEach } from 'vitest'
@@ -32,6 +36,7 @@ import { readFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { buildEcdsaSdIssuer } from '../scripts/seed/ecdsa-sd-signing'
+import { buildSnapshotSigner } from '../scripts/seed/signing'
 import { hexChainHashOfSnapshot } from '@/crypto/chain-hash'
 import '@/components/dpp-verifier'
 
@@ -50,20 +55,34 @@ let credentialHash: string
 // two keys: every proof on it verifies.
 let otherCredential: Record<string, unknown>
 
+// The same passport as an eddsa-jcs snapshot: under the
+// seed's five aliases of the issuer and platform keys, and
+// under its first issuer alias alone.
+let jcsSnapshot: Record<string, unknown>
+let jcsIssuerOnly: Record<string, unknown>
+
 // A real single-version ecdsa-sd DPP: the seed issuer mints
 // the credential and writes each authority's P-256 Multikey
 // document, which the stubbed fetch then serves. The
 // manifest names the credential's chain hash, as the seed
-// stamps it.
+// stamps it. The eddsa-jcs signer writes its Ed25519 key
+// documents beside them.
 beforeAll(async () => {
   const dir = mkdtempSync(join(tmpdir(), 'verifier-widget-'))
   keysDir = join(dir, HANDLE, 'dpp', CODE, 'keys')
+  const created = '2026-05-01T12:00:00Z'
   const issuer = await buildEcdsaSdIssuer(
-    dir, HANDLE, CODE, '2026-05-01T12:00:00Z', ISSUER_DID, PLATFORM_DID,
+    dir, HANDLE, CODE, created, ISSUER_DID, PLATFORM_DID,
   )
   credential = await issuer.issue(passportBody(CODE))
   credentialHash = await hexChainHashOfSnapshot(credential)
   otherCredential = await issuer.issue(passportBody('xyz98765'))
+
+  const signer = await buildSnapshotSigner(dir, HANDLE, CODE, created)
+  const body = passportBody(CODE)
+  const proof = signer.signSnapshot(body)
+  jcsSnapshot = { ...body, proof }
+  jcsIssuerOnly = { ...body, proof: proof.slice(0, 1) }
 })
 
 function passportBody(code: string): Record<string, unknown> {
@@ -201,6 +220,29 @@ describe('dpp-verifier: the current version against the manifest', () => {
     expect(card?.className).toContain('verdict-unauthenticated')
     expect(card?.querySelector('.verifier-verdict')?.textContent).
       toBe('Version history chain is broken')
+  })
+})
+
+// The widget verifies strictly: every proof must verify, and
+// an eddsa-jcs set must also carry two distinct keys, the
+// rule the chip holds it to.
+describe('dpp-verifier: eddsa-jcs proof sets', () => {
+  const SNAPSHOT_URL = `${ORIGIN}/${HANDLE}/dpp/${CODE}/v/1.json`
+
+  it('verifies a set signed under both keys', async () => {
+    stubFetch(undefined, jcsSnapshot)
+    const widget = await mountWidget(undefined, SNAPSHOT_URL)
+    const card = widget.shadowRoot?.querySelector('.verifier-card')
+    expect(card?.className).toContain('verdict-authentic')
+  })
+
+  it('fails a set whose one proof verifies', async () => {
+    stubFetch(undefined, jcsIssuerOnly)
+    const widget = await mountWidget(undefined, SNAPSHOT_URL)
+    const card = widget.shadowRoot?.querySelector('.verifier-card')
+    expect(card?.className).toContain('verdict-unauthenticated')
+    expect(card?.querySelector('.verifier-verdict')?.textContent).
+      toBe('Signed by only one of the two parties')
   })
 })
 

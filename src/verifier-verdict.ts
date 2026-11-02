@@ -71,6 +71,7 @@ export function artefactSignatureAcceptable(
 export type VerdictReason =
   | 'authentic'
   | 'partial'
+  | 'oneParty'
   | 'manifestSignature'
   | 'chainBroken'
 
@@ -96,7 +97,14 @@ export function aggregateVerdict(
   if (result.verdict === 'authentic') {
     return { outcome: 'authentic', reason: 'authentic', ...counts }
   }
-  return { outcome: 'unauthenticated', reason: 'partial', ...counts }
+
+  // A set that fails with every entry verified fails the
+  // eddsa-jcs key rule: its entries came from one key, so
+  // one of the two parties never signed.
+  const everyEntry = counts.totalEntryCount > 0
+    && counts.verifiedEntryCount === counts.totalEntryCount
+  const reason = everyEntry ? 'oneParty' : 'partial'
+  return { outcome: 'unauthenticated', reason, ...counts }
 }
 
 // Full widget verdict: the snapshot-proof verdict above,

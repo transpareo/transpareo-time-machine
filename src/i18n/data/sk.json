@@ -161,6 +161,7 @@
   "verifier.entry.unreachable": "Kľúč nedostupný",
   "verifier.entry.invalid": "Neplatný podpis",
   "verifier.verdict.partial": "Overených len {verified} z {total} záznamov",
+  "verifier.verdict.oneParty": "Podpísané len jednou z dvoch strán",
   "verifier.verdict.manifestSignature": "Podpis manifestu sa nepodarilo overiť",
   "verifier.verdict.chainBroken": "Reťazec histórie verzií je prerušený",
   "verifier.verdict.consistentOnly": "Podpisy platné, identita podpisujúceho nepotvrdená",

@@ -161,6 +161,7 @@
   "verifier.entry.unreachable": "키에 연결할 수 없음",
   "verifier.entry.invalid": "서명이 잘못됨",
   "verifier.verdict.partial": "{total}개 중 {verified}개 항목만 검증됨",
+  "verifier.verdict.oneParty": "두 당사자 중 한 쪽만 서명함",
   "verifier.verdict.manifestSignature": "매니페스트 서명을 검증할 수 없습니다",
   "verifier.verdict.chainBroken": "버전 기록 체인이 끊어졌습니다",
   "verifier.verdict.consistentOnly": "서명은 유효하나 서명자 신원은 미확인",

@@ -161,6 +161,7 @@
   "verifier.entry.unreachable": "Chiave irraggiungibile",
   "verifier.entry.invalid": "Firma non valida",
   "verifier.verdict.partial": "Solo {verified} voci su {total} verificate",
+  "verifier.verdict.oneParty": "Firmato solo da una delle due parti",
   "verifier.verdict.manifestSignature": "La firma del manifesto non è stata verificata",
   "verifier.verdict.chainBroken": "La catena della cronologia delle versioni è interrotta",
   "verifier.verdict.consistentOnly": "Firme valide, identità del firmatario non confermata",

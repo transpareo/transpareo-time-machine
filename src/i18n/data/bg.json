@@ -161,6 +161,7 @@
   "verifier.entry.unreachable": "Ключът е недостъпен",
   "verifier.entry.invalid": "Невалиден подпис",
   "verifier.verdict.partial": "Проверени са само {verified} от {total} записа",
+  "verifier.verdict.oneParty": "Подписано само от една от двете страни",
   "verifier.verdict.manifestSignature": "Подписът на манифеста не се потвърди",
   "verifier.verdict.chainBroken": "Веригата от версии е прекъсната",
   "verifier.verdict.consistentOnly": "Подписите са валидни, самоличността на подписващия не е потвърдена",

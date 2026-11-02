@@ -681,7 +681,12 @@ function failureReason(gates: {
   if (result.entries.length === 0) {
     return 'snapshot carries no proof entries'
   }
-  if (result.mode === 'strict') {
+
+  // A strict verdict also fails on an entry that did not
+  // verify; with every entry verified, only the key count
+  // the default rule checks can have failed it.
+  const entryFailed = result.verifiedEntryCount < result.totalEntryCount
+  if (result.mode === 'strict' && entryFailed) {
     return `${result.verifiedEntryCount} of `
       + `${result.totalEntryCount} entries verified`
   }

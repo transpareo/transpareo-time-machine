@@ -161,6 +161,7 @@
   "verifier.entry.unreachable": "Ključ nedostupan",
   "verifier.entry.invalid": "Nevažeći potpis",
   "verifier.verdict.partial": "Provjereno samo {verified} od {total} unosa",
+  "verifier.verdict.oneParty": "Potpisala je samo jedna od dviju strana",
   "verifier.verdict.manifestSignature": "Potpis manifesta nije potvrđen",
   "verifier.verdict.chainBroken": "Lanac povijesti verzija je prekinut",
   "verifier.verdict.consistentOnly": "Potpisi valjani, identitet potpisnika nepotvrđen",

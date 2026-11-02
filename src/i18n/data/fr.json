@@ -161,6 +161,7 @@
   "verifier.entry.unreachable": "Clé inaccessible",
   "verifier.entry.invalid": "Signature non valide",
   "verifier.verdict.partial": "Seulement {verified} entrées sur {total} vérifiées",
+  "verifier.verdict.oneParty": "Signé par une seule des deux parties",
   "verifier.verdict.manifestSignature": "La signature du manifeste n'a pas pu être vérifiée",
   "verifier.verdict.chainBroken": "La chaîne de l'historique des versions est rompue",
   "verifier.verdict.consistentOnly": "Signatures valides, identité du signataire non confirmée",

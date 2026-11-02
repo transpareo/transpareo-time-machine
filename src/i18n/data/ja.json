@@ -161,6 +161,7 @@
   "verifier.entry.unreachable": "鍵に到達できません",
   "verifier.entry.invalid": "署名が無効です",
   "verifier.verdict.partial": "{total}件中{verified}件のみ検証済み",
+  "verifier.verdict.oneParty": "2者のうち1者のみが署名済み",
   "verifier.verdict.manifestSignature": "マニフェスト署名を検証できませんでした",
   "verifier.verdict.chainBroken": "バージョン履歴のチェーンが壊れています",
   "verifier.verdict.consistentOnly": "署名は有効、署名者の身元は未確認",

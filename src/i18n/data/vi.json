@@ -162,6 +162,7 @@
   "verifier.entry.unreachable": "Không truy cập được khóa",
   "verifier.entry.invalid": "Chữ ký không hợp lệ",
   "verifier.verdict.partial": "Chỉ {verified} trên {total} mục được xác minh",
+  "verifier.verdict.oneParty": "Chỉ một trong hai bên đã ký",
   "verifier.verdict.manifestSignature": "Chữ ký manifest không xác minh được",
   "verifier.verdict.chainBroken": "Chuỗi lịch sử phiên bản bị đứt gãy",
   "verifier.verdict.consistentOnly": "Chữ ký hợp lệ, danh tính người ký chưa được xác nhận",

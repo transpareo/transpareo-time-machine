@@ -161,6 +161,7 @@
   "verifier.entry.unreachable": "Ключ недоступний",
   "verifier.entry.invalid": "Недійсний підпис",
   "verifier.verdict.partial": "Перевірено лише {verified} з {total} записів",
+  "verifier.verdict.oneParty": "Підписано лише однією з двох сторін",
   "verifier.verdict.manifestSignature": "Підпис маніфесту не пройшов перевірку",
   "verifier.verdict.chainBroken": "Ланцюжок історії версій розірвано",
   "verifier.verdict.consistentOnly": "Підписи дійсні, особу підписанта не підтверджено",

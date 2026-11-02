@@ -161,6 +161,7 @@
   "verifier.entry.unreachable": "Atslēga nav sasniedzama",
   "verifier.entry.invalid": "Nederīgs paraksts",
   "verifier.verdict.partial": "Pārbaudīti tikai {verified} no {total} ierakstiem",
+  "verifier.verdict.oneParty": "Parakstījusi tikai viena no abām pusēm",
   "verifier.verdict.manifestSignature": "Manifesta parakstu neizdevās pārbaudīt",
   "verifier.verdict.chainBroken": "Versiju vēstures ķēde ir pārtraukta",
   "verifier.verdict.consistentOnly": "Paraksti derīgi, parakstītāja identitāte nav apstiprināta",

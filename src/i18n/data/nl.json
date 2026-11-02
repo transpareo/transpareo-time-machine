@@ -161,6 +161,7 @@
   "verifier.entry.unreachable": "Sleutel onbereikbaar",
   "verifier.entry.invalid": "Handtekening ongeldig",
   "verifier.verdict.partial": "Slechts {verified} van {total} vermeldingen geverifieerd",
+  "verifier.verdict.oneParty": "Ondertekend door slechts één van de twee partijen",
   "verifier.verdict.manifestSignature": "Manifesthandtekening kon niet worden geverifieerd",
   "verifier.verdict.chainBroken": "Keten van de versiegeschiedenis is verbroken",
   "verifier.verdict.consistentOnly": "Handtekeningen geldig, identiteit van de ondertekenaar onbevestigd",

@@ -162,6 +162,7 @@
   "verifier.entry.unreachable": "Lykill óaðgengilegur",
   "verifier.entry.invalid": "Undirskrift ógild",
   "verifier.verdict.partial": "Aðeins {verified} af {total} innslögum staðfest",
+  "verifier.verdict.oneParty": "Aðeins annar tveggja aðila hefur undirritað",
   "verifier.verdict.manifestSignature": "Undirskrift yfirlýsingar staðfesti sig ekki",
   "verifier.verdict.chainBroken": "Keðja útgáfusögu er rofin",
   "verifier.verdict.consistentOnly": "Undirskriftir gildar, auðkenni undirritanda óstaðfest",

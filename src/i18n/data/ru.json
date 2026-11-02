@@ -161,6 +161,7 @@
   "verifier.entry.unreachable": "Ключ недоступен",
   "verifier.entry.invalid": "Недействительная подпись",
   "verifier.verdict.partial": "Проверено только {verified} из {total} записей",
+  "verifier.verdict.oneParty": "Подписано только одной из двух сторон",
   "verifier.verdict.manifestSignature": "Подпись манифеста не прошла проверку",
   "verifier.verdict.chainBroken": "Цепочка истории версий нарушена",
   "verifier.verdict.consistentOnly": "Подписи действительны, личность подписавшего не подтверждена",

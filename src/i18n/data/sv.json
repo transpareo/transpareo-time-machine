@@ -161,6 +161,7 @@
   "verifier.entry.unreachable": "Nyckel onåbar",
   "verifier.entry.invalid": "Ogiltig signatur",
   "verifier.verdict.partial": "Endast {verified} av {total} poster verifierade",
+  "verifier.verdict.oneParty": "Undertecknad av endast en av de två parterna",
   "verifier.verdict.manifestSignature": "Manifestsignaturen kunde inte verifieras",
   "verifier.verdict.chainBroken": "Versionshistorikens kedja är bruten",
   "verifier.verdict.consistentOnly": "Signaturerna är giltiga, undertecknarens identitet obekräftad",

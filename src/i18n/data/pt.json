@@ -161,6 +161,7 @@
   "verifier.entry.unreachable": "Chave inacessível",
   "verifier.entry.invalid": "Assinatura inválida",
   "verifier.verdict.partial": "Apenas {verified} de {total} entradas verificadas",
+  "verifier.verdict.oneParty": "Assinado por apenas uma das duas partes",
   "verifier.verdict.manifestSignature": "Não foi possível verificar a assinatura do manifesto",
   "verifier.verdict.chainBroken": "A cadeia do histórico de versões está quebrada",
   "verifier.verdict.consistentOnly": "Assinaturas válidas, identidade do signatário não confirmada",

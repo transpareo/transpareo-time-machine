@@ -161,6 +161,7 @@
   "verifier.entry.unreachable": "Võti pole kättesaadav",
   "verifier.entry.invalid": "Allkiri kehtetu",
   "verifier.verdict.partial": "Kontrolliti vaid {verified} kirjet {total}-st",
+  "verifier.verdict.oneParty": "Allkirjastas ainult üks kahest osapoolest",
   "verifier.verdict.manifestSignature": "Manifesti allkirja ei õnnestunud kontrollida",
   "verifier.verdict.chainBroken": "Versiooniajaloo ahel on katkenud",
   "verifier.verdict.consistentOnly": "Allkirjad kehtivad, allkirjastaja identiteet kinnitamata",

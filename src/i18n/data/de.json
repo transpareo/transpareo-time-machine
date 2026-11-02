@@ -162,6 +162,7 @@
   "verifier.entry.unreachable": "Schlüssel nicht erreichbar",
   "verifier.entry.invalid": "Signatur ungültig",
   "verifier.verdict.partial": "Nur {verified} von {total} Einträgen geprüft",
+  "verifier.verdict.oneParty": "Nur von einer der beiden Parteien signiert",
   "verifier.verdict.manifestSignature": "Manifest-Signatur konnte nicht bestätigt werden",
   "verifier.verdict.chainBroken": "Kette der Versionshistorie ist unterbrochen",
   "verifier.verdict.consistentOnly": "Signaturen gültig, Identität des Unterzeichners nicht bestätigt",

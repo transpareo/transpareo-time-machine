@@ -161,6 +161,7 @@
   "verifier.entry.unreachable": "Cheie inaccesibilă",
   "verifier.entry.invalid": "Semnătură nevalidă",
   "verifier.verdict.partial": "Doar {verified} din {total} intrări verificate",
+  "verifier.verdict.oneParty": "Semnat doar de una dintre cele două părți",
   "verifier.verdict.manifestSignature": "Semnătura manifestului nu a putut fi verificată",
   "verifier.verdict.chainBroken": "Lanțul istoricului de versiuni este întrerupt",
   "verifier.verdict.consistentOnly": "Semnături valide, identitatea semnatarului neconfirmată",

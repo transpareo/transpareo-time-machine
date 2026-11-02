@@ -50,10 +50,11 @@
  *     platform key). Aliases that fail to resolve (offline
  *     did host, dead CDN) are tolerated as long as one per
  *     authority verifies.
- *   - Strict (all-N): every entry must verify. Opt-in via
- *     { mode: 'strict' } for verifier surfaces that want
- *     the full reachability picture rather than the
- *     two-of-two summary.
+ *   - Strict: the default rule, and every entry must
+ *     verify. Opt-in via { mode: 'strict' } for verifier
+ *     surfaces that also fail a snapshot when the key host
+ *     of one alias is offline. The <dpp-verifier> widget
+ *     runs it.
  *
  * Authorities are counted by resolved public key, so the
  * verdict survives both renaming of resolution hosts and
@@ -126,8 +127,7 @@ export interface VerificationResult {
   // Number of distinct public keys that at least one
   // entry verified under. The default rule is authentic
   // <=> this is >= 2 (one issuer key + one platform key);
-  // strict mode tightens it to require every entry to
-  // verify.
+  // strict mode also requires every entry to verify.
   readonly verifiedAuthorityCount: number
   // Total entries the snapshot carried, vs how many of
   // them verified. Surfaced so a verdict can say how many
@@ -135,9 +135,10 @@ export interface VerificationResult {
   // offline.
   readonly totalEntryCount: number
   readonly verifiedEntryCount: number
-  // The mode this result was computed under. Strict
-  // mode requires totalEntryCount === verifiedEntryCount;
-  // the default rule requires verifiedAuthorityCount >= 2.
+  // The mode this result was computed under. The default
+  // rule requires verifiedAuthorityCount >= 2; strict
+  // mode requires that and totalEntryCount ===
+  // verifiedEntryCount.
   readonly mode: VerificationMode
 
   // The Data Integrity cryptosuite that produced this
@@ -159,8 +160,9 @@ export type VerificationMode = 'default' | 'strict'
 
 export interface VerifyOptions {
   // 'default' (any-issuer-and-any-Transpareo): authentic
-  // as long as one entry per signature group verifies.
-  // 'strict' (all entries): every entry must verify.
+  // when the verified entries come from at least two
+  // distinct keys. 'strict': that, and every entry
+  // verifies.
   readonly mode?: VerificationMode
   // Optional pinned platform key set (multibase z58
   // Ed25519 Multikeys, the same encoding used in
@@ -252,16 +254,17 @@ export async function verifySnapshot(
   }
 }
 
+// Strict adds a condition to the default rule, so a strict
+// verdict never passes a set the default fails.
 function isAuthentic(
   mode: VerificationMode,
   authorities: number,
   verifiedEntries: number,
   totalEntries: number,
 ): boolean {
-  if (mode === 'strict') {
-    return verifiedEntries === totalEntries && totalEntries > 0
-  }
-  return authorities >= 2
+  const twoKeys = authorities >= 2
+  if (mode === 'strict') return twoKeys && verifiedEntries === totalEntries
+  return twoKeys
 }
 
 // hashData for one entry: proofConfigHash || documentHash.

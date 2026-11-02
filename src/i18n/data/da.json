@@ -161,6 +161,7 @@
   "verifier.entry.unreachable": "Nøgle utilgængelig",
   "verifier.entry.invalid": "Ugyldig signatur",
   "verifier.verdict.partial": "Kun {verified} af {total} poster verificeret",
+  "verifier.verdict.oneParty": "Kun underskrevet af én af de to parter",
   "verifier.verdict.manifestSignature": "Manifestsignaturen kunne ikke verificeres",
   "verifier.verdict.chainBroken": "Versionshistorikkens kæde er brudt",
   "verifier.verdict.consistentOnly": "Signaturerne er gyldige, underskriverens identitet ubekræftet",

@@ -11,8 +11,8 @@
  * with the W3C eddsa-jcs-2022 construction from
  * src/crypto/eddsa-jcs (the same pieces the seed signer and
  * the verifier use), so it pins the aggregate-verdict rule
- * (default = any-issuer AND any-platform, strict = all
- * entries), which is the meaning of the "Verified by
+ * (default = any-issuer AND any-platform, strict = that and
+ * every entry), which is the meaning of the "Verified by
  * Transpareo" chip. Interop with the published W3C vector is
  * pinned separately in eddsa-jcs.spec.ts.
  *
@@ -666,6 +666,20 @@ describe('verifySnapshot: strict mode', () => {
 
     // Default mode would have called this authentic.
     expect(result.mode).toBe('strict');
+  });
+
+  it('fails strict when every entry verifies under one key', async () => {
+    // Strict tightens the default rule: the one proof
+    // verifies, yet the snapshot carries no second key.
+    const setup = await buildSignedSnapshot();
+    setup.snapshot.proof = setup.snapshot.proof.slice(0, 1);
+    const result = await run(setup, fullResolverMap(setup), {
+      mode: 'strict',
+    });
+    expect(result.verifiedEntryCount).toBe(1);
+    expect(result.totalEntryCount).toBe(1);
+    expect(result.verifiedAuthorityCount).toBe(1);
+    expect(result.verdict).toBe('unauthenticated');
   });
 });
 

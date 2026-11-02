@@ -162,6 +162,7 @@
   "verifier.entry.unreachable": "Key unreachable",
   "verifier.entry.invalid": "Signature invalid",
   "verifier.verdict.partial": "Only {verified} of {total} entries verified",
+  "verifier.verdict.oneParty": "Signed by only one of the two parties",
   "verifier.verdict.manifestSignature": "Manifest signature did not verify",
   "verifier.verdict.chainBroken": "Version history chain is broken",
   "verifier.verdict.consistentOnly": "Signatures valid, signer identity unconfirmed",

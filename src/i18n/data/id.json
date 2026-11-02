@@ -161,6 +161,7 @@
   "verifier.entry.unreachable": "Kunci tidak dapat dijangkau",
   "verifier.entry.invalid": "Tanda tangan tidak valid",
   "verifier.verdict.partial": "Hanya {verified} dari {total} entri yang terverifikasi",
+  "verifier.verdict.oneParty": "Hanya ditandatangani oleh satu dari dua pihak",
   "verifier.verdict.manifestSignature": "Tanda tangan manifes tidak dapat diverifikasi",
   "verifier.verdict.chainBroken": "Rantai riwayat versi terputus",
   "verifier.verdict.consistentOnly": "Tanda tangan valid, identitas penanda tangan belum terkonfirmasi",

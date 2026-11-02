@@ -161,6 +161,7 @@
   "verifier.entry.unreachable": "Το κλειδί δεν είναι προσβάσιμο",
   "verifier.entry.invalid": "Μη έγκυρη υπογραφή",
   "verifier.verdict.partial": "Επαληθεύτηκαν μόνο {verified} από {total} καταχωρίσεις",
+  "verifier.verdict.oneParty": "Υπογράφηκε μόνο από το ένα από τα δύο μέρη",
   "verifier.verdict.manifestSignature": "Η υπογραφή του μανιφέστου δεν επαληθεύτηκε",
   "verifier.verdict.chainBroken": "Η αλυσίδα ιστορικού εκδόσεων είναι σπασμένη",
   "verifier.verdict.consistentOnly": "Έγκυρες υπογραφές, ανεπιβεβαίωτη ταυτότητα υπογράφοντος",

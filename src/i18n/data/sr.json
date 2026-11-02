@@ -162,6 +162,7 @@
   "verifier.entry.unreachable": "Кључ недостижан",
   "verifier.entry.invalid": "Потпис неважећи",
   "verifier.verdict.partial": "Само {verified} од {total} уноса је потврђено",
+  "verifier.verdict.oneParty": "Потписала је само једна од две стране",
   "verifier.verdict.manifestSignature": "Потпис манифеста није верификован",
   "verifier.verdict.chainBroken": "Ланac историје верзија је прекинут",
   "verifier.verdict.consistentOnly": "Потписи су важећи, идентитет потписника није потврђен",

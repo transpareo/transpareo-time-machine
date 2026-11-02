@@ -19,6 +19,16 @@ and this project adheres to
   publish of the same version, read authentic in the widget
   and failed on the chip; the widget now answers "Version
   history chain is broken".
+- The `<dpp-verifier>` widget fails an `eddsa-jcs-2022`
+  snapshot whose proofs all verify under one key, as the
+  verification chip does. It passed any set whose every
+  proof verified, so a snapshot carrying the issuer's proof
+  alone, or the platform's alone, read authentic in the
+  widget and failed on the chip; the widget now answers
+  "Signed by only one of the two parties". A set with any
+  proof that does not verify still fails, and an
+  `ecdsa-sd-2023` credential is judged as before: authentic
+  when every proof it carries verifies.
 - A passport whose `@context` names a context the renderer
   does not bundle, or carries a `@context` on a node inside
   the document, fails verification. The canonicalizer read

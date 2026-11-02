@@ -9,7 +9,8 @@
  * too); the identity tier (pinned / bound / unconfirmed)
  * decides whether the badge may carry the manifest's
  * platform name. These pin both layers plus the
- * combinedVerdict gates (manifest signature, chain).
+ * combinedVerdict gates (manifest signature, chain), and
+ * which reason names a failed proof set.
  */
 
 import { describe, it, expect } from 'vitest';
@@ -95,6 +96,27 @@ describe('aggregateVerdict', () => {
     expect(v.reason).toBe('partial');
     expect(v.verifiedEntryCount).toBe(0);
     expect(v.totalEntryCount).toBe(1);
+  });
+
+  it('names a failed set whose every entry verified as one party', () => {
+    // Only the eddsa-jcs rule fails such a set: its
+    // entries all resolved to one key, so "1 of 1 entries
+    // verified" would misstate it.
+    const r = result(
+      [entry({ keyMultibase: 'zIssuerKey' })],
+      { verdict: 'unauthenticated', verifiedAuthorityCount: 1 },
+    );
+    const v = aggregateVerdict(r);
+    expect(v.outcome).toBe('unauthenticated');
+    expect(v.reason).toBe('oneParty');
+  });
+
+  it('keeps the entry count when an entry failed as well', () => {
+    const r = result(
+      [entry({}), entry({ status: 'invalid', proofValue: 'zb' })],
+      { verdict: 'unauthenticated' },
+    );
+    expect(aggregateVerdict(r).reason).toBe('partial');
   });
 
   it('does not fail a foreign DPP for missing the pin', () => {

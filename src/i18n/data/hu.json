@@ -161,6 +161,7 @@
   "verifier.entry.unreachable": "A kulcs nem érhető el",
   "verifier.entry.invalid": "Érvénytelen aláírás",
   "verifier.verdict.partial": "{total} bejegyzésből csak {verified} igazolt",
+  "verifier.verdict.oneParty": "A két fél közül csak az egyik írta alá",
   "verifier.verdict.manifestSignature": "A manifest aláírása nem igazolható",
   "verifier.verdict.chainBroken": "A verzióelőzmények lánca megszakadt",
   "verifier.verdict.consistentOnly": "Az aláírások érvényesek, az aláíró kiléte nem megerősített",
