@@ -72,6 +72,14 @@ and this project adheres to
   JSON-LD processor reads it. The canonicalizer dropped the
   key and its value from its statements, so a passport
   carrying one its signature left out verified.
+- A passport with a backspace, a form feed, another control
+  character, DEL, U+FFFE or U+FFFF in a text value verifies.
+  The issuer writes these escaped in its canonical
+  statements (`\b`, `\f`, `\u0001`) and the canonicalizer
+  wrote them as they stood, so such a passport failed
+  verification. A lone surrogate is written escaped too: the
+  canonicalizer read it as U+FFFD, so it could stand in for
+  a signed U+FFFD.
 - Login-gated rows render only from a credential naming the
   passport on the page: its page (`@id`), its issuer by DID
   and its version must match the version's public snapshot.

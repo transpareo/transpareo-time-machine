@@ -95,4 +95,20 @@ describe('canonicalize: type-scoped contexts', () => {
     await expect(canonicalize(doc, options))
       .rejects.toThrow(/property-scoped/)
   })
+
+  // JSON-LD reads a scoped @context of null as clearing the
+  // context; the canonicalizer rejects one on a type and on a
+  // property alike.
+  it.each([
+    ['a type', { T: { '@id': 'ex:T', '@context': null } }, { '@type': 'T' }],
+    ['a property', { p: { '@id': 'ex:p', '@context': null } }, { p: 'v' }]
+  ])('rejects an @context of null on %s', async (_label, terms, body) => {
+    const doc = {
+      '@context': { ex: 'http://example.org/', ...terms },
+      '@id': 'http://example.org/s',
+      ...body
+    }
+    await expect(canonicalize(doc))
+      .rejects.toThrow('unsupported null @context')
+  })
 })

@@ -222,7 +222,7 @@ function walkNode(
     const predicate: Term = {
       kind: 'iri', value: def ? def.id : expandIri(term, context, true),
     }
-    const scope = { context: propertyScope(def, context), outer }
+    const scope = { context: scopedContext(def, context, true), outer }
     for (const value of asArray(raw)) {
       state.quads.push({
         subject, predicate, object: toObject(value, def, scope, state),
@@ -244,18 +244,20 @@ function withTypeScopes(
   }
   let context = outer
   for (const t of types.sort()) {
-    const def = outer.terms.get(t)
-    if (def?.scoped === undefined) continue
-    if (def.scoped === null) throw new Error(`unsupported null @context: ${t}`)
-    context = extendContext(context, def.scoped)
+    context = scopedContext(outer.terms.get(t), context)
   }
   return context
 }
 
-function propertyScope(def: TermDef | undefined, context: Context): Context {
+// `context` with a term's own @context on top; one of null
+// throws. A property's may change a protected term, a type's
+// may not.
+function scopedContext(
+  def: TermDef | undefined, context: Context, property = false
+): Context {
   if (def?.scoped === undefined) return context
   if (def.scoped === null) throw new Error('unsupported null @context')
-  return extendContext(context, def.scoped, true)
+  return extendContext(context, def.scoped, property)
 }
 
 // A term's definition, unless JSON-LD restructures its
@@ -661,10 +663,12 @@ function order(a: string, b: string): number {
 async function canonicalBlankLabels(
   quads: readonly Quad[],
 ): Promise<Map<string, string>> {
-  const ids = collectBlankIds(quads)
+  const ids = quads.flatMap((q) => [q.subject, q.object])
+    .filter((t) => t.kind === 'blank')
+    .map((t) => t.value)
   const labels = new Map<string, string>()
   const hashed: Array<{ id: string, hash: string }> = []
-  for (const id of ids) {
+  for (const id of new Set(ids)) {
     hashed.push({ id, hash: await firstDegreeHash(id, quads) })
   }
   hashed.sort((a, b) => order(a.hash, b.hash))
@@ -675,16 +679,6 @@ async function canonicalBlankLabels(
     labels.set(hashed[i].id, `_:c14n${i}`)
   }
   return labels
-}
-
-function collectBlankIds(quads: readonly Quad[]): string[] {
-  const seen = new Set<string>()
-  for (const q of quads) {
-    for (const t of [q.subject, q.object]) {
-      if (t.kind === 'blank') seen.add(t.value)
-    }
-  }
-  return [...seen]
 }
 
 // URDNA2015 first-degree hash (§4.6): serialize every quad
@@ -741,12 +735,25 @@ function serializeLiteral(term: Term & { kind: 'literal' }): string {
   return `${lex}^^<${term.datatype}>`
 }
 
+// Canonical N-Quads (RDFC-1.0, Appendix A) writes a literal's
+// characters as they stand, except the quote, the backslash,
+// the C0 controls, DEL, a lone surrogate, U+FFFE and U+FFFF.
+// LITERAL_ESCAPED lists the characters kept and matches the
+// rest; each takes its ECHAR below or \u and four uppercase
+// hex digits, as the issuer writes them.
+const LITERAL_ESCAPED =
+  /[^ !#-[\]-~\x80-\ud7ff\ue000-\ufffd\u{10000}-\u{10ffff}]/gu
+
 const ESCAPES: Readonly<Record<string, string>> = {
-  '\\': '\\\\', '"': '\\"', '\n': '\\n', '\r': '\\r', '\t': '\\t'
+  '\\': '\\\\', '"': '\\"', '\b': '\\b', '\t': '\\t', '\n': '\\n',
+  '\f': '\\f', '\r': '\\r'
 }
 
 function escapeLiteral(value: string): string {
-  return value.replace(/[\\"\n\r\t]/g, (c) => ESCAPES[c])
+  return value.replace(LITERAL_ESCAPED, (c) => {
+    const code = c.charCodeAt(0).toString(16).toUpperCase()
+    return ESCAPES[c] ?? `\\u${code.padStart(4, '0')}`
+  })
 }
 
 function hex(bytes: Uint8Array): string {

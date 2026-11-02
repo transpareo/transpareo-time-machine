@@ -217,6 +217,63 @@ describe('canonicalize: literal escaping', () => {
       + '"a\\"b\\\\c\\nd" .\n',
     ]);
   });
+
+  // Canonical N-Quads (RDFC-1.0 Appendix A), as the issuer's
+  // RDF::NTriples::Writer.escape writes it: BS, HT, LF, FF,
+  // CR, quote and backslash as ECHAR; the other C0 controls,
+  // DEL and what XML 1.1 Char leaves out (U+0000, a lone
+  // surrogate, U+FFFE, U+FFFF) as \u with four uppercase hex
+  // digits.
+  const note = (value: unknown) => ({
+    '@context': { ...CTX, note: 'ex:note' }, '@id': 'ex:s', note: value,
+  });
+  const noted = (object: string) =>
+    `<http://example.org/s> <http://example.org/note> ${object} .\n`;
+
+  it.each([
+    ['backspace', '\b', '\\b'],
+    ['a tab', '\t', '\\t'],
+    ['a form feed', '\f', '\\f'],
+    ['a carriage return', '\r', '\\r'],
+    ['U+0000', '\u0000', '\\u0000'],
+    ['U+0001', '\u0001', '\\u0001'],
+    ['a vertical tab, hex in upper case', '\u000b', '\\u000B'],
+    ['U+001F', '\u001f', '\\u001F'],
+    ['DEL', '\u007f', '\\u007F'],
+    ['U+FFFE', '\ufffe', '\\uFFFE'],
+    ['U+FFFF', '\uffff', '\\uFFFF'],
+    ['a lone high surrogate', '\ud800', '\\uD800'],
+    ['a lone low surrogate', '\udfff', '\\uDFFF'],
+  ])('escapes %s', async (_label, char, escaped) => {
+    expect(await canonicalize(note(`a${char}b`)))
+      .toEqual([noted(`"a${escaped}b"`)]);
+  });
+
+  it.each([
+    ['a space', ' '],
+    ['a tilde', '~'],
+    ['an apostrophe', "'"],
+    ['U+0080', '\u0080'],
+    ['U+009F', '\u009f'],
+    ['a no-break space', '\u00a0'],
+    ['an umlaut', '\u00e4'],
+    ['U+D7FF', '\ud7ff'],
+    ['U+E000', '\ue000'],
+    ['U+FFFD', '\ufffd'],
+    ['an astral emoji', '\u{1f600}'],
+  ])('writes %s as it stands', async (_label, char) => {
+    expect(await canonicalize(note(`a${char}b`)))
+      .toEqual([noted(`"a${char}b"`)]);
+  });
+
+  it('escapes a language-tagged and a typed literal alike', async () => {
+    const tagged = { '@value': '\u0001\f', '@language': 'en' };
+    const typed = { '@value': '\u0001\f', '@type': 'ex:code' };
+    expect(await canonicalize(note([tagged, typed]))).toEqual([
+      noted('"\\u0001\\f"@en'),
+      noted('"\\u0001\\f"^^<http://example.org/code>'),
+    ]);
+  });
 });
 
 // JSON.parse keeps a "__proto__" key as an own property, and a
