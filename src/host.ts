@@ -150,23 +150,27 @@ export async function bootFrom(src: string): Promise<void> {
   eventsPending.set(false)
   dynamicData.set(null)
   dynamicDataPending.set(false)
-
-  // Normalize to an absolute URL so URL resolution
-  // against the manifest's sibling URLs works whether
-  // the host passed an absolute or relative src. A root
-  // path names a file on the asset host when the page
-  // names one; the previous boot's src must not decide.
-  const page = window.location.href
-  const srcBase = isRootPath(src) ? namedAssetHost(page) ?? page : page
-  manifestUrl = new URL(src, srcBase).toString()
+  manifestUrl = null
 
   try {
-    const data = await fetchSource(manifestUrl)
+    // Normalize to an absolute URL so URL resolution
+    // against the manifest's sibling URLs works whether
+    // the host passed an absolute or relative src. A root
+    // path names a file on the asset host when the page
+    // names one; the previous boot's src must not decide.
+    // A `src` or asset host no URL can be built from fails
+    // the boot like a fetch that fails.
+    const page = window.location.href
+    const srcBase = isRootPath(src) ? namedAssetHost(page) ?? page : page
+    const url = new URL(src, srcBase).toString()
+    manifestUrl = url
+
+    const data = await fetchSource(url)
     if (epoch !== bootEpoch) return
     if (detectArtefact(data) === 'manifest') {
-      await bootFromManifest(data as DppManifest, manifestUrl, epoch)
+      await bootFromManifest(data as DppManifest, url, epoch)
     } else {
-      bootFromSnapshot(data as SignedSnapshot, manifestUrl)
+      bootFromSnapshot(data as SignedSnapshot, url)
     }
     if (epoch === bootEpoch) loadState.set('ready')
   } catch (err) {

@@ -313,6 +313,38 @@ describe('bootFrom', () => {
     for (const mode of modes) expect(mode).toBe('omit');
   });
 
+  // A `src` or `asset-host` no URL can be built from fails
+  // the boot into the error state the element shows, as a
+  // fetch that fails does, and leaves no URL of the passport
+  // shown before.
+  it('fails on a src it cannot resolve', async () => {
+    const host = await freshHost();
+    stubFetch({
+      '/a/manifest.json': manifestOf('dpp-a', '/a'),
+      '/a/v/1.json': snapshotOf('alias-a'),
+      '/a/epcis.json': EPCIS,
+    });
+    await host.bootFrom('https://cdn.test/a/manifest.json');
+
+    await host.bootFrom('http://[');
+
+    expect(host.loadState.peek()).toBe('error');
+    expect(host.loadError.peek()).not.toBeNull();
+    expect(host.getManifestUrl()).toBeNull();
+  });
+
+  it('fails on an asset-host no root path resolves against', async () => {
+    const host = await freshHost();
+    const { config } = await import('../src/config');
+    Object.assign(config, { assetHost: 'data:x' });
+    const calls = stubFetch({});
+
+    await host.bootFrom('/a/manifest.json');
+
+    expect(host.loadState.peek()).toBe('error');
+    expect(calls).toEqual([]);
+  });
+
   it('a reboot clears the previous boot artefacts', async () => {
     const host = await freshHost();
     stubFetch({

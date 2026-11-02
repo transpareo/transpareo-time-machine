@@ -67,6 +67,11 @@ and this project adheres to
   credential showed the retry affordance, and one whose
   proofs were still being checked showed the previous
   passport's rows.
+- A `src` no URL can be built from (`http://[`), or a
+  root-path `src` under an `asset-host` no path resolves
+  against (`data:x`), shows the load error. The boot threw
+  before its error handling and the element stayed on its
+  loading shell.
 
 ## [2.24.0] - 2026-10-30
 
