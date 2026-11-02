@@ -25,6 +25,10 @@
  *      `asset-host` names, which a static copy carries as
  *      at packaging; without that attribute,
  *      https://transpareo.com/.well-known/dpp-revoked-roots.json).
+ *      The list is trusted on that host's HTTPS. The
+ *      platform signs it (a `proof` array) for auditors
+ *      checking a copy offline; only the fingerprints
+ *      are read here.
  *   3. Each entry's fingerprint is compared against
  *      SHA-256(decoded multikey bytes) of every
  *      pinned key. The wire format prefixes the hex

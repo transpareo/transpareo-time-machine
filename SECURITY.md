@@ -124,6 +124,18 @@ described here.
   domain the manifest's `platform.did` declares;
   otherwise it reports "signer identity unconfirmed"
   rather than echoing a claimed name.
+- **The revocation list is trusted on HTTPS.** A build
+  that pins a platform key reads the list of revoked
+  keys from `revoked-roots-src`, by default
+  `/.well-known/dpp-revoked-roots.json` on the host
+  `asset-host` names, else on `https://transpareo.com`,
+  and trusts it on that host's HTTPS. The platform signs
+  the list; the renderer leaves that signature unchecked,
+  and it serves auditors checking a copy offline. A host
+  that serves an edited list, such as a static archive
+  copy with an entry dropped, keeps a revoked pin
+  trusted, so a page should read the list from a host it
+  trusts for it.
 - **Component-library JSONs are unsigned.** The library
   detail a composition row's modal fetches lazily is
   supplementary content, deliberately outside the
