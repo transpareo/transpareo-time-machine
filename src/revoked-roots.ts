@@ -61,6 +61,7 @@
 import { signal } from '@/reactive/signals'
 import { config } from '@/config'
 import { assetBase } from '@/host'
+import { describeError } from '@/errors'
 import { decodeMultibaseBase58 } from '@/crypto/multibase'
 
 export type RevocationStatus =
@@ -75,10 +76,18 @@ const DEFAULT_HOST = 'https://transpareo.com'
 
 export const revocationStatus = signal<RevocationStatus>('pending')
 
-// The number of the latest check. A check settles the status
-// only while it is the latest, so one the element before
-// started cannot judge the pins of the element after it.
+// The number of the latest check. A check settles the status,
+// and logs what it found, only while it is the latest, so one
+// the element before started cannot judge the pins of the
+// element after it.
 let latestCheck = 0
+
+// What a check found: the status it settles and, when the
+// console should hear of it, why.
+interface Finding {
+  readonly status: RevocationStatus
+  readonly warning?: string
+}
 
 // Called from the setup() of each element that takes the
 // page, once its pins are read, so the fetch races with the
@@ -101,8 +110,10 @@ export function startRevokedRootsCheck(): void {
     return
   }
 
-  void runCheck(url, pins).then((status) => {
-    if (check === latestCheck) revocationStatus.set(status)
+  void runCheck(url, pins).then(({ status, warning }) => {
+    if (check !== latestCheck) return
+    if (warning) console.warn(`[revoked-roots] ${warning}`)
+    revocationStatus.set(status)
   })
 }
 
@@ -114,43 +125,42 @@ function defaultUrl(): string {
   return new URL(REVOKED_ROOTS_PATH, base ?? DEFAULT_HOST).toString()
 }
 
-// The pins judged against the list at `url`.
+// The pins judged against the list at `url`. Logs nothing:
+// the caller does, once it knows the check is the latest.
 async function runCheck(
   url: string, pins: ReadonlyArray<string>,
-): Promise<RevocationStatus> {
+): Promise<Finding> {
   let pinFps: Set<string>
   try {
     pinFps = new Set(
       await Promise.all(pins.map(fingerprintOfMultikey)),
     )
   } catch (err) {
-    console.warn('[revoked-roots] cannot fingerprint pinned key:', err)
-    return 'unreachable'
+    const warning = `cannot fingerprint pinned key: ${describeError(err)}`
+    return { status: 'unreachable', warning }
   }
 
   let doc: unknown
   try {
     doc = await fetchRevokedRoots(url)
   } catch (err) {
-    console.warn(`[revoked-roots] ${url} unreachable:`, err)
-    return 'unreachable'
+    const warning = `${url} unreachable: ${describeError(err)}`
+    return { status: 'unreachable', warning }
   }
 
   // A list of another shape judges the pins no more than one
   // that will not load.
   const listed = listedFingerprints(doc)
   if (!listed) {
-    console.warn(`[revoked-roots] ${url} serves no revocation list`)
-    return 'unreachable'
+    const warning = `${url} serves no revocation list`
+    return { status: 'unreachable', warning }
   }
 
   const fp = listed.find((f) => pinFps.has(f))
-  if (!fp) return 'ok'
-  console.warn(
-    `[revoked-roots] a pinned platform key is revoked (${fp}); `
-    + 'all verification verdicts will be forced to unauthenticated',
-  )
-  return 'revoked'
+  if (!fp) return { status: 'ok' }
+  const warning = `a pinned platform key is revoked (${fp}); `
+    + 'all verification verdicts will be forced to unauthenticated'
+  return { status: 'revoked', warning }
 }
 
 // The fingerprints a list names, normalized, or null when the

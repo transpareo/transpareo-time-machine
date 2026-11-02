@@ -151,9 +151,11 @@ interface PrivateResponseBody {
   }
 }
 
+// Resolves to the status the read reached, or null when its
+// answer was dropped.
 export async function fetchPrivateRows(
   versionNumber: number, url: string,
-): Promise<PrivateFetchState['status']> {
+): Promise<PrivateFetchState['status'] | null> {
   // A static archive has no signed-in reader, and the
   // address belongs to the app the copy was made from: no
   // request, no state, so no sign-in button either.
@@ -187,14 +189,15 @@ export async function fetchPrivateRows(
 
   setState(versionNumber, { status: 'pending' })
   const epoch = currentBootEpoch()
-  const state = await readPrivateRows(versionNumber, url)
+  const state = await readPrivateRows(versionNumber, url, epoch)
 
   // The page rebooted while the read was in flight (a new
   // `src`, or an element taking over the page). The answer
   // is the previous passport's, whose version numbers collide
-  // with this one's, so it writes nothing: no rows, no
-  // sign-in, no error.
-  if (epoch !== currentBootEpoch()) return state.status
+  // with this one's, so it is dropped silently: no rows, no
+  // sign-in, no error, no warning.
+  if (!state || epoch !== currentBootEpoch()) return null
+  if (state.status === 'error') console.warn(`[private] ${state.reason}`)
 
   // Not signed in: evict any rows cached under a now-expired
   // session.
@@ -203,18 +206,21 @@ export async function fetchPrivateRows(
 }
 
 // One authenticated read of the version's rows, judged into
-// the state it leaves.
+// the state it leaves; an error's reason is what the console
+// is told. Null when the page rebooted (past `epoch`) before
+// the answer came: nothing in it is read, so no header, body
+// or proof of the passport before is judged against the one
+// shown now.
 async function readPrivateRows(
-  versionNumber: number, url: string
-): Promise<PrivateFetchState> {
+  versionNumber: number, url: string, epoch: number
+): Promise<PrivateFetchState | null> {
   let res: Response
   try {
     res = await fetch(url, { credentials: 'include' })
   } catch (err) {
-    const reason = describeError(err)
-    console.warn(`[private] fetch failed: ${reason}`)
-    return { status: 'error', reason }
+    return { status: 'error', reason: `fetch failed: ${describeError(err)}` }
   }
+  if (epoch !== currentBootEpoch()) return null
 
   if (res.status === 204) return { status: 'empty' }
 
@@ -223,18 +229,14 @@ async function readPrivateRows(
   if (res.status === 401) return unauthState(parseLoginUrl(res))
 
   if (!res.ok) {
-    const reason = `HTTP ${res.status}`
-    console.warn(`[private] ${reason} from ${url}`)
-    return { status: 'error', reason }
+    return { status: 'error', reason: `HTTP ${res.status} from ${url}` }
   }
 
   let body: Record<string, unknown>
   try {
     body = await res.json() as Record<string, unknown>
   } catch (err) {
-    const reason = describeError(err)
-    console.warn(`[private] bad JSON: ${reason}`)
-    return { status: 'error', reason }
+    return { status: 'error', reason: `bad JSON: ${describeError(err)}` }
   }
 
   // This response is a signed derived credential, not a
@@ -243,10 +245,7 @@ async function readPrivateRows(
   // issuer actually signed for this passport. It clears the
   // public snapshot's gates before any row reaches the DOM.
   const rejected = await credentialRejection(body, versionNumber)
-  if (rejected) {
-    console.warn(`[private] ${rejected}`)
-    return { status: 'error', reason: rejected }
-  }
+  if (rejected) return { status: 'error', reason: rejected }
 
   const parsed = body as PrivateResponseBody
   const properties = parsed.credentialSubject?.product?.properties ?? []

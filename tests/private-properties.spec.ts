@@ -472,6 +472,7 @@ describe('fetchPrivateRows: the public snapshot\'s gates', () => {
 describe('fetchPrivateRows: a reboot mid-read', () => {
   const URL_3 = '/api/private/3'
   let answer: (res: Response) => void
+  let fail: (err: unknown) => void
 
   beforeEach(() => {
     vi.stubGlobal('window', PAGE)
@@ -480,7 +481,10 @@ describe('fetchPrivateRows: a reboot mid-read', () => {
     revocationStatus.set('ok')
     vi.stubGlobal('fetch', vi.fn((asked: string) => (
       asked === URL_3
-        ? new Promise<Response>((resolve) => { answer = resolve })
+        ? new Promise<Response>((resolve, reject) => {
+          answer = resolve
+          fail = reject
+        })
         : Promise.resolve(new Response(null, { status: 404 }))
     )))
     vi.spyOn(console, 'warn').mockImplementation(() => {})
@@ -521,6 +525,58 @@ describe('fetchPrivateRows: a reboot mid-read', () => {
     await read
 
     expect(fetchStateByVersion.peek()).toEqual({})
+  })
+
+  // What the read says about the passport before is dropped
+  // with it: the console hears nothing of it.
+  function privateWarnings(): ReadonlyArray<ReadonlyArray<unknown>> {
+    return vi.mocked(console.warn).mock.calls
+      .filter(([first]) => String(first).startsWith('[private]'))
+  }
+
+  it.each([
+    ['a failed request', () => fail(new TypeError('Failed to fetch'))],
+    ['an HTTP error', () => answer(res(500, {}))],
+    ['a cross-site sign-in', () => answer(
+      res(401, { 'X-Auth-Url': 'https://evil.example/login' })
+    )],
+    ['a credential', () => answer(jsonResponse(SPECIMEN.view))]
+  ])('drops %s unlogged', async (_, respond) => {
+    const read = fetchPrivateRows(3, URL_3)
+    await reboot()
+
+    respond()
+    await read
+
+    expect(privateWarnings()).toEqual([])
+  })
+
+  // The answer came in before the reboot, which lands while
+  // its body is read: what the read then finds wrong is about
+  // the passport before.
+  it('drops a credential whose body outlasts a reboot', async () => {
+    let body: ((value: unknown) => void) | undefined
+    const json = (): Promise<unknown> => new Promise((r) => { body = r })
+    const read = fetchPrivateRows(3, URL_3)
+    answer({ ok: true, status: 200, json } as unknown as Response)
+    await vi.waitFor(() => expect(body).toBeDefined())
+
+    await reboot()
+    body?.(SPECIMEN.view)
+    await read
+
+    expect(privateWarnings()).toEqual([])
+    expect(fetchStateByVersion.peek()).toEqual({})
+  })
+
+  it('logs what a read finds while the page stays', async () => {
+    const read = fetchPrivateRows(3, URL_3)
+
+    answer(res(500, {}))
+    await read
+
+    expect(privateWarnings()).
+      toEqual([[`[private] HTTP 500 from ${URL_3}`]])
   })
 })
 

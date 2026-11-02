@@ -113,6 +113,13 @@ and this project adheres to
   rows were never asked for, and the console logged an
   unhandled rejection. A `revokedRoots` string or a
   top-level array read as a list revoking nothing.
+- A revocation check replaced by the next element's, and a
+  login-gated read still in flight when the passport
+  reboots, are dropped without a console warning. Each
+  logged what it found about the passport before, a revoked
+  platform key among it, and a login-gated answer arriving
+  after the reboot was judged against the new passport's
+  snapshot; it is no longer read.
 - A login-gated read still in flight when the passport
   reboots onto a new `src` writes nothing. Its answer landed
   on the new passport's version of the same number: a 401

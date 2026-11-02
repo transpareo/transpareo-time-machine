@@ -113,11 +113,40 @@ describe('startRevokedRootsCheck', () => {
   });
 
   it('settles revoked on a fingerprint match', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const fp = await pinFingerprint();
     const mod = await bootWithFetch(async () => {
       return feedResponse([`sha256:${fp}`]);
     });
     expect(await settledStatus(mod)).toBe('revoked');
+    expect(String(warn.mock.calls[0]?.[0])).toMatch(/key is revoked/);
+  });
+
+  // The next element started its own check: the one before
+  // settles nothing and logs nothing, whatever it reads.
+  it.each([
+    ['naming a pin revoked', async () => (
+      feedResponse([`sha256:${await pinFingerprint()}`])
+    )],
+    ['that is no revocation list', async () => (
+      new Response('null', { status: 200 })
+    )],
+  ])('drops a stale check %s, unlogged', async (_, list) => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    let release: ((res: Response) => void) | undefined;
+    const mod = await bootWithFetch(() => new Promise<Response>((r) => {
+      release = r;
+    }));
+    await vi.waitFor(() => expect(release).toBeDefined());
+
+    const { config } = await import('../src/config');
+    Object.assign(config, { pinnedPlatformKeys: undefined });
+    mod.startRevokedRootsCheck();
+    release?.(await list());
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(mod.revocationStatus.peek()).toBe('unpinned');
+    expect(warn).not.toHaveBeenCalled();
   });
 
   it('settles revoked when any key of the pin set matches', async () => {
