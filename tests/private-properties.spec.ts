@@ -17,23 +17,24 @@
  * against the deployment shapes the design names (same-origin,
  * dpp_host subdomain, third-party embed).
  *
- * The fetch + cache + redirect paths depend on host signals,
- * global fetch, and window.location, and are covered by the
- * playwright integration probe rather than these unit tests.
+ * A 200 is a credential, judged by the public snapshot's gates
+ * and bound to the version's public snapshot before any row
+ * renders. Those specs run the real verifier over the
+ * production specimen.
  */
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { readFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 import {
   parseLoginUrl, isSameRegistrableSite,
   fetchPrivateRows, fetchStateByVersion, resetPrivateState,
+  bootstrapPrivateRowsFetch,
 } from '../src/private-properties'
 import { config } from '../src/config'
-
-const verifyDpp = vi.fn()
-const dppIsAuthentic = vi.fn()
-vi.mock('../src/crypto/dispatch', () => ({
-  verifyDpp: (...args: unknown[]) => verifyDpp(...args),
-  dppIsAuthentic: (...args: unknown[]) => dppIsAuthentic(...args),
-}))
+import * as host from '../src/host'
+import { revocationStatus } from '../src/revoked-roots'
+import { encodeMultibaseBase58 } from '../src/crypto/multibase'
+import type { DppManifest, SignedSnapshot } from '../src/archive'
 
 function res(
   status: number,
@@ -153,57 +154,10 @@ describe('parseLoginUrl: cross-site guard', () => {
   })
 })
 
-describe('fetchPrivateRows: verification gate + wire shape', () => {
+describe('fetchPrivateRows: status branching', () => {
   afterEach(() => {
     vi.unstubAllGlobals()
     vi.clearAllMocks()
-  })
-
-  // The endpoint returns the full derived credential; rows
-  // live at credentialSubject.product.properties, not at a
-  // bare top-level `properties` key.
-  function derivedCredentialBody(): unknown {
-    return {
-      '@context': ['https://www.w3.org/ns/credentials/v2'],
-      credentialSubject: {
-        product: {
-          properties: [
-            {
-              '@type': 'PropertyValue', propertyID: 'a:public',
-              name: { en: 'Public' }, value: 'x',
-            },
-            {
-              '@type': 'PropertyValue', propertyID: 'a:secret',
-              name: { en: 'Secret' }, value: 'y',
-              access: 'legitimateInterest',
-            },
-          ],
-        },
-      },
-      proof: [{ type: 'DataIntegrityProof', cryptosuite: 'ecdsa-sd-2023' }],
-    }
-  }
-
-  function jsonResponse(body: unknown): Response {
-    return new Response(JSON.stringify(body), {
-      status: 200, headers: { 'content-type': 'application/json' },
-    })
-  }
-
-  it('renders rows from credentialSubject.product.properties when the proof verifies', async () => {
-    vi.stubGlobal('window', { location: { href: 'https://acme.com/dpp', hostname: 'acme.com' } })
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse(derivedCredentialBody())))
-    verifyDpp.mockResolvedValue({ cryptosuite: 'ecdsa-sd-2023', results: [] })
-    dppIsAuthentic.mockReturnValue(true)
-
-    const status = await fetchPrivateRows(1, '/api/private/1')
-
-    expect(status).toBe('ok')
-    const state = fetchStateByVersion.peek()[1]
-    expect(state?.status).toBe('ok')
-    if (state?.status === 'ok') {
-      expect(state.rows.map((r) => r.key)).toEqual(['a:secret'])
-    }
   })
 
   // A static copy has no signed-in reader and no endpoint of
@@ -321,15 +275,225 @@ describe('fetchPrivateRows: verification gate + wire shape', () => {
     }))
   })
 
-  it('fails closed to an error state when the derived proof does not verify, rendering nothing', async () => {
-    vi.stubGlobal('window', { location: { href: 'https://acme.com/dpp', hostname: 'acme.com' } })
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse(derivedCredentialBody())))
-    verifyDpp.mockResolvedValue({ cryptosuite: 'ecdsa-sd-2023', results: [] })
-    dppIsAuthentic.mockReturnValue(false)
+})
 
-    const status = await fetchPrivateRows(1, '/api/private/1')
+// The production specimen: `view` is a reader's derived view
+// of a v3 credential, revealing one legitimateInterest row
+// (propertyID 2); `public_view` is the public snapshot of the
+// same credential. Both carry the issuer proof and the
+// platform counter-signature, under the two keys listed.
+interface Specimen {
+  readonly view: Record<string, unknown>
+  readonly public_view: Record<string, unknown>
+  readonly issuer_multikeys_b64: ReadonlyArray<string>
+}
 
-    expect(status).toBe('error')
-    expect(fetchStateByVersion.peek()[1]?.status).toBe('error')
+const SPECIMEN = JSON.parse(readFileSync(fileURLToPath(
+  new URL('./fixtures/ecdsa-sd-prod-specimen.json', import.meta.url),
+), 'utf8')) as Specimen
+
+const [ISSUER_KEY, PLATFORM_KEY] = SPECIMEN.issuer_multikeys_b64
+  .map((b64) => encodeMultibaseBase58(Buffer.from(b64, 'base64')))
+
+// An Ed25519 key, as a build pins for the manifest signature.
+const OTHER_KEY = 'z6MkkXFYBvMjeXkh4xBubXGz3n8ByWLZmVu9me6zXqZJSZF4'
+
+const PAGE = {
+  location: { href: 'https://acme.com/dpp', hostname: 'acme.com' },
+}
+
+function jsonResponse(body: unknown): Response {
+  return new Response(JSON.stringify(body), {
+    status: 200, headers: { 'content-type': 'application/json' },
+  })
+}
+
+// A copy of a credential whose subject differs by `patch`.
+function withSubject(
+  credential: Record<string, unknown>, patch: Record<string, unknown>,
+): SignedSnapshot {
+  const subject = credential.credentialSubject as Record<string, unknown>
+  return {
+    ...credential, credentialSubject: { ...subject, ...patch },
+  } as unknown as SignedSnapshot
+}
+
+function pin(
+  platform: ReadonlyArray<string> | undefined,
+  issuer: ReadonlyArray<string> | undefined,
+): void {
+  Object.assign(config, {
+    pinnedPlatformKeys: platform, pinnedIssuerKeys: issuer,
+  })
+}
+
+describe('fetchPrivateRows: the public snapshot\'s gates', () => {
+  const URL_3 = '/api/private/3'
+
+  // The page shows v3 of the specimen's passport, under a build
+  // that pins both of its keys, so no key document is read.
+  beforeEach(() => {
+    vi.stubGlobal('window', PAGE)
+    pin([PLATFORM_KEY], [ISSUER_KEY])
+    host.rawSnapshots.set({ 3: SPECIMEN.public_view as SignedSnapshot })
+    revocationStatus.set('ok')
+  })
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    pin(undefined, undefined)
+    host.rawSnapshots.set({})
+    revocationStatus.set('pending')
+    resetPrivateState()
+  })
+
+  // The endpoint at `url` answers with `body`; any other read,
+  // a key document among them, finds nothing.
+  function serve(url: string, body: unknown): void {
+    vi.stubGlobal('fetch', vi.fn(async (asked: string) => (
+      asked === url ? jsonResponse(body) : new Response(null, { status: 404 })
+    )))
+  }
+
+  function rowKeys(version: number): ReadonlyArray<string> {
+    const state = fetchStateByVersion.peek()[version]
+    return state?.status === 'ok' ? state.rows.map((r) => r.key) : []
+  }
+
+  it('renders the legitimateInterest rows of a credential naming this passport', async () => {
+    serve(URL_3, SPECIMEN.view)
+
+    expect(await fetchPrivateRows(3, URL_3)).toBe('ok')
+    expect(rowKeys(3)).toEqual(['2'])
+  })
+
+  it('renders nothing when a proof does not verify', async () => {
+    const product = (SPECIMEN.view.credentialSubject as {
+      product: { properties: ReadonlyArray<Record<string, unknown>> }
+    }).product
+    const forged = product.properties.map((p) => (
+      p.propertyID === '2' ? { ...p, value: 'Forged Chemicals Ltd' } : p
+    ))
+    serve(URL_3, withSubject(SPECIMEN.view, {
+      product: { ...product, properties: forged },
+    }))
+
+    expect(await fetchPrivateRows(3, URL_3)).toBe('error')
+    expect(fetchStateByVersion.peek()[3]?.status).toBe('error')
+  })
+
+  // A genuine credential proves who signed it, not which page
+  // asked for it: one of another passport, issuer or version
+  // must not land its rows here.
+  describe('bound to the version\'s public snapshot', () => {
+    it('rejects the credential of another passport', async () => {
+      host.rawSnapshots.set({
+        3: withSubject(SPECIMEN.public_view, {
+          '@id': 'https://dpp.acme-corp.com/dpp/other999',
+        }),
+      })
+      serve(URL_3, SPECIMEN.view)
+
+      expect(await fetchPrivateRows(3, URL_3)).toBe('error')
+      expect(rowKeys(3)).toEqual([])
+    })
+
+    it('rejects the credential of another issuer', async () => {
+      const issuer = (SPECIMEN.public_view.credentialSubject as {
+        issuer: Record<string, unknown>
+      }).issuer
+      host.rawSnapshots.set({
+        3: withSubject(SPECIMEN.public_view, {
+          issuer: { ...issuer, did: 'did:web:other.example' },
+        }),
+      })
+      serve(URL_3, SPECIMEN.view)
+
+      expect(await fetchPrivateRows(3, URL_3)).toBe('error')
+      expect(rowKeys(3)).toEqual([])
+    })
+
+    it('rejects the credential of another version', async () => {
+      host.rawSnapshots.set({
+        2: withSubject(SPECIMEN.public_view, { version: 2 }),
+      })
+      serve('/api/private/2', SPECIMEN.view)
+
+      expect(await fetchPrivateRows(2, '/api/private/2')).toBe('error')
+      expect(rowKeys(2)).toEqual([])
+    })
+
+    it('rejects a credential while the version has no public snapshot', async () => {
+      host.rawSnapshots.set({})
+      serve(URL_3, SPECIMEN.view)
+
+      expect(await fetchPrivateRows(3, URL_3)).toBe('error')
+      expect(rowKeys(3)).toEqual([])
+    })
+  })
+
+  // Every proof verifies under one of the pinned keys here;
+  // what fails is the requirement that one verified proof sits
+  // under each pinned set.
+  describe('pinned keys', () => {
+    it('rejects a credential no pinned platform key signed', async () => {
+      pin([OTHER_KEY], [ISSUER_KEY, PLATFORM_KEY])
+      serve(URL_3, SPECIMEN.view)
+
+      expect(await fetchPrivateRows(3, URL_3)).toBe('error')
+      expect(rowKeys(3)).toEqual([])
+    })
+
+    it('rejects a credential no declared issuer key signed', async () => {
+      pin([PLATFORM_KEY, ISSUER_KEY], [OTHER_KEY])
+      serve(URL_3, SPECIMEN.view)
+
+      expect(await fetchPrivateRows(3, URL_3)).toBe('error')
+      expect(rowKeys(3)).toEqual([])
+    })
+  })
+
+  it.each(['revoked', 'unreachable'] as const)(
+    'renders nothing while the pinned platform key is %s',
+    async (status) => {
+      revocationStatus.set(status)
+      serve(URL_3, SPECIMEN.view)
+
+      expect(await fetchPrivateRows(3, URL_3)).toBe('error')
+      expect(rowKeys(3)).toEqual([])
+    },
+  )
+})
+
+// The rows are bound to the version's public snapshot and
+// judged under a settled revocation check, so the request
+// waits for both.
+describe('bootstrapPrivateRowsFetch', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    host.manifest.set(null)
+    host.currentVersion.set(0)
+    host.rawSnapshots.set({})
+    revocationStatus.set('pending')
+    resetPrivateState()
+  })
+
+  it('asks once the public snapshot is in and the revocation check settled', () => {
+    vi.stubGlobal('window', PAGE)
+    const fetchSpy = vi.fn().mockResolvedValue(res(204, {}))
+    vi.stubGlobal('fetch', fetchSpy)
+    host.manifest.set({
+      versions: [{ number: 3, privateProperties: { url: '/api/private/3' } }],
+    } as unknown as DppManifest)
+    host.currentVersion.set(3)
+
+    bootstrapPrivateRowsFetch()
+    expect(fetchSpy).not.toHaveBeenCalled()
+
+    host.rawSnapshots.set({ 3: SPECIMEN.public_view as SignedSnapshot })
+    expect(fetchSpy).not.toHaveBeenCalled()
+
+    revocationStatus.set('ok')
+    expect(fetchSpy).toHaveBeenCalledTimes(1)
   })
 })

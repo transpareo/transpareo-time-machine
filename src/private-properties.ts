@@ -21,9 +21,13 @@
  *
  * Status branching, on every fetch of the URL:
  *
- *   200 -> rows for this user land in fetchState as
- *          { status: 'ok', rows } and merge into the
- *          rendered list.
+ *   200 -> a derived credential. Once it clears the public
+ *          snapshot's gates (revocation, proofs, pins) and
+ *          names the version's public snapshot (page,
+ *          issuer, version), the rows for this user land in
+ *          fetchState as { status: 'ok', rows } and merge
+ *          into the rendered list; one failing any gate
+ *          takes the error state below and renders no row.
  *   204 -> { status: 'empty' }; the user is signed in but
  *          has no group-or-plan access for this version.
  *   401 -> { status: 'unauth', loginUrl }; the renderer
@@ -56,11 +60,19 @@
  */
 
 import { signal, effect } from '@/reactive/signals'
-import { manifest, adaptPrivateRows, type WireProperty } from '@/host'
+import {
+  manifest, rawSnapshots, adaptPrivateRows, type WireProperty
+} from '@/host'
 import { activeVersionNumber } from '@/state'
 import type { PropertyValue } from '@/types'
+import type { SignedSnapshot } from '@/archive'
 import { describeError } from '@/errors'
-import { verifyDpp, dppIsAuthentic } from '@/crypto/dispatch'
+import { verifySnapshotAnySuite } from '@/crypto/dispatch'
+import { snapshotBody } from '@/artefact-detect'
+import {
+  pinGatesOk, didOf, revocationGateBlocks, revocationReason
+} from '@/actions'
+import { revocationStatus } from '@/revoked-roots'
 import { config } from '@/config'
 import { sessionHinted } from '@/session-hints'
 
@@ -111,6 +123,11 @@ export function bootstrapPrivateRowsFetch(): void {
     const entry = m.versions.find((v) => v.number === n)
     const url = entry?.privateProperties?.url
     if (!url) return
+
+    // The answer is bound to the version's public snapshot and
+    // judged under the revocation check, which settles once per
+    // page, so the fetch waits for both.
+    if (!rawSnapshots()[n] || revocationStatus() === 'pending') return
     attempted.add(n)
     void fetchPrivateRows(n, url)
   })
@@ -207,24 +224,73 @@ export async function fetchPrivateRows(
   // This response is a signed derived credential, not a
   // trusted-by-transport blob: an authenticated fetch proves
   // who asked, not that the rows it got back are the ones the
-  // issuer actually signed. Verify it the same way the public
-  // snapshot is verified before any row reaches the DOM.
-  const verification = await verifyDpp(body, {
-    verifyOptions: {
-      pinnedPlatformKeys: config.pinnedPlatformKeys,
-      pinnedIssuerKeys: config.pinnedIssuerKeys,
-    },
-  })
-  if (!dppIsAuthentic(verification)) {
-    const reason = 'private property proof did not verify'
-    console.warn(`[private] ${reason}`)
-    return setState(versionNumber, { status: 'error', reason })
+  // issuer actually signed for this passport. It clears the
+  // public snapshot's gates before any row reaches the DOM.
+  const rejected = await credentialRejection(body, versionNumber)
+  if (rejected) {
+    console.warn(`[private] ${rejected}`)
+    return setState(versionNumber, { status: 'error', reason: rejected })
   }
 
   const parsed = body as PrivateResponseBody
   const properties = parsed.credentialSubject?.product?.properties ?? []
   const rows = adaptPrivateRows(properties)
   return setState(versionNumber, { status: 'ok', rows })
+}
+
+// Why a private-rows credential may not paint, or null once it
+// clears the public snapshot's revocation, proof and pin gates
+// and names the version's public snapshot. The binding comes
+// before the proofs, so a foreign credential costs no
+// key-document read.
+async function credentialRejection(
+  credential: Record<string, unknown>, versionNumber: number
+): Promise<string | null> {
+  const revocation = revocationStatus.peek()
+  if (revocationGateBlocks(revocation)) return revocationReason(revocation)
+
+  const snapshot = rawSnapshots.peek()[versionNumber]
+  if (!snapshot) return `no public snapshot of v${versionNumber} to bind to`
+  const foreign = foreignCredential(credential, snapshot)
+  if (foreign) return foreign
+
+  const result = await verifySnapshotAnySuite(credential, {
+    pinnedPlatformKeys: config.pinnedPlatformKeys,
+    pinnedIssuerKeys: config.pinnedIssuerKeys
+  })
+  if (result.verdict !== 'authentic') {
+    return 'private property proof did not verify'
+  }
+  const { pinOk, issuerPinOk } = pinGatesOk(result.entries)
+  if (!pinOk) return 'no pinned platform key is among the verified entries'
+  if (!issuerPinOk) {
+    return 'no declared issuer key is among the verified entries'
+  }
+  return null
+}
+
+// Why the credential belongs to another passport, issuer or
+// version than the public snapshot, or null when it names the
+// snapshot's page (`@id`), its issuer by DID and its version.
+// Both are read at their subject, as the dynamic-data check
+// reads the snapshot. The snapshot must carry each field: a
+// match on a field neither side names binds nothing.
+function foreignCredential(
+  credential: Record<string, unknown>, snapshot: SignedSnapshot
+): string | null {
+  const ours = snapshotBody(snapshot)
+  const theirs = snapshotBody(credential)
+  const fields: ReadonlyArray<readonly [string, unknown, unknown]> = [
+    ['page', theirs['@id'], ours['@id']],
+    ['issuer', didOf(theirs.issuer), didOf(ours.issuer)],
+    ['version', theirs.version, ours.version]
+  ]
+  for (const [field, named, expected] of fields) {
+    if (expected !== undefined && named === expected) continue
+    return `private rows name ${field} ${String(named)}, `
+      + `not ${String(expected)}`
+  }
+  return null
 }
 
 // Re-attempt the fetch from the retry affordance. Always

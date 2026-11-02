@@ -179,7 +179,7 @@ function foreignPassport(
 
 // An issuer's DID, whether it is written bare or as an
 // organization carrying one.
-function didOf(issuer: unknown): string | undefined {
+export function didOf(issuer: unknown): string | undefined {
   if (typeof issuer === 'string') return issuer
   if (!issuer || typeof issuer !== 'object') return undefined
   const did = (issuer as { did?: unknown }).did
@@ -250,11 +250,11 @@ const REVOCATION_UNREACHABLE_REASON =
 // the well-known revocation fetch. 'unreachable' only
 // occurs with a pin configured (unpinned boots skip the
 // check entirely and read 'unpinned').
-function revocationGateBlocks(status: RevocationStatus): boolean {
+export function revocationGateBlocks(status: RevocationStatus): boolean {
   return status === 'revoked' || status === 'unreachable'
 }
 
-function revocationReason(status: RevocationStatus): string {
+export function revocationReason(status: RevocationStatus): string {
   return status === 'revoked'
     ? REVOKED_REASON
     : REVOCATION_UNREACHABLE_REASON

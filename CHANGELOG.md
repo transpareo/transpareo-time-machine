@@ -26,6 +26,19 @@ and this project adheres to
   JSON-LD processor took terms from the extra context. The
   bundle holds the five contexts the platform signs under,
   and passports naming those verify as before.
+- Login-gated rows render only from a credential naming the
+  passport on the page: its page (`@id`), its issuer by DID
+  and its version must match the version's public snapshot.
+  The credential also clears the snapshot's own gates: on a
+  build that pins keys, a verified proof under each pinned
+  set, and no rows while the pinned platform key is revoked
+  or its revocation list unreachable. An endpoint on the
+  passport's site that answered with another passport's
+  credential, or with one signed under any key a did:web
+  document named, merged its rows into the page. A failing
+  credential shows the retry affordance, as a failed proof
+  does. The request waits for the version's snapshot and the
+  revocation check.
 
 ## [2.24.0] - 2026-10-30
 

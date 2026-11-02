@@ -230,7 +230,12 @@ Field notes:
   request: the button shows at once, and the renderer
   fetches only while the page's origin carries the
   `transpareo_passport_reader` cookie its reader sign-in
-  sets, or the staff link its back office stores.
+  sets, or the staff link its back office stores. A 200
+  is the reader's derived view of the version's
+  credential. It must name the version's public snapshot
+  (its page `@id`, its issuer's DID and its `version`),
+  and its proofs must clear the snapshot's revocation and
+  pin gates; otherwise no row renders.
 - `versions[].registeredAt` / `registrationProof`
   (optional) - EU-registry round-trip metadata,
   surfaced in the proof modal when present.
