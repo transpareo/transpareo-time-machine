@@ -52,6 +52,22 @@ and this project adheres to
   Passports signed under the five bundled contexts verify
   as before. The verifier entry's size budget goes from 34
   to 35 KB for these checks.
+- A passport holding a value the canonicalizer read
+  differently from the issuer's JSON-LD processor fails
+  verification: a value object with neither or both of
+  `@type` and `@language`, another key, or `@type: @json`;
+  a JSON number with a fraction, of magnitude 2^53 or more,
+  or typed `xsd:double`; a relative or blank-node IRI, or
+  one holding a space, `>` or another character N-Quads
+  escapes; a malformed language tag; a context term written
+  as an IRI that maps to another. The canonicalizer gave a
+  bare value object its term's datatype, wrote `2.5` where
+  the issuer writes `2.5E0`, and wrote IRIs and language
+  tags into its statements as they stood, so an `@id` could
+  spell out a further statement and a hash over the joined
+  statements could not tell the two documents apart.
+  Passports signed under the five bundled contexts verify
+  as before.
 - Login-gated rows render only from a credential naming the
   passport on the page: its page (`@id`), its issuer by DID
   and its version must match the version's public snapshot.

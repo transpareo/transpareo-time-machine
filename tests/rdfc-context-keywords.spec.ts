@@ -89,7 +89,7 @@ describe('canonicalize: @vocab', () => {
 
   it.each([
     [5, 'unsupported @context keyword'],
-    ['_:v', 'unsupported @context IRI: _:v']
+    ['_:v', 'unsupported IRI: _:v']
   ])('rejects a @vocab of %j', async (vocab, message) => {
     const doc = named([{ ...CTX, name: 'ex:name' }, { '@vocab': vocab }])
     await expect(canonicalize(doc)).rejects.toThrow(message)
@@ -169,13 +169,12 @@ describe('canonicalize: term definition entries', () => {
     ['a blank node', '_:b', '_:b']
   ])('rejects %s', async (_label, definition, iri) => {
     const doc = named({ ...CTX, name: definition })
-    await expect(canonicalize(doc))
-      .rejects.toThrow(`unsupported @context IRI: ${iri}`)
+    await expect(canonicalize(doc)).rejects.toThrow(`unsupported IRI: ${iri}`)
   })
 
   it.each([
     ['an array', ['xsd:decimal'], 'unsupported @context term: name'],
-    ['@none', '@none', 'unsupported @context IRI: @none']
+    ['@none', '@none', 'unsupported IRI: @none']
   ])('rejects a @type of %s', async (_label, type, message) => {
     const context = { ...CTX, name: { '@id': 'ex:name', '@type': type } }
     await expect(canonicalize(named(context))).rejects.toThrow(message)

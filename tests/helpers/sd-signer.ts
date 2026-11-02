@@ -191,7 +191,7 @@ export const SAMPLE_CONTEXT = {
     '@id': 'http://purl.org/dc/terms/created', '@type': 'xsd:dateTime',
   },
   verificationMethod: { '@id': 'sec:verificationMethod', '@type': '@id' },
-  proofPurpose: { '@id': 'sec:proofPurpose', '@type': '@id' },
+  proofPurpose: { '@id': 'sec:proofPurpose', '@type': '@vocab' },
   proofValue: 'sec:proofValue',
   assertionMethod: 'sec:assertionMethod',
 };

@@ -28,12 +28,14 @@
  *     property it applies to that property's scalar values
  *     (proofPurpose). On a property holding a node, and an
  *     @context of null, it is rejected;
- *   - nodes identified by an explicit @id (IRI, our docs
- *     carry one on every node), @type as a CURIE/IRI or an
- *     array of them, nested nodes, and arrays of values;
+ *   - nodes identified by an absolute IRI @id (our docs
+ *     carry one on every node) or by none, @type as a
+ *     CURIE/IRI or an array of them, nested nodes, and
+ *     arrays of values;
  *   - literals: plain strings (xsd:string), @language
- *     strings, @type-coerced typed literals, integers
- *     (xsd:integer), and booleans (xsd:boolean).
+ *     strings, @type-coerced typed literals, safe integers
+ *     (xsd:integer), booleans (xsd:boolean), and value
+ *     objects of @value plus a @type or a @language.
  *
  * Rejected (fail closed): named graphs, @list / @set /
  * @reverse / @included / @nest, a context URL the offline
@@ -42,13 +44,19 @@
  * below the root, any other context keyword (@base, @import,
  * @language, @direction, @propagate) or term entry
  * (@reverse, @nest, @index, @prefix, @direction), a term
- * naming one defined further down its own map, a changed
+ * naming one defined further down its own map, a term
+ * written as an IRI that maps to another, a changed
  * protected term, a value under a term with any other
  * container (@list, @graph, @index, a map) or of @type
- * @json, an untyped non-integer JSON number (its RDF
- * datatype is ambiguous - typed decimals must arrive as a
- * string plus a datatype), and any blank-node graph whose
- * nodes do not separate under first-degree hashing.
+ * @json, a JSON number that is no safe integer or is typed
+ * xsd:double (JSON-LD writes a fraction, 1e21 and up and an
+ * xsd:double as a double, and a larger integer may parse
+ * rounded - decimals must arrive as a string plus a
+ * datatype), any other value object (@value alone, another
+ * key, a keyword @type), a relative or blank-node IRI and
+ * one holding a character N-Quads escapes, a malformed
+ * language tag, and any blank-node graph whose nodes do not
+ * separate under first-degree hashing.
  *
  * Known deviation: a compact IRI here expands against any
  * prefix the context defines. JSON-LD 1.1 gates that on a
@@ -70,11 +78,20 @@
  */
 
 const RDF_TYPE = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type'
-const XSD_STRING = 'http://www.w3.org/2001/XMLSchema#string'
-const XSD_INTEGER = 'http://www.w3.org/2001/XMLSchema#integer'
-const XSD_BOOLEAN = 'http://www.w3.org/2001/XMLSchema#boolean'
+const XSD = 'http://www.w3.org/2001/XMLSchema#'
+const XSD_STRING = `${XSD}string`
+const XSD_INTEGER = `${XSD}integer`
+const XSD_BOOLEAN = `${XSD}boolean`
+const XSD_DOUBLE = `${XSD}double`
 const RDF_LANG_STRING =
   'http://www.w3.org/1999/02/22-rdf-syntax-ns#langString'
+
+// A scheme, a colon, and nothing the N-Quads form escapes:
+// an IRI is written between < and > as it stands.
+const ABSOLUTE_IRI = /^[a-z][a-z\d+.-]*:[^\p{Cc} <>"{}|^`\\]*$/iu
+
+// The language tag shape the issuer keeps a statement for.
+const LANGUAGE_TAG = /^[a-z]+(-[a-z\d]+)*$/i
 
 interface TermDef {
   readonly id: string
@@ -187,19 +204,17 @@ function walkNode(
   rejectUnsupportedKeywords(node)
   const subject = nodeSubject(node, context, state)
 
-  if ('@type' in node) {
-    for (const t of asArray(node['@type'])) {
-      if (typeof t !== 'string') throw new Error('@type must be a string')
-      state.quads.push({
-        subject,
-        predicate: { kind: 'iri', value: RDF_TYPE },
-        object: { kind: 'iri', value: expandIri(t, outer, true) },
-      })
-    }
+  for (const t of asArray(node['@type'])) {
+    state.quads.push({
+      subject,
+      predicate: { kind: 'iri', value: RDF_TYPE },
+      object: { kind: 'iri', value: expandIri(t, outer, true) }
+    })
   }
 
   for (const [term, raw] of Object.entries(node)) {
     if (term.startsWith('@')) continue
+
     // A defined term carries its IRI (and any coercion); an
     // undefined term expands through @vocab, or is rejected
     // when no vocabulary grounds it.
@@ -279,16 +294,14 @@ function nodeSubject(
   if (id === undefined) {
     return { kind: 'blank', value: `_:b${state.nextBlank++}` }
   }
-  if (typeof id !== 'string') throw new Error('@id must be a string')
-  if (id.startsWith('_:')) return { kind: 'blank', value: id }
   return { kind: 'iri', value: expandIri(id, context, false) }
 }
 
 // Resolve a term value to an RDF object term. A nested
 // object is either a value object ({ @value, ... }) or a
 // node (recurse); a @type:@id coercion makes a string an
-// IRI; a datatype coercion types a literal; otherwise the
-// JSON type decides.
+// IRI; a datatype coercion types a literal, a language one
+// tags a string; otherwise the JSON type decides.
 function toObject(
   value: JsonLdValue, def: TermDef | undefined, scope: Scope, state: WalkState,
 ): Term {
@@ -296,7 +309,7 @@ function toObject(
   if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
     const obj = value as Record<string, JsonLdValue>
     if ('@context' in obj) throw new Error('unsupported nested @context')
-    if ('@value' in obj) return valueObject(obj, def, context)
+    if ('@value' in obj) return valueObject(obj, context)
     if (def?.scoped !== undefined) {
       throw new Error('unsupported property-scoped @context on a node')
     }
@@ -305,80 +318,99 @@ function toObject(
 
   // @id-coerced values expand as document IRIs; @vocab-coerced
   // ones through the vocabulary. Everything else is a literal.
-  if (def?.type === '@id' || def?.type === '@vocab') {
-    if (typeof value !== 'string') throw new Error('IRI value must be a string')
-    const vocab = def.type === '@vocab'
-    return { kind: 'iri', value: expandIri(value, context, vocab) }
+  const type = def?.type
+  if (type === '@id' || type === '@vocab') {
+    return { kind: 'iri', value: expandIri(value, context, type === '@vocab') }
   }
-  return scalarLiteral(value, def)
+  if (typeof value === 'string' && !type && def?.language !== undefined) {
+    return langLiteral(value, def.language)
+  }
+  return literal(value, type)
 }
 
-function valueObject(
-  obj: Record<string, JsonLdValue>, def: TermDef | undefined, context: Context,
-): Term {
-  const value = obj['@value']
-  const language = (obj['@language'] ?? def?.language) as string | undefined
-  const typeRaw = obj['@type']
-  if (typeof typeRaw === 'string') {
-    return literal(String(value), expandIri(typeRaw, context, true))
-  }
-  if (language !== undefined) return langLiteral(String(value), language)
-  return scalarLiteral(value, def)
-}
-
-function scalarLiteral(value: JsonLdValue, def: TermDef | undefined): Term {
-  if (def?.type && def.type !== '@id' && def.type !== '@vocab') {
-    return literal(String(value), def.type)
-  }
-  if (typeof value === 'string') {
-    if (def?.language !== undefined) return langLiteral(value, def.language)
-    return literal(value, XSD_STRING)
-  }
-  if (typeof value === 'boolean') {
-    return literal(value ? 'true' : 'false', XSD_BOOLEAN)
-  }
-  if (typeof value === 'number') {
-    if (!Number.isInteger(value)) {
-      throw new Error('non-integer JSON number: type a decimal explicitly')
+// A value object reads only its own @type or @language:
+// JSON-LD applies a term's coercion to plain values. It holds
+// @value and one of the two as a string, and a language tags
+// a string only. Anything else throws, the keys JSON-LD reads
+// besides (@index, @direction, an alias of @type) included.
+function valueObject(obj: Record<string, JsonLdValue>, context: Context): Term {
+  const { '@value': value, '@type': type, '@language': language } = obj
+  if (Object.keys(obj).length === 2) {
+    if (typeof type === 'string') {
+      return literal(value, expandIri(type, context, true))
     }
-    return literal(String(value), XSD_INTEGER)
+    if (typeof language === 'string' && typeof value === 'string') {
+      return langLiteral(value, language)
+    }
   }
-  throw new Error(`unsupported literal value: ${String(value)}`)
+  throw new Error('unsupported value object')
 }
 
-function literal(value: string, datatype: string): Term {
-  return { kind: 'literal', value, datatype }
+// A JSON scalar as a literal of `datatype`, else of the one
+// its JSON type implies. A number reads only as a safe
+// integer outside xsd:double: JSON-LD writes a fraction, a
+// magnitude of 1e21 or more and an xsd:double number as a
+// double ("2.5E0"), and an integer past 2^53 parses exactly
+// in the issuer's runtime and rounded here.
+function literal(value: JsonLdValue, datatype?: string): Term {
+  const json = typeof value
+  const integer = Number.isSafeInteger(value) && datatype !== XSD_DOUBLE
+  if (json !== 'string' && json !== 'boolean' && !integer) {
+    throw new Error(`unsupported literal value: ${String(value)}`)
+  }
+  const implied = json === 'string' ? XSD_STRING
+    : json === 'boolean' ? XSD_BOOLEAN : XSD_INTEGER
+  return {
+    kind: 'literal', value: String(value), datatype: datatype ?? implied
+  }
 }
 
+// The tag is written after the literal as it stands, and the
+// issuer drops a statement whose tag fails the same shape.
 function langLiteral(value: string, language: string): Term {
+  if (!LANGUAGE_TAG.test(language)) {
+    throw new Error(`unsupported language tag: ${language}`)
+  }
   return {
     kind: 'literal', value, datatype: RDF_LANG_STRING,
     language: language.toLowerCase(),
   }
 }
 
-// Expand a term or reference to an IRI. A CURIE whose
-// prefix is defined expands against the prefix map; a
-// colon with an undefined prefix, or followed by '//', is
-// already an absolute IRI (https:, did:, urn:, and an xsd:
-// whose prefix the context leaves undefined) and passes
-// through. A bare word expands through the term map then
-// @vocab in vocab position (a predicate, a @type, a
-// @vocab-coerced value); in @id position it is a document
-// reference and passes through.
-function expandIri(value: string, context: Context, vocab: boolean): string {
+// Expand a term or reference to an absolute IRI. A CURIE
+// whose prefix is defined expands against the prefix map; a
+// colon with an undefined prefix or `_`, or followed by '//',
+// leaves the value standing (https:, did:, urn:, and an xsd:
+// whose prefix the context leaves undefined). A bare word
+// expands through the term map then @vocab in vocab position
+// (a predicate, a @type, a @vocab-coerced value); in @id
+// position it stands too. Anything but a string, a keyword,
+// or a result that is no absolute IRI (a relative or
+// blank-node one) or holds a character N-Quads escapes,
+// throws: the issuer reads it another way, or it writes as
+// more than one statement.
+function expandIri(
+  value: JsonLdValue, context: Context, vocab: boolean
+): string {
+  if (typeof value !== 'string' || value.startsWith('@')) {
+    throw new Error(`unsupported IRI: ${String(value)}`)
+  }
   const colon = value.indexOf(':')
+  let iri = value
   if (colon > 0) {
     const prefix = value.slice(0, colon)
-    const absolute = value.startsWith('//', colon + 1)
+    const absolute = prefix === '_' || value.startsWith('//', colon + 1)
     const base = absolute ? undefined : context.prefixes.get(prefix)
-    return base ? base + value.slice(colon + 1) : value
+    if (base) iri = base + value.slice(colon + 1)
+  } else if (vocab) {
+    const def = context.terms.get(value)
+    if (!def && context.vocab === undefined) {
+      throw new Error(`cannot expand term: ${value}`)
+    }
+    iri = def ? def.id : context.vocab + value
   }
-  if (!vocab) return value
-  const def = context.terms.get(value)
-  if (def) return def.id
-  if (context.vocab !== undefined) return context.vocab + value
-  throw new Error(`cannot expand term: ${value}`)
+  if (!ABSOLUTE_IRI.test(iri)) throw new Error(`unsupported IRI: ${value}`)
+  return iri
 }
 
 function parseContext(
@@ -490,13 +522,19 @@ type Definition =
   | { readonly alias: string }
   | { readonly def: TermDef, readonly prefix: boolean }
 
-// Define one term over whatever it meant before. A protected
-// term stays as it is when restated and throws when changed,
-// unless the map is property-scoped.
+// Define one term over whatever it meant before. A term
+// written as an IRI (a colon before another character, or a
+// slash) must expand to its own definition, as JSON-LD
+// requires. A protected term stays as it is when restated
+// and throws when changed, unless the map is property-scoped.
 function addContextTerm(
   term: string, raw: JsonLdValue, draft: ContextDraft, scope: MapScope
 ): void {
   const [definition, protect] = parseTerm(term, raw, draft, scope)
+  const iri = 'alias' in definition ? definition.alias : definition.def.id
+  if (/:.|\//.test(term) && definitionIri(term, draft, scope.pending) !== iri) {
+    throw new Error(`unsupported @context term: ${term}`)
+  }
   const signature = JSON.stringify(definition)
   const previous = draft.protectedTerms.get(term)
   if (previous !== undefined && !scope.override) {
@@ -551,6 +589,8 @@ function parseTerm(
   const valid = typeof id === 'string' && typeof protect === 'boolean'
     && (type === undefined || typeof type === 'string')
     && (language == null || typeof language === 'string')
+    && (scoped === undefined || typeof scoped === 'object')
+    && !Array.isArray(scoped)
     && kinds.every((k) => CONTAINERS.has(k as string))
     && Object.keys(stray).length === 0
   if (!valid) throw new Error(`unsupported @context term: ${term}`)
@@ -560,7 +600,7 @@ function parseTerm(
       ? type : definitionIri(type, context, pending),
     language: language ?? undefined,
     container: kinds.length === 0 ? undefined : kinds.join(' '),
-    scoped: scoped === undefined ? undefined : scopedMap(term, scoped)
+    scoped: scoped as TermDef['scoped']
   }
   return [{ def, prefix: false }, protect]
 }
@@ -569,27 +609,14 @@ function parseTerm(
 // expanded against the definitions above it as a vocabulary
 // IRI. JSON-LD defines a map's terms as a whole, so naming a
 // term further down the same map (`pending`, the term itself
-// included) throws instead of reading it two ways. So does a
-// keyword, and a blank node, which would be written as an IRI.
+// included) throws instead of reading it two ways.
 function definitionIri(
   value: string, context: Context, pending?: ReadonlySet<string>
 ): string {
   const colon = value.indexOf(':')
   const head = colon > 0 ? value.slice(0, colon) : value
-  if (value.startsWith('@') || head === '_' || pending?.has(head)) {
-    throw new Error(`unsupported @context IRI: ${value}`)
-  }
+  if (pending?.has(head)) throw new Error(`unsupported @context IRI: ${value}`)
   return expandIri(value, context, true)
-}
-
-function scopedMap(
-  term: string, scoped: JsonLdValue,
-): Record<string, JsonLdValue> | null {
-  if (scoped === null) return null
-  if (typeof scoped !== 'object' || Array.isArray(scoped)) {
-    throw new Error(`unsupported scoped @context: ${term}`)
-  }
-  return scoped as Record<string, JsonLdValue>
 }
 
 const SUPPORTED_KEYWORDS = new Set(['@context', '@id', '@type'])
@@ -615,14 +642,16 @@ async function canonicalizeQuads(
   quads: readonly Quad[], labelMap?: ReadonlyMap<string, string>,
 ): Promise<string[]> {
   const labels = await canonicalBlankLabels(quads)
-  const lines = quads.map((q) => ({
-    canonical: serializeQuad(q, labels),
-    quad: q,
+  const lines = quads.map((quad) => ({
+    canonical: serializeQuad(quad, labels), quad
   }))
-  lines.sort((a, b) => (a.canonical < b.canonical ? -1
-    : a.canonical > b.canonical ? 1 : 0))
-  if (!labelMap) return lines.map((l) => l.canonical)
-  return lines.map((l) => serializeQuad(l.quad, labels, labelMap))
+  lines.sort((a, b) => order(a.canonical, b.canonical))
+  return lines.map((l) => (labelMap
+    ? serializeQuad(l.quad, labels, labelMap) : l.canonical))
+}
+
+function order(a: string, b: string): number {
+  return a < b ? -1 : a > b ? 1 : 0
 }
 
 // Assign each blank node a canonical label. With no blank
@@ -636,13 +665,11 @@ async function canonicalBlankLabels(
 ): Promise<Map<string, string>> {
   const ids = collectBlankIds(quads)
   const labels = new Map<string, string>()
-  if (ids.length === 0) return labels
-
   const hashed: Array<{ id: string, hash: string }> = []
   for (const id of ids) {
     hashed.push({ id, hash: await firstDegreeHash(id, quads) })
   }
-  hashed.sort((a, b) => (a.hash < b.hash ? -1 : a.hash > b.hash ? 1 : 0))
+  hashed.sort((a, b) => order(a.hash, b.hash))
   for (let i = 0; i < hashed.length; i++) {
     if (i > 0 && hashed[i].hash === hashed[i - 1].hash) {
       throw new Error('ambiguous blank nodes: n-degree hashing unsupported')
@@ -662,61 +689,51 @@ function collectBlankIds(quads: readonly Quad[]): string[] {
   return [...seen]
 }
 
-// URDNA2015 first-degree hash (§4.6): serialize every
-// quad the node appears in, with the node itself written
-// as '_:a' and any other blank node as '_:z', sort, hash.
+// URDNA2015 first-degree hash (§4.6): serialize every quad
+// the node is the subject or object of, with the node itself
+// written as '_:a' and any other blank node as '_:z', sort,
+// hash.
 async function firstDegreeHash(
   id: string, quads: readonly Quad[],
 ): Promise<string> {
-  const related = quads.filter(
-    (q) => q.subject.value === id || q.object.value === id,
-  )
-  const lines = related.map((q) => serializeQuad(q, undefined, undefined, {
-    self: id,
-  }))
-  lines.sort()
-  const digest = await crypto.subtle.digest(
-    'SHA-256', new TextEncoder().encode(lines.join('')),
-  )
-  return hex(new Uint8Array(digest))
+  const lines = quads
+    .filter((q) => [q.subject, q.object]
+      .some((t) => t.kind === 'blank' && t.value === id))
+    .map((q) => serializeQuad(q, undefined, undefined, id))
+    .sort()
+  return hex(await hashNQuads(lines))
 }
 
-interface FirstDegree {
-  readonly self: string
-}
-
+// One N-Quad line. `self` names the blank node a first-degree
+// hash is taken for.
 function serializeQuad(
   quad: Quad,
   labels?: ReadonlyMap<string, string>,
   labelMap?: ReadonlyMap<string, string>,
-  fd?: FirstDegree,
+  self?: string
 ): string {
-  const s = serializeTerm(quad.subject, labels, labelMap, fd)
-  const p = serializeTerm(quad.predicate, labels, labelMap, fd)
-  const o = serializeTerm(quad.object, labels, labelMap, fd)
-  return `${s} ${p} ${o} .\n`
+  const terms = [quad.subject, quad.predicate, quad.object]
+  const line = terms.map((t) => serializeTerm(t, labels, labelMap, self))
+  return `${line.join(' ')} .\n`
 }
 
 function serializeTerm(
   term: Term,
   labels?: ReadonlyMap<string, string>,
   labelMap?: ReadonlyMap<string, string>,
-  fd?: FirstDegree,
+  self?: string
 ): string {
   if (term.kind === 'iri') return `<${term.value}>`
-  if (term.kind === 'blank') {
-    if (fd) return term.value === fd.self ? '_:a' : '_:z'
-    const canonical = labels?.get(term.value) ?? term.value
-    if (labelMap) {
-      const mapped = labelMap.get(stripBlank(canonical))
-      if (mapped === undefined) {
-        throw new Error(`label map has no entry for ${canonical}`)
-      }
-      return `_:${mapped}`
-    }
-    return canonical
+  if (term.kind === 'literal') return serializeLiteral(term)
+  if (self !== undefined) return term.value === self ? '_:a' : '_:z'
+  const canonical = labels?.get(term.value) ?? term.value
+  if (!labelMap) return canonical
+  const label = canonical.slice(2)
+  const mapped = labelMap.get(label)
+  if (mapped === undefined) {
+    throw new Error(`label map has no entry for ${canonical}`)
   }
-  return serializeLiteral(term)
+  return `_:${mapped}`
 }
 
 function serializeLiteral(term: Term & { kind: 'literal' }): string {
@@ -726,17 +743,12 @@ function serializeLiteral(term: Term & { kind: 'literal' }): string {
   return `${lex}^^<${term.datatype}>`
 }
 
-function escapeLiteral(value: string): string {
-  return value
-    .replace(/\\/g, '\\\\')
-    .replace(/"/g, '\\"')
-    .replace(/\n/g, '\\n')
-    .replace(/\r/g, '\\r')
-    .replace(/\t/g, '\\t')
+const ESCAPES: Readonly<Record<string, string>> = {
+  '\\': '\\\\', '"': '\\"', '\n': '\\n', '\r': '\\r', '\t': '\\t'
 }
 
-function stripBlank(label: string): string {
-  return label.startsWith('_:') ? label.slice(2) : label
+function escapeLiteral(value: string): string {
+  return value.replace(/[\\"\n\r\t]/g, (c) => ESCAPES[c])
 }
 
 function hex(bytes: Uint8Array): string {

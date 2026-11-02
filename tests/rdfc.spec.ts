@@ -188,6 +188,21 @@ describe('canonicalize: blank node (proof-options shape)', () => {
       `_:HMAC0 ${RDF_TYPE} <http://example.org/Proof> .\n`,
     ]);
   });
+
+  // The two nodes tie under first-degree hashing. A literal
+  // spelling one's label is no quad of that node, so it must
+  // not break the tie; read as one, it labelled the pair in an
+  // order RDFC-1.0 never gives.
+  it('leaves a literal spelling a blank label out of its hash', async () => {
+    const doc = {
+      '@context': { ...CTX, p: 'ex:p', name: 'ex:name', note: 'ex:note' },
+      '@id': 'ex:s',
+      p: [{ name: 'x' }, { name: 'x' }],
+      note: '_:b1',
+    };
+    await expect(canonicalize(doc))
+      .rejects.toThrow('ambiguous blank nodes');
+  });
 });
 
 describe('canonicalize: literal escaping', () => {
@@ -215,7 +230,7 @@ describe('canonicalize: fails closed on out-of-scope input', () => {
       '@context': { ...CTX, n: 'ex:n' }, '@id': 'ex:s', n: 2.5,
     };
     await expect(canonicalize(doc))
-      .rejects.toThrow(/non-integer JSON number/);
+      .rejects.toThrow('unsupported literal value: 2.5');
   });
 
   it('rejects an unsupported keyword like @list', async () => {
