@@ -19,9 +19,9 @@
  *   2. fetch(resolve(manifest.versions[current].url, src))
  *      -> current snapshot
  *   3. fetch(resolve(manifest.epcisUrl, src))
- *      -> EPCIS document (single artefact; the renderer
- *      derives DppEvent[] from its transpareo:* event
- *      extensions in state.ts)
+ *      -> EPCIS document, when named (single artefact; the
+ *      renderer derives DppEvent[] from its transpareo:*
+ *      event extensions in state.ts)
  *   4. fetch(resolve(manifest.dynamicDataUrl, src))
  *      -> dynamic-data document, when advertised (the
  *      passport's live values)
@@ -187,12 +187,8 @@ async function bootFromManifest(
     m.versions.find((v) => v.number === m.currentVersion)?.url,
     base
   )
-  const epcisUrl = resolveReference(m.epcisUrl, base)
   if (!currentVersionUrl) {
     throw new Error('manifest is missing the current version URL')
-  }
-  if (!epcisUrl) {
-    throw new Error('manifest is missing epcisUrl')
   }
 
   // Both requests start here; only the snapshot is waited
@@ -201,7 +197,7 @@ async function bootFromManifest(
   // opens, so waiting for it held the whole first paint
   // behind bytes the visitor has asked nothing of yet. On
   // the live demo that was most of a second.
-  const feed = fetchEventsFeed(epcisUrl, epoch)
+  const feed = fetchEventsFeed(resolveReference(m.epcisUrl, base), epoch)
   const dynamicUrl = resolveReference(m.dynamicDataUrl, base)
   if (dynamicUrl) fetchDynamicData(dynamicUrl, epoch)
   const current = await fetchJson<SignedSnapshot>(currentVersionUrl)
@@ -226,8 +222,15 @@ async function bootFromManifest(
 // what the visitor scanned the code for; failing the whole
 // boot over the history would be the renderer deciding
 // that a passport nobody can read is better than one
-// without its events.
-function fetchEventsFeed(url: string, epoch: number): Promise<void> {
+// without its events. A manifest that names no feed, or one
+// that does not resolve, is read the same way.
+function fetchEventsFeed(
+  url: string | null, epoch: number
+): Promise<void> {
+  if (!url) {
+    console.warn('[host] manifest names no events feed (epcisUrl)')
+    return Promise.resolve()
+  }
   eventsPending.set(true)
   return fetchJson<EpcisDocument>(url, 'no-cache')
     .then((doc) => {

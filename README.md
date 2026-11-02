@@ -242,7 +242,9 @@ Field notes:
 - `availableLocales` - the locales this passport is
   published in; drives the footer language picker.
 - `epcisUrl` - the EPCIS 2.0 events document the
-  event timeline derives from.
+  event timeline derives from. A manifest without it, or
+  one whose document will not load, renders the passport
+  without its events.
 - `dynamicDataUrl` (optional) - the passport's live
   values (state of charge, remaining capacity), which
   change without a new version. The document names its

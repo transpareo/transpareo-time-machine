@@ -48,6 +48,10 @@ and this project adheres to
   serve the passport files (a white-label domain, a
   publisher's own site) reported no signed data while the
   page rendered.
+- A manifest without `epcisUrl`, or with one that does not
+  resolve, renders the passport without its events, as a
+  feed that will not load already did. The boot failed on
+  it and the page showed only the load error.
 
 ## [2.24.0] - 2026-10-30
 

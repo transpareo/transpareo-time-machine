@@ -32,6 +32,12 @@ function manifestOf(code: string, prefix: string): unknown {
   };
 }
 
+function manifestWithoutFeed(code: string, prefix: string): unknown {
+  const m = manifestOf(code, prefix) as Record<string, unknown>;
+  delete m.epcisUrl;
+  return m;
+}
+
 function snapshotOf(alias: string): unknown {
   return { version: 1, publishedAt: '2026-01-01T00:00:00Z',
     passportAlias: alias };
@@ -119,6 +125,42 @@ describe('bootFrom and the events feed', () => {
       expect(host.eventsPending.peek()).toBe(false);
     });
     expect(host.epcisDocument.peek()).toBeNull();
+  });
+
+  // A manifest that names no feed is the same case: the card
+  // renders, and the timeline has no events to show.
+  it('renders the passport when the manifest names no feed', async () => {
+    const host = await freshHost();
+    const calls = stubFetch({
+      '/a/manifest.json': manifestWithoutFeed('dpp-a', '/a'),
+      '/a/v/1.json': snapshotOf('alias-a'),
+    });
+
+    await host.bootFrom('https://cdn.test/a/manifest.json');
+
+    expect(host.loadState.peek()).toBe('ready');
+    expect(host.snapshots.peek()[1].code).toBe('alias-a');
+    expect(host.eventsPending.peek()).toBe(false);
+    expect(host.epcisDocument.peek()).toBeNull();
+    expect(calls).toEqual([
+      'https://cdn.test/a/manifest.json', 'https://cdn.test/a/v/1.json',
+    ]);
+  });
+
+  it('does not wait for a feed the manifest never named', async () => {
+    vi.resetModules();
+    vi.stubGlobal('window', {
+      location: { href: 'https://page.test/#evt-7', hash: '#evt-7' },
+    });
+    const host: HostModule = await import('../src/host');
+    stubFetch({
+      '/a/manifest.json': manifestWithoutFeed('dpp-a', '/a'),
+      '/a/v/1.json': snapshotOf('alias-a'),
+    });
+
+    await host.bootFrom('https://cdn.test/a/manifest.json');
+
+    expect(host.loadState.peek()).toBe('ready');
   });
 
   // A shared link into one event asks for the timeline
