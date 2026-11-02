@@ -10,6 +10,16 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Fixed
+
+- A passport whose `@context` names a context the renderer
+  does not bundle, or carries a `@context` on a node inside
+  the document, fails verification. The canonicalizer read
+  either as absent, so such a passport verified while a
+  JSON-LD processor took terms from the extra context. The
+  bundle holds the five contexts the platform signs under,
+  and passports naming those verify as before.
+
 ## [2.24.0] - 2026-10-30
 
 ### Added

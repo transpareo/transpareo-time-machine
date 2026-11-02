@@ -12,7 +12,8 @@
  *
  * Supported input:
  *   - an @context that is a term map of prefix -> IRI,
- *     term -> IRI, or term -> { @id, @type?, @language? };
+ *     term -> IRI, or term -> { @id, @type?, @language? },
+ *     or a URL the offline registry resolves to one;
  *   - a term's own @context, as the W3C credentials context
  *     declares them: on a type it applies to the properties
  *     of a node of that type and not to the nodes inside
@@ -28,11 +29,13 @@
  *     (xsd:integer), and booleans (xsd:boolean).
  *
  * Rejected (fail closed): named graphs, @list / @set /
- * @reverse / @included / @nest, remote or nested
- * contexts, non-integer JSON numbers (their RDF datatype
- * is ambiguous - typed decimals must arrive as a string
- * plus a datatype), and any blank-node graph whose nodes
- * do not separate under first-degree hashing.
+ * @reverse / @included / @nest, a context URL the offline
+ * registry does not hold (nothing is fetched), a registered
+ * context that lists further contexts, a @context on a node
+ * below the root, non-integer JSON numbers (their RDF
+ * datatype is ambiguous - typed decimals must arrive as a
+ * string plus a datatype), and any blank-node graph whose
+ * nodes do not separate under first-degree hashing.
  *
  * Known deviation: a compact IRI here expands against any
  * prefix the context defines. JSON-LD 1.1 gates that on a
@@ -112,6 +115,7 @@ export interface CanonicalizeOptions {
   // or the bare term map). Our DPP VCs reference the VC base
   // and transpareo contexts by URL; those are cached and
   // passed here so canonicalization never hits the network.
+  // A URL missing here is rejected.
   readonly contexts?: Readonly<Record<string, JsonLdValue>>
 }
 
@@ -254,6 +258,7 @@ function toObject(
   const { context } = scope
   if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
     const obj = value as Record<string, JsonLdValue>
+    if ('@context' in obj) throw new Error('unsupported nested @context')
     if ('@value' in obj) return valueObject(obj, def, context)
     if (def?.scoped !== undefined) {
       throw new Error('unsupported property-scoped @context on a node')
@@ -344,8 +349,7 @@ function parseContext(
     terms: new Map(), prefixes: new Map(), aliases: new Map()
   }
   for (const entry of asArray(raw)) {
-    const map = resolveContextEntry(entry, registry)
-    if (map) context = extendContext(context, map)
+    context = extendContext(context, resolveContextEntry(entry, registry))
   }
   return context
 }
@@ -370,21 +374,25 @@ function extendContext(
 
 // A context entry is either an inline term map or a URL
 // resolved from the offline registry to its document
-// (`{ @context: ... }` or a bare map). An unresolvable URL
-// contributes nothing rather than reaching the network.
+// (`{ @context: ... }` or a bare map), which must be one term
+// map too. Nothing is fetched: a URL outside the registry's
+// own keys throws, since a context read as absent lets a
+// signature verify while a JSON-LD processor reads its terms.
 function resolveContextEntry(
   entry: JsonLdValue, registry?: Readonly<Record<string, JsonLdValue>>,
-): Record<string, JsonLdValue> | undefined {
+): Record<string, JsonLdValue> {
+  let map = entry
   if (typeof entry === 'string') {
-    const doc = registry?.[entry]
-    if (doc === undefined) return undefined
-    const inner = (doc as Record<string, JsonLdValue>)['@context'] ?? doc
-    return inner as Record<string, JsonLdValue>
+    if (!registry || !Object.hasOwn(registry, entry)) {
+      throw new Error(`cannot resolve @context: ${entry}`)
+    }
+    const doc = registry[entry] as Record<string, JsonLdValue> | null
+    map = doc?.['@context'] ?? doc
   }
-  if (entry === null || typeof entry !== 'object' || Array.isArray(entry)) {
+  if (map === null || typeof map !== 'object' || Array.isArray(map)) {
     throw new Error('unsupported @context entry')
   }
-  return entry as Record<string, JsonLdValue>
+  return map as Record<string, JsonLdValue>
 }
 
 function addContextTerm(

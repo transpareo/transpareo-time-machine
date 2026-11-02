@@ -227,4 +227,55 @@ describe('canonicalize: fails closed on out-of-scope input', () => {
     await expect(canonicalize(doc))
       .rejects.toThrow(/unsupported JSON-LD keyword/);
   });
+
+  // A context entry yields no statement of its own, so one
+  // read as absent leaves the N-Quads, and a signature over
+  // them, unchanged while a JSON-LD processor reads its terms.
+  it('rejects a context URL the registry does not hold', async () => {
+    const doc = {
+      '@context': ['https://example.org/extra', { ...CTX, name: 'ex:name' }],
+      '@id': 'ex:s',
+      name: 'Alice',
+    };
+    const contexts = { 'https://example.org/known': { '@context': CTX } };
+    await expect(canonicalize(doc, { contexts }))
+      .rejects.toThrow('cannot resolve @context: https://example.org/extra');
+    await expect(canonicalize(doc))
+      .rejects.toThrow(/cannot resolve @context/);
+  });
+
+  it('resolves a URL through the registry entries only', async () => {
+    const doc = {
+      '@context': ['constructor', { ...CTX, name: 'ex:name' }],
+      '@id': 'ex:s',
+      name: 'Alice',
+    };
+    await expect(canonicalize(doc, { contexts: {} }))
+      .rejects.toThrow('cannot resolve @context: constructor');
+  });
+
+  it('rejects a registered context that lists further contexts', async () => {
+    const doc = {
+      '@context': ['https://example.org/known', { ...CTX, name: 'ex:name' }],
+      '@id': 'ex:s',
+      name: 'Alice',
+    };
+    const contexts = {
+      'https://example.org/known': { '@context': ['https://example.org/x'] },
+    };
+    await expect(canonicalize(doc, { contexts }))
+      .rejects.toThrow(/unsupported @context entry/);
+  });
+
+  it('rejects a @context on a nested node', async () => {
+    const doc = {
+      '@context': { ...CTX, name: 'ex:name', knows: 'ex:knows' },
+      '@id': 'ex:s',
+      knows: {
+        '@context': { name: 'ex:alias' }, '@id': 'ex:o', name: 'Bob',
+      },
+    };
+    await expect(canonicalize(doc))
+      .rejects.toThrow(/unsupported nested @context/);
+  });
 });
