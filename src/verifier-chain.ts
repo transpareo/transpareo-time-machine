@@ -4,18 +4,20 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * Content-continuity chain walk for the standalone
- * <dpp-verifier> widget. Same contract as the SPA's
- * verifyChainLink (actions.ts): walk backwards from the
- * current version to v1, recomputing each prior snapshot's
- * chain hash from its bytes (JCS body for a flat snapshot,
- * RDFC statements for an ecdsa-sd VC, via
- * hexChainHashOfSnapshot) and cross-checking it against
- * BOTH the manifest's hashValue entry and the next
- * snapshot's priorVersionHash claim, so a re-emitted
- * manifest with matching forged hashes still fails.
- * Restated standalone (fetcher injected by the caller)
- * so the widget doesn't pull in the SPA's host/state
- * stack and the walk stays unit-testable.
+ * <dpp-verifier> widget. The head's own bytes must first
+ * hash to the manifest's hashValue for the current
+ * version, the SPA chip's bodyMatchesManifest rule
+ * (actions.ts). Then the same contract as the SPA's
+ * verifyChainLink: walk backwards from the current version
+ * to v1, recomputing each prior snapshot's chain hash from
+ * its bytes (JCS body for a flat snapshot, RDFC statements
+ * for an ecdsa-sd VC, via hexChainHashOfSnapshot) and
+ * cross-checking it against BOTH the manifest's hashValue
+ * entry and the next snapshot's priorVersionHash claim, so
+ * a re-emitted manifest with matching forged hashes still
+ * fails. Restated standalone (fetcher injected by the
+ * caller) so the widget doesn't pull in the SPA's
+ * host/state stack and the walk stays unit-testable.
  */
 
 import type { DppManifest, SignedSnapshot } from '@/archive'
@@ -36,6 +38,9 @@ export async function verifyChainFromHead(
 ): Promise<ChainCheckResult> {
   let n = manifest.currentVersion
   let snapshot = head
+  if (!await headMatchesManifest(manifest, head)) {
+    return broken(`v${n} body does not hash to the manifest claim`)
+  }
   if (n <= 1) return { status: 'not-applicable' }
 
   while (n > 1) {
@@ -67,6 +72,20 @@ export async function verifyChainFromHead(
     n = priorNumber
   }
   return { status: 'ok' }
+}
+
+// Bytes that miss the manifest's claim for the current
+// version are another publish of that URL, or another
+// passport, however well signed. An entry without a hash
+// makes no claim to check against.
+async function headMatchesManifest(
+  manifest: DppManifest, head: SignedSnapshot,
+): Promise<boolean> {
+  const entry = manifest.versions.find(
+    (v) => v.number === manifest.currentVersion,
+  )
+  if (!entry?.hashValue) return true
+  return await hexChainHashOfSnapshot(head) === entry.hashValue
 }
 
 function broken(reason: string): ChainCheckResult {

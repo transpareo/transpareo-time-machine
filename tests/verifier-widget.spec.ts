@@ -20,6 +20,10 @@
  * anywhere else, so its verdict orbs came out as empty
  * circles. It installs the bundled functional sprite into its
  * own root now.
+ *
+ * The current version's bytes must hash to the manifest's
+ * claim for it, as on the chip: a manifest whose snapshot
+ * URL serves another validly signed passport fails.
  */
 
 import { describe, it, expect, vi, beforeAll, afterEach } from 'vitest'
@@ -28,6 +32,7 @@ import { readFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { buildEcdsaSdIssuer } from '../scripts/seed/ecdsa-sd-signing'
+import { hexChainHashOfSnapshot } from '@/crypto/chain-hash'
 import '@/components/dpp-verifier'
 
 const HANDLE = 'acme'
@@ -39,21 +44,34 @@ const MANIFEST_URL = `${ORIGIN}/${HANDLE}/dpp/${CODE}/manifest.json`
 
 let keysDir: string
 let credential: Record<string, unknown>
+let credentialHash: string
+
+// Another passport of the same publisher, signed by the same
+// two keys: every proof on it verifies.
+let otherCredential: Record<string, unknown>
 
 // A real single-version ecdsa-sd DPP: the seed issuer mints
 // the credential and writes each authority's P-256 Multikey
-// document, which the stubbed fetch then serves.
+// document, which the stubbed fetch then serves. The
+// manifest names the credential's chain hash, as the seed
+// stamps it.
 beforeAll(async () => {
   const dir = mkdtempSync(join(tmpdir(), 'verifier-widget-'))
   keysDir = join(dir, HANDLE, 'dpp', CODE, 'keys')
   const issuer = await buildEcdsaSdIssuer(
     dir, HANDLE, CODE, '2026-05-01T12:00:00Z', ISSUER_DID, PLATFORM_DID,
   )
-  credential = await issuer.issue({
+  credential = await issuer.issue(passportBody(CODE))
+  credentialHash = await hexChainHashOfSnapshot(credential)
+  otherCredential = await issuer.issue(passportBody('xyz98765'))
+})
+
+function passportBody(code: string): Record<string, unknown> {
+  return {
     '@context': ['ignored'],
     '@type': 'dpp:DigitalProductPassport',
-    '@id': `https://acme.example/dpp/${CODE}`,
-    passportAlias: CODE,
+    '@id': `https://acme.example/dpp/${code}`,
+    passportAlias: code,
     version: 1,
     publishedAt: '2026-05-01T12:00:00Z',
     product: {
@@ -64,8 +82,8 @@ beforeAll(async () => {
         name: 'Capacity', value: '2.0'
       }]
     }
-  })
-})
+  }
+}
 
 // `extra` merges onto the manifest body, which is how the
 // withdrawal cases below serve a voided or superseded one.
@@ -81,18 +99,20 @@ function manifest(
     platform: {
       '@type': 'Organization', name: 'Transpareo', did: PLATFORM_DID
     },
-    versions: [{ number: 1, url: 'v/1.json', hashValue: 'h1' }]
+    versions: [{ number: 1, url: 'v/1.json', hashValue: credentialHash }]
   }
 }
 
-// Serves the manifest, the credential and the two key
-// documents; anything else 404s so a missed route shows up as
-// a failure rather than a silent pass.
-function stubFetch(extra?: Record<string, unknown>): void {
+// Serves the manifest, the credential (or `snapshot` in its
+// place) and the two key documents; anything else 404s, so a
+// missed route fails the spec.
+function stubFetch(
+  extra?: Record<string, unknown>, snapshot = credential,
+): void {
   vi.stubGlobal('fetch', async (input: string | URL): Promise<Response> => {
     const url = typeof input === 'string' ? input : input.toString()
     if (url.endsWith('/manifest.json')) return json(manifest(extra))
-    if (url.endsWith('/v/1.json')) return json(credential)
+    if (url.endsWith('/v/1.json')) return json(snapshot)
     const key = /\/keys\/([a-z0-9-]+\.json)$/.exec(url)?.[1]
     if (key) {
       return new Response(await readFile(join(keysDir, key), 'utf8'), {
@@ -168,6 +188,19 @@ describe('dpp-verifier: ecdsa-sd passports', () => {
     stubFetch()
     const widget = await mountWidget()
     expect(authorityLabels(widget)).toEqual(['Acme', 'Transpareo'])
+  })
+})
+
+describe('dpp-verifier: the current version against the manifest', () => {
+  it('fails a snapshot URL serving another signed passport', async () => {
+    // Its proofs verify, so only the manifest's hash claim
+    // for the version tells the two passports apart.
+    stubFetch(undefined, otherCredential)
+    const widget = await mountWidget()
+    const card = widget.shadowRoot?.querySelector('.verifier-card')
+    expect(card?.className).toContain('verdict-unauthenticated')
+    expect(card?.querySelector('.verifier-verdict')?.textContent).
+      toBe('Version history chain is broken')
   })
 })
 

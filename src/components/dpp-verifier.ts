@@ -13,8 +13,9 @@
  * rule the SPA host layer boots by). A manifest runs the
  * same gates as the SPA chip in the browser: the snapshot
  * proof under whichever cryptosuite it declares (strict),
- * the manifest's own platform signature, and the
- * priorVersionHash chain walk down to v1. A lone signed
+ * the manifest's own platform signature, the current
+ * snapshot's bytes against the manifest's hashValue for
+ * it, and the priorVersionHash chain walk down to v1. A lone signed
  * snapshot (a DPP published without a manifest, matching
  * the SPA's single-snapshot mode) is judged on its own
  * proof set alone. A page exposing nothing signed renders
@@ -435,7 +436,9 @@ async function verifyFromManifest(
   // The widget shows manifest-derived claims (version
   // count, issuer/platform names), so it runs the same
   // gates the SPA chip does: the manifest's own platform
-  // signature and the priorVersionHash chain walk down
+  // signature, then the chain step, which holds the
+  // snapshot's bytes to the manifest's hashValue for this
+  // version before walking the priorVersionHash chain down
   // to v1.
   const manifestSignature = await verifyManifestSignature(
     manifest as unknown as Record<string, unknown>, pins,

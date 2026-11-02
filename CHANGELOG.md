@@ -12,6 +12,13 @@ and this project adheres to
 
 ### Fixed
 
+- The `<dpp-verifier>` widget holds the current version's
+  snapshot to the manifest's `hashValue` for it, as the
+  verification chip does. A manifest whose snapshot URL
+  served another validly signed passport, or another
+  publish of the same version, read authentic in the widget
+  and failed on the chip; the widget now answers "Version
+  history chain is broken".
 - A passport whose `@context` names a context the renderer
   does not bundle, or carries a `@context` on a node inside
   the document, fails verification. The canonicalizer read

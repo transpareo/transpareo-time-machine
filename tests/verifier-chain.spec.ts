@@ -8,6 +8,9 @@
  * the manifest's hashValue entry and the next snapshot's
  * priorVersionHash claim, so a re-emitted manifest with
  * matching forged hashes still fails on the recompute.
+ * Before the walk, the head's own bytes must hash to the
+ * manifest's claim for the current version, the rule the
+ * SPA chip applies in bodyMatchesManifest.
  */
 
 import { describe, it, expect } from 'vitest';
@@ -59,6 +62,21 @@ async function buildChain(): Promise<Fixture> {
   return { manifest, head: v3, snapshots, fetched: [] };
 }
 
+// The fixture's manifest with its current entry restamped
+// to `head`'s hash: a manifest that vouches for the head,
+// so a case can reach the walk's own checks.
+async function vouchingFor(
+  fx: Fixture, head: SignedSnapshot,
+): Promise<DppManifest> {
+  const hashValue = await hexHashOfSnapshotBody(head);
+  return {
+    ...fx.manifest,
+    versions: fx.manifest.versions.map((v) => (
+      v.number === fx.manifest.currentVersion ? { ...v, hashValue } : v
+    )),
+  };
+}
+
 function fetcherOf(fx: Fixture) {
   return async (url: string): Promise<SignedSnapshot> => {
     fx.fetched.push(url);
@@ -95,12 +113,57 @@ describe('verifyChainFromHead', () => {
     expect(fx.fetched).toEqual([]);
   });
 
+  it('breaks when the head misses the manifest claim', async () => {
+    // Another publish served at the head's URL: its prior
+    // claim still names v2, so only hashing the head's own
+    // bytes catches it, and nothing is fetched.
+    const fx = await buildChain();
+    const head = { ...fx.head, republished: true } as SignedSnapshot;
+    const res = await verifyChainFromHead(
+      fx.manifest, MANIFEST_URL, head, fetcherOf(fx),
+    );
+    expect(res.status).toBe('broken');
+    expect(res.reason).toBe('v3 body does not hash to the manifest claim');
+    expect(fx.fetched).toEqual([]);
+  });
+
+  it('breaks a single version whose bytes are another passport', async () => {
+    const fx = await buildChain();
+    const manifest = { ...fx.manifest, currentVersion: 1 } as DppManifest;
+    const other: SignedSnapshot = {
+      version: 1, publishedAt: '2026-01-01', code: 'other-passport',
+    };
+    const res = await verifyChainFromHead(
+      manifest, MANIFEST_URL, other, fetcherOf(fx),
+    );
+    expect(res.status).toBe('broken');
+    expect(res.reason).toBe('v1 body does not hash to the manifest claim');
+  });
+
+  it('walks on when the manifest names no hash for the head', async () => {
+    // The chip's rule: an entry without a hash makes no
+    // claim to check against.
+    const fx = await buildChain();
+    const manifest = {
+      ...fx.manifest,
+      versions: fx.manifest.versions.map((v) => (
+        v.number === 3 ? { ...v, hashValue: '' } : v
+      )),
+    } as DppManifest;
+    const head = { ...fx.head, republished: true } as SignedSnapshot;
+    const res = await verifyChainFromHead(
+      manifest, MANIFEST_URL, head, fetcherOf(fx),
+    );
+    expect(res.status).toBe('ok');
+  });
+
   it('breaks when a snapshot omits priorVersionHash', async () => {
     const fx = await buildChain();
     const head = { ...fx.head } as Record<string, unknown>;
     delete head.priorVersionHash;
     const res = await verifyChainFromHead(
-      fx.manifest, MANIFEST_URL, head as SignedSnapshot, fetcherOf(fx),
+      await vouchingFor(fx, head as SignedSnapshot), MANIFEST_URL,
+      head as SignedSnapshot, fetcherOf(fx),
     );
     expect(res.status).toBe('broken');
     expect(res.reason).toContain('priorVersionHash');
@@ -112,7 +175,7 @@ describe('verifyChainFromHead', () => {
       ...fx.head, priorVersionHash: 'f'.repeat(64),
     } as SignedSnapshot;
     const res = await verifyChainFromHead(
-      fx.manifest, MANIFEST_URL, head, fetcherOf(fx),
+      await vouchingFor(fx, head), MANIFEST_URL, head, fetcherOf(fx),
     );
     expect(res.status).toBe('broken');
     expect(res.reason).toContain('does not match the manifest');
