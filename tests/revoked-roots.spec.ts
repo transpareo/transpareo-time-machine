@@ -65,9 +65,8 @@ function feedResponse(fingerprints: string[]): Response {
   }), { status: 200 });
 }
 
-// Fresh module registry per boot: the check is one-shot
-// behind a module-level `started` latch, and the signal
-// must start back at 'pending'.
+// Fresh module registry per boot, so each one starts from a
+// config holding only the settings it names.
 type RevokedRootsModule = typeof import('../src/revoked-roots');
 
 async function bootWithFetch(

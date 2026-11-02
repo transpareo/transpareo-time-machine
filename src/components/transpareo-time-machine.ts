@@ -34,7 +34,7 @@ import {
 } from '@/state'
 import * as host from '@/host'
 import {
-  i18n, hostLocaleOf, setHostLocale, warmLabels,
+  i18n, hostLocaleOf, setHostLocale, warmLabels, resetLocalePick,
 } from '@/i18n'
 import { t } from '@/i18n/labels'
 import {
@@ -199,27 +199,30 @@ class TranspareoTimeMachine extends BaseElement {
 
     // Read host config off this element's attributes before
     // anything below reads it (installIcons, verifier mode,
-    // the mounted subtree).
+    // the mounted subtree). It replaces the config of an
+    // element that held the page before.
     initConfigFromElement(this)
 
     // The revocation check needs the pins just read, and both
     // deliveries mount through here: the embed bundle loads no
     // other boot module. Arm the guard first, so a verdict
     // reached before the list lands is re-judged when it does.
-    // Both latch, so an element that connects later starts
-    // nothing.
+    // The guard latches; the check runs again for every
+    // element that takes the page, on that element's pins.
     armRevocationGuard()
     startRevokedRootsCheck()
 
     // Back and forward re-read `?show=` from here for the same
-    // reason. Latched like the two above.
+    // reason. Latched like the guard.
     bootstrapShowTokens()
 
     // The embedding page can pin the locale via `locale` (or
     // the older `lang`); the i18n bootstrap then prefers it
     // over the browser auto-detect once the snapshot's
-    // locales are known.
+    // locales are known. The pick is made afresh for every
+    // element that takes the page.
     setHostLocale(hostLocaleOf(this))
+    resetLocalePick()
     void warmLabels()
 
     this.addStyle(css)

@@ -76,15 +76,18 @@ interface RevokedRootsDoc {
   }>
 }
 
-let started = false
+// The number of the latest check. A check settles the status
+// only while it is the latest, so one the element before
+// started cannot judge the pins of the element after it.
+let latestCheck = 0
 
-// One-shot kick-off, called from the element's setup()
-// once its pins are read, so the fetch races with the
-// manifest fetch instead of blocking it. Verdict
-// downstream consults revocationStatus() reactively.
+// Called from the setup() of each element that takes the
+// page, once its pins are read, so the fetch races with the
+// manifest fetch instead of blocking it. Verdict downstream
+// consults revocationStatus() reactively.
 export function startRevokedRootsCheck(): void {
-  if (started) return
-  started = true
+  const check = ++latestCheck
+  revocationStatus.set('pending')
 
   const pins = config.pinnedPlatformKeys
   if (!pins || pins.length === 0) {
@@ -99,7 +102,9 @@ export function startRevokedRootsCheck(): void {
     return
   }
 
-  void runCheck(url, pins)
+  void runCheck(url, pins).then((status) => {
+    if (check === latestCheck) revocationStatus.set(status)
+  })
 }
 
 // The list at its well-known path on the asset host the page
@@ -110,9 +115,10 @@ function defaultUrl(): string {
   return new URL(REVOKED_ROOTS_PATH, base ?? DEFAULT_HOST).toString()
 }
 
+// The pins judged against the list at `url`.
 async function runCheck(
   url: string, pins: ReadonlyArray<string>,
-): Promise<void> {
+): Promise<RevocationStatus> {
   let pinFps: Set<string>
   try {
     pinFps = new Set(
@@ -120,8 +126,7 @@ async function runCheck(
     )
   } catch (err) {
     console.warn('[revoked-roots] cannot fingerprint pinned key:', err)
-    revocationStatus.set('unreachable')
-    return
+    return 'unreachable'
   }
 
   let doc: RevokedRootsDoc
@@ -129,8 +134,7 @@ async function runCheck(
     doc = await fetchRevokedRoots(url)
   } catch (err) {
     console.warn(`[revoked-roots] ${url} unreachable:`, err)
-    revocationStatus.set('unreachable')
-    return
+    return 'unreachable'
   }
 
   const entries = doc.revokedRoots ?? []
@@ -142,11 +146,10 @@ async function runCheck(
         `[revoked-roots] a pinned platform key is revoked (${fp}); `
         + 'all verification verdicts will be forced to unauthenticated',
       )
-      revocationStatus.set('revoked')
-      return
+      return 'revoked'
     }
   }
-  revocationStatus.set('ok')
+  return 'ok'
 }
 
 // 'unreachable' fails closed on pinned builds, so a

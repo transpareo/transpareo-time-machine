@@ -135,15 +135,25 @@ export function iconMapUrl(): string | null {
   return config.iconMapUrl ?? null
 }
 
-// Fetch the external key-to-icon table and publish it to
-// the signal. Best-effort like the sprite: a missing or
+// The number of the latest load. A load publishes its table
+// only while it is the latest, so one the element before
+// started cannot land on the element after it.
+let latestMapLoad = 0
+
+// Fetch the external key-to-icon table of the element that
+// takes the page and publish it to the signal, which starts
+// empty for it. Best-effort like the sprite: a missing or
 // malformed map leaves rows iconless and never blocks boot.
 export function loadContentIconMap(): void {
+  const load = ++latestMapLoad
+  contentIconMap.set({})
   const url = iconMapUrl()
   if (!url) return
   void fetch(url)
     .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`${r.status}`))))
-    .then((data: unknown) => contentIconMap.set(sanitizeIconMap(data)))
+    .then((data: unknown) => {
+      if (load === latestMapLoad) contentIconMap.set(sanitizeIconMap(data))
+    })
     .catch(() => { /* map unreachable or invalid: rows stay iconless */ })
 }
 

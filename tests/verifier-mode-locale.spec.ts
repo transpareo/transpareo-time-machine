@@ -25,7 +25,6 @@ import '@/components/transpareo-time-machine'
 // in the page once that module is in, so the clobber the
 // cases below guard against would happen inside the test.
 import '@/components/dpp-verifier'
-import { config } from '@/config'
 import { detectLocale, locale, setHostLocale } from '@/i18n'
 
 // What the host locale resolves to right now: 'de' only if
@@ -50,11 +49,6 @@ vi.stubGlobal('fetch', () => Promise.resolve(new Response('{}')))
 afterEach(() => {
   document.body.replaceChildren()
   setHostLocale(null)
-
-  // initConfigFromElement merges and never clears, so an
-  // element that set `verifier` would leave every later mount
-  // in verifier mode.
-  delete (config as { verifier?: boolean }).verifier
 })
 
 describe('the locale in verifier mode', () => {

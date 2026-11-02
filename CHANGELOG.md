@@ -60,6 +60,17 @@ and this project adheres to
   removed one, or reconnects after its `src` changed, starts
   from cleared verdicts; it showed the verdicts of the
   passport before.
+- An element that replaces a removed one reads only its own
+  attributes, and one it omits takes its default. It kept
+  the earlier element's `asset-host`, `sign-in-url`, pinned
+  keys, `verifier` mode and every other attribute it did not
+  set. The revocation check runs on its own pinned keys,
+  where only the page's first element ran it: a pinned
+  element that replaced an unpinned one was never checked.
+  Its rows take their icons from its own `icon-map-src`
+  alone, and its passport opens in the language its own
+  `locale` or `lang` asks for, once those labels are in; it
+  stayed in the earlier element's language.
 - A login-gated read still in flight when the passport
   reboots onto a new `src` writes nothing. Its answer landed
   on the new passport's version of the same number: a 401

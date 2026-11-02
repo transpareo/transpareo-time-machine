@@ -65,6 +65,26 @@ describe('pinned-platform-key parsing', () => {
   });
 });
 
+// An element that takes the page over from a removed one
+// reads the config again, and an attribute it omits falls
+// back to its default, whatever the earlier element set.
+describe('a later read', () => {
+  it('replaces every value of the read before', () => {
+    mod.initConfigFromElement(fakeElement({
+      'asset-host': 'https://cdn.example',
+      'sign-in-url': 'https://acme.com/passport/login',
+      'pinned-platform-key': 'z6MkCurrentRoot',
+      'pinned-issuer-key': 'z6MkByokKey',
+      'verifier': '',
+      'archived-at': '2026-10-08',
+    }));
+
+    mod.initConfigFromElement(fakeElement({}));
+
+    expect(mod.config).toEqual({});
+  });
+});
+
 describe('logo-href parsing', () => {
   it('carries the attribute through verbatim', () => {
     mod.initConfigFromElement(fakeElement({

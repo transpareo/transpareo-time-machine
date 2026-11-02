@@ -310,19 +310,19 @@ export function warmLabels(): Promise<Labels> {
   return loadLabels(detectLocale(bundledLocales))
 }
 
-// Run once on first data load: pick the right locale
-// from the now-available list and persist nothing yet
-// (the user hasn't made an explicit choice). After this
-// the picker drives changes.
+// Run on the first data load: pick the right locale from
+// the now-available list and persist nothing yet (the user
+// hasn't made an explicit choice). After this the picker
+// drives changes, until resetLocalePick asks for a new pick.
 let localeBootstrapped = false
 effect(() => {
-  if (localeBootstrapped) return
-
   // Wait for data. In manifest mode `availableLocales`
   // reads the manifest's list; in single-snapshot mode it
   // derives from the loaded snapshot, which is only safe to
-  // read once the host reports ready.
-  if (host.loadState() !== 'ready') return
+  // read once the host reports ready. Read ahead of the
+  // latch, so the effect stays subscribed for the next pick.
+  const ready = host.loadState() === 'ready'
+  if (localeBootstrapped || !ready) return
   const code = detectLocale(availableLocales())
   locale.set(code)
   localeBootstrapped = true
@@ -330,13 +330,24 @@ effect(() => {
   // Apply the bundle here as well as in the load effect
   // below, so the ready flag can only follow the labels it
   // vouches for. A cached chunk resolves within the same
-  // task, before anything paints.
+  // task, before anything paints. A bundle that lands after
+  // the pick was reset or changed belongs to no pick.
   loadLabels(code).then((l) => {
-    if (locale.peek() !== code) return
+    if (!localeBootstrapped || locale.peek() !== code) return
     labelSet.set(l)
     labelsReady.set(true)
   })
 })
+
+// Pick the locale again at the next ready boot, from the
+// host locale set by then, and hold the first paint until
+// its labels are in, as on a page load. Called by each
+// element that takes the page: it may name another locale
+// than the element before it.
+export function resetLocalePick(): void {
+  localeBootstrapped = false
+  labelsReady.set(false)
+}
 
 // Getter object so any effect reading `i18n.locale` /
 // `i18n.labels` auto-subscribes to the underlying signal.

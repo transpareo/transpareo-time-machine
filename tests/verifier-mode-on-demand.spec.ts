@@ -12,13 +12,11 @@
 
 import { describe, it, expect, afterEach, vi } from 'vitest'
 import '@/components/transpareo-time-machine'
-import { config } from '@/config'
 
 vi.stubGlobal('fetch', () => Promise.resolve(new Response('{}')))
 
 afterEach(() => {
   document.body.replaceChildren()
-  delete (config as { verifier?: boolean }).verifier
 })
 
 describe('the verifier widget', () => {

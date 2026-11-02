@@ -11,11 +11,12 @@
  * show-verification-mark, pinned-platform-key,
  * pinned-issuer-key, verifier, logo-href, sign-in-url,
  * footer-copyright, footer-links, archived-at).
- * initConfigFromElement reads them once in the element's
- * setup(), before its subtree mounts, so the consumers
- * below (read at render time) see populated values.
- * Anything the host omits stays undefined; the SPA hides
- * the affected UI rather than fabricating a default.
+ * initConfigFromElement reads them in the setup() of each
+ * element that takes the page, before its subtree mounts, so
+ * the consumers below (read at render time) see populated
+ * values. Anything that element omits is undefined, whatever
+ * an element before it set; the SPA hides the affected UI
+ * and fabricates no default.
  *
  * The DPP data source is the element's `src` attribute
  * (a manifest URL or a single snapshot URL); it is handled
@@ -178,12 +179,14 @@ const state: Mutable<TimeMachineConfig> = {}
 
 export const config: TimeMachineConfig = state
 
-// Read the host config off the element's attributes. URL
-// options use the `-src` suffix; `verifier` is a presence
-// flag; `show-verification-mark="false"` is the only value
-// that suppresses the chip; the footer is `footer-copyright`
-// (text) + `footer-links` (a JSON array). The DPP data
-// source (`src`) is handled by host.ts, not here.
+// Read the host config off the element's attributes,
+// replacing what an element before it set: the object is
+// emptied in place, so every importer keeps its reference.
+// URL options use the `-src` suffix; `verifier` is a
+// presence flag; `show-verification-mark="false"` is the
+// only value that suppresses the chip; the footer is
+// `footer-copyright` (text) + `footer-links` (a JSON array).
+// The DPP data source (`src`) is handled by host.ts.
 export function initConfigFromElement(el: Element): void {
   const str = (name: string): string | undefined => {
     const v = el.getAttribute(name)
@@ -204,8 +207,10 @@ export function initConfigFromElement(el: Element): void {
     requested: parseRequested(el),
     archivedAt: parseCalendarDate(el.getAttribute('archived-at')),
   }
+  const target = state as Record<string, unknown>
+  for (const k of Object.keys(target)) delete target[k]
   for (const [k, v] of Object.entries(next)) {
-    if (v !== undefined) (state as Record<string, unknown>)[k] = v
+    if (v !== undefined) target[k] = v
   }
 }
 
