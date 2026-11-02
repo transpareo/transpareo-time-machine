@@ -8,8 +8,8 @@
  * a previous boot (a slow manifest fetch, a lazy snapshot
  * fetch) detects the epoch change and drops its result
  * instead of writing the previous DPP's data into the
- * fresh caches. A boot without `src` clears the same way
- * and rests idle.
+ * fresh caches. A boot without `src`, or with an empty
+ * one, clears the same way and rests idle.
  *
  * And what the boot waits for. The events feed is fetched
  * beside the snapshot and not awaited: it feeds the
@@ -417,6 +417,19 @@ describe('bootFrom', () => {
     expect(host.manifest.peek()).toBeNull();
     expect(host.snapshots.peek()).toEqual({});
     expect(host.getManifestUrl()).toBeNull();
+  });
+
+  // What `src=""` on the element boots: there is no URL to
+  // fetch, and `new URL('', page)` would name the page itself.
+  it('an empty src boots as a missing one', async () => {
+    const host = await freshHost();
+    const calls = stubFetch({});
+
+    await host.bootFrom('');
+
+    expect(host.loadState.peek()).toBe('idle');
+    expect(host.getManifestUrl()).toBeNull();
+    expect(calls).toEqual([]);
   });
 
   it('a stale lazy snapshot fetch is dropped on reboot', async () => {

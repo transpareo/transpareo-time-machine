@@ -173,9 +173,10 @@ class TranspareoTimeMachine extends BaseElement {
   ): void {
     // The initial src is booted by setup() once config is
     // applied; only react to later src changes here, on the
-    // element that holds the page.
+    // element that holds the page. A removed or empty `src`
+    // boots none, as setup() does for one the element lacks.
     if (pageOwner !== this || config.verifier) return
-    if (name === 'src' && value && this.isConnected) this.boot(value)
+    if (name === 'src' && this.isConnected) this.boot(value)
   }
 
   // Every boot runs through here: the first, a later `src`, a

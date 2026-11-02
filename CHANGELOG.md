@@ -119,6 +119,12 @@ and this project adheres to
   it still in flight landed and opened in the new element,
   a load error it ended in showed there, and a verifier
   element's `state` reported that passport.
+- Removing `src` from the element that shows the passport,
+  or setting it to `""`, empties the page, as an element
+  without `src` starts, and a `src` set later boots again.
+  The passport stayed on the page, and a boot of it still
+  in flight landed. A verifier element, and a second
+  element that holds no page, still ignore `src`.
 - A revocation list of another shape reads as unreachable,
   so a build that pins a platform key fails its verdicts as
   it does for a list that will not load: `null`, a

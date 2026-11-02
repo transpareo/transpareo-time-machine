@@ -10,7 +10,8 @@
  * stays empty, leaves the config alone and says why on the
  * console. Every boot starts from cleared verdicts: a `src`
  * change, a reconnect and an element that replaces a removed
- * one alike.
+ * one alike. Removing `src` empties the page, as an element
+ * without one shows it.
  */
 
 import { describe, it, expect, afterEach, beforeEach, vi } from 'vitest'
@@ -157,6 +158,15 @@ describe('a second element on the page', () => {
     expect(booted(A2)).toBe(true)
   })
 
+  it('leaves the page alone when its src goes', () => {
+    mount(A)
+    const second = mount(B)
+
+    second.removeAttribute('src')
+
+    expect(host.getManifestUrl()).toBe(A)
+  })
+
   it('reports no passport state of its own', () => {
     const first = document.createElement('transpareo-time-machine')
     first.setAttribute('verifier', '')
@@ -216,6 +226,83 @@ describe('an element that boots', () => {
     expect(booted(B)).toBe(true)
     expect(versionStates.peek()).toEqual({})
     expect(console.error).not.toHaveBeenCalled()
+  })
+})
+
+// Without `src` the element holding the page shows what one
+// that loads without it shows, through the same boot.
+describe('an element whose src goes', () => {
+  // Its snapshot answers 404, so the boot ends in `error`
+  // with the manifest loaded and no card mounted.
+  it('drops what its src loaded', async () => {
+    answers.set(A, () => Promise.resolve(answer(MANIFEST)))
+    const el = mount(A)
+    await vi.waitFor(() => expect(host.loadState()).toBe('error'))
+    leaveVerdict()
+
+    el.removeAttribute('src')
+
+    expect(host.manifest()).toBeNull()
+    expect(host.loadState()).toBe('idle')
+    expect(versionStates.peek()).toEqual({})
+    expect(el.shadowRoot?.querySelector('.boot-shell-idle')).not.toBeNull()
+  })
+
+  it('drops a boot of it still in flight', async () => {
+    const release = hold(A)
+    const el = mount(A)
+
+    el.removeAttribute('src')
+    release(MANIFEST)
+    await settle()
+
+    expect(host.manifest()).toBeNull()
+    expect(host.loadState()).toBe('idle')
+  })
+
+  // As `setup()` reads `src=""`: no URL, so nothing to fetch.
+  it('goes the same way when emptied', async () => {
+    const release = hold(A)
+    const el = mount(A)
+
+    el.setAttribute('src', '')
+    release(MANIFEST)
+    await settle()
+
+    expect(host.manifest()).toBeNull()
+    expect(host.loadState()).toBe('idle')
+  })
+
+  it('boots again on a later src', () => {
+    const el = mount(A)
+    el.removeAttribute('src')
+
+    el.setAttribute('src', A2)
+
+    expect(booted(A2)).toBe(true)
+    expect(host.loadState()).toBe('loading')
+  })
+
+  it('while away, clears the page once it is back', () => {
+    const el = mount(A)
+    el.remove()
+
+    el.removeAttribute('src')
+    expect(host.getManifestUrl()).toBe(A)
+
+    document.body.appendChild(el)
+    expect(host.getManifestUrl()).toBeNull()
+    expect(host.loadState()).toBe('idle')
+  })
+
+  it('in verifier mode, boots nothing', () => {
+    const el = mount(A, { verifier: '' })
+    const epoch = host.currentBootEpoch()
+
+    el.removeAttribute('src')
+
+    expect(host.currentBootEpoch()).toBe(epoch)
+    expect(booted(A)).toBe(false)
   })
 })
 
