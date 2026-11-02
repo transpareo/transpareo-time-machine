@@ -52,6 +52,14 @@ and this project adheres to
   resolve, renders the passport without its events, as a
   feed that will not load already did. The boot failed on
   it and the page showed only the load error.
+- One `<transpareo-time-machine>` shows a passport per page.
+  A second element connected while the first is on the page
+  renders nothing and logs a console error saying why. It
+  rebooted the shared state, so both elements showed its
+  passport under its attributes. An element that replaces a
+  removed one, or reconnects after its `src` changed, starts
+  from cleared verdicts; it showed the verdicts of the
+  passport before.
 
 ## [2.24.0] - 2026-10-30
 

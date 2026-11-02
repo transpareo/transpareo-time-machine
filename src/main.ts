@@ -6,10 +6,11 @@
  * Entry point. The host page loads this script in its
  * <head>; it registers the <transpareo-time-machine>
  * custom element and the rest of the renderer. The
- * HTML shell carries one or more <transpareo-time-
- * machine src="..."> tags; each element fetches its
- * own manifest on connect and renders into its shadow
- * root.
+ * HTML shell carries one <transpareo-time-machine
+ * src="..."> tag, which fetches its manifest on connect
+ * and renders into its shadow root. The renderer shows
+ * one passport per page: a second element stays empty
+ * and logs why (components/transpareo-time-machine.ts).
  */
 
 import './bootstrap-spa'

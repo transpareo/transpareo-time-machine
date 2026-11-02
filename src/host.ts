@@ -93,11 +93,12 @@ export const currentVersion = signal<number>(0)
 // rendering derivations in state.ts read.
 export const snapshots = signal<Record<number, DppSnapshot>>({})
 
-// Raw signed bytes as fetched, keyed by version. The
-// proof verification and the priorVersionHash chain check
-// hash these exactly as received (JCS of the body without
-// `proof`), so they must stay byte-faithful and are kept
-// separate from the adapted render models above.
+// Signed snapshots as fetched, keyed by version. The proof
+// verification and the priorVersionHash chain check
+// canonicalize them as published: an eddsa-jcs snapshot by
+// JCS over its body without `proof`, an ecdsa-sd credential
+// by RDFC. So they stay unadapted and are kept separate from
+// the adapted render models above.
 export const rawSnapshots = signal<Record<number, SignedSnapshot>>({})
 export const epcisDocument = signal<EpcisDocument | null>(null)
 
@@ -281,8 +282,11 @@ function deepLinkedToEvent(): boolean {
 
 // Single-snapshot mode: render one frozen version. No
 // manifest (so no version list and no chain anchor) and no
-// EPCIS sidecar (so no event timeline); the snapshot's own
-// 2-of-2 proof still verifies via actions.ensureVersionLoaded.
+// EPCIS sidecar (so no event timeline). The snapshot's own
+// proofs still verify via actions.ensureVersionLoaded: an
+// eddsa-jcs snapshot is authentic once proofs under two
+// distinct keys verify, an ecdsa-sd one when every proof it
+// carries does.
 function bootFromSnapshot(snap: SignedSnapshot, url: string): void {
   currentVersion.set(snap.version)
   storeSnapshot(snap, url)

@@ -111,16 +111,31 @@ function currentState(): TimeMachineStateDetail | null {
   }
 }
 
+// The element showing the page's passport. The passport, its
+// verdicts and the config read off the element live in module
+// state, which a second element would overwrite and reboot,
+// so the first element to connect holds the page until it
+// leaves it. Any other stays empty and says why.
+let pageOwner: TranspareoTimeMachine | null = null
+
+function claimPage(el: TranspareoTimeMachine): boolean {
+  if (!pageOwner) {
+    pageOwner = el
+    return true
+  }
+  console.error(
+    '[transpareo-time-machine] another element on this page '
+    + 'already shows a passport, and the renderer shows one per '
+    + 'page, so this element stays empty. Set `src` on that '
+    + 'element to show another passport.'
+  )
+  return false
+}
+
 class TranspareoTimeMachine extends BaseElement {
   static get observedAttributes(): string[] {
     return ['src']
   }
-
-  // Set once setup() has applied config from the element's
-  // attributes. Gates attributeChangedCallback so the
-  // initial src boots from setup() (after config is read),
-  // not from the upgrade-time attribute callback.
-  private configured = false
 
   // Public modal API. Integrations (leadgen overlay,
   // recall banner) call this from a `:state` event
@@ -145,43 +160,52 @@ class TranspareoTimeMachine extends BaseElement {
   // dispatch would otherwise stay blind until the visitor
   // scrubs or switches locale. Null until the manifest has
   // loaded: read it once when attaching the listener, then
-  // follow the event from there.
+  // follow the event from there. An element that holds no
+  // page shows no passport, so it reports none.
   get state(): TimeMachineStateDetail | null {
-    return currentState()
+    return pageOwner === this ? currentState() : null
   }
 
   attributeChangedCallback(
     name: string, _old: string | null, value: string | null,
   ): void {
     // The initial src is booted by setup() once config is
-    // applied; only react to later src changes here.
-    if (!this.configured || config.verifier) return
-    if (name === 'src' && value && this.isConnected) {
-      // A later `src` is a full reboot. Clear every
-      // per-boot cache first so the previous DPP's
-      // verdicts, rows, and gesture state can't bleed
-      // into the new one; bootFrom clears the host-side
-      // artefact caches and bumps the boot epoch that
-      // in-flight async work checks before writing.
-      resetBootState()
-      resetVerifyCaches()
-      resetPrivateState()
-      void host.bootFrom(value)
-    }
+    // applied; only react to later src changes here, on the
+    // element that holds the page.
+    if (pageOwner !== this || config.verifier) return
+    if (name === 'src' && value && this.isConnected) this.boot(value)
+  }
+
+  // Every boot runs through here: the first, a later `src`, a
+  // reconnect, and an element taking over the page from one
+  // that left. Every per-boot cache is cleared first so the
+  // previous DPP's verdicts, rows, and gesture state can't
+  // bleed into the new one; bootFrom clears the host-side
+  // artefact caches and bumps the boot epoch that in-flight
+  // async work checks before writing.
+  private boot(src: string): void {
+    resetBootState()
+    resetVerifyCaches()
+    resetPrivateState()
+    void host.bootFrom(src)
   }
 
   protected setup(root: ShadowRoot): void {
+    // Before any attribute is read: the config is shared, and
+    // a second element would rewrite the first one's.
+    if (!claimPage(this)) return
+
     // Read host config off this element's attributes before
     // anything below reads it (installIcons, verifier mode,
     // the mounted subtree).
     initConfigFromElement(this)
-    this.configured = true
 
     // The revocation check needs the pins just read, and both
     // deliveries mount through here: the embed bundle loads no
     // other boot module. Arm the guard first, so a verdict
     // reached before the list lands is re-judged when it does.
-    // Both latch, so a second element starts nothing.
+    // Both latch, so an element that connects later starts
+    // nothing.
     armRevocationGuard()
     startRevokedRootsCheck()
 
@@ -284,7 +308,7 @@ class TranspareoTimeMachine extends BaseElement {
     }
 
     const src = this.getAttribute('src')
-    if (src) void host.bootFrom(src)
+    if (src) this.boot(src)
 
     // The inner SPA tree is mounted reactively so it
     // only renders once the host has data. Before that
@@ -370,7 +394,11 @@ class TranspareoTimeMachine extends BaseElement {
     this.toggleAttribute('data-pattern', tile !== '' && tile !== 'none')
   }
 
+  // Leaving the page frees it: an element connected after
+  // this one boots, and this one claims it again if it comes
+  // back first (a move within the page disconnects it too).
   disconnectedCallback(): void {
+    if (pageOwner === this) pageOwner = null
     this.dropTree()
     super.disconnectedCallback()
   }

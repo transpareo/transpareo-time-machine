@@ -62,7 +62,10 @@ test('verifier mode hands the widget the card measure', async ({ page }) => {
   // A verifier shell page carries no `src`: there is no
   // manifest to fetch, the widget goes up in place of the
   // passport tree once its code, loaded on demand, is in.
+  // The dev shell's passport element leaves first, since a
+  // page holds one element.
   const box = await page.evaluate(async () => {
+    document.querySelector('transpareo-time-machine')?.remove()
     const tm = document.createElement('transpareo-time-machine')
     tm.setAttribute('verifier', '')
     document.body.appendChild(tm)
