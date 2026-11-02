@@ -19,8 +19,9 @@
  *   - events.json: events sidecar, snake_case wire
  *     shape; the host module translates to the
  *     renderer's DppEvent type.
- *   - epcis.json: EPCIS 2.0 ObjectEvent projection plus a
- *     document-level platform signature block.
+ *   - epcis.json: EPCIS 2.0 ObjectEvent projection naming
+ *     its passport, plus a document-level platform
+ *     signature block.
  *   - dynamic-data.json: the live values, when the fixture
  *     declares any, signed like the manifest.
  *
@@ -1032,7 +1033,7 @@ function buildDynamicData(
 // authenticated `/api/authority/...` fetch when the
 // renderer runs in that mode.
 
-function buildEpcis(
+export function buildEpcis(
   fixture: Fixture, signer: SnapshotSigner,
 ): Record<string, unknown> {
   // An EPCIS events document is grounded in the EPCIS 2.0
@@ -1069,11 +1070,17 @@ function buildEpcis(
   // out of scope: the renderer reads the whole document and the
   // SPA does not re-check them, so the fixtures carry the
   // document-level signature only.
+  //
+  // The feed names its passport by the manifest's `code`,
+  // under `transpareo:code` beside `epcisBody` and inside the
+  // signed body, where the publisher writes it. The SPA
+  // shows no event from a feed naming another passport.
   const body = {
     '@context': context,
     type: 'EPCISDocument',
     schemaVersion: '2.0',
     creationDate: fixture.published_at,
+    'transpareo:code': fixture.code,
     epcisBody: {
       eventList: fixture.epcis
         .filter((e) => !eventsById.get(e.dpp_event_id)?.private)
