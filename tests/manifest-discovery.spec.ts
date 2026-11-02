@@ -63,7 +63,7 @@ describe('discoverManifestUrl', () => {
       toBe('https://shop.example.com/products/tee-1/manifest.json');
   });
 
-  it('resolves a root-relative renderer src against the page origin', () => {
+  it('resolves a root-path src against the page without asset-host', () => {
     const html = page('', `
       <transpareo-time-machine src="/acme/dpp/abc-123/manifest.json">
       </transpareo-time-machine>`);
@@ -123,5 +123,77 @@ describe('discoverManifestUrl', () => {
       <transpareo-time-machine src="javascript:alert(1)">
       </transpareo-time-machine>`);
     expect(discoverManifestUrl(html, PAGE_URL)).toBeNull();
+  });
+});
+
+// The renderer reads a root-path src from the origin its
+// `asset-host` attribute names (the CDN on a live page, the
+// page's own origin under "/"), so discovery follows it
+// there; every other src resolves against the page.
+describe('discoverManifestUrl: the renderer asset-host', () => {
+  function renderer(src: string, assetHost: string): string {
+    return page('', `
+      <transpareo-time-machine src="${src}" asset-host="${assetHost}">
+      </transpareo-time-machine>`);
+  }
+
+  it('reads a root-path src from the asset host', () => {
+    const html = renderer(
+      '/acme/dpp/abc-123/manifest.json', 'https://cdn.example.net',
+    );
+    expect(discoverManifestUrl(html, PAGE_URL)).
+      toBe('https://cdn.example.net/acme/dpp/abc-123/manifest.json');
+  });
+
+  it('reads it from the page origin under "/"', () => {
+    const html = renderer('/acme/dpp/abc-123/manifest.json', '/');
+    expect(discoverManifestUrl(html, PAGE_URL)).
+      toBe('https://shop.example.com/acme/dpp/abc-123/manifest.json');
+  });
+
+  it.each(['', '   ', 'https://[bad'])(
+    'falls back to the page origin for asset-host %j',
+    (assetHost) => {
+      const html = renderer('/m.json', assetHost);
+      expect(discoverManifestUrl(html, PAGE_URL)).
+        toBe('https://shop.example.com/m.json');
+    },
+  );
+
+  it('resolves a relative src against the page URL', () => {
+    const html = renderer('manifest.json', 'https://cdn.example.net');
+    expect(discoverManifestUrl(html, PAGE_URL)).
+      toBe('https://shop.example.com/products/tee-1/manifest.json');
+  });
+
+  it('leaves an absolute src on its own host', () => {
+    const html = renderer(
+      'https://files.example.org/m.json', 'https://cdn.example.net',
+    );
+    expect(discoverManifestUrl(html, PAGE_URL)).
+      toBe('https://files.example.org/m.json');
+  });
+
+  it('reads a scheme-relative src as an absolute one', () => {
+    const html = renderer(
+      '//files.example.org/m.json', 'https://cdn.example.net',
+    );
+    expect(discoverManifestUrl(html, PAGE_URL)).
+      toBe('https://files.example.org/m.json');
+  });
+
+  it('refuses a non-http(s) asset host', () => {
+    const html = renderer('/m.json', 'ftp://cdn.example.net');
+    expect(discoverManifestUrl(html, PAGE_URL)).toBeNull();
+  });
+
+  it('keeps a link alternate on the page origin', () => {
+    const html = page(
+      `<link rel="alternate" type="application/json" href="/m.json">`,
+      `<transpareo-time-machine asset-host="https://cdn.example.net">
+      </transpareo-time-machine>`,
+    );
+    expect(discoverManifestUrl(html, PAGE_URL)).
+      toBe('https://shop.example.com/m.json');
   });
 });

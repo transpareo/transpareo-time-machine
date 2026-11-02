@@ -39,6 +39,15 @@ and this project adheres to
   credential shows the retry affordance, as a failed proof
   does. The request waits for the version's snapshot and the
   revocation check.
+- A passport page pasted into the `<dpp-verifier>` widget
+  is read from where its renderer reads it: a root-path
+  `src` on the embedded `<transpareo-time-machine>`
+  resolves against the element's `asset-host`, as the
+  element does at boot. The widget resolved it against the
+  page, so a page served from a host that does not also
+  serve the passport files (a white-label domain, a
+  publisher's own site) reported no signed data while the
+  page rendered.
 
 ## [2.24.0] - 2026-10-30
 

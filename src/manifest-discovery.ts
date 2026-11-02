@@ -24,10 +24,12 @@
  *
  * The page markup is parsed with DOMParser, which neither
  * runs scripts nor loads subresources, so parsing an
- * arbitrary fetched page is inert. The discovered
- * reference resolves against the page URL and must come
- * out http(s); anything else is dropped rather than handed
- * to fetch.
+ * arbitrary fetched page is inert. The renderer's `src`
+ * resolves as the element resolves it at boot: a root path
+ * against the element's `asset-host`, when it names one.
+ * Every other reference resolves against the page URL. The
+ * result must come out http(s); anything else is dropped
+ * before it reaches fetch.
  */
 
 // The artefacts the verifier accepts (manifest, snapshot)
@@ -44,14 +46,30 @@ export function discoverManifestUrl(
   page: string, pageUrl: string,
 ): string | null {
   const doc = new DOMParser().parseFromString(page, 'text/html')
-  const ref = embeddedRendererSrc(doc) ?? linkAlternateHref(doc)
-  if (!ref) return null
-  return toHttpUrl(ref, pageUrl)
+  const renderer = doc.querySelector('transpareo-time-machine[src]')
+  const src = renderer?.getAttribute('src')
+  if (renderer && src) return toHttpUrl(src, srcBase(renderer, src, pageUrl))
+  const href = linkAlternateHref(doc)
+  return href ? toHttpUrl(href, pageUrl) : null
 }
 
-function embeddedRendererSrc(doc: Document): string | null {
-  return doc.querySelector('transpareo-time-machine[src]')
-    ?.getAttribute('src') || null
+// The element's own rule for its `src` (bootFrom in
+// host.ts): a root path names a file on the host its
+// trimmed `asset-host` names, read against the page.
+function srcBase(renderer: Element, src: string, pageUrl: string): string {
+  const assetHost = renderer.getAttribute('asset-host')?.trim()
+  if (!assetHost || !isRootPath(src)) return pageUrl
+  try {
+    return new URL(assetHost, pageUrl).toString()
+  } catch {
+    return pageUrl
+  }
+}
+
+// One leading slash: `//host/x` is a scheme-relative URL,
+// which resolves against the page like any other reference.
+function isRootPath(ref: string): boolean {
+  return ref.startsWith('/') && !ref.startsWith('//')
 }
 
 const JSON_LINK_TYPES = new Set([
