@@ -70,6 +70,12 @@ export interface EpcisDocument {
   readonly creationDate: string
   readonly epcisBody: EpcisBody
 
+  // The passport the feed belongs to, by the manifest's
+  // `code`. Feeds signed before the key was namespaced carry
+  // it as a bare `code`.
+  readonly 'transpareo:code'?: string
+  readonly code?: string
+
   // Document-level platform signature over the whole events
   // file: the JCS canonical body (this object with the
   // signature removed), SHA-256, Ed25519-signed by the

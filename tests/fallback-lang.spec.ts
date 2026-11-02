@@ -23,6 +23,7 @@ import { readdirSync, readFileSync } from 'node:fs'
 import * as host from '@/host'
 import { locale } from '@/i18n'
 import { fetchStateByVersion } from '@/private-properties'
+import { timelineFeed } from '@/state'
 import { eventModalEventId } from '@/components/dpp-event-modal'
 import {
   REGION_DATATYPE, txLang, type DppSnapshot, type PropertyValue,
@@ -124,7 +125,7 @@ describe('a value in another language', () => {
       1: { version: 1, properties: [before] },
       2: { version: 2, properties: [before, added], changedProperties }
     } as unknown as Record<number, DppSnapshot>)
-    host.epcisDocument.set({
+    timelineFeed.set({
       epcisBody: {
         eventList: [{
           type: 'ObjectEvent',

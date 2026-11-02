@@ -15,7 +15,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import * as host from '../src/host';
 import {
   focusedEventId, hoveredEventId,
-  dragProgress, dragActive, isResidualNav,
+  dragProgress, dragActive, isResidualNav, timelineFeed,
 } from '../src/state';
 import { navByEventId, cancelReleaseAnim } from '../src/actions';
 import type { EpcisDocument } from '../src/epcis';
@@ -81,7 +81,7 @@ beforeEach(() => {
   });
 
   cancelReleaseAnim();
-  host.epcisDocument.set(FEED);
+  timelineFeed.set(FEED);
   host.currentVersion.set(2);
   focusedEventId.set(null);
   hoveredEventId.set(null);

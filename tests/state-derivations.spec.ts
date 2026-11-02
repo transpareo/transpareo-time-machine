@@ -10,7 +10,8 @@
  * latest version. activeSnapshot renders that same version,
  * and both read as live again once the timeline is hidden.
  * Plus displayedEvent's hover > focus > latest precedence.
- * Driven through the real host signals.
+ * Driven through the real host signals, with the feed handed
+ * to the timeline as one that cleared its checks.
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
@@ -18,7 +19,7 @@ import * as host from '../src/host';
 import {
   activeSnapshot, activeVersionNumber, displayedEvent, focusedEventId,
   focusIndex, hoveredEventId, isOnCurrent, verifyResult, versionStates,
-  timelineState
+  timelineState, timelineFeed
 } from '../src/state';
 import type { EpcisDocument } from '../src/epcis';
 import type { DppSnapshot } from '../src/types';
@@ -51,7 +52,7 @@ const FEED = feed([
 ]);
 
 beforeEach(() => {
-  host.epcisDocument.set(FEED);
+  timelineFeed.set(FEED);
   host.currentVersion.set(2);
   focusedEventId.set(null);
   hoveredEventId.set(null);
@@ -80,7 +81,7 @@ describe('activeVersionNumber', () => {
   });
 
   it('falls back to the latest version when nothing precedes', () => {
-    host.epcisDocument.set(feed([
+    timelineFeed.set(feed([
       ev('insp-early', '2023-01-01T00:00:00Z'),
       ev('pub-1', '2024-01-01T00:00:00Z', 1),
     ]));
@@ -130,7 +131,7 @@ describe('displayedEvent', () => {
   });
 
   it('has nothing to show when there are no events', () => {
-    host.epcisDocument.set(feed([]));
+    timelineFeed.set(feed([]));
     focusedEventId.set('whatever');
     expect(displayedEvent()).toBe(null);
   });

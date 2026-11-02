@@ -82,6 +82,17 @@ and this project adheres to
   and the chip reads "Not verifiable". A transition naming
   no stage at all printed the summary's `{status}`
   placeholder and now carries no summary line either.
+- The timeline shows a passport's events once the events
+  feed clears the check the live values clear: its
+  signature verifies, or, on a build that pins no platform
+  key, the feed is unsigned or its key host does not
+  answer. The feed must also name this passport: a
+  `transpareo:code` (or, on older feeds, a bare `code`)
+  other than the manifest's fails it. A feed whose
+  signature failed drove the timeline, and only the proof
+  dialog's events badge said so; the dialog still reports
+  the feed's verdict. A link into one event waits for that
+  verdict and opens on the event.
 
 ## [2.24.0] - 2026-10-30
 

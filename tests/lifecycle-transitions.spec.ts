@@ -30,7 +30,7 @@ import {
   describe, it, expect, afterEach, beforeEach, vi, type MockInstance
 } from 'vitest'
 import * as host from '@/host'
-import { events, focusedEventId, timelineState } from '@/state'
+import { events, focusedEventId, timelineFeed, timelineState } from '@/state'
 import { eventModalEventId } from '@/components/dpp-event-modal'
 import '@/components/timeline'
 import { LIFECYCLE_STATUSES, canonicalStatus } from '@/types'
@@ -88,13 +88,13 @@ function feedWith(from: string, to: string): EpcisDocument {
 }
 
 function parsePair(from: string, to: string): [unknown, unknown] {
-  host.epcisDocument.set(feedWith(from, to))
+  timelineFeed.set(feedWith(from, to))
   const evt = events()[0]
   return [evt?.statusFrom, evt?.statusTo]
 }
 
 afterEach(() => {
-  host.epcisDocument.set(null)
+  timelineFeed.set(null)
 })
 
 describe('lifecycle transitions', () => {

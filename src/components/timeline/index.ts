@@ -150,18 +150,18 @@ class DppTimeline extends LightElement {
     this.bindOpenFullButton()
     this.bindDetailsGestures(details)
 
-    // Single-snapshot mode (and any DPP with no event feed)
-    // has nothing to scrub, so hide the whole timeline,
-    // including the "show history" toggle, when there are no
-    // events.
+    // Single-snapshot mode (and any DPP with no event feed,
+    // or a feed that failed its checks) has nothing to
+    // scrub, so hide the whole timeline, including the "show
+    // history" toggle, when there are no events.
     //
-    // A feed still in flight counts as events. The boot does
-    // not wait for it, and a strip that appeared once it
-    // landed would push the card down a second into the
-    // visit; holding the space from the first paint costs
-    // the collapsed strip's height on a passport whose feed
-    // turns out to be empty, which a published passport
-    // never is.
+    // A feed still in flight or still being judged counts as
+    // events. The boot waits for neither, and a strip that
+    // appeared once the feed cleared would push the card
+    // down a second into the visit; holding the space from
+    // the first paint costs the collapsed strip's height on
+    // a passport whose feed turns out to be empty, which a
+    // published passport never is, or fails its checks.
     this.effect(() => {
       const expected = sortedEvents().length > 0 || eventsPending()
       this.style.display = expected ? '' : 'none'
@@ -700,8 +700,14 @@ class DppTimeline extends LightElement {
       }
       const list = sortedEvents()
       if (!list.length) return
+
+      // Subscribers run in the order they subscribed, so
+      // when the events land on an open history this can
+      // run before focusIndex has seen them. Its own update
+      // runs this again with an index into the new list.
       const at = focusIndex()
       const active = list[at]
+      if (!active) return
       const cameFromHidden = prevState === 'hidden'
       const activeChanged = active.id !== prevActiveId
 

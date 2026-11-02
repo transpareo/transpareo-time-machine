@@ -242,9 +242,21 @@ Field notes:
 - `availableLocales` - the locales this passport is
   published in; drives the footer language picker.
 - `epcisUrl` - the EPCIS 2.0 events document the
-  event timeline derives from. A manifest without it, or
-  one whose document will not load, renders the passport
-  without its events.
+  event timeline derives from. The document names its
+  passport under `transpareo:code` (a bare `code` on
+  documents signed before that key was namespaced), which
+  must be the manifest's `code`; a document naming none
+  is held to its signature alone. Its events show once
+  that signature verifies, or, on a build that pins no
+  platform key, once the document turns out unsigned or
+  its key host does not answer; a build that pins one
+  requires a signature verified under a pinned key. A
+  manifest without the document, or one whose document
+  will not load, names another passport or fails that
+  check, renders the passport without its events, and
+  the proof dialog reports the document's verdict. A
+  link into one event waits for the document and its
+  verdict, so the page opens on that event.
 - `dynamicDataUrl` (optional) - the passport's live
   values (state of charge, remaining capacity), which
   change without a new version. The document names its

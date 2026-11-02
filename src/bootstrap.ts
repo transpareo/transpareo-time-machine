@@ -13,6 +13,7 @@
 import { effect } from '@/reactive/signals'
 import {
   focusedEventId, activeVersionNumber, timelineState, epcisDocument,
+  eventsPending
 } from '@/state'
 import {
   ensureVersionLoaded, navByEventId, ensureEventsVerified,
@@ -115,6 +116,17 @@ function parseHash(): string | null {
   if (typeof window === 'undefined') return null
   const h = window.location.hash
   return h && h !== '#' ? decodeURIComponent(h.slice(1)) : null
+}
+
+// Whether the mount still waits on a link into one event.
+// The page opens on the linked event: host.ts holds the
+// boot for the feed, and this holds the mount for the
+// feed's verdict, which the events wait on. It starts the
+// verdict too, since nothing else does before the mount.
+export function awaitingLinkedEvent(): boolean {
+  if (parseHash() == null) return false
+  ensureEventsVerified()
+  return eventsPending()
 }
 
 export function bootstrapHash(): void {

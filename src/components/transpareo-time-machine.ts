@@ -37,7 +37,9 @@ import {
   i18n, hostLocaleOf, setHostLocale, warmLabels,
 } from '@/i18n'
 import { t } from '@/i18n/labels'
-import { bootstrapVerify, bootstrapHash } from '@/bootstrap'
+import {
+  bootstrapVerify, bootstrapHash, awaitingLinkedEvent
+} from '@/bootstrap'
 import {
   armRevocationGuard, ensureEventsVerified, resetVerifyCaches,
 } from '@/actions'
@@ -320,10 +322,13 @@ class TranspareoTimeMachine extends BaseElement {
     // writing to detached nodes. The first mount also
     // waits for the picked locale's labels, so the page
     // opens in the visitor's language rather than in the
-    // English fallback that would then swap out.
+    // English fallback that would then swap out. A link
+    // into one event also waits for the feed's verdict (see
+    // bootstrap.awaitingLinkedEvent), so it opens on that
+    // event.
     this.effect(() => {
       const state = host.loadState()
-      if (state === 'ready' && i18n.labelsReady) {
+      if (state === 'ready' && i18n.labelsReady && !awaitingLinkedEvent()) {
         // Measured while the host's first frame is still on
         // screen, and handed to the travel below once the
         // card has been laid out. See handover.ts for why

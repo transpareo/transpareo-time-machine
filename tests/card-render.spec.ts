@@ -31,9 +31,15 @@ async function mount(page: Page): Promise<void> {
 // element reports one, then load that hash fresh: switching
 // versions in a page that is already up runs the transit
 // tween, whose blur is still easing out well after the view
-// flips, and a resting card is what these tests read.
+// flips, and a resting card is what these tests read. The
+// dots come after the card, once the feed's signature is
+// judged.
 async function bootHistorical(page: Page): Promise<void> {
   await mount(page)
+  await page.waitForFunction(() => {
+    const root = document.querySelector('transpareo-time-machine')?.shadowRoot
+    return !!root?.querySelector('[data-event-id]')
+  })
   const id = await page.evaluate(async () => {
     const tm = document.querySelector('transpareo-time-machine')!
     const dots = tm.shadowRoot!.querySelectorAll<HTMLElement>('[data-event-id]')

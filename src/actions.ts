@@ -32,9 +32,10 @@ import {
 import type { ProofEntryResult, VerificationResult } from '@/crypto/verify'
 import { verifySnapshotAnySuite } from '@/crypto/dispatch'
 import {
-  manifestProofState, eventsProofState, dynamicDataProofState,
+  manifestProofState, eventsProofState, dynamicDataProofState, timelineFeed,
   type SignatureProofState,
 } from '@/state'
+import type { EpcisDocument } from '@/epcis'
 import { config } from '@/config'
 import {
   artefactSignatureAcceptable, type ArtefactSignatureState,
@@ -100,14 +101,20 @@ function verifyManifest(): Promise<ArtefactSignatureState> {
 // carries a single `signature` block (same scheme as the
 // manifest), so the same verifier checks it: JCS-canonical
 // body minus `signature`, SHA-256, Ed25519 under the
-// resolved platform key. A genuinely unsigned feed resolves
-// to 'absent' (tolerated); a present-but-invalid signature
-// is surfaced for the proof modal's events badge. Per-event
-// proofs are a publisher convenience for single-event pulls
-// and are not re-checked here; they ride inside the signed
-// document body, so the document signature already covers
-// them. Idempotent: the first call kicks the verify off and
-// later calls are no-ops.
+// resolved platform key. Per-event proofs are a publisher
+// convenience for single-event pulls and are not re-checked
+// here; they ride inside the signed document body, so the
+// document signature already covers them. Idempotent: the
+// first call kicks the verify off and later calls are
+// no-ops.
+//
+// The feed must name this passport before its signature
+// counts for anything, as the dynamic-data document must.
+// The proof modal's events badge shows the verdict either
+// way; the timeline is handed the feed only when the
+// verdict clears signatureIsAcceptable, the policy the live
+// values clear. A genuinely unsigned feed resolves to
+// 'absent', which an unpinned build tolerates.
 //
 // The boot no longer waits for the feed, so this can be
 // called before it lands. A verdict must not be latched
@@ -122,11 +129,40 @@ export function ensureEventsVerified(): void {
   const doc = host.epcisDocument.peek()
   if (!doc && host.eventsPending.peek()) return
   const epoch = host.currentBootEpoch()
-  eventsVerifyPromise = (
-    doc ? judgeSidecar(doc, 'events') : Promise.resolve('absent' as const)
-  ).then((state) => {
-    if (epoch === host.currentBootEpoch()) eventsProofState.set(state)
+  eventsVerifyPromise = judgeFeed(doc).then((state) => {
+    if (epoch !== host.currentBootEpoch()) return
+
+    // The feed goes in before the verdict: whatever waits
+    // on the verdict finds the events there when it lands.
+    if (doc && signatureIsAcceptable(state)) timelineFeed.set(doc)
+    eventsProofState.set(state)
   })
+}
+
+// The feed's verdict: 'absent' when no feed came, invalid
+// when it names another passport, else its signature's.
+function judgeFeed(
+  doc: EpcisDocument | null
+): Promise<ProofEntryResult | 'absent'> {
+  if (!doc) return Promise.resolve('absent')
+  const code = host.manifest.peek()?.code
+  const foreign = foreignFeed(doc, code)
+  if (foreign) return Promise.resolve(invalidEntry(foreign))
+  return judgeSidecar(doc, 'events')
+}
+
+// Why the feed belongs to another passport, or null when it
+// names this one. Feeds name it under `transpareo:code`;
+// those signed before that key was namespaced carry a bare
+// `code`, as they carry a bare `signature`. A feed naming
+// neither is held to its signature alone, as a dynamic-data
+// document without `@id` or `issuer` is held to its code.
+function foreignFeed(
+  doc: EpcisDocument, code: string | undefined
+): string | null {
+  const named = doc['transpareo:code'] ?? doc.code
+  if (named === undefined || named === code) return null
+  return `events feed names passport ${named}, not ${code}`
 }
 
 // Verify the dynamic-data document once it lands, and keep
@@ -187,8 +223,8 @@ export function didOf(issuer: unknown): string | undefined {
 }
 
 // Whether the live values may paint: once their document's
-// verdict is in and clears the same policy as the events
-// feed.
+// verdict is in and clears signatureIsAcceptable, the policy
+// the events feed clears before the timeline shows it.
 export function liveDataIsShowable(state: SignatureProofState): boolean {
   return state !== 'pending' && signatureIsAcceptable(state)
 }

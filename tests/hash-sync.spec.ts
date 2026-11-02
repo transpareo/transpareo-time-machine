@@ -56,7 +56,7 @@ async function bootstrap(hash: string): Promise<State> {
   window.location.hash = hash
   const host = await import('../src/host')
   const state = await import('../src/state')
-  host.epcisDocument.set(FEED)
+  state.timelineFeed.set(FEED)
   host.currentVersion.set(2)
   const { bootstrapHash } = await import('../src/bootstrap')
   bootstrapHash()

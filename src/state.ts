@@ -27,7 +27,7 @@ import { withdrawalOf, type Withdrawal } from '@/withdrawal'
 import { snapshotBody } from '@/artefact-detect'
 import * as host from '@/host'
 import type { VersionState } from '@/archive'
-import { eventTime, type EpcisObjectEvent } from '@/epcis'
+import { eventTime, type EpcisDocument, type EpcisObjectEvent } from '@/epcis'
 import type { ProofEntryResult } from '@/crypto/verify'
 
 // ---- Active archive (manifest is the entry-point
@@ -35,12 +35,6 @@ import type { ProofEntryResult } from '@/crypto/verify'
 // fetched alongside the current snapshot).
 export const manifest = host.manifest
 export const epcisDocument = host.epcisDocument
-
-// True while the events feed is in flight. The boot does
-// not wait for it (see host.ts), so the timeline holds its
-// strip's space on this rather than appearing later and
-// pushing the card down.
-export const eventsPending = host.eventsPending
 export const versionStates =
   signal<Record<number, VersionState>>({})
 
@@ -54,10 +48,30 @@ export type SignatureProofState = ProofEntryResult | 'absent' | 'pending'
 // Manifest version-list signature (shared across versions).
 export const manifestProofState = signal<SignatureProofState>('pending')
 
-// Events sidecar (EPCIS document) signature. Verified once
-// at boot; surfaced in the proof modal alongside the
-// manifest signature.
+// Events sidecar (EPCIS document) signature, judged once
+// the feed lands. The proof modal shows it beside the
+// manifest signature; the timeline shows the feed only
+// once it clears (see timelineFeed).
 export const eventsProofState = signal<SignatureProofState>('pending')
+
+// The events feed the timeline is built from: the document
+// once it names this passport and its signature clears the
+// policy the live values clear (see
+// actions.ensureEventsVerified). Null while the feed is in
+// flight or being judged, and it stays null when the feed
+// fails.
+export const timelineFeed = signal<EpcisDocument | null>(null)
+
+// True while the timeline cannot yet tell whether it has
+// events: the feed is in flight, or it has landed and its
+// verdict is still out. The boot waits for neither (see
+// host.ts), so the timeline holds its strip's space on this
+// from the first paint, and the card stays put when the
+// events appear.
+export const eventsPending = computed(
+  () => host.eventsPending()
+    || (epcisDocument() != null && eventsProofState() === 'pending')
+)
 
 // Dynamic-data document signature, judged when the
 // document lands. The version verdict never reads it; the
@@ -72,7 +86,7 @@ export const epcisByEventId = computed<
   Record<string, EpcisObjectEvent>
 >(() => {
   const out: Record<string, EpcisObjectEvent> = {}
-  const doc = epcisDocument()
+  const doc = timelineFeed()
   if (!doc) return out
   for (const ev of doc.epcisBody.eventList) {
     const id = ev['transpareo:dppEventId']
@@ -81,7 +95,8 @@ export const epcisByEventId = computed<
   return out
 })
 
-// ---- Event list, derived from the EPCIS document.
+// ---- Event list, derived from the EPCIS document once
+// it has cleared its checks (timelineFeed).
 // A publisher serves a single events sidecar (the
 // EPCIS file, served at `manifest.epcisUrl`), with the
 // renderer-specific fields carried as `transpareo:*`
@@ -94,7 +109,7 @@ export const epcisByEventId = computed<
 // mis-publishing a regulator-only event into the
 // public feed.
 export const events = computed<ReadonlyArray<DppEvent>>(() => {
-  const doc = epcisDocument()
+  const doc = timelineFeed()
   if (!doc) return []
   const out: DppEvent[] = []
   for (const ev of doc.epcisBody.eventList) {
@@ -510,6 +525,7 @@ export function resetBootState(): void {
   versionStates.set({})
   manifestProofState.set('pending')
   eventsProofState.set('pending')
+  timelineFeed.set(null)
   dynamicDataProofState.set('pending')
   focusedEventId.set(null)
   hoveredEventId.set(null)
