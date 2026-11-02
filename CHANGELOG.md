@@ -97,6 +97,12 @@ and this project adheres to
   alone, and its passport opens in the language its own
   `locale` or `lang` asks for, once those labels are in; it
   stayed in the earlier element's language.
+- An element without `src`, or in verifier mode, that
+  replaces a removed one starts from an empty page. The
+  passport the element before it booted stayed: a boot of
+  it still in flight landed and opened in the new element,
+  a load error it ended in showed there, and a verifier
+  element's `state` reported that passport.
 - A login-gated read still in flight when the passport
   reboots onto a new `src` writes nothing. Its answer landed
   on the new passport's version of the same number: a 401

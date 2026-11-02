@@ -8,7 +8,8 @@
  * a previous boot (a slow manifest fetch, a lazy snapshot
  * fetch) detects the epoch change and drops its result
  * instead of writing the previous DPP's data into the
- * fresh caches.
+ * fresh caches. A boot without `src` clears the same way
+ * and rests idle.
  *
  * And what the boot waits for. The events feed is fetched
  * beside the snapshot and not awaited: it feeds the
@@ -391,6 +392,31 @@ describe('bootFrom', () => {
     // The stale boot bailed before fetching its snapshot
     // and EPCIS artefacts.
     expect(calls.filter((u) => u.includes('/a/v/1.json'))).toEqual([]);
+  });
+
+  // What an element without `src` boots: the page as it loads,
+  // with nothing of the passport before and no write from a
+  // boot of it still in flight.
+  it('a boot without src clears the page and rests idle', async () => {
+    const host = await freshHost();
+    const slowManifest = deferred<unknown>();
+    stubFetch({
+      '/a/manifest.json': slowManifest.promise,
+      '/a/v/1.json': snapshotOf('alias-a'),
+      '/b/manifest.json': manifestOf('dpp-b', '/b'),
+      '/b/v/1.json': snapshotOf('alias-b'),
+    });
+    await host.bootFrom('https://cdn.test/b/manifest.json');
+    const inFlight = host.bootFrom('https://cdn.test/a/manifest.json');
+
+    await host.bootFrom(null);
+    slowManifest.resolve(manifestOf('dpp-a', '/a'));
+    await inFlight;
+
+    expect(host.loadState.peek()).toBe('idle');
+    expect(host.manifest.peek()).toBeNull();
+    expect(host.snapshots.peek()).toEqual({});
+    expect(host.getManifestUrl()).toBeNull();
   });
 
   it('a stale lazy snapshot fetch is dropped on reboot', async () => {

@@ -184,8 +184,9 @@ class TranspareoTimeMachine extends BaseElement {
   // previous DPP's verdicts, rows, and gesture state can't
   // bleed into the new one; bootFrom clears the host-side
   // artefact caches and bumps the boot epoch that in-flight
-  // async work checks before writing.
-  private boot(src: string): void {
+  // async work checks before writing. Without a `src` the
+  // page is left empty, as it loads.
+  private boot(src: string | null): void {
     resetBootState()
     resetVerifyCaches()
     resetPrivateState()
@@ -260,6 +261,11 @@ class TranspareoTimeMachine extends BaseElement {
       container.lang = i18n.locale
     })
 
+    // A verifier shows no passport, and neither does an
+    // element without `src`. Either boots none, which also
+    // drops whatever the element before it booted.
+    this.boot(config.verifier ? null : this.getAttribute('src'))
+
     // Standalone verifier-mode. A verifier shell page
     // serves no `src` and sets the `verifier` attribute,
     // so there is no manifest to fetch. We mount
@@ -311,9 +317,6 @@ class TranspareoTimeMachine extends BaseElement {
         + 'on pinning.',
       )
     }
-
-    const src = this.getAttribute('src')
-    if (src) this.boot(src)
 
     // The inner SPA tree is mounted reactively so it
     // only renders once the host has data. Before that

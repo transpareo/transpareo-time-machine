@@ -26,6 +26,7 @@ import { encodeMultibaseBase58 } from '@/crypto/multibase'
 import type { DppManifest, SignedSnapshot } from '@/archive'
 
 const A = 'https://cdn.test/a/manifest.json'
+const A_V1 = 'https://cdn.test/a/v/1.json'
 const A2 = 'https://cdn.test/a2/manifest.json'
 const B = 'https://cdn.test/b/manifest.json'
 const B2 = 'https://cdn.test/b2/manifest.json'
@@ -36,6 +37,11 @@ const LOCALES = ['en', 'de', 'fr']
 const SNAPSHOT = {
   version: 1, publishedAt: '2026-01-01T00:00:00Z', passportAlias: 'a'
 } as unknown as SignedSnapshot
+
+const MANIFEST = {
+  '@type': 'DppManifest', code: 'dpp-a', currentVersion: 1,
+  versions: [{ number: 1, url: 'v/1.json' }]
+}
 
 // An Ed25519 multikey (the 0xed01 prefix) over zero key bytes.
 const PIN = encodeMultibaseBase58(
@@ -54,8 +60,7 @@ function booted(src: string): boolean {
 }
 
 function answer(body: unknown): Response {
-  const json = (): Promise<unknown> => Promise.resolve(body)
-  return { ok: true, status: 200, json } as unknown as Response
+  return new Response(JSON.stringify(body), { status: 200 })
 }
 
 // Answers `url` with `body` once the spec says so.
@@ -78,9 +83,11 @@ function ready(): void {
   host.loadState.set('ready')
 }
 
-function mount(src: string, attrs: Record<string, string> = {}): Element {
+function mount(
+  src: string | null, attrs: Record<string, string> = {}
+): Element {
   const el = document.createElement('transpareo-time-machine')
-  el.setAttribute('src', src)
+  if (src) el.setAttribute('src', src)
   for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v)
   document.body.appendChild(el)
   return el
@@ -289,6 +296,46 @@ describe('an element that replaces one', () => {
     ready()
 
     expect(locale()).toBe('fr')
+  })
+
+  it('without a src, shows nothing of the passport before', () => {
+    mount(A).remove()
+    ready()
+
+    mount(null)
+
+    expect(host.manifest()).toBeNull()
+    expect(host.loadState()).toBe('idle')
+  })
+
+  // The manifest of the one before lands after it left; its
+  // snapshot never does, so no card mounts around it.
+  it('without a src, drops a boot the one before still runs', async () => {
+    const release = hold(A)
+    mount(A).remove()
+
+    mount(null)
+    release(MANIFEST)
+    await settle()
+
+    expect(host.manifest()).toBeNull()
+    expect(host.loadState()).toBe('idle')
+  })
+
+  // A verifier mounts no card, so that passport may land
+  // whole: the state getter is what would report it.
+  it('in verifier mode, reports no passport the one before boots', async () => {
+    const release = hold(A)
+    answers.set(A_V1, () => Promise.resolve(answer(SNAPSHOT)))
+    mount(A).remove()
+
+    const el = mount(null, { verifier: '' }) as Element & { state: unknown }
+    release(MANIFEST)
+    await settle()
+    await settle()
+
+    expect(el.state).toBeNull()
+    expect(host.manifest()).toBeNull()
   })
 
   it('holds its first paint for its own labels', async () => {

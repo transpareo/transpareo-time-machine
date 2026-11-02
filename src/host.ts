@@ -121,22 +121,26 @@ export function getManifestUrl(): string | null {
   return manifestUrl
 }
 
-// Monotonic boot counter. A later `src` attribute reboots
-// the element via a fresh bootFrom; async work started
-// under a previous boot compares its captured epoch
-// against this and drops its result instead of writing a
-// different DPP's data into the fresh caches. The verdict
-// layer (actions.ensureVersionLoaded) reads it for the
-// same reason.
+// Monotonic boot counter. Every bootFrom bumps it: a later
+// `src` attribute, an element taking over the page, and one
+// without `src`. Async work started under a previous boot
+// compares its captured epoch against this and drops its
+// result instead of writing a different DPP's data into the
+// fresh caches. The verdict layer
+// (actions.ensureVersionLoaded) reads it for the same
+// reason.
 let bootEpoch = 0
 
 export function currentBootEpoch(): number {
   return bootEpoch
 }
 
-export async function bootFrom(src: string): Promise<void> {
+// Boot the passport at `src`. Without one the page rests
+// `idle`, as it loads: nothing of the passport booted
+// before stays, and no boot of it still in flight lands.
+export async function bootFrom(src: string | null): Promise<void> {
   const epoch = ++bootEpoch
-  loadState.set('loading')
+  loadState.set(src ? 'loading' : 'idle')
   loadError.set(null)
 
   // A reboot must not leave the previous DPP's artefacts
@@ -151,6 +155,7 @@ export async function bootFrom(src: string): Promise<void> {
   dynamicData.set(null)
   dynamicDataPending.set(false)
   manifestUrl = null
+  if (!src) return
 
   try {
     // Normalize to an absolute URL so URL resolution
