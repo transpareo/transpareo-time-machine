@@ -205,6 +205,78 @@ describe('canonicalize: blank node (proof-options shape)', () => {
   });
 });
 
+// RDFC-1.0 sorts by Unicode code point, and so does the issuer
+// (Ruby compares UTF-8 bytes). UTF-16 code units put a
+// character above U+FFFF, a surrogate pair, before one from
+// U+E000 to U+FFFF.
+describe('canonicalize: code point order', () => {
+  const ASTRAL = '\u{1f600}';
+  const S = '<http://example.org/s>';
+  const NOTE = '<http://example.org/note>';
+  const note = (values: string[]) => ({
+    '@context': { ...CTX, note: 'ex:note' }, '@id': 'ex:s', note: values,
+  });
+
+  it.each([
+    ['U+E000', '\ue000'],
+    ['a fullwidth form', '\uff08'],
+    ['U+FFFD', '\ufffd'],
+    ['U+D7FF', '\ud7ff'],
+    ['a lower astral character', '\u{1f5ff}'],
+    ['the end of the value', ''],
+  ])('sorts %s before an astral character', async (_label, char) => {
+    expect(await canonicalize(note([`a${ASTRAL}`, `a${char}`]))).toEqual([
+      `${S} ${NOTE} "a${char}" .\n`,
+      `${S} ${NOTE} "a${ASTRAL}" .\n`,
+    ]);
+  });
+
+  const scoped = (id: string, v: string) => ({ '@id': id, '@context': { v } });
+
+  // The astral type name, or the astral key, sorts last by code
+  // point, so A's context applies last and its `v` holds.
+  it.each([
+    ['type names', {
+      [`T${ASTRAL}`]: scoped('ex:A', 'ex:a'),
+      'T\ue000': scoped('ex:B', 'ex:b'),
+    }, { '@type': [`T${ASTRAL}`, 'T\ue000'] }],
+    ['type keys', {
+      [`k${ASTRAL}`]: '@type', 'k\ue000': '@type',
+      A: scoped('ex:A', 'ex:a'), B: scoped('ex:B', 'ex:b'),
+    }, { [`k${ASTRAL}`]: 'A', 'k\ue000': 'B' }],
+  ])('orders type-scoped contexts by %s', async (_label, terms, types) => {
+    const doc = {
+      '@context': { ...CTX, ...terms }, '@id': 'ex:s', ...types, v: 'x',
+    };
+    expect(await canonicalize(doc)).toEqual([
+      `${S} <http://example.org/a> "x" .\n`,
+      `${S} ${RDF_TYPE} <http://example.org/A> .\n`,
+      `${S} ${RDF_TYPE} <http://example.org/B> .\n`,
+    ]);
+  });
+
+  // SHA-256 over each blank node's lines in code point order:
+  // the node with two notes hashes to e4c913e1..., the one
+  // with "a" to 55e44cde... and takes c14n0. In UTF-16 order
+  // the two notes swap and hash to 3fadb6bb..., which would
+  // hand c14n0 to the other node.
+  it('hashes a blank node over its lines in code point order', async () => {
+    const doc = {
+      '@context': { ...CTX, p: 'ex:p', note: 'ex:note' },
+      '@id': 'ex:s',
+      p: [{ note: [ASTRAL, '\ue000'] }, { note: 'a' }],
+    };
+    const p = `${S} <http://example.org/p>`;
+    expect(await canonicalize(doc)).toEqual([
+      `${p} _:c14n0 .\n`,
+      `${p} _:c14n1 .\n`,
+      `_:c14n0 ${NOTE} "a" .\n`,
+      `_:c14n1 ${NOTE} "\ue000" .\n`,
+      `_:c14n1 ${NOTE} "${ASTRAL}" .\n`,
+    ]);
+  });
+});
+
 describe('canonicalize: literal escaping', () => {
   it('escapes quotes, backslashes, and control characters', async () => {
     const doc = {

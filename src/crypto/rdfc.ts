@@ -640,16 +640,29 @@ async function canonicalizeQuads(
   quads: readonly Quad[], labelMap?: ReadonlyMap<string, string>,
 ): Promise<string[]> {
   const labels = await canonicalBlankLabels(quads)
-  const lines = quads.map((quad) => ({
-    canonical: serializeQuad(quad, labels), quad
-  }))
-  lines.sort((a, b) => order(a.canonical, b.canonical))
-  return lines.map((l) => (labelMap
-    ? serializeQuad(l.quad, labels, labelMap) : l.canonical))
+  const canonical = (id: string) => labels.get(id) ?? id
+  const written = (id: string) => {
+    const label = canonical(id)
+    if (!labelMap) return label
+    const mapped = labelMap.get(label.slice(2))
+    if (mapped === undefined) {
+      throw new Error(`label map has no entry for ${label}`)
+    }
+    return `_:${mapped}`
+  }
+  return quads
+    .map((q) => [serializeQuad(q, canonical), serializeQuad(q, written)])
+    .sort(([a], [b]) => order(a, b))
+    .map(([, line]) => line)
 }
 
+// Code point order, as RDFC-1.0 and the issuer's UTF-8 byte
+// sort have it (UTF-16 code units put a surrogate pair before
+// U+E000 to U+FFFF). A string ending first sorts first.
 function order(a: string, b: string): number {
-  return a < b ? -1 : a > b ? 1 : 0
+  let i = 0
+  while (a[i] && a[i] === b[i]) i++
+  return (a.codePointAt(i) ?? -1) - (b.codePointAt(i) ?? -1)
 }
 
 // Assign each blank node a canonical label. With no blank
@@ -671,7 +684,7 @@ async function canonicalBlankLabels(
   }
   hashed.sort((a, b) => order(a.hash, b.hash))
   for (let i = 0; i < hashed.length; i++) {
-    if (i > 0 && hashed[i].hash === hashed[i - 1].hash) {
+    if (hashed[i].hash === hashed[i - 1]?.hash) {
       throw new Error('ambiguous blank nodes: n-degree hashing unsupported')
     }
     labels.set(hashed[i].id, `_:c14n${i}`)
@@ -689,41 +702,18 @@ async function firstDegreeHash(
   const lines = quads
     .filter((q) => [q.subject, q.object]
       .some((t) => t.kind === 'blank' && t.value === id))
-    .map((q) => serializeQuad(q, undefined, undefined, id))
-    .sort()
+    .map((q) => serializeQuad(q, (b) => (b === id ? '_:a' : '_:z')))
+    .sort(order)
   return hex(await hashNQuads(lines))
 }
 
-// One N-Quad line. `self` names the blank node a first-degree
-// hash is taken for.
-function serializeQuad(
-  quad: Quad,
-  labels?: ReadonlyMap<string, string>,
-  labelMap?: ReadonlyMap<string, string>,
-  self?: string
-): string {
-  const terms = [quad.subject, quad.predicate, quad.object]
-  const line = terms.map((t) => serializeTerm(t, labels, labelMap, self))
+// One N-Quad line; `blank` writes each blank node's label.
+function serializeQuad(quad: Quad, blank: (id: string) => string): string {
+  const line = [quad.subject, quad.predicate, quad.object].map((t) => (
+    t.kind === 'iri' ? `<${t.value}>`
+      : t.kind === 'literal' ? serializeLiteral(t) : blank(t.value)
+  ))
   return `${line.join(' ')} .\n`
-}
-
-function serializeTerm(
-  term: Term,
-  labels?: ReadonlyMap<string, string>,
-  labelMap?: ReadonlyMap<string, string>,
-  self?: string
-): string {
-  if (term.kind === 'iri') return `<${term.value}>`
-  if (term.kind === 'literal') return serializeLiteral(term)
-  if (self !== undefined) return term.value === self ? '_:a' : '_:z'
-  const canonical = labels?.get(term.value) ?? term.value
-  if (!labelMap) return canonical
-  const label = canonical.slice(2)
-  const mapped = labelMap.get(label)
-  if (mapped === undefined) {
-    throw new Error(`label map has no entry for ${canonical}`)
-  }
-  return `_:${mapped}`
 }
 
 function serializeLiteral(term: Term & { kind: 'literal' }): string {

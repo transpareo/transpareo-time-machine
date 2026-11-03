@@ -91,6 +91,15 @@ and this project adheres to
   under the five bundled contexts verify as before. The
   renderer entry's size budget goes from 74 to 75 KB for
   these checks.
+- A passport with two statements that first differ at a
+  character above U+FFFF, such as an emoji, against one from
+  U+E000 to U+FFFF, such as a fullwidth form, verifies.
+  RDFC-1.0 and the issuer sort statements by Unicode code
+  point, and the canonicalizer sorted by UTF-16 code unit,
+  which orders the two the other way round, so such a
+  passport failed verification. The lines a blank node is
+  hashed over and the type names whose contexts apply sort
+  the same way now.
 - Login-gated rows render only from a credential naming the
   passport on the page: its page (`@id`), its issuer by DID
   and its version must match the version's public snapshot.
