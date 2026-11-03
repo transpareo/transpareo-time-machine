@@ -39,12 +39,15 @@ interface Budget {
 // ship. Raise it when a deliberate feature earns the bytes,
 // and say so.
 const BUDGETS: ReadonlyArray<Budget> = [
-  // 74 KB since the asset host and pinned keys first: the
+  // 75 KB since the canonicalizer reads a node keyword beside
+  // its alias as the issuer does: a second @id throws, a
+  // second @type adds its types and their scoped contexts.
+  // 74 KB came with the asset host and pinned keys: the
   // root-path resolver, the revocation default and the key
   // selection both cryptosuites share. It went to 73 KB for
   // model and lot passports: the walk-up band, the
   // unit-passport line, their labels and four context terms.
-  { file: 'transpareo-time-machine.js', maxGzipBytes: 74 * 1024, dir: 'dist' },
+  { file: 'transpareo-time-machine.js', maxGzipBytes: 75 * 1024, dir: 'dist' },
   // 35 KB since the canonicalizer reads every key of a
   // context map as JSON-LD does or rejects it: protected
   // terms, containers, the order inside one map. 34 KB came

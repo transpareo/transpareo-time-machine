@@ -4,18 +4,23 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * How the canonicalizer reads values: value objects, JSON
- * numbers, IRIs, language tags and terms named as IRIs. The
- * issuer canonicalizes with a JSON-LD 1.1 processor, so a
- * value read differently here lets a signature stand over
- * bytes the processor reads as other statements. Each case is
- * read as JSON-LD 1.1 reads it or rejected.
+ * numbers, IRIs, language tags, terms named as IRIs, and a
+ * node keyword beside its alias. The issuer canonicalizes
+ * with a JSON-LD 1.1 processor, so a value read differently
+ * here lets a signature stand over bytes the processor reads
+ * as other statements. Each case is read as JSON-LD 1.1 reads
+ * it or rejected.
  */
 
 import { describe, expect, it } from 'vitest'
+import { readFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 import { canonicalize } from '../src/crypto/rdfc'
+import { verifyDerivedProof } from '../src/crypto/ecdsa-sd'
 
 const EX = 'http://example.org/'
 const XSD = 'http://www.w3.org/2001/XMLSchema#'
+const RDF_TYPE = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type'
 const CTX = { ex: EX, xsd: XSD }
 const VOCAB = { ...CTX, '@vocab': `${EX}v#` }
 const DECIMAL = { '@id': 'ex:v', '@type': 'xsd:decimal' }
@@ -265,5 +270,106 @@ describe('canonicalize: a term named as an IRI', () => {
   ])('reads one defined %s', async (_label, definition, object) => {
     expect(await canonicalize(using('ex:v', definition)))
       .toEqual([quad(object)])
+  })
+})
+
+// A node's @id and @type through the keyword, an alias or
+// both, read as JSON-LD 1.1 expands them: a second @id aborts
+// on `colliding keywords`, a second @type adds its values.
+describe('canonicalize: a keyword beside its alias', () => {
+  const ALIASED = {
+    ...CTX, id: '@id', ident: '@id', type: '@type', kind: '@type',
+    knows: 'ex:knows'
+  }
+  const node = (entries: object) => ({ '@context': ALIASED, ...entries })
+  const typed = (s: string, ...types: string[]) =>
+    types.map((t) => `<${EX}${s}> <${RDF_TYPE}> <${EX}${t}> .\n`)
+
+  it.each([
+    ['id before @id', { id: 'ex:a', '@id': 'ex:s' }],
+    ['@id before id', { '@id': 'ex:s', id: 'ex:a' }],
+    ['both naming one IRI', { id: 'ex:s', '@id': 'ex:s' }],
+    ['two aliases', { id: 'ex:a', ident: 'ex:s' }],
+    ['a nested node', { '@id': 'ex:s', knows: { id: 'ex:a', '@id': 'ex:o' } }]
+  ])('rejects two @id: %s', async (_label, entries) => {
+    await expect(canonicalize(node(entries)))
+      .rejects.toThrow('colliding keywords: @id')
+  })
+
+  it.each([
+    ['type before @type', { type: 'ex:A', '@type': 'ex:B' }],
+    ['@type before type', { '@type': ['ex:B'], type: ['ex:A'] }],
+    ['two aliases', { type: 'ex:A', kind: 'ex:B' }],
+    ['an empty @type', { '@type': [], type: ['ex:A', 'ex:B'] }]
+  ])('merges two @type: %s', async (_label, entries) => {
+    expect(await canonicalize(node({ '@id': 'ex:s', ...entries })))
+      .toEqual(typed('s', 'A', 'B'))
+  })
+
+  it('merges two @type on a nested node', async () => {
+    const knows = { '@id': 'ex:o', type: 'ex:A', '@type': 'ex:B' }
+    expect(await canonicalize(node({ '@id': 'ex:s', knows }))).toEqual([
+      ...typed('o', 'A', 'B'), `<${EX}s> <${EX}knows> <${EX}o> .\n`
+    ])
+  })
+
+  // The issuer applies type-scoped contexts key by key in key
+  // order ('@type' before 'type'), each key's types in order,
+  // so A's context comes last and its `v` holds.
+  it('applies type-scoped contexts key by key', async () => {
+    const doc = {
+      '@context': {
+        ...ALIASED,
+        A: { '@id': 'ex:A', '@context': { v: 'ex:a' } },
+        B: { '@id': 'ex:B', '@context': { v: 'ex:b' } }
+      },
+      '@id': 'ex:s',
+      type: 'A',
+      '@type': 'B',
+      v: 'x'
+    }
+    expect(await canonicalize(doc))
+      .toEqual([`<${EX}s> <${EX}a> "x" .\n`, ...typed('s', 'A', 'B')])
+  })
+
+  // JSON-LD aborts on both: an @type array and an @id in a
+  // value object.
+  it.each([
+    ['typed twice', { '@type': 'xsd:decimal', type: 'xsd:string' }],
+    ['with two @id', { id: 'ex:a', '@id': 'ex:b' }]
+  ])('rejects a value object %s', async (_label, entries) => {
+    const knows = { '@value': 'x', ...entries }
+    await expect(canonicalize(node({ '@id': 'ex:s', knows })))
+      .rejects.toThrow('unsupported value object')
+  })
+})
+
+// The base-context prod specimen with an entry added before a
+// node's signed keyword or alias: an added @type is a
+// statement the issuer never signed, an added @id collides.
+describe('verifyDerivedProof: a keyword added beside its alias', () => {
+  const path = fileURLToPath(new URL(
+    './fixtures/ecdsa-sd-prod-specimen-base-context.json', import.meta.url
+  ))
+  const { view, issuer_multikeys_b64: keys } =
+    JSON.parse(readFileSync(path, 'utf8'))
+  const subject = view.credentialSubject
+  const EVIL = 'https://evil.example/'
+
+  it.each([
+    ['an @type before the credential type', { '@type': `${EVIL}R`, ...view }],
+    ['an id before the subject @id',
+      { ...view, credentialSubject: { id: `${EVIL}p`, ...subject } }],
+    ['a type before the issuer @type', {
+      ...view,
+      credentialSubject: {
+        ...subject, issuer: { type: `${EVIL}Org`, ...subject.issuer }
+      }
+    }]
+  ])('fails with %s', async (_label, doc) => {
+    const key = new Uint8Array(Buffer.from(keys[0], 'base64'))
+    const proof = view.proof[0]
+    expect(await verifyDerivedProof({ ...doc, proof }, key))
+      .toMatchObject({ verified: false })
   })
 })

@@ -80,6 +80,17 @@ and this project adheres to
   verification. A lone surrogate is written escaped too: the
   canonicalizer read it as U+FFFD, so it could stand in for
   a signed U+FFFD.
+- A passport node holding `@id` twice, as the keyword and
+  through an alias such as `id`, fails verification, as a
+  JSON-LD processor aborts on it. A node holding `@type`
+  both ways reads the types of both, and their type-scoped
+  contexts apply in the issuer's order. The canonicalizer
+  read only the later of the two keys, so an `@id` or
+  `@type` placed before the signed alias stood outside the
+  signature while the passport verified. Passports signed
+  under the five bundled contexts verify as before. The
+  renderer entry's size budget goes from 74 to 75 KB for
+  these checks.
 - Login-gated rows render only from a credential naming the
   passport on the page: its page (`@id`), its issuer by DID
   and its version must match the version's public snapshot.

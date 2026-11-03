@@ -30,8 +30,8 @@
  *     @context of null, it is rejected;
  *   - nodes identified by an absolute IRI @id (our docs
  *     carry one on every node) or by none, @type as a
- *     CURIE/IRI or an array of them, nested nodes, and
- *     arrays of values;
+ *     CURIE/IRI or an array of them (an alias's values join
+ *     the keyword's), nested nodes, and arrays of values;
  *   - literals: plain strings (xsd:string), @language
  *     strings, @type-coerced typed literals, safe integers
  *     (xsd:integer), booleans (xsd:boolean), and value
@@ -41,10 +41,11 @@
  * @reverse / @included / @nest, a context URL the offline
  * registry does not hold (nothing is fetched), a registered
  * context that lists further contexts, a @context on a node
- * below the root, any other context keyword (@base, @import,
- * @language, @direction, @propagate) or term entry
- * (@reverse, @nest, @index, @prefix, @direction), a term
- * naming one defined further down its own map, a term
+ * below the root, a node holding @id twice (the keyword and
+ * an alias, or two aliases), any other context keyword
+ * (@base, @import, @language, @direction, @propagate) or
+ * term entry (@reverse, @nest, @index, @prefix, @direction),
+ * a term naming one defined further down its own map, a term
  * written as an IRI that maps to another, a changed
  * protected term, a value under a term with any other
  * container (@list, @graph, @index, a map) or of @type
@@ -201,8 +202,10 @@ function walkNode(
 ): Term {
   const context = withTypeScopes(rawNode, outer)
   const node = normalizeKeywords(rawNode, context)
-  rejectUnsupportedKeywords(node)
-  const subject = nodeSubject(node, context, state)
+  const id = node['@id']
+  const subject: Term = id === undefined
+    ? { kind: 'blank', value: `_:b${state.nextBlank++}` }
+    : { kind: 'iri', value: expandIri(id, context, false) }
 
   for (const t of asArray(node['@type'])) {
     state.quads.push({
@@ -232,20 +235,20 @@ function walkNode(
   return subject
 }
 
-// The node's context with the @context of each of its types
-// applied, in lexicographic order of the type names.
+// The node's context with each type's @context on top, applied
+// as JSON-LD does: per key that is or aliases @type, in key
+// order, then per type name in order.
 function withTypeScopes(
   node: Record<string, JsonLdValue>, outer: Context,
 ): Context {
-  const types: string[] = []
-  for (const [key, value] of Object.entries(node)) {
-    if (key !== '@type' && outer.aliases.get(key) !== '@type') continue
-    for (const t of asArray(value)) if (typeof t === 'string') types.push(t)
-  }
+  const types = Object.keys(node)
+    .filter((key) => (outer.aliases.get(key) ?? key) === '@type')
+    .sort(order)
+    .flatMap((key) => asArray(node[key])
+      .filter((t): t is string => typeof t === 'string')
+      .sort(order))
   let context = outer
-  for (const t of types.sort()) {
-    context = scopedContext(outer.terms.get(t), context)
-  }
+  for (const t of types) context = scopedContext(outer.terms.get(t), context)
   return context
 }
 
@@ -276,25 +279,30 @@ interface Scope {
   readonly outer: Context
 }
 
-// Rewrite aliased keys to their real keyword so the rest
-// of the walk sees '@id' / '@type' directly. Every key comes
-// out an own property, "__proto__" included.
+const SUPPORTED_KEYWORDS = new Set(['@context', '@id', '@type'])
+
+// Rewrite aliased keys to their keyword, each an own property
+// ("__proto__" included). A keyword besides @context, @id and
+// @type throws; as in JSON-LD, a second @id throws and a
+// second @type adds its values.
 function normalizeKeywords(
   node: Record<string, JsonLdValue>, context: Context,
 ): Record<string, JsonLdValue> {
-  const entries = Object.entries(node)
-    .map(([key, value]) => [context.aliases.get(key) ?? key, value])
-  return Object.fromEntries(entries)
-}
-
-function nodeSubject(
-  node: Record<string, JsonLdValue>, context: Context, state: WalkState,
-): Term {
-  const id = node['@id']
-  if (id === undefined) {
-    return { kind: 'blank', value: `_:b${state.nextBlank++}` }
+  const out: Record<string, JsonLdValue> = Object.create(null)
+  for (const [key, value] of Object.entries(node)) {
+    const keyword = context.aliases.get(key) ?? key
+    if (keyword.startsWith('@') && !SUPPORTED_KEYWORDS.has(keyword)) {
+      throw new Error(`unsupported JSON-LD keyword: ${keyword}`)
+    }
+    if (!(keyword in out)) {
+      out[keyword] = value
+    } else if (keyword === '@type') {
+      out[keyword] = asArray(out[keyword]).concat(value)
+    } else {
+      throw new Error(`colliding keywords: ${keyword}`)
+    }
   }
-  return { kind: 'iri', value: expandIri(id, context, false) }
+  return out
 }
 
 // Resolve a term value to an RDF object term. A nested
@@ -617,16 +625,6 @@ function definitionIri(
   const head = colon > 0 ? value.slice(0, colon) : value
   if (pending?.has(head)) throw new Error(`unsupported @context IRI: ${value}`)
   return expandIri(value, context, true)
-}
-
-const SUPPORTED_KEYWORDS = new Set(['@context', '@id', '@type'])
-
-function rejectUnsupportedKeywords(node: Record<string, JsonLdValue>): void {
-  for (const key of Object.keys(node)) {
-    if (key.startsWith('@') && !SUPPORTED_KEYWORDS.has(key)) {
-      throw new Error(`unsupported JSON-LD keyword: ${key}`)
-    }
-  }
 }
 
 function asArray(value: JsonLdValue): JsonLdValue[] {
