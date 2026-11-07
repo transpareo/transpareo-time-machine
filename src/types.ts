@@ -650,14 +650,6 @@ export interface DppSnapshot {
   // category split.
   readonly properties: ReadonlyArray<PropertyValue>
 
-  // Category-3 (private) rows present only in the
-  // Vault snapshot, never on the Public-bucket bytes
-  // the CDN serves. On the wire from the
-  // manifest.versions[current].privateProperties.url
-  // endpoint, this same key wraps the filtered subset
-  // the current user is authorised to read.
-  readonly privateProperties?: ReadonlyArray<PropertyValue>
-
   // SHA-256 of the previous version's canonical body
   // (the same digest the manifest stores in
   // versions[N-1].hashValue). Part of this snapshot's
