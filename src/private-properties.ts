@@ -141,8 +141,8 @@ export function bootstrapPrivateRowsFetch(): void {
 // exactly like the public one before anything in it is
 // trusted. Properties live at credentialSubject.product
 // .properties, mixed with the public rows the derive step
-// always reveals; adaptPrivateRows keeps only the
-// legitimateInterest ones.
+// always reveals; adaptPrivateRows keeps the rows of the
+// tiers served to a reader.
 interface PrivateResponseBody {
   readonly credentialSubject?: {
     readonly product?: {

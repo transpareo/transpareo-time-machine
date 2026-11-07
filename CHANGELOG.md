@@ -213,6 +213,17 @@ and this project adheres to
   verdict, as it does when the revocation list cannot be
   read; the console says why. The revocation check threw
   before the boot started and the element showed nothing.
+- A signed-in reader sees the on-demand rows a version's
+  login-gated read returns at once, under "Additional
+  product data" beside the legitimate-interest rows, with
+  no `?show=` token. The renderer kept only the
+  legitimate-interest rows, and the public part of a
+  credential leaves on-demand rows out, so those rows
+  showed to no one, and a version whose login-gated rows
+  were all on demand showed a signed-in reader nothing. An
+  on-demand row the public part carries as well shows once,
+  under that heading; `?show=` still unlocks it for a
+  reader who has not signed in.
 
 ## [2.24.2] - 2026-10-31
 

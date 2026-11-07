@@ -5,15 +5,15 @@
  *
  * <dpp-properties>, the flat property list driven by
  * the snapshot's top-level `properties` collection plus
- * the per-user private rows the auth-gated endpoint
- * returns, plus the passport's live values. Layout is
- * three stacked sections:
+ * the rows a signed-in reader's view serves, plus the
+ * passport's live values. Layout is three stacked
+ * sections:
  *
  *   1. Public list - category-1 (always-visible) and
  *      category-2 (on-demand) rows from snapshot
- *      .properties. On-demand rows only render when
- *      their namespace is unlocked by the URL's `?show=`
- *      token list.
+ *      .properties. An on-demand row the public bytes
+ *      carry renders only when the URL's `?show=` token
+ *      list unlocks its namespace.
  *   2. "Current state" - the rows the snapshot marks
  *      dynamic, each with its reading from the dynamic-data
  *      document and the time that was written. They belong
@@ -22,12 +22,12 @@
  *      cleared (see actions.liveDataIsShowable); until
  *      then, or without one, the property shows the
  *      reading its snapshot sealed at publish.
- *   3. "Additional product data" - category-3 rows that
- *      arrived as `{ status: 'ok', rows }` from the
- *      manifest's `privateProperties.url` endpoint. The
- *      same `?show=` filter applies to private rows that
- *      carry `onDemand: true`, so server-side privacy
- *      and client-side presentation gates compose.
+ *   3. "Additional product data" - the legitimate-
+ *      interest and on-demand rows that arrived as
+ *      `{ status: 'ok', rows }` from the manifest's
+ *      `privateProperties.url` endpoint, shown as served,
+ *      with no `?show=` token. An on-demand row the public
+ *      list carries as well shows here alone.
  *
  * The sign-in and retry prompts for private rows live in
  * <dpp-private-signin>. The element is hidden entirely
@@ -67,10 +67,10 @@ class DppProperties extends LightElement {
     this.appendChild(wrap)
 
     this.effect(() => {
-      const publicRows = visiblePublicRows()
       const ver = activeVersionNumber()
       const state = fetchStateByVersion()[ver]
       const privateRows = visiblePrivateRows(state)
+      const publicRows = visiblePublicRows(privateRows)
 
       const children: HTMLElement[] = publicRows.map(buildRow)
       children.push(...buildLiveSection())
@@ -94,8 +94,8 @@ type DetailRow = ScalarRow | LinkRow
 // document link. Tiles, badges, accordions, and donuts have
 // their own renderers and pull the rest of the flat list.
 // Public rows come from snapshot.properties; private rows
-// arrive post-auth via the privateProperties endpoint and use
-// the same filter so the two sides compose.
+// arrive post-auth via the privateProperties endpoint and
+// carry no `onDemand` flag, so the `?show=` gate passes them.
 function detailRows(
   rows: ReadonlyArray<PropertyValue>,
 ): ReadonlyArray<DetailRow> {
@@ -106,8 +106,14 @@ function detailRows(
     .filter((r) => !r.onDemand || isUnlocked(r.namespace, tokens))
 }
 
-function visiblePublicRows(): ReadonlyArray<DetailRow> {
+// An on-demand row the reader's view serves as well shows
+// once, with the served rows.
+function visiblePublicRows(
+  served: ReadonlyArray<DetailRow>
+): ReadonlyArray<DetailRow> {
+  const keys = new Set(served.map((r) => r.key))
   return detailRows(renderedPresentation())
+    .filter((r) => !r.onDemand || !keys.has(r.key))
 }
 
 function visiblePrivateRows(

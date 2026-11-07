@@ -236,7 +236,9 @@ Field notes:
   credential. It must name the version's public snapshot
   (its page `@id`, its issuer's DID and its `version`),
   and its proofs must clear the snapshot's revocation and
-  pin gates; otherwise no row renders.
+  pin gates; otherwise no row renders. Its
+  legitimate-interest and on-demand rows show under
+  "Additional product data" with no `?show=` token.
 - `versions[].registeredAt` / `registrationProof`
   (optional) - EU-registry round-trip metadata. The
   renderer reads neither (see SECURITY.md, "No freshness

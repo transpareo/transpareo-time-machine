@@ -23,8 +23,11 @@
  * production specimen.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { readFileSync } from 'node:fs'
+import { mkdtempSync, readFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { buildEcdsaSdIssuer } from '../scripts/seed/ecdsa-sd-signing'
 import {
   parseLoginUrl, isSameRegistrableSite,
   fetchPrivateRows, fetchStateByVersion, resetPrivateState,
@@ -463,6 +466,97 @@ describe('fetchPrivateRows: the public snapshot\'s gates', () => {
       expect(rowKeys(3)).toEqual([])
     },
   )
+})
+
+// A reader's view of a credential minted here, with the
+// seed's two keys pinned: the restricted rows of both reader
+// tiers and a manufacturer behind a tier, beside a public
+// row the public snapshot paints already.
+describe('fetchPrivateRows: what a reader\'s view serves', () => {
+  const URL_4 = '/api/private/4'
+  const PAGE_ID = 'https://acme.example/dpp/abc12345'
+  const ISSUER = {
+    '@type': 'Organization', name: 'Acme', did: 'did:web:acme.example'
+  }
+
+  function propertyRow(
+    propertyID: string, value: string, access?: string
+  ): Record<string, unknown> {
+    const tier = access ? { access } : {}
+    return {
+      '@type': 'PropertyValue', propertyID, name: propertyID, value, ...tier
+    }
+  }
+
+  async function mint(
+    manufacturer: Record<string, unknown>
+  ): Promise<Record<string, unknown>> {
+    const dir = mkdtempSync(join(tmpdir(), 'sd-'))
+    const issuer = await buildEcdsaSdIssuer(
+      dir, 'acme', 'abc12345', '2026-11-06T12:00:00Z',
+      ISSUER.did, 'did:web:platform.example'
+    )
+    const keys = join(dir, 'acme/dpp/abc12345/keys')
+    const multikey = (file: string): string => (JSON.parse(
+      readFileSync(join(keys, file), 'utf8')
+    ) as { publicKeyMultibase: string }).publicKeyMultibase
+    pin([multikey('platform-p256.json')], [multikey('issuer-p256.json')])
+
+    const properties = [
+      propertyRow('origin', 'Germany'),
+      propertyRow('recycled', '12 %', 'onDemand'),
+      propertyRow('supplier', 'Acme Chemicals GmbH', 'legitimateInterest')
+    ]
+    return issuer.issue({
+      '@id': PAGE_ID,
+      version: 4,
+      issuer: ISSUER,
+      product: {
+        '@type': 'Product', name: 'Pulse 2000', manufacturer, properties
+      }
+    })
+  }
+
+  const VOLTWERK = {
+    '@type': 'Organization', name: 'Voltwerk AG', city: 'Zug',
+    propertyID: 'manufacturer'
+  }
+
+  beforeEach(() => {
+    vi.stubGlobal('window', PAGE)
+    revocationStatus.set('ok')
+    const subject = { '@id': PAGE_ID, issuer: ISSUER, version: 4 }
+    const snapshot = { credentialSubject: subject } as unknown
+    host.rawSnapshots.set({ 4: snapshot as SignedSnapshot })
+  })
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    pin(undefined, undefined)
+    host.rawSnapshots.set({})
+    revocationStatus.set('pending')
+    resetPrivateState()
+  })
+
+  async function read(view: Record<string, unknown>): Promise<unknown> {
+    vi.stubGlobal('fetch', vi.fn(async (asked: string) => (
+      asked === URL_4 ? jsonResponse(view) : new Response(null, { status: 404 })
+    )))
+    return fetchPrivateRows(4, URL_4)
+  }
+
+  function okState(): Extract<PrivateFetchState, { status: 'ok' }> {
+    const state = fetchStateByVersion.peek()[4]
+    if (state?.status !== 'ok') throw new Error(`state is ${state?.status}`)
+    return state
+  }
+
+  it('serves the onDemand and legitimateInterest rows', async () => {
+    const view = await mint({ ...VOLTWERK, access: 'legitimateInterest' })
+
+    expect(await read(view)).toBe('ok')
+    expect(okState().rows.map((r) => r.key)).toEqual(['recycled', 'supplier'])
+  })
 })
 
 // A new `src` reboots the page and clears the private state,

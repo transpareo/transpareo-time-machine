@@ -659,8 +659,8 @@ function adaptManufacturer(
 // filter matches and stays hidden until unlocked; the
 // non-public tiers (`legitimateInterest`, `authorities`)
 // are dropped here so they never paint from the public
-// bytes (the post-auth fetch supplies the legitimate-
-// interest rows). The value surface is classified by
+// bytes (the post-auth fetch supplies the rows a signed-in
+// reader may see). The value surface is classified by
 // shape, then a grouping pass keeps accordion runs
 // coherent.
 function adaptProperties(
@@ -671,24 +671,29 @@ function adaptProperties(
   return buildRows(rows.filter(isPublic), buildPublicRow, absolute)
 }
 
-// Adapt the rows the post-auth endpoint returns into the
-// additional-data section. The endpoint serves the full
-// ordered set to a logged-in person with legitimate
-// interest; the `legitimateInterest` rows are the ones
-// absent from the public bytes, so those are the rows to
-// surface here. `authorities` rows are served only via the
-// authority API, never to this reader, so they are dropped
-// defensively. Each surfaced row is given a namespace so it
-// lands in the detail table; the public + onDemand rows
-// already paint from the snapshot, so they are left out to
-// avoid a duplicate render.
+// Adapt the rows of a signed-in reader's view for the
+// additional-data section. The view holds the public rows
+// beside the restricted rows this reader may see: the
+// `legitimateInterest` rows, which no public view carries,
+// and the `onDemand` rows, which a credential's public view
+// withholds. Rows of both tiers are surfaced with a
+// namespace, which lands them in the detail table, and
+// without the `onDemand` flag: they show with no `?show=`
+// token. The public rows already paint from the snapshot
+// and are left out; an `onDemand` row the public bytes
+// carry as well paints once, with these (dpp-properties).
 export function adaptPrivateRows(
-  rows: ReadonlyArray<WireProperty>,
+  rows: ReadonlyArray<WireProperty>
 ): ReadonlyArray<PropertyValue> {
-  return buildRows(
-    rows.filter((r) => r.access === 'legitimateInterest'),
-    buildPrivateRow,
-  )
+  const served = rows.filter((r) => isReaderTier(r.access))
+  return buildRows(served, buildPrivateRow)
+}
+
+// The tiers the private-properties endpoint serves a reader.
+// `authorities` rows go out through the authority API alone,
+// so one arriving here is dropped.
+function isReaderTier(access: WireProperty['access']): boolean {
+  return access === 'legitimateInterest' || access === 'onDemand'
 }
 
 // The rows of the live block. Each row the snapshot marks

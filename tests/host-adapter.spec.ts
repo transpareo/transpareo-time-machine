@@ -4,10 +4,10 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * The wire->render adapter at the fetch boundary (host.ts).
- * Covers the access-tier split (public render vs the
- * post-auth legitimate-interest section) and the top-level
- * rating read, the two points where the wire contract and
- * the internal render model diverge.
+ * Covers the access-tier split (public render vs what a
+ * signed-in reader's view serves) and the top-level rating
+ * read, the two points where the wire contract and the
+ * internal render model diverge.
  */
 
 import { describe, expect, it } from 'vitest';
@@ -321,19 +321,27 @@ describe('toRenderModel: downloads', () => {
 });
 
 describe('adaptPrivateRows: post-auth tiers', () => {
-  it('keeps only legitimateInterest rows', () => {
+  it('keeps the legitimateInterest and onDemand rows', () => {
     const out = adaptPrivateRows([
       row('a:public'),
       row('a:onDemand', 'onDemand'),
       row('a:li', 'legitimateInterest'),
       row('a:auth', 'authorities'),
     ]);
-    expect(out.map((r) => r.key)).toEqual(['a:li']);
+    expect(out.map((r) => r.key)).toEqual(['a:onDemand', 'a:li']);
   });
 
   it('namespaces surfaced rows so they reach the detail table', () => {
     const out = adaptPrivateRows([row('a:li', 'legitimateInterest')]);
     expect(out[0].namespace).toBe('a:li');
+  });
+
+  // The reader signed in for these rows, so no `?show=` token
+  // gates them.
+  it('serves an onDemand row ungated', () => {
+    const [out] = adaptPrivateRows([row('a:onDemand', 'onDemand')]);
+    expect(out.namespace).toBe('a:onDemand');
+    expect(out.onDemand).toBeUndefined();
   });
 });
 

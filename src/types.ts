@@ -462,9 +462,9 @@ export interface PropertyValue {
 
   // Access-gating: rows with a namespace participate in
   // the URL `?show=` filter. Rows with `onDemand: true`
-  // stay hidden until their namespace is unlocked.
-  // Category-3 (private) rows ship via the
-  // privateProperties endpoint and carry both flags.
+  // stay hidden until their namespace is unlocked. Rows
+  // the privateProperties endpoint serves carry a
+  // namespace alone, so they show as served.
   readonly namespace?: string
   readonly onDemand?: boolean
 
