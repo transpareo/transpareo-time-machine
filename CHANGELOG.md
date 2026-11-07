@@ -224,6 +224,11 @@ and this project adheres to
   on-demand row the public part carries as well shows once,
   under that heading; `?show=` still unlocks it for a
   reader who has not signed in.
+- A manufacturer named behind an access tier shows in the
+  address strip once a signed-in reader's login-gated read
+  returns it. The public part leaves such a manufacturer
+  out, and the strip read the public part alone, so it
+  stayed hidden for every reader.
 
 ## [2.24.2] - 2026-10-31
 

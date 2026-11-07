@@ -25,9 +25,11 @@
  *          snapshot's gates (revocation, proofs, pins) and
  *          names the version's public snapshot (page,
  *          issuer, version), the rows for this user land in
- *          fetchState as { status: 'ok', rows } and merge
- *          into the rendered list; one failing any gate
- *          takes the error state below and renders no row.
+ *          fetchStateByVersion as { status: 'ok', rows } and
+ *          merge into the rendered list, beside a
+ *          `manufacturer` the view names behind a tier; one
+ *          failing any gate takes the error state below and
+ *          renders no row.
  *   204 -> { status: 'empty' }; the user is signed in but
  *          has no group-or-plan access for this version.
  *   401 -> { status: 'unauth', loginUrl }; the renderer
@@ -61,11 +63,11 @@
 
 import { signal, effect } from '@/reactive/signals'
 import {
-  manifest, rawSnapshots, adaptPrivateRows, currentBootEpoch,
-  type WireProperty
+  manifest, rawSnapshots, adaptPrivateRows, adaptPrivateManufacturer,
+  currentBootEpoch, type WireProperty, type WireManufacturer
 } from '@/host'
 import { activeVersionNumber } from '@/state'
-import type { PropertyValue } from '@/types'
+import type { DppManufacturer, PropertyValue } from '@/types'
 import type { SignedSnapshot } from '@/archive'
 import { describeError } from '@/errors'
 import { verifySnapshotAnySuite } from '@/crypto/dispatch'
@@ -79,10 +81,16 @@ import { sessionHinted } from '@/session-hints'
 
 // Per-version state of the private-properties fetch. Drives
 // the renderer's per-version branch (merge, show-nothing,
-// sign-in redirect, retry-affordance).
+// sign-in redirect, retry-affordance). `manufacturer` is the
+// one the view names behind a tier, absent where it names a
+// public one.
 export type PrivateFetchState =
   | { readonly status: 'pending' }
-  | { readonly status: 'ok'; readonly rows: ReadonlyArray<PropertyValue> }
+  | {
+    readonly status: 'ok'
+    readonly rows: ReadonlyArray<PropertyValue>
+    readonly manufacturer?: DppManufacturer
+  }
   | { readonly status: 'empty' }
   | { readonly status: 'unauth'; readonly loginUrl?: string }
   | { readonly status: 'error'; readonly reason: string }
@@ -142,11 +150,13 @@ export function bootstrapPrivateRowsFetch(): void {
 // trusted. Properties live at credentialSubject.product
 // .properties, mixed with the public rows the derive step
 // always reveals; adaptPrivateRows keeps the rows of the
-// tiers served to a reader.
+// tiers served to a reader. A manufacturer behind a tier sits
+// at credentialSubject.product.manufacturer, naming its tier.
 interface PrivateResponseBody {
   readonly credentialSubject?: {
     readonly product?: {
       readonly properties?: ReadonlyArray<WireProperty>
+      readonly manufacturer?: WireManufacturer
     }
   }
 }
@@ -247,9 +257,10 @@ async function readPrivateRows(
   const rejected = await credentialRejection(body, versionNumber)
   if (rejected) return { status: 'error', reason: rejected }
 
-  const parsed = body as PrivateResponseBody
-  const properties = parsed.credentialSubject?.product?.properties ?? []
-  return { status: 'ok', rows: adaptPrivateRows(properties) }
+  const product = (body as PrivateResponseBody).credentialSubject?.product
+  const rows = adaptPrivateRows(product?.properties ?? [])
+  const manufacturer = adaptPrivateManufacturer(product?.manufacturer)
+  return { status: 'ok', rows, ...(manufacturer ? { manufacturer } : {}) }
 }
 
 // Why a private-rows credential may not paint, or null once it

@@ -483,13 +483,17 @@ interface WireProduct {
   readonly rating?: unknown
 }
 
-interface WireManufacturer {
+// A manufacturer behind an access tier names its row's
+// propertyID and tier, as a property row does.
+export interface WireManufacturer {
   readonly name?: string
   readonly street?: string
   readonly city?: string
   readonly country?: string
   readonly countryCode?: string
   readonly operatorId?: string
+  readonly propertyID?: string
+  readonly access?: WireProperty['access']
 }
 
 export interface WireProperty {
@@ -687,6 +691,15 @@ export function adaptPrivateRows(
 ): ReadonlyArray<PropertyValue> {
   const served = rows.filter((r) => isReaderTier(r.access))
   return buildRows(served, buildPrivateRow)
+}
+
+// The manufacturer a signed-in reader's view names behind a
+// tier, for the address strip. Undefined for a public one,
+// which paints from the snapshot.
+export function adaptPrivateManufacturer(
+  m: WireManufacturer | undefined
+): DppManufacturer | undefined {
+  return isReaderTier(m?.access) ? adaptManufacturer(m) : undefined
 }
 
 // The tiers the private-properties endpoint serves a reader.

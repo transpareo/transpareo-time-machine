@@ -238,7 +238,11 @@ Field notes:
   and its proofs must clear the snapshot's revocation and
   pin gates; otherwise no row renders. Its
   legitimate-interest and on-demand rows show under
-  "Additional product data" with no `?show=` token.
+  "Additional product data" with no `?show=` token. A
+  manufacturer behind an access tier is absent from the
+  public snapshot; the view carries it at
+  `product.manufacturer` with `propertyID` and `access`,
+  and it fills the address strip.
 - `versions[].registeredAt` / `registrationProof`
   (optional) - EU-registry round-trip metadata. The
   renderer reads neither (see SECURITY.md, "No freshness

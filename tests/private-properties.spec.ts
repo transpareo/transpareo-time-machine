@@ -557,6 +557,25 @@ describe('fetchPrivateRows: what a reader\'s view serves', () => {
     expect(await read(view)).toBe('ok')
     expect(okState().rows.map((r) => r.key)).toEqual(['recycled', 'supplier'])
   })
+
+  it.each(['legitimateInterest', 'onDemand'])(
+    'takes a %s manufacturer for the address strip',
+    async (access) => {
+      const view = await mint({ ...VOLTWERK, access })
+
+      await read(view)
+      expect(okState().manufacturer).
+        toMatchObject({ name: 'Voltwerk AG', city: 'Zug' })
+    }
+  )
+
+  it('leaves a public manufacturer to the snapshot', async () => {
+    const { propertyID: _, ...organization } = VOLTWERK
+    const view = await mint(organization)
+
+    await read(view)
+    expect(okState().manufacturer).toBeUndefined()
+  })
 })
 
 // A new `src` reboots the page and clears the private state,

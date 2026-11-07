@@ -11,7 +11,10 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { toRenderModel, adaptPrivateRows, type WireProperty } from '../src/host';
+import {
+  toRenderModel, adaptPrivateRows, adaptPrivateManufacturer,
+  type WireProperty,
+} from '../src/host';
 import type { SignedSnapshot } from '../src/archive';
 
 function row(propertyID: string, access?: string): WireProperty {
@@ -342,6 +345,33 @@ describe('adaptPrivateRows: post-auth tiers', () => {
     const [out] = adaptPrivateRows([row('a:onDemand', 'onDemand')]);
     expect(out.namespace).toBe('a:onDemand');
     expect(out.onDemand).toBeUndefined();
+  });
+});
+
+describe('adaptPrivateManufacturer: a manufacturer behind a tier', () => {
+  const organization = {
+    name: 'Voltwerk AG', street: 'Werkstrasse 1', city: 'Zug',
+    countryCode: 'CH', operatorId: '7612345000039', propertyID: '9',
+  };
+
+  it.each(['legitimateInterest', 'onDemand'] as const)(
+    'adapts a %s manufacturer for the address strip',
+    (access) => {
+      const m = adaptPrivateManufacturer({ ...organization, access });
+      expect(m).toMatchObject({
+        name: 'Voltwerk AG', street: 'Werkstrasse 1', city: 'Zug',
+        identifier: '7612345000039',
+      });
+    },
+  );
+
+  // A public one paints from the snapshot; an authorities one
+  // is never served to this reader.
+  it('leaves out a manufacturer of no reader tier', () => {
+    expect(adaptPrivateManufacturer(organization)).toBeUndefined();
+    const authorities = { ...organization, access: 'authorities' as const };
+    expect(adaptPrivateManufacturer(authorities)).toBeUndefined();
+    expect(adaptPrivateManufacturer(undefined)).toBeUndefined();
   });
 });
 
