@@ -217,6 +217,23 @@ describe('startRevokedRootsCheck', () => {
     ]);
   });
 
+  // No URL to read the list from leaves the pins as unjudged
+  // as a list that will not load, and asking again builds none.
+  it.each(['data:x', 'mailto:x'])(
+    'settles unreachable on an asset host %s no path resolves against',
+    async (assetHost) => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      let calls = 0;
+      const mod = await bootWithFetch(async () => {
+        calls++;
+        return feedResponse([]);
+      }, [PIN], { assetHost });
+      expect(await settledStatus(mod)).toBe('unreachable');
+      expect(calls).toBe(0);
+      expect(String(warn.mock.calls[0]?.[0])).toMatch(/is no base for/);
+    }
+  );
+
   it('prefers revoked-roots-src over the asset host', async () => {
     const urls: string[] = [];
     const mod = await bootWithFetch(async (input?: string | URL) => {

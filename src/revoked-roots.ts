@@ -48,7 +48,9 @@
  *      the network attacker the pin defends against
  *      could otherwise keep a revoked key trusted by
  *      blocking exactly this fetch. A document that is
- *      no revocation list settles 'unreachable' at once.
+ *      no revocation list settles 'unreachable' at once,
+ *      as does an `asset-host` no path resolves against
+ *      (`data:x`), which leaves no URL to fetch.
  *   6. No pin in config -> revocationStatus =
  *      'unpinned'; the fetch is skipped because there
  *      is nothing to compare against.
@@ -105,7 +107,7 @@ export function startRevokedRootsCheck(): void {
 
   // An empty attribute switches the check off.
   const url = config.revokedRootsUrl ?? defaultUrl()
-  if (!url) {
+  if (url === '') {
     revocationStatus.set('ok')
     return
   }
@@ -119,17 +121,29 @@ export function startRevokedRootsCheck(): void {
 
 // The list at its well-known path on the asset host the page
 // names, else on transpareo.com: a page without `asset-host`
-// reads the list where it always has.
-function defaultUrl(): string {
+// reads the list where it always has. Null when the asset
+// host is no base a path resolves against (`data:x`).
+function defaultUrl(): string | null {
   const base = config.assetHost ? assetBase() : undefined
-  return new URL(REVOKED_ROOTS_PATH, base ?? DEFAULT_HOST).toString()
+  try {
+    return new URL(REVOKED_ROOTS_PATH, base ?? DEFAULT_HOST).toString()
+  } catch {
+    return null
+  }
 }
 
-// The pins judged against the list at `url`. Logs nothing:
-// the caller does, once it knows the check is the latest.
+// The pins judged against the list at `url`, or against no
+// list when there is no URL. Logs nothing: the caller does,
+// once it knows the check is the latest.
 async function runCheck(
-  url: string, pins: ReadonlyArray<string>,
+  url: string | null, pins: ReadonlyArray<string>
 ): Promise<Finding> {
+  if (url === null) {
+    const warning = `asset-host ${config.assetHost} is no base for `
+      + REVOKED_ROOTS_PATH
+    return { status: 'unreachable', warning }
+  }
+
   let pinFps: Set<string>
   try {
     pinFps = new Set(

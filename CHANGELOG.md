@@ -207,6 +207,12 @@ and this project adheres to
   dialog's events badge said so; the dialog still reports
   the feed's verdict. A link into one event waits for that
   verdict and opens on the event.
+- A page that pins a platform key and sets no
+  `revoked-roots-src`, under an `asset-host` no path
+  resolves against (`data:x`), boots and fails every
+  verdict, as it does when the revocation list cannot be
+  read; the console says why. The revocation check threw
+  before the boot started and the element showed nothing.
 
 ## [2.24.2] - 2026-10-31
 
