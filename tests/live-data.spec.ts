@@ -12,22 +12,29 @@
  *
  * What the unit tests cannot show: the signature check
  * running through the browser's WebCrypto against the key
- * document, the section painting only once it clears, and
- * the section leaving when the reader steps into the past.
+ * document, the section painting only once it clears, the
+ * section leaving when the reader steps into the past, and
+ * the `?show=` gate holding back its on-demand rows.
  */
 import { test, expect } from '@playwright/test'
 
 type Page = import('@playwright/test').Page
 
-async function bootVolturra(page: Page, hash = ''): Promise<void> {
-  await page.route('http://localhost:5173/', async (route) => {
+const HOST = 'http://localhost:5173'
+
+// `suffix` is a query string or a hash; the page is matched
+// with either.
+async function bootVolturra(page: Page, suffix = ''): Promise<void> {
+  const home = (url: URL): boolean => url.origin === HOST
+    && url.pathname === '/'
+  await page.route(home, async (route) => {
     const res = await route.fetch()
     const html = (await res.text())
       .replaceAll('nordic-wear-tshirt', 'volturra-pulse-2000')
       .replaceAll('demo-2026-t001', 'demo-2026-b001')
     await route.fulfill({ response: res, body: html })
   })
-  await page.goto(`/${hash}`, { waitUntil: 'domcontentloaded' })
+  await page.goto(`/${suffix}`, { waitUntil: 'domcontentloaded' })
   await page.waitForFunction(() => {
     const root = document.querySelector('transpareo-time-machine')?.shadowRoot
     return !!root?.querySelector('.dpp-properties')
@@ -160,4 +167,53 @@ test('leaves the live values out of a past version', async ({ page }) => {
   // was in all along.
   await page.evaluate(() => { location.hash = '' })
   await expect.poll(async () => (await liveSection(page)).heading).toBe(true)
+})
+
+type Snapshot = {
+  credentialSubject: {
+    product: { properties: Array<{ propertyID: string, access?: string }> }
+  }
+}
+
+// Puts two of the current version's live rows on demand:
+// one the live document holds a reading for, one it does
+// not. The rewrite breaks the snapshot's proof; the live
+// document keeps its own, so its readings still paint.
+async function gateLiveRows(page: Page): Promise<void> {
+  const gated = ['stateOfCharge', 'capacityThroughput']
+  await page.route('**/v/4.json*', async (route) => {
+    const res = await route.fetch()
+    const doc = await res.json() as Snapshot
+    for (const row of doc.credentialSubject.product.properties) {
+      if (gated.includes(row.propertyID)) row.access = 'onDemand'
+    }
+    await route.fulfill({ response: res, json: doc })
+  })
+}
+
+// Without a token the on-demand rows stay out, and so does
+// the reading for one of them: no row paints under its raw
+// key. The public live rows show as before.
+test('keeps on-demand live values behind ?show=', async ({ page }) => {
+  await gateLiveRows(page)
+  await bootVolturra(page)
+
+  await expect.poll(async () => (await liveSection(page)).heading).toBe(true)
+  expect((await liveSection(page)).rows).toEqual([
+    'State of certified energy96 %',
+    'Remaining capacity38.6 Ah'
+  ])
+})
+
+test('shows the on-demand live values ?show= unlocks', async ({ page }) => {
+  await gateLiveRows(page)
+  await bootVolturra(page, '?show=stateOfCharge,capacityThroughput')
+
+  await expect.poll(async () => (await liveSection(page)).heading).toBe(true)
+  expect((await liveSection(page)).rows).toEqual([
+    'State of charge81 %',
+    'State of certified energy96 %',
+    'Remaining capacity38.6 Ah',
+    'Capacity throughput0 AhReading at publish'
+  ])
 })

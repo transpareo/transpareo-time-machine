@@ -300,7 +300,10 @@ Field notes:
   rows leave the static surfaces and show under "Current
   state", each with the document's reading for its
   `propertyID` and the time that was written, or else its
-  own reading with the note "Reading at publish". On a
+  own reading with the note "Reading at publish". An
+  on-demand row and any reading for its `propertyID`
+  show there only once a `?show=` token unlocks its
+  namespace. On a
   past version they render as static rows with that
   note. A reading the snapshot marks no row for (a
   version signed before the marker existed) is labelled

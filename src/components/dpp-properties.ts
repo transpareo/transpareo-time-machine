@@ -19,10 +19,12 @@
  *      dynamic, each with its reading from the dynamic-data
  *      document and the time that was written. They belong
  *      to today, so they show on the current version only.
- *      A reading shows once its document's signature has
- *      cleared (see actions.liveDataIsShowable); until
- *      then, or without one, the property shows the
- *      reading its snapshot sealed at publish.
+ *      An on-demand row shows once a `?show=` token unlocks
+ *      its namespace, as in the public list. A reading shows
+ *      once its document's signature has cleared (see
+ *      actions.liveDataIsShowable); until then, or without
+ *      one, the property shows the reading its snapshot
+ *      sealed at publish.
  *   3. "Additional product data" - the legitimate-
  *      interest and on-demand rows that arrived as
  *      `{ status: 'ok', rows }` from the manifest's
@@ -138,7 +140,13 @@ function buildLiveSection(): HTMLElement[] {
   // malformed one must cost the live section only.
   const verified = doc && liveDataIsShowable(state) ? doc : null
   const values = Array.isArray(verified?.values) ? verified.values : null
-  const rows = composeLiveRows(activeSnapshot().properties, values)
+
+  // A row the `?show=` gate hides takes any reading of its
+  // key along, so none paints labelled by its propertyID.
+  const props = activeSnapshot().properties
+  const shut = new Set(props.filter((r) => !isShown(r)).map((r) => r.key))
+  const rows = composeLiveRows(props, values)
+    .filter((r) => !shut.has(r.key))
   if (rows.length === 0) return []
 
   const out = [buildHeading(tr('properties.liveHeading'))]

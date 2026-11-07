@@ -253,6 +253,12 @@ and this project adheres to
   sorts it as a long text (a short value between two long
   texts reads as one). It showed both under "Additional
   product data" and as a panel.
+- On a version whose public part carries on-demand rows,
+  an on-demand live value shows under "Current state" only
+  once a `?show=` token unlocks its namespace, as on the
+  other surfaces. The box showed its reading sealed at
+  publish to every reader. A reading the live document
+  holds for it waits for the token too.
 
 ## [2.24.2] - 2026-10-31
 
