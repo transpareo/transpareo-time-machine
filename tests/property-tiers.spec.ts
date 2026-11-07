@@ -10,7 +10,8 @@
  * view serves show at once under "Additional product data",
  * on-demand and legitimate-interest alike, a description or
  * facility behind a tier among them, and a row arriving both
- * ways shows once.
+ * ways shows once, also where the two sides sort it apart: a
+ * short value between two long texts reads as one of them.
  */
 
 import { describe, it, expect, beforeEach } from 'vitest'
@@ -20,6 +21,7 @@ import type { SignedSnapshot } from '@/archive'
 import { fetchStateByVersion } from '@/private-properties'
 import { showTokens } from '@/show-filter'
 import '@/components/dpp-properties'
+import '@/components/dpp-accordions'
 
 const RECYCLED = 'transpareo:recycledShare'
 
@@ -34,6 +36,13 @@ function mount(): Element {
   const list = document.createElement('dpp-properties')
   document.body.appendChild(list)
   return list
+}
+
+// The public bytes of version 1, adapted as the boot does.
+function publish(rows: ReadonlyArray<host.WireProperty>): void {
+  const wire = { version: 1, product: { properties: rows } }
+  const model = host.toRenderModel(wire as unknown as SignedSnapshot)
+  showSnapshot(model.properties)
 }
 
 function showSnapshot(properties: ReadonlyArray<PropertyValue>): void {
@@ -69,10 +78,7 @@ beforeEach(() => {
 
 describe('an on-demand row of the public bytes', () => {
   beforeEach(() => {
-    const rows = [wireRow(RECYCLED, 'Recycled share', 'onDemand')]
-    const wire = { version: 1, product: { properties: rows } }
-    const model = host.toRenderModel(wire as unknown as SignedSnapshot)
-    showSnapshot(model.properties)
+    publish([wireRow(RECYCLED, 'Recycled share', 'onDemand')])
   })
 
   it('stays hidden without a ?show= token', () => {
@@ -117,5 +123,63 @@ describe('the rows a signed-in reader\'s view serves', () => {
     expect(labels(list)).toEqual(['Description', 'Facility'])
     const values = list.querySelectorAll('.dpp-property-value')
     expect(values[0].textContent).toBe('Organic cotton')
+  })
+})
+
+// Each side sorts its rows alone, and a short value between
+// two long texts reads as one of them. One row can then be a
+// short value on one side and a long text on the other.
+describe('a row the two sides sort apart', () => {
+  const LONG = 'a text behind an access tier, far too long for any tile'
+  const text = (id: string, access?: host.WireProperty['access']) =>
+    wireRow(id, id, access, `${id}: ${LONG}`)
+
+  // Where the row shows: the table's labels, then the
+  // fold-out panels' keys.
+  function places(): ReadonlyArray<string | null> {
+    const list = mount()
+    const panels = document.createElement('dpp-accordions')
+    document.body.appendChild(panels)
+    const keys = [...panels.querySelectorAll<HTMLElement>('[data-key]')]
+      .map((p) => `panel ${p.dataset.key}`)
+    return [...labels(list), ...keys]
+  }
+
+  beforeEach(() => showTokens.set(['transpareo']))
+
+  it('shows once as the panel the reader\'s view makes of it', () => {
+    publish([wireRow(RECYCLED, 'Recycled share', 'onDemand')])
+    serve([
+      text('care', 'legitimateInterest'),
+      wireRow(RECYCLED, 'Recycled share', 'onDemand'),
+      text('repair', 'legitimateInterest')
+    ])
+
+    expect(places()).
+      toEqual(['panel care', `panel ${RECYCLED}`, 'panel repair'])
+  })
+
+  it('shows once as the panel the public bytes make of it', () => {
+    publish([
+      text('care'),
+      wireRow(RECYCLED, 'Recycled share', 'onDemand'),
+      text('repair')
+    ])
+    serve([wireRow(RECYCLED, 'Recycled share', 'onDemand')])
+
+    expect(places()).
+      toEqual(['panel care', `panel ${RECYCLED}`, 'panel repair'])
+  })
+
+  it('shows once in the table while no token unlocks the panel', () => {
+    showTokens.set([])
+    publish([
+      text('care'),
+      wireRow(RECYCLED, 'Recycled share', 'onDemand'),
+      text('repair')
+    ])
+    serve([wireRow(RECYCLED, 'Recycled share', 'onDemand')])
+
+    expect(places()).toEqual(['Recycled share', 'panel care', 'panel repair'])
   })
 })

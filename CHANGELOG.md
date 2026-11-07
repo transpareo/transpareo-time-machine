@@ -249,6 +249,12 @@ and this project adheres to
   read returns shows after the public ones, with the same
   look. The boxed lists and the composition cards read the
   public part alone, so such a row showed to no one.
+- An on-demand row the public part carries and a signed-in
+  reader's login-gated read returns as well shows once
+  under `?show=`, as a fold-out panel where either side
+  sorts it as a long text (a short value between two long
+  texts reads as one). It showed both under "Additional
+  product data" and as a panel.
 
 ## [2.24.2] - 2026-10-31
 

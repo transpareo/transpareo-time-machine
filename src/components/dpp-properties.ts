@@ -13,7 +13,8 @@
  *      category-2 (on-demand) rows from snapshot
  *      .properties. An on-demand row the public bytes
  *      carry renders only when the URL's `?show=` token
- *      list unlocks its namespace.
+ *      list unlocks its namespace, and only while the
+ *      reader's view serves no row of its key.
  *   2. "Current state" - the rows the snapshot marks
  *      dynamic, each with its reading from the dynamic-data
  *      document and the time that was written. They belong
@@ -27,7 +28,9 @@
  *      `{ status: 'ok', rows }` from the manifest's
  *      `privateProperties.url` endpoint, shown as served,
  *      with no `?show=` token. An on-demand row the public
- *      list carries as well shows here alone.
+ *      list carries as well shows here alone, unless the
+ *      fold-out panels show it: either side may sort one
+ *      short value as a long text (bridgeLongTextGroups).
  *
  * The sign-in and retry prompts for private rows live in
  * <dpp-private-signin>. The element is hidden entirely
@@ -38,8 +41,7 @@
 import { LightElement } from '@/reactive/element'
 import { el, phrase } from '@/reactive/dom'
 import {
-  activeSnapshot, activeVersionNumber, isOnCurrent, dynamicDataProofState,
-  renderedPresentation,
+  activeSnapshot, isOnCurrent, dynamicDataProofState, renderedPresentation
 } from '@/state'
 import { dynamicData, dynamicDataPending, composeLiveRows } from '@/host'
 import { liveDataIsShowable } from '@/actions'
@@ -52,10 +54,7 @@ import {
 import { isShown } from '@/show-filter'
 import { safeLinkHref } from '@/safe-url'
 import { buildDocumentRow } from '@/components/dpp-downloads'
-import {
-  fetchStateByVersion,
-  type PrivateFetchState,
-} from '@/private-properties'
+import { servedRows, panelRows } from '@/private-properties'
 
 // Short alias for the active-locale label lookup, used by
 // the section headings and the at-publish note below.
@@ -67,10 +66,9 @@ class DppProperties extends LightElement {
     this.appendChild(wrap)
 
     this.effect(() => {
-      const ver = activeVersionNumber()
-      const state = fetchStateByVersion()[ver]
-      const privateRows = visiblePrivateRows(state)
-      const publicRows = visiblePublicRows(privateRows)
+      const served = servedRows()
+      const privateRows = visiblePrivateRows(served)
+      const publicRows = visiblePublicRows(served)
 
       const children: HTMLElement[] = publicRows.map(buildRow)
       children.push(...buildLiveSection())
@@ -106,19 +104,24 @@ function detailRows(
 }
 
 // An on-demand row the reader's view serves as well shows
-// once, with the served rows.
+// once, with the served rows, whichever surface they put
+// it on.
 function visiblePublicRows(
-  served: ReadonlyArray<DetailRow>
+  served: ReadonlyArray<PropertyValue>
 ): ReadonlyArray<DetailRow> {
   const keys = new Set(served.map((r) => r.key))
   return detailRows(renderedPresentation())
     .filter((r) => !r.onDemand || !keys.has(r.key))
 }
 
+// A row the fold-out panels show stays out of the table:
+// the public bytes may sort a served short value as a long
+// text.
 function visiblePrivateRows(
-  state: PrivateFetchState | undefined,
+  served: ReadonlyArray<PropertyValue>
 ): ReadonlyArray<DetailRow> {
-  return state?.status === 'ok' ? detailRows(state.rows) : []
+  const panels = new Set(panelRows('longText').map((r) => r.key))
+  return detailRows(served).filter((r) => !panels.has(r.key))
 }
 
 // The live section: heading, when the readings were
