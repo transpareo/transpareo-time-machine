@@ -229,6 +229,14 @@ and this project adheres to
   returns it. The public part leaves such a manufacturer
   out, and the strip read the public part alone, so it
   stayed hidden for every reader.
+- A long text a signed-in reader's login-gated read
+  returns, such as a restricted product description, shows
+  as a fold-out panel after the public ones, with the same
+  look. "Additional product data" lists short values and
+  links alone, and the panels read the public part alone,
+  so such a text showed to no one. An on-demand text the
+  public part carries as well shows once, in its public
+  place.
 
 ## [2.24.2] - 2026-10-31
 

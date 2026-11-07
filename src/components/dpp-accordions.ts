@@ -4,7 +4,9 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * <dpp-accordions>, collapsible body-text panels for
- * care, disposal, repair, etc. Each section opens and
+ * care, disposal, repair, etc., from the active version's
+ * snapshot and then from the view a signed-in reader is
+ * served (private-properties.ts). Each section opens and
  * closes on its own and stays open until its header is
  * clicked again. Click handling is delegated; each item
  * carries its key on a data attr.
@@ -19,11 +21,12 @@
 import { LightElement } from '@/reactive/element'
 import { el, phrase } from '@/reactive/dom'
 import { icon, iconForProperty } from '@/icons'
-import { renderedPresentation } from '@/state'
+import { activeVersionNumber, renderedPresentation } from '@/state'
 import { i18n } from '@/i18n'
 import {
   propertyIsKind, txLang, type PropertyValueOf,
 } from '@/types'
+import { fetchStateByVersion } from '@/private-properties'
 
 type LongText = PropertyValueOf<'longText'>
 
@@ -67,8 +70,19 @@ class DppAccordions extends LightElement {
   }
 }
 
+// The public long texts, then those a signed-in reader's
+// view serves. An on-demand text the public bytes carry as
+// well keeps its public section, so no section moves when
+// the view arrives.
 function longTextRows(): LongText[] {
-  return renderedPresentation().filter(propertyIsKind('longText'))
+  const state = fetchStateByVersion()[activeVersionNumber()]
+  const served = state?.status === 'ok' ? state.rows : []
+  const rows = renderedPresentation().filter(propertyIsKind('longText'))
+  const keys = new Set(rows.map((r) => r.key))
+  const added = served
+    .filter(propertyIsKind('longText'))
+    .filter((r) => !keys.has(r.key))
+  return [...rows, ...added]
 }
 
 // Put a rebuilt item in place of the one just toggled,

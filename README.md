@@ -237,8 +237,10 @@ Field notes:
   (its page `@id`, its issuer's DID and its `version`),
   and its proofs must clear the snapshot's revocation and
   pin gates; otherwise no row renders. Its
-  legitimate-interest and on-demand rows show under
-  "Additional product data" with no `?show=` token. A
+  legitimate-interest and on-demand rows show with no
+  `?show=` token: short values and links under "Additional
+  product data", long texts in the accordions after the
+  public ones. A
   manufacturer behind an access tier is absent from the
   public snapshot; the view carries it at
   `product.manufacturer` with `propertyID` and `access`,

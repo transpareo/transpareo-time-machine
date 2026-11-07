@@ -16,11 +16,16 @@
  * keyboard has to be put back on its replacement. The card
  * renders in a shadow root, where document.activeElement
  * reports the host.
+ *
+ * A long text a signed-in reader's view serves gets a
+ * section of its own after the public ones, and a text
+ * arriving both ways gets one section.
  */
 
 import { describe, it, expect, beforeEach } from 'vitest'
 import * as host from '@/host'
 import { locale } from '@/i18n'
+import { fetchStateByVersion } from '@/private-properties'
 import type { DppSnapshot, PropertyValue } from '@/types'
 import '@/components/dpp-accordions'
 
@@ -44,16 +49,34 @@ const ROWS = [
 // The rows on the active snapshot, plus an element that
 // renders them. Unattached, so a caller can mount it where
 // the test needs it.
-function accordions(): Element {
+function accordions(rows = ROWS): Element {
   host.currentVersion.set(1)
-  host.snapshots.set({ 1: { properties: ROWS } as unknown as DppSnapshot })
+  host.snapshots.set({ 1: { properties: rows } as unknown as DppSnapshot })
   return document.createElement('dpp-accordions')
 }
 
-function mount(): Element {
-  const acc = accordions()
+function mount(rows = ROWS): Element {
+  const acc = accordions(rows)
   document.body.appendChild(acc)
   return acc
+}
+
+const LONG = 'a text behind an access tier, far too long for any tile'
+
+// A row of a reader's view, too long for a tile unless
+// `value` says otherwise.
+function wireRow(
+  propertyID: string, access: host.WireProperty['access'],
+  value = `${propertyID}: ${LONG}`
+): host.WireProperty {
+  return { propertyID, name: { en: propertyID }, value, access }
+}
+
+// The view a signed-in reader is served for `version`, its
+// rows adapted as the fetch hands them on.
+function serve(rows: ReadonlyArray<host.WireProperty>, version = 1): void {
+  const adapted = host.adaptPrivateRows(rows)
+  fetchStateByVersion.set({ [version]: { status: 'ok', rows: adapted } })
 }
 
 // Keys of the sections carrying a state class, in render
@@ -73,6 +96,7 @@ function click(acc: Element, key: string): void {
 beforeEach(() => {
   document.body.replaceChildren()
   locale.set('en')
+  fetchStateByVersion.set({})
 })
 
 describe('accordion sections', () => {
@@ -151,5 +175,43 @@ describe('accordion sections', () => {
     host.snapshots.set({ 1: { properties: ROWS } as unknown as DppSnapshot })
     expect(sectionKeys(acc)).toEqual(['care'])
     expect(sectionKeys(acc, '.opening')).toEqual([])
+  })
+})
+
+describe('long texts a signed-in reader\'s view serves', () => {
+  it('get sections after the public ones, short rows none', () => {
+    serve([
+      wireRow('description', 'legitimateInterest'),
+      wireRow('supplier', 'onDemand', 'Mill 7')
+    ])
+    expect(sectionKeys(mount(), '')).
+      toEqual(['care', 'disposal', 'repair', 'description'])
+  })
+
+  it('open and close as the public sections do', () => {
+    serve([wireRow('description', 'onDemand')])
+    const acc = mount()
+    click(acc, 'description')
+    expect(sectionKeys(acc)).toEqual(['description'])
+    expect(acc.querySelector('.dpp-accordion-body')?.textContent).
+      toBe(`description: ${LONG}`)
+
+    click(acc, 'description')
+    expect(sectionKeys(acc)).toEqual([])
+  })
+
+  // The public bytes may carry an on-demand row the view
+  // serves as well. Its section stays where it stood.
+  it('show a text the public list carries as well once', () => {
+    const gate = { namespace: 'repair', onDemand: true }
+    const shared = { ...row('repair', 'Repair', 'Reparatur'), ...gate }
+    serve([wireRow('repair', 'onDemand')])
+    const acc = mount([shared, ...ROWS.slice(0, 2)])
+    expect(sectionKeys(acc, '')).toEqual(['repair', 'care', 'disposal'])
+  })
+
+  it('stay with the version whose view served them', () => {
+    serve([wireRow('description', 'legitimateInterest')], 2)
+    expect(sectionKeys(mount(), '')).toEqual(['care', 'disposal', 'repair'])
   })
 })
