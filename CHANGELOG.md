@@ -234,9 +234,7 @@ and this project adheres to
   as a fold-out panel after the public ones, with the same
   look. "Additional product data" lists short values and
   links alone, and the panels read the public part alone,
-  so such a text showed to no one. An on-demand text the
-  public part carries as well shows once, in its public
-  place.
+  so such a text showed to no one.
 - On a version whose public part carries on-demand rows,
   an on-demand long text, list or composition shows only
   once a `?show=` token unlocks its namespace, as a row
