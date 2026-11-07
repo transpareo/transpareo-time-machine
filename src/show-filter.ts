@@ -36,6 +36,7 @@
  */
 
 import { signal } from '@/reactive/signals'
+import type { PropertyValue } from '@/types'
 
 export const showTokens = signal<ReadonlyArray<string>>(parseFromLocation())
 
@@ -87,6 +88,16 @@ export function isUnlocked(
     }
   }
   return false
+}
+
+// The gate every property surface applies: a row shows
+// unless it is on demand and no token in the URL unlocks
+// its namespace. Reads the signal, so an effect calling it
+// re-runs when the tokens change.
+export function isShown(
+  row: Pick<PropertyValue, 'namespace' | 'onDemand'>
+): boolean {
+  return !row.onDemand || isUnlocked(row.namespace, showTokens())
 }
 
 // Re-read window.location.search and update the signal.

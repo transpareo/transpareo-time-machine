@@ -4,12 +4,13 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * <dpp-accordions>, collapsible body-text panels for
- * care, disposal, repair, etc., from the active version's
- * snapshot and then from the view a signed-in reader is
- * served (private-properties.ts). Each section opens and
- * closes on its own and stays open until its header is
- * clicked again. Click handling is delegated; each item
- * carries its key on a data attr.
+ * care, disposal, repair, etc.: the active version's long
+ * texts the `?show=` gate passes, then those the view a
+ * signed-in reader is served adds (private-properties.ts
+ * panelRows). Each section opens and closes on its own and
+ * stays open until its header is clicked again. Click
+ * handling is delegated; each item carries its key on a
+ * data attr.
  *
  * A toggle rebuilds the clicked item alone: the fresh
  * node plays the entrance animation, while the sections
@@ -21,12 +22,9 @@
 import { LightElement } from '@/reactive/element'
 import { el, phrase } from '@/reactive/dom'
 import { icon, iconForProperty } from '@/icons'
-import { activeVersionNumber, renderedPresentation } from '@/state'
 import { i18n } from '@/i18n'
-import {
-  propertyIsKind, txLang, type PropertyValueOf,
-} from '@/types'
-import { fetchStateByVersion } from '@/private-properties'
+import { txLang, type PropertyValueOf } from '@/types'
+import { panelRows } from '@/private-properties'
 
 type LongText = PropertyValueOf<'longText'>
 
@@ -46,7 +44,7 @@ class DppAccordions extends LightElement {
       const item = (e.target as HTMLElement).closest('[data-key]')
       if (!(item instanceof HTMLElement)) return
       const key = item.dataset.key!
-      const row = longTextRows().find((r) => r.key === key)
+      const row = panelRows('longText').find((r) => r.key === key)
       if (!row) return
 
       const isOpen = !this.open.has(key)
@@ -61,28 +59,13 @@ class DppAccordions extends LightElement {
     })
 
     this.effect(() => {
-      const rows = longTextRows()
+      const rows = panelRows('longText')
       wrap.style.display = rows.length ? '' : 'none'
       wrap.replaceChildren(
         ...rows.map((row) => buildItem(row, this.open.has(row.key)))
       )
     })
   }
-}
-
-// The public long texts, then those a signed-in reader's
-// view serves. An on-demand text the public bytes carry as
-// well keeps its public section, so no section moves when
-// the view arrives.
-function longTextRows(): LongText[] {
-  const state = fetchStateByVersion()[activeVersionNumber()]
-  const served = state?.status === 'ok' ? state.rows : []
-  const rows = renderedPresentation().filter(propertyIsKind('longText'))
-  const keys = new Set(rows.map((r) => r.key))
-  const added = served
-    .filter(propertyIsKind('longText'))
-    .filter((r) => !keys.has(r.key))
-  return [...rows, ...added]
 }
 
 // Put a rebuilt item in place of the one just toggled,

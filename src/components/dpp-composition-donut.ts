@@ -4,23 +4,23 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * <dpp-composition-donut data-key="...">
- * Renders one composition row (table + donut) from the
- * active version's flat presentation list, matched by
- * the `data-key` attribute. Formatting is generic: when the
- * row carries a `unit`, entry values render as "X <unit>"
- * and the donut centre shows the sum with the unit;
- * without a unit, values render as "X%" and the centre
- * reads "100%". The donut always normalises to the sum
- * of entries so the ring fills regardless of absolute
- * scale. Per-substance percentages tween between
- * versions; first paint snaps.
+ * Renders one composition row (table + donut) of those
+ * <dpp-compositions> mounts (private-properties.ts
+ * panelRows), matched by the `data-key` attribute.
+ * Formatting is generic: when the row carries a `unit`,
+ * entry values render as "X <unit>" and the donut centre
+ * shows the sum with the unit; without a unit, values
+ * render as "X%" and the centre reads "100%". The donut
+ * always normalises to the sum of entries so the ring
+ * fills regardless of absolute scale. Per-substance
+ * percentages tween between versions; first paint snaps.
  */
 
 import { LightElement } from '@/reactive/element'
 import { el, phrase, SVG_NS } from '@/reactive/dom'
 import { icon, iconForProperty } from '@/icons'
 import { TrackedTween, type Track } from '@/reactive/tween'
-import { renderedPresentation } from '@/state'
+import { panelRows } from '@/private-properties'
 import { i18n, formatNumber } from '@/i18n'
 import { selectedLibraryEntry } from './dpp-library-modal'
 import { t } from '@/i18n/labels'
@@ -64,10 +64,7 @@ class DppCompositionDonut extends LightElement {
 
   private render(): void {
     const key = this.dataset.key ?? ''
-    const row = renderedPresentation().find(
-      (p): p is Composition =>
-        p.value.type === 'composition' && p.key === key,
-    )
+    const row = panelRows('composition').find((p) => p.key === key)
     if (!row || !row.value.entries.length) {
       this.replaceChildren()
       this.tween.clear()

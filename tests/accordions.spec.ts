@@ -17,15 +17,18 @@
  * renders in a shadow root, where document.activeElement
  * reports the host.
  *
- * A long text a signed-in reader's view serves gets a
- * section of its own after the public ones, and a text
- * arriving both ways gets one section.
+ * An on-demand text the public bytes carry gets a section
+ * once a `?show=` token unlocks it. A long text a signed-in
+ * reader's view serves gets a section of its own after the
+ * public ones, and a text arriving both ways gets one
+ * section.
  */
 
 import { describe, it, expect, beforeEach } from 'vitest'
 import * as host from '@/host'
 import { locale } from '@/i18n'
 import { fetchStateByVersion } from '@/private-properties'
+import { showTokens } from '@/show-filter'
 import type { DppSnapshot, PropertyValue } from '@/types'
 import '@/components/dpp-accordions'
 
@@ -59,6 +62,12 @@ function mount(rows = ROWS): Element {
   const acc = accordions(rows)
   document.body.appendChild(acc)
   return acc
+}
+
+// A row of the public bytes behind the `?show=` gate, as
+// the adapter marks it.
+function onDemand(r: PropertyValue): PropertyValue {
+  return { ...r, namespace: r.key, onDemand: true }
 }
 
 const LONG = 'a text behind an access tier, far too long for any tile'
@@ -97,6 +106,7 @@ beforeEach(() => {
   document.body.replaceChildren()
   locale.set('en')
   fetchStateByVersion.set({})
+  showTokens.set([])
 })
 
 describe('accordion sections', () => {
@@ -178,6 +188,19 @@ describe('accordion sections', () => {
   })
 })
 
+describe('an on-demand text of the public bytes', () => {
+  it('has no section without a ?show= token', () => {
+    const acc = mount([...ROWS.slice(0, 2), onDemand(ROWS[2])])
+    expect(sectionKeys(acc, '')).toEqual(['care', 'disposal'])
+  })
+
+  it('gets its section in place once a token unlocks it', () => {
+    const acc = mount([onDemand(ROWS[0]), ...ROWS.slice(1)])
+    showTokens.set(['care'])
+    expect(sectionKeys(acc, '')).toEqual(['care', 'disposal', 'repair'])
+  })
+})
+
 describe('long texts a signed-in reader\'s view serves', () => {
   it('get sections after the public ones, short rows none', () => {
     serve([
@@ -201,12 +224,14 @@ describe('long texts a signed-in reader\'s view serves', () => {
   })
 
   // The public bytes may carry an on-demand row the view
-  // serves as well. Its section stays where it stood.
+  // serves as well. Unlocked, its section stays where it
+  // stood; locked, it comes with the view's.
   it('show a text the public list carries as well once', () => {
-    const gate = { namespace: 'repair', onDemand: true }
-    const shared = { ...row('repair', 'Repair', 'Reparatur'), ...gate }
     serve([wireRow('repair', 'onDemand')])
-    const acc = mount([shared, ...ROWS.slice(0, 2)])
+    const acc = mount([onDemand(ROWS[2]), ...ROWS.slice(0, 2)])
+    expect(sectionKeys(acc, '')).toEqual(['care', 'disposal', 'repair'])
+
+    showTokens.set(['repair'])
     expect(sectionKeys(acc, '')).toEqual(['repair', 'care', 'disposal'])
   })
 

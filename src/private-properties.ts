@@ -9,6 +9,8 @@
  * rows the public CDN snapshot omits; this module owns the
  * fetch, the per-version row cache, and the same-registrable-
  * site guard that pins the auth realm to the page's own host.
+ * The panel surfaces read those rows beside the public ones
+ * through panelRows.
  *
  * The SPA never handles credentials. Authentication is a
  * full-page hand-off: on a 401 the endpoint names a login URL
@@ -66,8 +68,12 @@ import {
   manifest, rawSnapshots, adaptPrivateRows, adaptPrivateManufacturer,
   currentBootEpoch, type WireProperty, type WireManufacturer
 } from '@/host'
-import { activeVersionNumber } from '@/state'
-import type { DppManufacturer, PropertyValue } from '@/types'
+import { activeVersionNumber, renderedPresentation } from '@/state'
+import {
+  propertyIsKind, type DppManufacturer, type PropertyValue,
+  type PropertyValueKind, type PropertyValueOf
+} from '@/types'
+import { isShown } from '@/show-filter'
 import type { SignedSnapshot } from '@/archive'
 import { describeError } from '@/errors'
 import { verifySnapshotAnySuite } from '@/crypto/dispatch'
@@ -97,6 +103,31 @@ export type PrivateFetchState =
 
 export const fetchStateByVersion =
   signal<Record<number, PrivateFetchState>>({})
+
+// The rows a signed-in reader's view serves for the active
+// version, none until it has arrived.
+export function servedRows(): ReadonlyArray<PropertyValue> {
+  const state = fetchStateByVersion()[activeVersionNumber()]
+  return state?.status === 'ok' ? state.rows : []
+}
+
+// The rows of one kind a panel surface shows: the public
+// ones the `?show=` gate passes, then the served ones none of
+// those carries. A row arriving both ways keeps its public
+// place while the gate shows it, so no panel moves when the
+// view arrives.
+export function panelRows<K extends PropertyValueKind['type']>(
+  kind: K
+): PropertyValueOf<K>[] {
+  const rows = renderedPresentation()
+    .filter(propertyIsKind(kind))
+    .filter(isShown)
+  const keys = new Set(rows.map((r) => r.key))
+  const added = servedRows()
+    .filter(propertyIsKind(kind))
+    .filter((r) => !keys.has(r.key))
+  return [...rows, ...added]
+}
 
 // Versions whose URL the bootstrap effect already kicked off.
 // Without this the effect would re-fire on every scrub even

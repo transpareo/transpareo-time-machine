@@ -237,6 +237,18 @@ and this project adheres to
   so such a text showed to no one. An on-demand text the
   public part carries as well shows once, in its public
   place.
+- On a version whose public part carries on-demand rows,
+  an on-demand long text, list or composition shows only
+  once a `?show=` token unlocks its namespace, as a row
+  under "Additional product data" does. The fold-out
+  panels, the boxed lists and the composition cards showed
+  such rows to every reader. A signed-in reader whose
+  login-gated read returns the row sees it at once, after
+  the public ones.
+- A list or composition a signed-in reader's login-gated
+  read returns shows after the public ones, with the same
+  look. The boxed lists and the composition cards read the
+  public part alone, so such a row showed to no one.
 
 ## [2.24.2] - 2026-10-31
 

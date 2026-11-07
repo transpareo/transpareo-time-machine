@@ -4,27 +4,26 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * <dpp-badge-lists>, boxed lists of short string values
- * (intended use, care instructions, certifications, etc.).
- * One card per list, each with an icon-titled header and
- * a flat <ul>.
+ * (intended use, care instructions, certifications, etc.):
+ * the active version's lists the `?show=` gate passes, then
+ * those the view a signed-in reader is served adds
+ * (private-properties.ts panelRows). One card per list, each
+ * with an icon-titled header and a flat <ul>.
  */
 
 import { LightElement } from '@/reactive/element'
 import { el, phrase } from '@/reactive/dom'
 import { icon, iconForProperty } from '@/icons'
-import { renderedPresentation } from '@/state'
 import { i18n } from '@/i18n'
-import {
-  propertyIsKind, txLang, type PropertyValueOf,
-} from '@/types'
+import { txLang, type PropertyValueOf } from '@/types'
+import { panelRows } from '@/private-properties'
 
 type List = PropertyValueOf<'list'>
 
 class DppBadgeLists extends LightElement {
   protected setup(): void {
     this.effect(() => {
-      const rows = renderedPresentation().filter(propertyIsKind('list'))
-      this.replaceChildren(...rows.map(buildCard))
+      this.replaceChildren(...panelRows('list').map(buildCard))
     })
   }
 }

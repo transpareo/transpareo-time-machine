@@ -239,8 +239,11 @@ Field notes:
   pin gates; otherwise no row renders. Its
   legitimate-interest and on-demand rows show with no
   `?show=` token: short values and links under "Additional
-  product data", long texts in the accordions after the
-  public ones. A
+  product data", long texts in the accordions, lists and
+  compositions in their cards, each after the public ones.
+  An on-demand row a version's public snapshot carries
+  shows on any of these surfaces only once a `?show=`
+  token unlocks its namespace. A
   manufacturer behind an access tier is absent from the
   public snapshot; the view carries it at
   `product.manufacturer` with `propertyID` and `access`,

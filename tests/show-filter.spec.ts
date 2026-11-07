@@ -15,10 +15,15 @@
  *   rows: bare token = prefix match, token with `:` =
  *   exact match.
  *
- * No DOM, no signal wiring; pure function tests.
+ *   isShown(row) - that gate against the URL's tokens,
+ *   for a whole row: one not on demand always shows.
+ *
+ * No DOM; pure function tests.
  */
-import { describe, expect, it } from 'vitest'
-import { parseShowParam, isUnlocked } from '../src/show-filter'
+import { afterEach, describe, expect, it } from 'vitest'
+import {
+  parseShowParam, isUnlocked, isShown, showTokens
+} from '../src/show-filter'
 
 describe('parseShowParam', () => {
   it('returns empty for empty / missing search', () => {
@@ -101,5 +106,27 @@ describe('isUnlocked', () => {
 
   it('returns false for an empty token list', () => {
     expect(isUnlocked('transpareo:capacityWh', [])).toBe(false)
+  })
+})
+
+describe('isShown', () => {
+  const GATED = { namespace: 'transpareo:capacityWh', onDemand: true }
+
+  afterEach(() => showTokens.set([]))
+
+  it('shows a row that is not on demand without a token', () => {
+    expect(isShown({ namespace: 'transpareo:capacityWh' })).toBe(true)
+    expect(isShown({})).toBe(true)
+  })
+
+  it('hides an on-demand row until a token unlocks it', () => {
+    expect(isShown(GATED)).toBe(false)
+    showTokens.set(['transpareo'])
+    expect(isShown(GATED)).toBe(true)
+  })
+
+  it('holds a row to its namespace', () => {
+    showTokens.set(['transpareo:weight'])
+    expect(isShown(GATED)).toBe(false)
   })
 })

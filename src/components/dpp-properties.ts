@@ -49,7 +49,7 @@ import {
   txLang, propertyIsKind, type LangText, type LiveRow, type PropertyValue,
   type PropertyValueOf,
 } from '@/types'
-import { showTokens, isUnlocked } from '@/show-filter'
+import { isShown } from '@/show-filter'
 import { safeLinkHref } from '@/safe-url'
 import { buildDocumentRow } from '@/components/dpp-downloads'
 import {
@@ -99,11 +99,10 @@ type DetailRow = ScalarRow | LinkRow
 function detailRows(
   rows: ReadonlyArray<PropertyValue>,
 ): ReadonlyArray<DetailRow> {
-  const tokens = showTokens()
   return rows
     .filter((r): r is DetailRow => r.value.type === 'link'
       || (r.value.type === 'scalar' && r.namespace != null))
-    .filter((r) => !r.onDemand || isUnlocked(r.namespace, tokens))
+    .filter(isShown)
 }
 
 // An on-demand row the reader's view serves as well shows
