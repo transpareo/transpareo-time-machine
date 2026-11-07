@@ -32,8 +32,9 @@
  *          `manufacturer` the view names behind a tier; one
  *          failing any gate takes the error state below and
  *          renders no row.
- *   204 -> { status: 'empty' }; the user is signed in but
- *          has no group-or-plan access for this version.
+ *   204 -> { status: 'empty' }; the reader is signed in but
+ *          entitled to none of this version's restricted
+ *          rows, so no row and no prompt render.
  *   401 -> { status: 'unauth', loginUrl }; the renderer
  *          surfaces the sign-in affordance, which redirects
  *          to loginUrl. A 401 with no (or a cross-site) login
