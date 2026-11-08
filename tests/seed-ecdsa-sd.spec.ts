@@ -1,3 +1,9 @@
+/*
+ * transpareo-time-machine - open-source DPP renderer
+ * Copyright (C) 2026 Transpareo AG
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
 import { describe, it, expect, afterAll } from 'vitest';
 import { mkdtempSync, readFileSync, existsSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
