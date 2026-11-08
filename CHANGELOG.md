@@ -20,6 +20,15 @@ and this project adheres to
   every occurrence, so such a passport failed verification.
   A derived view that restates a signature for a repeated
   statement now fails, as it does in the issuer's verifier.
+- The Volturra demo passport keeps its two carbon footprint
+  rows apart. The seed named a row by its propertyID with
+  punctuation folded, so `carbon_footprint` (the total) and
+  `carbon-footprint` (the per-stage breakdown) shared one
+  `@id`, a JSON-LD reader took them as one property with two
+  names and every value, and the platform's issuer refuses
+  such a credential. Rows of one list that land on one `@id`
+  take their position as a suffix, as in the platform's
+  credentials.
 
 ## [2.24.3] - 2026-11-07
 

@@ -174,10 +174,13 @@ function buildCredential(
   };
 }
 
-// Give every node a deterministic @id: an elementId or
-// propertyID when present (stable across reordering), else
-// the path from the nearest identified ancestor. Value
-// objects ({ @value, ... }) are literals and are skipped.
+// Give every node a deterministic @id: an elementId, or for a
+// list member its propertyID (stable across reordering), else
+// the path from the nearest identified ancestor. List members
+// that land on one fragment take their position as a suffix,
+// so no two members of a list share an @id; the platform's
+// VcBuilder names nodes the same way. Value objects
+// ({ @value, ... }) are literals and are skipped.
 function assignIds(
   node: Record<string, unknown>, subjectIri: string, frag: string | undefined,
 ): void {
@@ -196,14 +199,34 @@ function descend(
   parentFrag: string | undefined, key: string,
 ): void {
   if (Array.isArray(value)) {
+    const frags = memberFragments(value, parentFrag, key);
     value.forEach((item, index) => {
-      if (isPlainNode(item)) {
-        assignIds(item, subjectIri, fragmentFor(item, parentFrag, key, index));
-      }
+      if (isPlainNode(item)) assignIds(item, subjectIri, frags[index]);
     });
   } else if (isPlainNode(value)) {
     assignIds(value, subjectIri, fragmentFor(value, parentFrag, key, null));
   }
+}
+
+// One fragment per list member. The rows of a multi-valued
+// property share a propertyID, and two propertyIDs can slug
+// alike (`carbon_footprint`, `carbon-footprint`), so a
+// fragment several members land on takes each member's
+// position. A shared fragment would merge them into one RDF
+// node.
+function memberFragments(
+  items: unknown[], parentFrag: string | undefined, key: string,
+): Array<string | undefined> {
+  const frags = items.map((item, index) => (isPlainNode(item)
+    ? fragmentFor(item, parentFrag, key, index) : undefined));
+  const counts = new Map<string, number>();
+  for (const frag of frags) {
+    if (frag !== undefined) counts.set(frag, (counts.get(frag) ?? 0) + 1);
+  }
+  return frags.map((frag, index) => (
+    frag !== undefined && (counts.get(frag) ?? 0) > 1
+      ? `${frag}/${index}` : frag
+  ));
 }
 
 function isPlainNode(v: unknown): v is Record<string, unknown> {
@@ -211,6 +234,9 @@ function isPlainNode(v: unknown): v is Record<string, unknown> {
     && !('@value' in (v as Record<string, unknown>));
 }
 
+// A block outside a list keeps its place even when it names a
+// propertyID, so it never shares a fragment with a row of the
+// same term.
 function fragmentFor(
   node: Record<string, unknown>, parentFrag: string | undefined,
   key: string, index: number | null,
@@ -220,7 +246,9 @@ function fragmentFor(
     return eid.replace(/[^A-Za-z0-9._/-]/g, '-');
   }
   const pid = node.propertyID;
-  if (typeof pid === 'string' && pid) return `property/${slug(pid)}`;
+  if (index !== null && typeof pid === 'string' && pid) {
+    return `property/${slug(pid)}`;
+  }
   const seg = index === null ? key : `${key}/${index}`;
   return parentFrag ? `${parentFrag}/${seg}` : seg;
 }

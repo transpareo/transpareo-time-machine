@@ -396,7 +396,7 @@ function diffProperties(
   };
 }
 
-async function buildSnapshots(
+export async function buildSnapshots(
   fixture: Fixture,
   images: ImageMap,
   signer: SnapshotSigner | undefined,
