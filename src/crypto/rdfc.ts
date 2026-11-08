@@ -37,6 +37,10 @@
  *     (xsd:integer), booleans (xsd:boolean), and value
  *     objects of @value plus a @type or a @language.
  *
+ * A statement asserted more than once (a repeated value or
+ * type, one @id written in two places, one literal written
+ * two ways) counts once, as in the issuer's RDF graph.
+ *
  * Rejected (fail closed): named graphs, @list / @set /
  * @reverse / @included / @nest, a context URL the offline
  * registry does not hold (nothing is fetched), a registered
@@ -173,7 +177,13 @@ export async function canonicalize(
   const quads: Quad[] = []
   const state: WalkState = { quads, nextBlank: 0 }
   walkNode(document, context, state)
-  return canonicalizeQuads(quads, options.labelMap)
+
+  // RDF holds a set: a statement asserted twice counts once,
+  // in the blank-node hashes as in the lines. Written with the
+  // walk's own labels, one line is one statement.
+  const keyed = quads.map((q): [string, Quad] => [serializeQuad(q, String), q])
+  const statements = [...new Map(keyed).values()]
+  return canonicalizeQuads(statements, options.labelMap)
 }
 
 // SHA-256 of the joined canonical N-Quads, the digest the

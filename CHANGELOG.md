@@ -10,6 +10,17 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Fixed
+
+- A passport that asserts one statement twice verifies: a
+  repeated value or type, `type` beside `@type` with the
+  same value, one node `@id` written in two places, or one
+  value written two ways. RDF holds a set and the issuer
+  signs each statement once, while the canonicalizer counted
+  every occurrence, so such a passport failed verification.
+  A derived view that restates a signature for a repeated
+  statement now fails, as it does in the issuer's verifier.
+
 ## [2.24.3] - 2026-11-07
 
 ### Fixed
