@@ -1,7 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import {
-  mkdtempSync, readFileSync, existsSync,
-} from 'node:fs';
+import { describe, it, expect, afterAll } from 'vitest';
+import { mkdtempSync, readFileSync, existsSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -34,9 +32,24 @@ function keyResolver(
   );
 }
 
+// Each issuer writes its key documents into a directory of its
+// own, which the verifier reads back; all of them go once the
+// file's tests are done.
+const dirs: string[] = [];
+
+function tempDir(): string {
+  const dir = mkdtempSync(join(tmpdir(), 'sd-'));
+  dirs.push(dir);
+  return dir;
+}
+
+afterAll(() => {
+  for (const dir of dirs) rmSync(dir, { recursive: true, force: true });
+});
+
 describe('seed ecdsa-sd issuer', () => {
   it('issues a VC with two proofs the verifier accepts', async () => {
-    const dir = mkdtempSync(join(tmpdir(), 'sd-'));
+    const dir = tempDir();
     const issuer = await buildEcdsaSdIssuer(
       dir, 'acme', 'abc12345', '2026-05-01T12:00:00Z',
       'did:web:acme.example', 'did:web:platform.example',
@@ -70,7 +83,7 @@ describe('seed ecdsa-sd issuer', () => {
   // A passport published today names the v2 edition, which
   // defines the download terms.
   it('issues a v2 credential with a download the verifier accepts', async () => {
-    const dir = mkdtempSync(join(tmpdir(), 'sd-'));
+    const dir = tempDir();
     const issuer = await buildEcdsaSdIssuer(
       dir, 'acme', 'abc12345', '2026-05-01T12:00:00Z',
       'did:web:acme.example', 'did:web:platform.example',

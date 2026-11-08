@@ -14,8 +14,8 @@
  * validly signed ecdsa-sd version.
  */
 
-import { describe, it, expect } from 'vitest'
-import { mkdtempSync } from 'node:fs'
+import { describe, it, expect, afterAll } from 'vitest'
+import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { buildEcdsaSdIssuer } from '../scripts/seed/ecdsa-sd-signing'
@@ -63,9 +63,23 @@ function manifestWith(
   } as unknown as DppManifest
 }
 
+// Each issuer writes its key documents into a directory of its
+// own; all of them go once the file's tests are done.
+const dirs: string[] = []
+
+function tempDir(): string {
+  const dir = mkdtempSync(join(tmpdir(), 'sd-chain-'))
+  dirs.push(dir)
+  return dir
+}
+
+afterAll(() => {
+  for (const dir of dirs) rmSync(dir, { recursive: true, force: true })
+})
+
 describe('ecdsa-sd version chain round-trip', () => {
   it('verifies a chain hashed the way the seed emits it', async () => {
-    const dir = mkdtempSync(join(tmpdir(), 'sd-chain-'))
+    const dir = tempDir()
     const issuer = await buildEcdsaSdIssuer(
       dir, 'acme', 'abc12345', '2026-05-01T12:00:00Z',
       ISSUER_DID, PLATFORM_DID,
@@ -94,7 +108,7 @@ describe('ecdsa-sd version chain round-trip', () => {
   })
 
   it('rejects a chain hashed the old (JCS body) way', async () => {
-    const dir = mkdtempSync(join(tmpdir(), 'sd-chain-'))
+    const dir = tempDir()
     const issuer = await buildEcdsaSdIssuer(
       dir, 'acme', 'abc12345', '2026-05-01T12:00:00Z',
       ISSUER_DID, PLATFORM_DID,

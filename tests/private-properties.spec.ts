@@ -23,7 +23,7 @@
  * production specimen.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { mkdtempSync, readFileSync } from 'node:fs'
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -488,33 +488,39 @@ describe('fetchPrivateRows: what a reader\'s view serves', () => {
     }
   }
 
+  // The issuer writes its key documents into `dir`, and the
+  // pins are read from there; nothing reads it once minted.
   async function mint(
     manufacturer: Record<string, unknown>
   ): Promise<Record<string, unknown>> {
     const dir = mkdtempSync(join(tmpdir(), 'sd-'))
-    const issuer = await buildEcdsaSdIssuer(
-      dir, 'acme', 'abc12345', '2026-11-06T12:00:00Z',
-      ISSUER.did, 'did:web:platform.example'
-    )
-    const keys = join(dir, 'acme/dpp/abc12345/keys')
-    const multikey = (file: string): string => (JSON.parse(
-      readFileSync(join(keys, file), 'utf8')
-    ) as { publicKeyMultibase: string }).publicKeyMultibase
-    pin([multikey('platform-p256.json')], [multikey('issuer-p256.json')])
+    try {
+      const issuer = await buildEcdsaSdIssuer(
+        dir, 'acme', 'abc12345', '2026-11-06T12:00:00Z',
+        ISSUER.did, 'did:web:platform.example'
+      )
+      const keys = join(dir, 'acme/dpp/abc12345/keys')
+      const multikey = (file: string): string => (JSON.parse(
+        readFileSync(join(keys, file), 'utf8')
+      ) as { publicKeyMultibase: string }).publicKeyMultibase
+      pin([multikey('platform-p256.json')], [multikey('issuer-p256.json')])
 
-    const properties = [
-      propertyRow('origin', 'Germany'),
-      propertyRow('recycled', '12 %', 'onDemand'),
-      propertyRow('supplier', 'Acme Chemicals GmbH', 'legitimateInterest')
-    ]
-    return issuer.issue({
-      '@id': PAGE_ID,
-      version: 4,
-      issuer: ISSUER,
-      product: {
-        '@type': 'Product', name: 'Pulse 2000', manufacturer, properties
-      }
-    })
+      const properties = [
+        propertyRow('origin', 'Germany'),
+        propertyRow('recycled', '12 %', 'onDemand'),
+        propertyRow('supplier', 'Acme Chemicals GmbH', 'legitimateInterest')
+      ]
+      return await issuer.issue({
+        '@id': PAGE_ID,
+        version: 4,
+        issuer: ISSUER,
+        product: {
+          '@type': 'Product', name: 'Pulse 2000', manufacturer, properties
+        }
+      })
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
   }
 
   const VOLTWERK = {

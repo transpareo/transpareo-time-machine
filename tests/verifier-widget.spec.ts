@@ -30,8 +30,10 @@
  * fails.
  */
 
-import { describe, it, expect, vi, beforeAll, afterEach } from 'vitest'
-import { mkdtempSync } from 'node:fs'
+import {
+  describe, it, expect, vi, beforeAll, afterAll, afterEach
+} from 'vitest'
+import { mkdtempSync, rmSync } from 'node:fs'
 import { readFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -47,6 +49,7 @@ const PLATFORM_DID = 'did:web:platform.example'
 const ORIGIN = 'https://cdn.example'
 const MANIFEST_URL = `${ORIGIN}/${HANDLE}/dpp/${CODE}/manifest.json`
 
+let dir: string
 let keysDir: string
 let credential: Record<string, unknown>
 let credentialHash: string
@@ -68,7 +71,7 @@ let jcsIssuerOnly: Record<string, unknown>
 // stamps it. The eddsa-jcs signer writes its Ed25519 key
 // documents beside them.
 beforeAll(async () => {
-  const dir = mkdtempSync(join(tmpdir(), 'verifier-widget-'))
+  dir = mkdtempSync(join(tmpdir(), 'verifier-widget-'))
   keysDir = join(dir, HANDLE, 'dpp', CODE, 'keys')
   const created = '2026-05-01T12:00:00Z'
   const issuer = await buildEcdsaSdIssuer(
@@ -83,6 +86,12 @@ beforeAll(async () => {
   const proof = signer.signSnapshot(body)
   jcsSnapshot = { ...body, proof }
   jcsIssuerOnly = { ...body, proof: proof.slice(0, 1) }
+})
+
+// Specs across the file read the key documents from the
+// directory, so it goes once the file is done.
+afterAll(() => {
+  rmSync(dir, { recursive: true, force: true })
 })
 
 function passportBody(code: string): Record<string, unknown> {
