@@ -10,6 +10,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.24.4] - 2026-11-08
+
 ### Fixed
 
 - A passport that asserts one statement twice verifies: a
