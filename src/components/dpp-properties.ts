@@ -20,19 +20,21 @@
  *      document and the time that was written. They belong
  *      to today, so they show on the current version only.
  *      An on-demand row shows once a `?show=` token unlocks
- *      its namespace, as in the public list. A reading shows
- *      once its document's signature has cleared (see
- *      actions.liveDataIsShowable); until then, or without
- *      one, the property shows the reading its snapshot
- *      sealed at publish.
+ *      its namespace, and only while the reader's view
+ *      serves no row of its key, as in the public list. A
+ *      reading shows once its document's signature has
+ *      cleared (see actions.liveDataIsShowable); until then,
+ *      or without one, the property shows the reading its
+ *      snapshot sealed at publish.
  *   3. "Additional product data" - the legitimate-
  *      interest and on-demand rows that arrived as
  *      `{ status: 'ok', rows }` from the manifest's
  *      `privateProperties.url` endpoint, shown as served,
  *      with no `?show=` token. An on-demand row the public
- *      list carries as well shows here alone, unless the
- *      fold-out panels show it: either side may sort one
- *      short value as a long text (bridgeLongTextGroups).
+ *      list or "Current state" carries as well shows here
+ *      alone, unless the fold-out panels show it: either
+ *      side may sort one short value as a long text
+ *      (bridgeLongTextGroups).
  *
  * The sign-in and retry prompts for private rows live in
  * <dpp-private-signin>. The element is hidden entirely
@@ -69,11 +71,12 @@ class DppProperties extends LightElement {
 
     this.effect(() => {
       const served = servedRows()
+      const servedKeys = new Set(served.map((r) => r.key))
       const privateRows = visiblePrivateRows(served)
-      const publicRows = visiblePublicRows(served)
+      const publicRows = visiblePublicRows(servedKeys)
 
       const children: HTMLElement[] = publicRows.map(buildRow)
-      children.push(...buildLiveSection())
+      children.push(...buildLiveSection(servedKeys))
       if (privateRows.length > 0) {
         children.push(buildHeading(tr('properties.additionalHeading')))
         for (const r of privateRows) children.push(buildRow(r))
@@ -109,11 +112,10 @@ function detailRows(
 // once, with the served rows, whichever surface they put
 // it on.
 function visiblePublicRows(
-  served: ReadonlyArray<PropertyValue>
+  served: ReadonlySet<string>
 ): ReadonlyArray<DetailRow> {
-  const keys = new Set(served.map((r) => r.key))
   return detailRows(renderedPresentation())
-    .filter((r) => !r.onDemand || !keys.has(r.key))
+    .filter((r) => !r.onDemand || !served.has(r.key))
 }
 
 // A row the fold-out panels show stays out of the table:
@@ -130,7 +132,9 @@ function visiblePrivateRows(
 // written, then one row per live property. Held while the
 // document is in flight or being checked. A property with
 // no verified reading shows the one sealed at publish.
-function buildLiveSection(): HTMLElement[] {
+// `served` holds the keys of the rows the reader's view
+// serves.
+function buildLiveSection(served: ReadonlySet<string>): HTMLElement[] {
   if (!isOnCurrent()) return []
   const doc = dynamicData()
   const state = dynamicDataProofState()
@@ -141,10 +145,14 @@ function buildLiveSection(): HTMLElement[] {
   const verified = doc && liveDataIsShowable(state) ? doc : null
   const values = Array.isArray(verified?.values) ? verified.values : null
 
-  // A row the `?show=` gate hides takes any reading of its
+  // A row the `?show=` gate hides, or an on-demand one the
+  // reader's view serves as well (it shows with the served
+  // rows, as in the public list), takes any reading of its
   // key along, so none paints labelled by its propertyID.
   const props = activeSnapshot().properties
-  const shut = new Set(props.filter((r) => !isShown(r)).map((r) => r.key))
+  const dropped = props
+    .filter((r) => !isShown(r) || (r.onDemand && served.has(r.key)))
+  const shut = new Set(dropped.map((r) => r.key))
   const rows = composeLiveRows(props, values)
     .filter((r) => !shut.has(r.key))
   if (rows.length === 0) return []

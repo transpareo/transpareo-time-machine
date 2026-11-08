@@ -303,7 +303,8 @@ Field notes:
   own reading with the note "Reading at publish". An
   on-demand row and any reading for its `propertyID`
   show there only once a `?show=` token unlocks its
-  namespace. On a
+  namespace; one a signed-in reader's view serves as
+  well shows under "Additional product data" alone. On a
   past version they render as static rows with that
   note. A reading the snapshot marks no row for (a
   version signed before the marker existed) is labelled

@@ -258,7 +258,10 @@ and this project adheres to
   once a `?show=` token unlocks its namespace, as on the
   other surfaces. The box showed its reading sealed at
   publish to every reader. A reading the live document
-  holds for it waits for the token too.
+  holds for it waits for the token too. A signed-in reader
+  whose login-gated read returns the row as well sees it
+  once, under "Additional product data"; with the token it
+  showed there and in the box.
 
 ## [2.24.2] - 2026-10-31
 

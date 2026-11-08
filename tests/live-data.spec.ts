@@ -13,10 +13,15 @@
  * What the unit tests cannot show: the signature check
  * running through the browser's WebCrypto against the key
  * document, the section painting only once it clears, the
- * section leaving when the reader steps into the past, and
- * the `?show=` gate holding back its on-demand rows.
+ * section leaving when the reader steps into the past, the
+ * `?show=` gate holding back its on-demand rows, and one a
+ * signed-in reader's view serves leaving for that view.
  */
 import { test, expect } from '@playwright/test'
+import { mkdtempSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import { tsImport } from 'tsx/esm/api'
 
 type Page = import('@playwright/test').Page
 
@@ -216,4 +221,73 @@ test('shows the on-demand live values ?show= unlocks', async ({ page }) => {
     'Remaining capacity38.6 Ah',
     'Capacity throughput0 AhReading at publish'
   ])
+})
+
+// The property list's rows by the heading above them.
+function propertySections(): Record<string, string[]> {
+  const root = document.querySelector('transpareo-time-machine')!.shadowRoot!
+  const out: Record<string, string[]> = {}
+  let heading = ''
+  for (const node of root.querySelector('.dpp-properties')!.children) {
+    const text = node.textContent!
+    if (node.matches('.dpp-properties-heading')) heading = text
+    if (node.matches('.dpp-property-row')) (out[heading] ??= []).push(text)
+  }
+  return out
+}
+
+const PASSPORT = 'https://volturra.example/dpp/demo-2026-b001'
+const ISSUER = 'did:web:volturra.example'
+
+type Signer = typeof import('../scripts/seed/ecdsa-sd-signing')
+
+// The reader's view of v4 serving `rows`, minted with the
+// seed's demo keys under the fixture's handle, code and DIDs,
+// so the key documents the fixture serves verify it. The
+// signer imports its contexts as bare JSON, which this
+// runner's loader refuses, so tsx loads it as the seed does.
+async function serveReaderView(
+  page: Page, rows: ReadonlyArray<Record<string, unknown>>
+): Promise<void> {
+  const path = '../scripts/seed/ecdsa-sd-signing.ts'
+  const signer = await tsImport(path, import.meta.url) as Signer
+  const dir = mkdtempSync(join(tmpdir(), 'sd-'))
+  const issuer = await signer.buildEcdsaSdIssuer(
+    dir, 'volturra-pulse-2000', 'demo-2026-b001', '2026-11-07T12:00:00Z',
+    ISSUER, 'did:web:transpareo.example'
+  )
+  const body = {
+    '@id': PASSPORT,
+    version: 4,
+    issuer: { '@type': 'Organization', name: 'Volturra Energia', did: ISSUER },
+    product: { '@type': 'Product', properties: rows }
+  }
+  const answer = { json: await issuer.issue(body) }
+  await page.route('**/private/v4.json', (route) => route.fulfill(answer))
+}
+
+// With the token, a gated live row the reader's view serves
+// shows once, as served; the other gated row stays in the box.
+test('shows a served on-demand row with the served rows', async ({ page }) => {
+  const served = {
+    '@type': 'PropertyValue',
+    propertyID: 'stateOfCharge',
+    name: [{ '@value': 'State of charge', '@language': 'en' }],
+    value: 100,
+    unitCode: 'P1',
+    dynamic: true,
+    access: 'onDemand'
+  }
+  await gateLiveRows(page)
+  await serveReaderView(page, [served])
+  await bootVolturra(page, '?show=stateOfCharge,capacityThroughput')
+
+  await expect.poll(() => page.evaluate(propertySections)).toEqual({
+    'Current state': [
+      'State of certified energy96 %',
+      'Remaining capacity38.6 Ah',
+      'Capacity throughput0 AhReading at publish'
+    ],
+    'Additional product data': ['State of charge100 %Reading at publish']
+  })
 })
