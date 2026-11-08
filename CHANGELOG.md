@@ -10,6 +10,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.24.3] - 2026-11-07
+
 ### Fixed
 
 - The `<dpp-verifier>` widget holds the current version's
