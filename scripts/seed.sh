@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+# transpareo-time-machine - open-source DPP renderer
+# Copyright (C) 2026 Transpareo AG
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
 # Populate local fixture data after cloning the repo.
 # Reads every `fixtures/*.yml`, validates the schema,
 # downloads any referenced images, and emits the signed
