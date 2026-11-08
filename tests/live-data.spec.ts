@@ -18,7 +18,7 @@
  * signed-in reader's view serves leaving for that view.
  */
 import { test, expect } from '@playwright/test'
-import { mkdtempSync } from 'node:fs'
+import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { tsImport } from 'tsx/esm/api'
@@ -251,19 +251,26 @@ async function serveReaderView(
 ): Promise<void> {
   const path = '../scripts/seed/ecdsa-sd-signing.ts'
   const signer = await tsImport(path, import.meta.url) as Signer
-  const dir = mkdtempSync(join(tmpdir(), 'sd-'))
-  const issuer = await signer.buildEcdsaSdIssuer(
-    dir, 'volturra-pulse-2000', 'demo-2026-b001', '2026-11-07T12:00:00Z',
-    ISSUER, 'did:web:transpareo.example'
-  )
   const body = {
     '@id': PASSPORT,
     version: 4,
     issuer: { '@type': 'Organization', name: 'Volturra Energia', did: ISSUER },
     product: { '@type': 'Product', properties: rows }
   }
-  const answer = { json: await issuer.issue(body) }
-  await page.route('**/private/v4.json', (route) => route.fulfill(answer))
+
+  // The signer writes its key documents into `dir`; the page
+  // reads the fixture's own copies, so `dir` goes once minted.
+  const dir = mkdtempSync(join(tmpdir(), 'sd-'))
+  try {
+    const issuer = await signer.buildEcdsaSdIssuer(
+      dir, 'volturra-pulse-2000', 'demo-2026-b001', '2026-11-07T12:00:00Z',
+      ISSUER, 'did:web:transpareo.example'
+    )
+    const answer = { json: await issuer.issue(body) }
+    await page.route('**/private/v4.json', (route) => route.fulfill(answer))
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
 }
 
 // With the token, a gated live row the reader's view serves
