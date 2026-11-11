@@ -289,8 +289,10 @@ async function readPrivateRows(
   const rejected = await credentialRejection(body, versionNumber)
   if (rejected) return { status: 'error', reason: rejected }
 
+  // A root path in the rows names a file on the host they came
+  // from, the publisher's, where the reader's session lives.
   const product = (body as PrivateResponseBody).credentialSubject?.product
-  const rows = adaptPrivateRows(product?.properties ?? [])
+  const rows = adaptPrivateRows(product?.properties ?? [], pageUrl(url)?.href)
   const manufacturer = adaptPrivateManufacturer(product?.manufacturer)
   return { status: 'ok', rows, ...(manufacturer ? { manufacturer } : {}) }
 }
@@ -470,11 +472,19 @@ export function isSameRegistrableSite(
 // credential realm to protect, so the guard is a no-op.
 function isCrossSiteUrl(url: string): boolean {
   if (typeof window === 'undefined') return false
-  let resolved: URL
-  try {
-    resolved = new URL(url, window.location.href)
-  } catch {
-    return true
-  }
+  const resolved = pageUrl(url)
+  if (!resolved) return true
   return !isSameRegistrableSite(resolved.href, window.location.hostname)
+}
+
+// The address a URL names, read against the page as the
+// guard reads it. Null outside a browser, and for a URL no
+// address can be built from.
+function pageUrl(url: string): URL | null {
+  if (typeof window === 'undefined') return null
+  try {
+    return new URL(url, window.location.href)
+  } catch {
+    return null
+  }
 }

@@ -70,6 +70,22 @@ describe('a restricted document row', () => {
     expect(list.querySelector('[style]:not(.dpp-properties)')).toBeNull()
   })
 
+  // The publisher's host answers the file to a reader it admits,
+  // by the session cookie the new tab's request carries.
+  it('opens a restricted document in a new tab', () => {
+    const file = 'https://dpp.acme.com/api/dpps/abc12345/files/9f86d081.pdf'
+    const doc = { name: { en: 'Test report' }, files: [{ href: file }] }
+    const value = { type: 'link', href: file, document: doc } as const
+    const row = { ...testReport, value }
+    fetchStateByVersion.set({ 1: { status: 'ok', rows: [row] } })
+
+    const link = mount().querySelector<HTMLAnchorElement>(`a[href="${file}"]`)
+    expect(link?.closest('.dpp-document')).not.toBeNull()
+    expect(link?.target).toBe('_blank')
+    expect(link?.rel.split(' ')).toContain('noopener')
+    expect(link?.hasAttribute('download')).toBe(false)
+  })
+
   it('leaves a script URL as plain text', () => {
     const value = { type: 'link', href: 'javascript:alert(1)' } as const
     const row = { ...testReport, value }

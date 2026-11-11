@@ -480,7 +480,7 @@ describe('fetchPrivateRows: what a reader\'s view serves', () => {
   }
 
   function propertyRow(
-    propertyID: string, value: string, access?: string
+    propertyID: string, value: unknown, access?: string
   ): Record<string, unknown> {
     const tier = access ? { access } : {}
     return {
@@ -491,7 +491,8 @@ describe('fetchPrivateRows: what a reader\'s view serves', () => {
   // The issuer writes its key documents into `dir`, and the
   // pins are read from there; nothing reads it once minted.
   async function mint(
-    manufacturer: Record<string, unknown>
+    manufacturer: Record<string, unknown>,
+    extra: ReadonlyArray<Record<string, unknown>> = []
   ): Promise<Record<string, unknown>> {
     const dir = mkdtempSync(join(tmpdir(), 'sd-'))
     try {
@@ -508,7 +509,8 @@ describe('fetchPrivateRows: what a reader\'s view serves', () => {
       const properties = [
         propertyRow('origin', 'Germany'),
         propertyRow('recycled', '12 %', 'onDemand'),
-        propertyRow('supplier', 'Acme Chemicals GmbH', 'legitimateInterest')
+        propertyRow('supplier', 'Acme Chemicals GmbH', 'legitimateInterest'),
+        ...extra
       ]
       return await issuer.issue({
         '@id': PAGE_ID,
@@ -544,11 +546,13 @@ describe('fetchPrivateRows: what a reader\'s view serves', () => {
     resetPrivateState()
   })
 
-  async function read(view: Record<string, unknown>): Promise<unknown> {
+  async function read(
+    view: Record<string, unknown>, url = URL_4
+  ): Promise<unknown> {
     vi.stubGlobal('fetch', vi.fn(async (asked: string) => (
-      asked === URL_4 ? jsonResponse(view) : new Response(null, { status: 404 })
+      asked === url ? jsonResponse(view) : new Response(null, { status: 404 })
     )))
-    return fetchPrivateRows(4, URL_4)
+    return fetchPrivateRows(4, url)
   }
 
   function okState(): Extract<PrivateFetchState, { status: 'ok' }> {
@@ -581,6 +585,27 @@ describe('fetchPrivateRows: what a reader\'s view serves', () => {
 
     await read(view)
     expect(okState().manufacturer).toBeUndefined()
+  })
+
+  // A restricted document names its file by a root path on the
+  // host that served the view, where the reader's session lives.
+  // The page embedding the passport (acme.com) may sit elsewhere.
+  it.each([
+    ['https://dpp.acme.com/api/private/4', 'https://dpp.acme.com'],
+    [URL_4, 'https://acme.com']
+  ])('opens a restricted document read from %s there', async (url, origin) => {
+    const file = '/api/dpps/abc12345/files/9f86d081.pdf'
+    const report = {
+      '@type': 'Link', href: file, mediaType: 'application/pdf',
+      fileDigest: 'sha256-n4bQgYhMfWWaL+qgxVrQFaO/TxsrC4Is0V1sFbDwCgg='
+    }
+    const row = propertyRow('testReport', report, 'legitimateInterest')
+    const view = await mint(VOLTWERK, [row])
+
+    expect(await read(view, url)).toBe('ok')
+    const served = okState().rows.find((r) => r.key === 'testReport')
+    expect(served?.value).
+      toMatchObject({ type: 'link', href: `${origin}${file}` })
   })
 })
 

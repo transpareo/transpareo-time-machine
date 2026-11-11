@@ -10,6 +10,17 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Fixed
+
+- A link in a signed-in reader's login-gated rows whose
+  address is a root path, the way a publisher names a
+  restricted document (`/api/dpps/<code>/files/<digest>.pdf`),
+  opens on the host those rows came from, the publisher's
+  own, where the reader's session lives. The browser read
+  such a path against the page embedding the passport, which
+  may sit on another host, so the document did not open.
+  Absolute addresses and public documents open as before.
+
 ## [2.24.4] - 2026-11-08
 
 ### Fixed

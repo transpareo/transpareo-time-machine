@@ -686,11 +686,19 @@ function adaptProperties(
 // token. The public rows already paint from the snapshot
 // and are left out; an `onDemand` row the public bytes
 // carry as well paints once, with these (dpp-properties).
+//
+// `readUrl` is the absolute URL the view was read from, on
+// the publisher's own host, where the reader's session
+// lives. A root path in the view (a restricted document,
+// `/api/dpps/<code>/files/<digest>.pdf`) names a file on
+// that host and resolves there; the asset host holds the
+// public copies alone.
 export function adaptPrivateRows(
-  rows: ReadonlyArray<WireProperty>
+  rows: ReadonlyArray<WireProperty>, readUrl?: string
 ): ReadonlyArray<PropertyValue> {
   const served = rows.filter((r) => isReaderTier(r.access))
-  return buildRows(served, buildPrivateRow)
+  const absolute = resolverFor(readUrl, readUrl)
+  return buildRows(served, buildPrivateRow, absolute)
 }
 
 // The manufacturer a signed-in reader's view names behind a
@@ -788,16 +796,19 @@ function buildPrivateRow(
 type Resolver = (ref: string) => string
 
 // Media references ship as root paths so a passport stays
-// portable across mirrors: they land on the asset host, and
-// any other relative reference on `base`, the URL the
-// snapshot was read from. Resolving them against the
-// surrounding page instead points them at a host that may
-// hold none of the media, and misses the preload the page
-// issued against the real one. With no base (a bare adapter
-// call outside a fetch) the references stand as they are,
-// for the browser to resolve against the document.
-function resolverFor(base: string | undefined): Resolver {
-  return (ref) => base ? resolveReference(ref, base) ?? ref : ref
+// portable across mirrors: they land on `root`, the asset
+// host unless the caller names another, and any other
+// relative reference on `base`, the URL the document was
+// read from. Resolving them against the surrounding page
+// instead points them at a host that may hold none of the
+// media, and misses the preload the page issued against the
+// real one. With no base (a bare adapter call outside a
+// fetch) the references stand as they are, for the browser
+// to resolve against the document.
+function resolverFor(
+  base: string | undefined, root?: string
+): Resolver {
+  return (ref) => base ? resolveReference(ref, base, root) ?? ref : ref
 }
 
 // Coerce a flat-string image entry to the {thumbnail,

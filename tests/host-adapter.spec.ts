@@ -10,12 +10,14 @@
  * internal render model diverge.
  */
 
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import {
   toRenderModel, adaptPrivateRows, adaptPrivateManufacturer,
   type WireProperty,
 } from '../src/host';
+import { config } from '../src/config';
 import type { SignedSnapshot } from '../src/archive';
+import type { PropertyValueKind } from '../src/types';
 
 function row(propertyID: string, access?: string): WireProperty {
   return {
@@ -345,6 +347,61 @@ describe('adaptPrivateRows: post-auth tiers', () => {
     const [out] = adaptPrivateRows([row('a:onDemand', 'onDemand')]);
     expect(out.namespace).toBe('a:onDemand');
     expect(out.onDemand).toBeUndefined();
+  });
+});
+
+// A reader's view comes from the publisher's own host, where the
+// reader's session lives, so a root path in it names a file
+// there. The asset host serves the public copies alone.
+describe('adaptPrivateRows: links resolve against the read URL', () => {
+  const READ = 'https://dpp.acme.com/api/dpps/abc12345/private_properties/4';
+  const FILES = 'https://dpp.acme.com/api/dpps/abc12345/files';
+  const report = {
+    '@type': 'Link',
+    href: '/api/dpps/abc12345/files/9f86d081.pdf',
+    mediaType: 'application/pdf',
+    fileDigest: 'sha256-n4bQgYhMfWWaL+qgxVrQFaO/TxsrC4Is0V1sFbDwCgg=',
+    fileVersions: [{
+      '@type': 'Link',
+      href: '/api/dpps/abc12345/files/60303ae2.pdf',
+      fileLanguages: ['en'],
+    }],
+  };
+
+  function served(value: unknown): PropertyValueKind {
+    const wireRow: WireProperty = {
+      propertyID: 'testReport', name: { en: 'Test report' }, value,
+      access: 'legitimateInterest',
+    };
+    return adaptPrivateRows([wireRow], READ)[0].value;
+  }
+
+  afterEach(() => {
+    Object.assign(config, { assetHost: undefined });
+  });
+
+  it('opens a restricted document on the host that served it', () => {
+    expect(served(report)).toMatchObject({
+      type: 'link',
+      href: `${FILES}/9f86d081.pdf`,
+      document: {
+        files: [
+          { href: `${FILES}/9f86d081.pdf` },
+          { href: `${FILES}/60303ae2.pdf`, languages: ['en'] },
+        ],
+      },
+    });
+  });
+
+  it('leaves the asset host to the public copies', () => {
+    Object.assign(config, { assetHost: 'https://cdn.example.com' });
+    expect(served(report)).toMatchObject({ href: `${FILES}/9f86d081.pdf` });
+  });
+
+  it('keeps an absolute address', () => {
+    const href = 'https://files.example.org/report.pdf';
+    expect(served({ '@type': 'Link', href })).
+      toEqual({ type: 'link', href });
   });
 });
 
