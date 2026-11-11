@@ -40,7 +40,7 @@ interface Specimen {
 }
 
 const SPECIMEN = JSON.parse(readFileSync(
-  join(process.cwd(), 'tests/fixtures/ecdsa-sd-prod-specimen.json'), 'utf8',
+  join(import.meta.dirname, 'fixtures/ecdsa-sd-prod-specimen.json'), 'utf8',
 )) as Specimen
 
 const VERSION = 3
