@@ -10,6 +10,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.25.1] - 2026-11-12
+
 ### Fixed
 
 - Turning the fullscreen viewer's pictures with the arrow
