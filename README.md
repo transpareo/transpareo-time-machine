@@ -1300,7 +1300,13 @@ build links against `libicu74` and `libflite`, so on a distro
 shipping neither, `npm run browser:webkit:docker` runs the
 same suite inside the Playwright container image instead;
 `npm run browser:firefox:docker` does the same for a checkout
-that would rather not download Firefox.
+that would rather not download Firefox. Both run
+`scripts/browser-docker.sh`, which picks the image matching
+the installed Playwright and runs the container as you, so
+the results it writes stay yours. Run them without `sudo`:
+when your user may not reach the Docker socket, the script
+calls `sudo docker` itself and asks for the password there.
+`DOCKER=podman` swaps the client.
 `npm run a11y` remains as an alias for `npm run browser`.
 
 ## What the SPA does on first paint
