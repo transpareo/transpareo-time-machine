@@ -16,7 +16,7 @@
  * boot.
  */
 
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import * as host from '@/host'
 import { locale, pickLocale } from '@/i18n'
 import type { DppManifest } from '@/archive'
@@ -24,6 +24,26 @@ import type { DppManifest } from '@/archive'
 function declare(locales: string[]): void {
   host.manifest.set({ availableLocales: locales } as unknown as DppManifest)
 }
+
+// The spec's own storage. Node 25 and later define a global
+// localStorage, undefined unless the process names a file
+// for it, and it hides the one happy-dom provides.
+function memoryStorage(): Pick<Storage, 'getItem' | 'setItem' | 'removeItem'> {
+  const store = new Map<string, string>()
+  return {
+    getItem: (key) => store.get(key) ?? null,
+    setItem: (key, value) => { store.set(key, value) },
+    removeItem: (key) => { store.delete(key) }
+  }
+}
+
+beforeEach(() => {
+  vi.stubGlobal('localStorage', memoryStorage())
+})
+
+afterEach(() => {
+  vi.unstubAllGlobals()
+})
 
 describe('locale bootstrap', () => {
   it('resolves the stored pick once the host reports ready', () => {
