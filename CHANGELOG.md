@@ -10,6 +10,13 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Fixed
+
+- 2.25.0 was tagged but never published: its release build
+  ran past the bundle-size budget. The budget now makes room
+  for the Downloads rework, and this release carries the
+  changes listed under 2.25.0.
+
 ## [2.25.0] - 2026-11-12
 
 ### Changed

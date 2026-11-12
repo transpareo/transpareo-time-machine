@@ -39,15 +39,19 @@ interface Budget {
 // ship. Raise it when a deliberate feature earns the bytes,
 // and say so.
 const BUDGETS: ReadonlyArray<Budget> = [
-  // 75 KB since the canonicalizer reads a node keyword beside
-  // its alias as the issuer does: a second @id throws, a
-  // second @type adds its types and their scoped contexts.
+  // 76 KB since every pinned file lists under Downloads: the
+  // row visibility the property list and Downloads share,
+  // the file tiles with their jump to the file, and the page
+  // glyph naming each file's extension. 75 KB came when the
+  // canonicalizer read a node keyword beside its alias as
+  // the issuer does: a second @id throws, a second @type adds
+  // its types and their scoped contexts.
   // 74 KB came with the asset host and pinned keys: the
   // root-path resolver, the revocation default and the key
   // selection both cryptosuites share. It went to 73 KB for
   // model and lot passports: the walk-up band, the
   // unit-passport line, their labels and four context terms.
-  { file: 'transpareo-time-machine.js', maxGzipBytes: 75 * 1024, dir: 'dist' },
+  { file: 'transpareo-time-machine.js', maxGzipBytes: 76 * 1024, dir: 'dist' },
   // 35 KB since the canonicalizer reads every key of a
   // context map as JSON-LD does or rejects it: protected
   // terms, containers, the order inside one map. 34 KB came
@@ -60,7 +64,9 @@ const BUDGETS: ReadonlyArray<Budget> = [
   // the Transpareo context ride every entry whole), 31 KB
   // with the withdrawal sentences.
   { file: 'dpp-verifier.js', maxGzipBytes: 35 * 1024, dir: 'dist' },
-  { file: 'embed.js', maxGzipBytes: 72 * 1024, dir: 'dist-embed' },
+  // 73 KB with the same Downloads rework, whose stylesheet
+  // the embed entry inlines as well.
+  { file: 'embed.js', maxGzipBytes: 73 * 1024, dir: 'dist-embed' },
 ]
 
 // Vite's lib mode emits entry + chunks; when two entry
