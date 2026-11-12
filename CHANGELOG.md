@@ -12,6 +12,10 @@ and this project adheres to
 
 ### Fixed
 
+- Turning the fullscreen viewer's pictures with the arrow
+  keys leaves its close button without a focus ring: the
+  viewer takes focus itself as it opens. Tab still reaches
+  the close button, ringed as before.
 - 2.25.0 was tagged but never published: its release build
   ran past the bundle-size budget. The budget now makes room
   for the Downloads rework, and this release carries the

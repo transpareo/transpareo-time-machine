@@ -70,9 +70,12 @@ class DppLightbox extends LightElement {
       this.bindWheel()
     }
 
+    // The arrow keys turn the pictures, so focus rests on the
+    // viewer itself and no control rings while they do.
     bindModalChrome(this, this.effect.bind(this), {
       isOpen: () => lightboxState() != null,
       onClose: close,
+      initialFocus: 'host',
     })
 
     this.effect(() => this.render())

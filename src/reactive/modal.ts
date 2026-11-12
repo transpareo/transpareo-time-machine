@@ -28,6 +28,13 @@ interface ModalChrome {
   isOpen: () => boolean
   /** Invoked on Escape, click-outside, or any other dismiss path. */
   onClose: () => void
+  /**
+   * Where focus lands as the dialog opens: its first control
+   * by default, or the dialog itself for a viewer the arrow
+   * keys drive, where a focused control would ring at the
+   * first key press.
+   */
+  initialFocus?: 'host'
 }
 
 export function bindModalChrome(
@@ -141,6 +148,16 @@ function bindFocusTrap(
     const last = focusables[focusables.length - 1]
     const root = host.getRootNode() as Document | ShadowRoot
     const active = root.activeElement
+
+    // From the dialog itself, Tab enters its controls at
+    // either end; left alone, the browser would move on to
+    // the page behind.
+    if (active === host) {
+      e.preventDefault()
+      const target = e.shiftKey ? last : first
+      target.focus()
+      return
+    }
     if (e.shiftKey && active === first) {
       e.preventDefault()
       last.focus()
@@ -159,7 +176,9 @@ function bindFocusTrap(
     // it, so the content is mounted by the next microtask. A
     // frame would wait on whatever else keeps the page busy.
     queueMicrotask(() => {
-      if (opts.isOpen()) focusInside(host, null)
+      if (!opts.isOpen()) return
+      if (opts.initialFocus === 'host') host.focus()
+      else focusInside(host, null)
     })
     host.addEventListener('keydown', onKeydown)
     host.addEventListener('focusin', onFocusin)

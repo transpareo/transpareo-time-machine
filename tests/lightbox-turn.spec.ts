@@ -63,6 +63,26 @@ function loading(page: Page): Promise<boolean> {
   })
 }
 
+// The viewer takes focus itself on open, so turning with
+// the arrow keys rings no control; Tab still reaches the
+// close button, with its ring.
+test('an arrow key turns without ringing the close button', async ({
+  page
+}) => {
+  await page.goto('/')
+  await page.locator('.gallery .gallery-image').first().click()
+  const close = page.locator('dpp-lightbox.open .close')
+  await expect(close).toBeVisible()
+
+  await page.keyboard.press('ArrowRight')
+  await expect(page.locator('dpp-lightbox')).toBeFocused()
+  await expect(close).toHaveCSS('outline-style', 'none')
+
+  await page.keyboard.press('Tab')
+  await expect(close).toBeFocused()
+  await expect(close).not.toHaveCSS('outline-style', 'none')
+})
+
 test('a click turns the pagination in its own frame', async ({ page }) => {
   await openLightbox(page)
   expect((await turnTo(page, '3')).current).toBe('3')

@@ -24,7 +24,9 @@ let disposers: Array<() => void> = []
 // A dialog the way the components build one: the chrome
 // binds first, then an effect renders the content whenever
 // the open signal or the data it reads changes.
-function mountDialog(content: (data: string) => string) {
+function mountDialog(
+  content: (data: string) => string, initialFocus?: 'host'
+) {
   const opener = document.createElement('button')
   const host = document.createElement('div')
   document.body.append(opener, host)
@@ -36,7 +38,8 @@ function mountDialog(content: (data: string) => string) {
   }
   bindModalChrome(host, register, {
     isOpen: () => open(),
-    onClose: () => open.set(false)
+    onClose: () => open.set(false),
+    initialFocus
   })
   register(() => {
     if (!open()) return host.replaceChildren()
@@ -62,6 +65,36 @@ describe('bindModalChrome focus', () => {
 
     m.open.set(true)
     await flush()
+    expect(focused()).toBe(m.host.querySelector('.close'))
+  })
+
+  // A viewer driven by arrow keys: a control focused on open
+  // would ring at the first key press.
+  it('takes focus on the dialog itself when asked to', async () => {
+    const m = mountDialog(() => '<button class="close">x</button>', 'host')
+    m.opener.focus()
+
+    m.open.set(true)
+    await flush()
+    expect(focused()).toBe(m.host)
+  })
+
+  it('wraps Tab from the dialog itself into its controls', async () => {
+    const m = mountDialog(() => `
+      <button class="close">x</button>
+      <button class="next">Next</button>
+    `, 'host')
+    m.open.set(true)
+    await flush()
+    const tab = (shiftKey: boolean): void => {
+      const key = { key: 'Tab', shiftKey, bubbles: true }
+      m.host.dispatchEvent(new KeyboardEvent('keydown', key))
+    }
+
+    tab(true)
+    expect(focused()).toBe(m.host.querySelector('.next'))
+    m.host.focus()
+    tab(false)
     expect(focused()).toBe(m.host.querySelector('.close'))
   })
 
