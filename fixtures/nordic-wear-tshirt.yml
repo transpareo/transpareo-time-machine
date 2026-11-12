@@ -154,6 +154,7 @@ product:
         de: REACH-Prüfbericht
         fr: Rapport d'essai REACH
       document: reach-report
+      icon: shield
     - key: colour
       label:
         en: Colour
