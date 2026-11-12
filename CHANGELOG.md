@@ -29,6 +29,7 @@ and this project adheres to
   colour, centred on the page. The common four-letter types
   read in their three-letter form (XLSX as XLS, JPEG as JPG);
   any other longer one stacks in two rows.
+- Accordion headers show their icons in the text colour.
 
 ### Added
 

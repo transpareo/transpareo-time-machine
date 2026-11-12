@@ -370,7 +370,6 @@ button.dpp-comp-name-trigger {
   .icon {
     @include sm;
     margin-right: 6px;
-    opacity: 0.6;
   }
 
   // Open/close toggle: the x glyph, rotated 45° while the
@@ -384,7 +383,6 @@ button.dpp-comp-name-trigger {
 
   &:hover {
     color: $dpp-accent;
-    .icon { opacity: 1; }
   }
 }
 
