@@ -172,6 +172,7 @@
   "properties.liveUpdated": "Uppfært {time}",
   "properties.atPublish": "Mæling við birtingu",
   "downloads.heading": "Niðurhal",
+  "downloads.jump": "{name}: sýna undir Niðurhal",
   "document.issuer": "Gefið út af",
   "document.number": "Númer",
   "document.validUntil": "Gildir til",

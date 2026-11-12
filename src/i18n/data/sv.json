@@ -171,6 +171,7 @@
   "properties.liveUpdated": "Uppdaterad {time}",
   "properties.atPublish": "Mätvärde vid publicering",
   "downloads.heading": "Nedladdningar",
+  "downloads.jump": "Visa {name} under Nedladdningar",
   "document.issuer": "Utfärdat av",
   "document.number": "Nummer",
   "document.validUntil": "Giltigt till",

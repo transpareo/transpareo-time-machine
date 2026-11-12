@@ -171,6 +171,7 @@
   "properties.liveUpdated": "업데이트: {time}",
   "properties.atPublish": "게시 시점 측정값",
   "downloads.heading": "다운로드",
+  "downloads.jump": "{name}: 다운로드에서 보기",
   "document.issuer": "발급자",
   "document.number": "번호",
   "document.validUntil": "유효 기한",

@@ -171,6 +171,7 @@
   "properties.liveUpdated": "Diperbarui {time}",
   "properties.atPublish": "Pembacaan saat publikasi",
   "downloads.heading": "Unduhan",
+  "downloads.jump": "Tampilkan {name} di Unduhan",
   "document.issuer": "Diterbitkan oleh",
   "document.number": "Nomor",
   "document.validUntil": "Berlaku hingga",

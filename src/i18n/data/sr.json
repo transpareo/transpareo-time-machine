@@ -172,6 +172,7 @@
   "properties.liveUpdated": "Ажурирано {time}",
   "properties.atPublish": "Очитавање при објави",
   "downloads.heading": "Преузимања",
+  "downloads.jump": "{name}: прикажи у одељку Преузимања",
   "document.issuer": "Издао",
   "document.number": "Број",
   "document.validUntil": "Важи до",

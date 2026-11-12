@@ -171,6 +171,7 @@
   "properties.liveUpdated": "Actualizat {time}",
   "properties.atPublish": "Citire la publicare",
   "downloads.heading": "Descărcări",
+  "downloads.jump": "Afișează {name} în Descărcări",
   "document.issuer": "Emis de",
   "document.number": "Număr",
   "document.validUntil": "Valabil până la",

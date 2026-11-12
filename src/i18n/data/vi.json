@@ -172,6 +172,7 @@
   "properties.liveUpdated": "Cập nhật {time}",
   "properties.atPublish": "Số đo khi công bố",
   "downloads.heading": "Tài liệu tải xuống",
+  "downloads.jump": "Hiển thị {name} trong Tài liệu tải xuống",
   "document.issuer": "Cấp bởi",
   "document.number": "Số",
   "document.validUntil": "Có hiệu lực đến",

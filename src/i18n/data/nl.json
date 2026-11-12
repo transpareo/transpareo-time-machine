@@ -171,6 +171,7 @@
   "properties.liveUpdated": "Bijgewerkt {time}",
   "properties.atPublish": "Meting bij publicatie",
   "downloads.heading": "Downloads",
+  "downloads.jump": "{name} tonen bij Downloads",
   "document.issuer": "Uitgegeven door",
   "document.number": "Nummer",
   "document.validUntil": "Geldig tot",

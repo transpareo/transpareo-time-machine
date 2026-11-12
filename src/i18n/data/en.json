@@ -172,6 +172,7 @@
   "properties.liveUpdated": "Updated {time}",
   "properties.atPublish": "Reading at publish",
   "downloads.heading": "Downloads",
+  "downloads.jump": "Show {name} under Downloads",
   "document.issuer": "Issued by",
   "document.number": "Number",
   "document.validUntil": "Valid until",

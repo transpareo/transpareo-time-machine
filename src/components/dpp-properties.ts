@@ -14,7 +14,9 @@
  *      .properties. An on-demand row the public bytes
  *      carry renders only when the URL's `?show=` token
  *      list unlocks its namespace, and only while the
- *      reader's view serves no row of its key.
+ *      reader's view serves no row of its key. A file
+ *      property without a namespace stands among the
+ *      tiles instead (dpp-property-cards).
  *   2. "Current state" - the rows the snapshot marks
  *      dynamic, each with its reading from the dynamic-data
  *      document and the time that was written. They belong
@@ -36,6 +38,10 @@
  *      side may sort one short value as a long text
  *      (bridgeLongTextGroups).
  *
+ * A property pointing at a file names its type and jumps to
+ * the file, which the Downloads section lists with every
+ * other file the passport pinned.
+ *
  * The sign-in and retry prompts for private rows live in
  * <dpp-private-signin>. The element is hidden entirely
  * when no section has a row, so a passport without
@@ -45,20 +51,23 @@
 import { LightElement } from '@/reactive/element'
 import { el, phrase } from '@/reactive/dom'
 import {
-  activeSnapshot, isOnCurrent, dynamicDataProofState, renderedPresentation
+  activeSnapshot, isOnCurrent, dynamicDataProofState
 } from '@/state'
 import { dynamicData, dynamicDataPending, composeLiveRows } from '@/host'
 import { liveDataIsShowable } from '@/actions'
 import { i18n, formatNumber, formatDateTime } from '@/i18n'
 import { t, type LabelKey } from '@/i18n/labels'
-import {
-  txLang, propertyIsKind, type LangText, type LiveRow, type PropertyValue,
-  type PropertyValueOf,
-} from '@/types'
+import { txLang, propertyIsKind, type LangText, type LiveRow } from '@/types'
 import { isShown } from '@/show-filter'
 import { safeLinkHref } from '@/safe-url'
-import { buildDocumentRow } from '@/components/dpp-downloads'
-import { servedRows, panelRows } from '@/private-properties'
+import {
+  buildDownloadJump, documentTypeLabel, jumpToDownload
+} from '@/components/dpp-downloads'
+import { servedRows } from '@/private-properties'
+import {
+  visiblePublicRows, visiblePrivateRows, isDocumentRow, isDocumentTile,
+  type DetailRow, type DocumentRow, type LinkRow, type ScalarRow
+} from '@/visible-properties'
 
 // Short alias for the active-locale label lookup, used by
 // the section headings and the at-publish note below.
@@ -67,6 +76,7 @@ const tr = (key: LabelKey): string => t(i18n.labels, key)
 class DppProperties extends LightElement {
   protected setup(): void {
     const wrap = el('div', 'dpp-properties')
+    wrap.addEventListener('click', jumpToDownload)
     this.appendChild(wrap)
 
     this.effect(() => {
@@ -74,6 +84,7 @@ class DppProperties extends LightElement {
       const servedKeys = new Set(served.map((r) => r.key))
       const privateRows = visiblePrivateRows(served)
       const publicRows = visiblePublicRows(servedKeys)
+        .filter((r) => !isDocumentTile(r))
 
       const children: HTMLElement[] = publicRows.map(buildRow)
       children.push(...buildLiveSection(servedKeys))
@@ -87,45 +98,6 @@ class DppProperties extends LightElement {
       wrap.replaceChildren(...children)
     })
   }
-}
-
-type ScalarRow = PropertyValueOf<'scalar'>
-type LinkRow = PropertyValueOf<'link'>
-type DetailRow = ScalarRow | LinkRow
-
-// The detail table shows namespaced scalar rows and every
-// document link. Tiles, badges, accordions, and donuts have
-// their own renderers and pull the rest of the flat list.
-// Public rows come from snapshot.properties; private rows
-// arrive post-auth via the privateProperties endpoint and
-// carry no `onDemand` flag, so the `?show=` gate passes them.
-function detailRows(
-  rows: ReadonlyArray<PropertyValue>,
-): ReadonlyArray<DetailRow> {
-  return rows
-    .filter((r): r is DetailRow => r.value.type === 'link'
-      || (r.value.type === 'scalar' && r.namespace != null))
-    .filter(isShown)
-}
-
-// An on-demand row the reader's view serves as well shows
-// once, with the served rows, whichever surface they put
-// it on.
-function visiblePublicRows(
-  served: ReadonlySet<string>
-): ReadonlyArray<DetailRow> {
-  return detailRows(renderedPresentation())
-    .filter((r) => !r.onDemand || !served.has(r.key))
-}
-
-// A row the fold-out panels show stays out of the table:
-// the public bytes may sort a served short value as a long
-// text.
-function visiblePrivateRows(
-  served: ReadonlyArray<PropertyValue>
-): ReadonlyArray<DetailRow> {
-  const panels = new Set(panelRows('longText').map((r) => r.key))
-  return detailRows(served).filter((r) => !panels.has(r.key))
 }
 
 // The live section: heading, when the readings were
@@ -174,16 +146,26 @@ function buildLiveRow(row: LiveRow): HTMLElement {
 // A row marked dynamic outside the live block is a past
 // version's: its value is the reading sealed at publish.
 function buildRow(row: DetailRow): HTMLElement {
-  if (propertyIsKind('link')(row)) {
-    const { document } = row.value
-    if (!document) return buildLinkRow(row)
-    return buildDocumentRow(txLang(row.name, i18n.locale), document)
-  }
+  if (isDocumentRow(row)) return buildDocumentPair(row)
+  if (propertyIsKind('link')(row)) return buildLinkRow(row)
   const label = txLang(row.name, i18n.locale)
   return buildPair(label, formatValue(row.value), row.dynamic === true)
 }
 
-// A document: its name opens it in a new tab, at the row's
+// A property pointing at a file names the file's type here,
+// its name led by the control that jumps to the file, which
+// Downloads lists.
+function buildDocumentPair(row: DocumentRow): HTMLElement {
+  const [label, lang] = txLang(row.name, i18n.locale)
+  const wrap = el('div', 'dpp-property-row')
+  const head = el('div', 'dpp-property-label', label, lang)
+  head.prepend(buildDownloadJump(row.key, label), ' ')
+  const type = documentTypeLabel(row.value.document)
+  wrap.append(head, el('div', 'dpp-property-value', type))
+  return wrap
+}
+
+// A web link: its name opens it in a new tab, at the row's
 // own size. A URL with a scheme that could run script stays
 // inert text.
 function buildLinkRow(row: LinkRow): HTMLElement {

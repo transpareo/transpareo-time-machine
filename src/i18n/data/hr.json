@@ -171,6 +171,7 @@
   "properties.liveUpdated": "Ažurirano {time}",
   "properties.atPublish": "Očitanje pri objavi",
   "downloads.heading": "Preuzimanja",
+  "downloads.jump": "{name}: prikaži u odjeljku Preuzimanja",
   "document.issuer": "Izdao",
   "document.number": "Broj",
   "document.validUntil": "Vrijedi do",

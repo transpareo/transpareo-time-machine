@@ -14,6 +14,7 @@ import * as host from '@/host'
 import type { DppSnapshot, PropertyValue } from '@/types'
 import { fetchStateByVersion } from '@/private-properties'
 import '@/components/dpp-properties'
+import '@/components/dpp-downloads'
 
 const REPORT = 'https://cdn.example.com/media/demo/test_report.pdf'
 
@@ -31,7 +32,8 @@ function mount(): Element {
 }
 
 function showSnapshot(properties: ReadonlyArray<PropertyValue>): void {
-  const snapshot = { version: 1, properties } as unknown as DppSnapshot
+  const product = { images: [] }
+  const snapshot = { version: 1, product, properties } as unknown as DppSnapshot
   host.snapshots.set({ 1: snapshot })
 }
 
@@ -71,7 +73,8 @@ describe('a restricted document row', () => {
   })
 
   // The publisher's host answers the file to a reader it admits,
-  // by the session cookie the new tab's request carries.
+  // by the session cookie the new tab's request carries. Like
+  // every file, it is listed under Downloads.
   it('opens a restricted document in a new tab', () => {
     const file = 'https://dpp.acme.com/api/dpps/abc12345/files/9f86d081.pdf'
     const doc = { name: { en: 'Test report' }, files: [{ href: file }] }
@@ -79,7 +82,9 @@ describe('a restricted document row', () => {
     const row = { ...testReport, value }
     fetchStateByVersion.set({ 1: { status: 'ok', rows: [row] } })
 
-    const link = mount().querySelector<HTMLAnchorElement>(`a[href="${file}"]`)
+    const downloads = document.createElement('dpp-downloads')
+    document.body.appendChild(downloads)
+    const link = downloads.querySelector<HTMLAnchorElement>(`a[href="${file}"]`)
     expect(link?.closest('.dpp-document')).not.toBeNull()
     expect(link?.target).toBe('_blank')
     expect(link?.rel.split(' ')).toContain('noopener')

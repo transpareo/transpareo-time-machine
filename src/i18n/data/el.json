@@ -171,6 +171,7 @@
   "properties.liveUpdated": "Ενημερώθηκε {time}",
   "properties.atPublish": "Μέτρηση κατά τη δημοσίευση",
   "downloads.heading": "Λήψεις",
+  "downloads.jump": "{name}: εμφάνιση στις Λήψεις",
   "document.issuer": "Εκδόθηκε από",
   "document.number": "Αριθμός",
   "document.validUntil": "Ισχύει έως",

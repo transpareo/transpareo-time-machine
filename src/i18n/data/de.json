@@ -172,6 +172,7 @@
   "properties.liveUpdated": "Aktualisiert {time}",
   "properties.atPublish": "Messwert bei Veröffentlichung",
   "downloads.heading": "Downloads",
+  "downloads.jump": "{name} unter Downloads anzeigen",
   "document.issuer": "Ausgestellt von",
   "document.number": "Nummer",
   "document.validUntil": "Gültig bis",

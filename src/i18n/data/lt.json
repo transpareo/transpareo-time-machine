@@ -171,6 +171,7 @@
   "properties.liveUpdated": "Atnaujinta {time}",
   "properties.atPublish": "Rodmuo paskelbimo metu",
   "downloads.heading": "Atsisiuntimai",
+  "downloads.jump": "{name}: rodyti skiltyje Atsisiuntimai",
   "document.issuer": "Išdavė",
   "document.number": "Numeris",
   "document.validUntil": "Galioja iki",

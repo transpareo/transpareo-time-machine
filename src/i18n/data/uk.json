@@ -171,6 +171,7 @@
   "properties.liveUpdated": "Оновлено {time}",
   "properties.atPublish": "Показник на момент публікації",
   "downloads.heading": "Файли для завантаження",
+  "downloads.jump": "{name}: показати в розділі «Файли для завантаження»",
   "document.issuer": "Ким видано",
   "document.number": "Номер",
   "document.validUntil": "Дійсний до",

@@ -171,6 +171,7 @@
   "properties.liveUpdated": "Atjaunināts {time}",
   "properties.atPublish": "Rādījums publicēšanas brīdī",
   "downloads.heading": "Lejupielādes",
+  "downloads.jump": "{name}: rādīt sadaļā Lejupielādes",
   "document.issuer": "Izdevējs",
   "document.number": "Numurs",
   "document.validUntil": "Derīgs līdz",

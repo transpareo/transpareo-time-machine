@@ -171,6 +171,7 @@
   "properties.liveUpdated": "Aġġornat {time}",
   "properties.atPublish": "Qari fil-pubblikazzjoni",
   "downloads.heading": "Fajls għat-tniżżil",
+  "downloads.jump": "Uri {name} taħt Fajls għat-tniżżil",
   "document.issuer": "Maħruġ minn",
   "document.number": "Numru",
   "document.validUntil": "Validu sa",

@@ -172,6 +172,7 @@
   "properties.liveUpdated": "Përditësuar {time}",
   "properties.atPublish": "Leximi në publikim",
   "downloads.heading": "Shkarkime",
+  "downloads.jump": "Shfaq {name} te Shkarkime",
   "document.issuer": "Lëshuar nga",
   "document.number": "Numri",
   "document.validUntil": "E vlefshme deri më",

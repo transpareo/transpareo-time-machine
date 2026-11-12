@@ -171,6 +171,7 @@
   "properties.liveUpdated": "Актуализирано {time}",
   "properties.atPublish": "Показание при публикуване",
   "downloads.heading": "Изтегляния",
+  "downloads.jump": "{name}: покажи в „Изтегляния“",
   "document.issuer": "Издаден от",
   "document.number": "Номер",
   "document.validUntil": "Валиден до",

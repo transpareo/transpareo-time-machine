@@ -171,6 +171,7 @@
   "properties.liveUpdated": "Actualizado {time}",
   "properties.atPublish": "Lectura en la publicación",
   "downloads.heading": "Descargas",
+  "downloads.jump": "Mostrar {name} en Descargas",
   "document.issuer": "Emitido por",
   "document.number": "Número",
   "document.validUntil": "Válido hasta",

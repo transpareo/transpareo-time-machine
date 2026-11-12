@@ -171,6 +171,7 @@
   "properties.liveUpdated": "Päivitetty {time}",
   "properties.atPublish": "Lukema julkaisuhetkellä",
   "downloads.heading": "Lataukset",
+  "downloads.jump": "{name}: näytä kohdassa Lataukset",
   "document.issuer": "Myöntäjä",
   "document.number": "Numero",
   "document.validUntil": "Voimassaolo päättyy",

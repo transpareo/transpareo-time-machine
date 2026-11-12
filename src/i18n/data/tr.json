@@ -171,6 +171,7 @@
   "properties.liveUpdated": "Güncellendi: {time}",
   "properties.atPublish": "Yayın anındaki ölçüm",
   "downloads.heading": "İndirilebilir dosyalar",
+  "downloads.jump": "{name}: İndirilebilir dosyalar bölümünde göster",
   "document.issuer": "Düzenleyen",
   "document.number": "Numara",
   "document.validUntil": "Geçerlilik sonu",

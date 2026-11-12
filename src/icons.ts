@@ -45,7 +45,7 @@ const SPRITE_ALIASES = new Set(['chevron-down', 'spinner'])
 const FUNCTIONAL_IDS = new Set([
   'icon-cancel', 'icon-ok', 'spinner', 'chevron-down',
   'icon-down', 'icon-history', 'icon-resize-full',
-  'icon-download', 'icon-link-ext', 'icon-arrow',
+  'icon-download', 'icon-file', 'icon-link-ext', 'icon-arrow',
   'icon-key', 'icon-info', 'icon-help',
 ])
 
@@ -66,6 +66,7 @@ const FUNCTIONAL_SPRITE =
   '<symbol id="icon-history" viewBox="0 0 940 1000"><path transform="translate(0 850) scale(1 -1)" d="M532 760q170 0 289-120t119-290-119-290-289-120q-138 0-252 88l70 76q82-60 182-60 126 0 216 90t90 216q0 128-90 218t-216 90q-124 0-213-86t-93-210l142 0-184-206-184 206 124 0q4 166 123 282t285 116z m-36-190l70 0 0-204 130-130-50-50-150 150 0 234z"/></symbol>' +
   '<symbol id="icon-resize-full" viewBox="0 0 792 1000"><path transform="translate(0 850) scale(1 -1)" d="M476 746l316 0 0-316-100 124-146-152-100 100 152 146z m-230-444l100-100-152-146 122-100-316 0 0 316 100-122z"/></symbol>' +
   '<symbol id="icon-download" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M12 4 L12 15 M7 10 L12 15 L17 10 M5 19 L19 19"/></symbol>' +
+  '<symbol id="icon-file" viewBox="0 0 20 24"><path fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" d="M3.5 1.5 H12.5 L18 7 V21 A1.5 1.5 0 0 1 16.5 22.5 H3.5 A1.5 1.5 0 0 1 2 21 V3 A1.5 1.5 0 0 1 3.5 1.5 Z M12.5 1.5 V7 H18"/></symbol>' +
   '<symbol id="icon-link-ext" viewBox="0 0 1000 1000"><path transform="translate(0 850) scale(1 -1)" d="M786 332v-178q0-67-47-114t-114-47h-464q-67 0-114 47t-47 114v464q0 66 47 113t114 48h393q7 0 12-5t5-13v-36q0-8-5-13t-12-5h-393q-37 0-63-26t-27-63v-464q0-37 27-63t63-27h464q37 0 63 27t26 63v178q0 8 5 13t13 5h36q8 0 13-5t5-13z m214 482v-285q0-15-11-25t-25-11-25 11l-98 98-364-364q-5-6-13-6t-12 6l-64 64q-6 5-6 12t6 13l364 364-98 98q-11 11-11 25t11 25 25 11h285q15 0 25-11t11-25z"/></symbol>' +
   '<symbol id="icon-arrow" viewBox="0 0 1000 1000"><path transform="translate(0 850) scale(1 -1)" d="M0 170l0 360 414 0 0 211 586-391-586-391 0 211-414 0z"/></symbol>' +
   '<symbol id="icon-key" viewBox="0 0 780 1000"><path transform="translate(0 850) scale(1 -1)" d="M774 612q20-116-28-215t-150-117q-66-12-130-2l-118-194-70-12-104-166q-14-28-46-32l-76-14q-12-4-22 4t-12 22l-16 98q-8 30 12 56l258 386q-24 50-38 120-18 106 53 187t185 101q106 20 195-45t107-177z m-126-76q30 44 21 97t-51 83q-42 32-92 22t-80-54q-8-12-12-23t-1-20 5-16 13-17 18-15 22-16 23-17q6-4 22-16t23-16 19-12 19-8 17 1 18 8 16 19z"/></symbol>' +

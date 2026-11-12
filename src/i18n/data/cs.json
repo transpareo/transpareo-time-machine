@@ -171,6 +171,7 @@
   "properties.liveUpdated": "Aktualizováno {time}",
   "properties.atPublish": "Hodnota při zveřejnění",
   "downloads.heading": "Ke stažení",
+  "downloads.jump": "{name}: zobrazit v sekci Ke stažení",
   "document.issuer": "Vydal",
   "document.number": "Číslo",
   "document.validUntil": "Platnost do",

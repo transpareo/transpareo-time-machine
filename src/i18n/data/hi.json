@@ -171,6 +171,7 @@
   "properties.liveUpdated": "अपडेट किया गया {time}",
   "properties.atPublish": "प्रकाशन के समय का माप",
   "downloads.heading": "डाउनलोड",
+  "downloads.jump": "{name}: डाउनलोड अनुभाग में दिखाएँ",
   "document.issuer": "जारीकर्ता",
   "document.number": "संख्या",
   "document.validUntil": "वैधता समाप्ति",

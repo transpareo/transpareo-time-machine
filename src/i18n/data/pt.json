@@ -171,6 +171,7 @@
   "properties.liveUpdated": "Atualizado {time}",
   "properties.atPublish": "Leitura na publicação",
   "downloads.heading": "Transferências",
+  "downloads.jump": "Mostrar {name} em Transferências",
   "document.issuer": "Emitido por",
   "document.number": "Número",
   "document.validUntil": "Válido até",

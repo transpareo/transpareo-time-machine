@@ -5,20 +5,36 @@
  *
  * The Downloads section (dpp-downloads) and the document row
  * it shares with the property list: a property row whose
- * label is the file's link, its type opposite, and the
- * details the publisher recorded on a line beneath.
+ * label is the file's link, its type opposite as a tag, and
+ * the details the publisher recorded on a line beneath.
  */
+
+@use 'dpp';
 
 dpp-downloads {
   display: block;
 }
 
-// A one-word type name as long as the Finnish one for a
-// declaration of conformity (28 letters) would otherwise
-// hold the column open past a phone's width.
+// The details read as the link's caption, so they sit close
+// beneath it; the column gap keeps the row's width. Both
+// classes, since dpp-properties sets the row's gap later in
+// the cascade.
+.dpp-property-row.dpp-document {
+  row-gap: 4px;
+}
+
+// Filled like a compact list entry. A one-word type name as
+// long as the Finnish one for a declaration of conformity
+// (28 letters) would otherwise hold the column open past a
+// phone's width.
 .dpp-document-type {
-  color: var(--color-muted);
-  font-size: var(--font-sm);
+  padding: 2px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: dpp.$dpp-badge-bg;
+  color: var(--color-text);
+  font-size: var(--font-xs);
+  font-weight: 600;
   text-align: end;
   overflow-wrap: anywhere;
 }
@@ -43,6 +59,70 @@ dpp-downloads {
 
   dd {
     margin: 0;
+  }
+}
+
+// Before the name of a property pointing at a file: jumps to
+// the file's row. The button reset follows
+// .dpp-comp-name-trigger. The box reaches a 24px target and
+// reaches past the text-size glyph by as much on every side,
+// so the glyph sits where another tile's icon does.
+button.dpp-download-jump {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  min-height: 24px;
+  margin: calc((1em - 24px) / 2);
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--link-color, #{dpp.$dpp-accent});
+  font: inherit;
+  vertical-align: middle;
+  cursor: pointer;
+
+  &:hover {
+    background: dpp.$dpp-badge-bg;
+  }
+
+  .icon {
+    margin: 0;
+  }
+}
+
+// A page with the file's extension on a band across its
+// lower half, in the link's colour. The extension comes from
+// `data-ext`, so the link's text stays the file's title.
+.dpp-file-icon {
+  position: relative;
+  display: inline-block;
+  margin-right: 8px;
+  vertical-align: -0.4em;
+
+  .icon {
+    display: block;
+    width: 1.25em;
+    height: 1.5em;
+    margin: 0;
+  }
+
+  &[data-ext]::after {
+    content: attr(data-ext);
+    position: absolute;
+    left: 50%;
+    bottom: 0.3em;
+    transform: translateX(-50%);
+    padding: 1px 2px;
+    border-radius: 2px;
+    background: var(--link-color, #{dpp.$dpp-accent});
+    color: var(--background-color, #fff);
+    font-size: 0.42em;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0.02em;
   }
 }
 

@@ -393,10 +393,17 @@ Field notes:
   them under "Downloads" after the accordions, opening the
   version in the reader's language where there is one, naming
   the type in that language and marking a document whose
-  `documentValidUntil` has passed. A property whose value is
-  such a Link (one carrying `fileDigest`) shows the same row in
-  the property list; a Link without a digest stays a plain
-  link. The terms are defined in `transpareo/v2`.
+  `documentValidUntil` has passed. Each row leads with a page
+  showing the file's extension (`PDF`, `XLSX`), read off the
+  end of its `href`. A property whose value is such a Link
+  (one carrying `fileDigest`) adds its file to the same list,
+  titled with the property's name, and keeps its own place on
+  the card: a tile among the others, or a row in the property
+  list when it carries a namespace or comes with the
+  login-gated rows. There it names the file's type, and a
+  small download icon before its name scrolls to the file. A
+  Link without a digest stays a plain link. The terms are
+  defined in `transpareo/v2`.
 - `signature` - a W3C Data Integrity proof
   (`eddsa-jcs-2022`, platform key) over the manifest
   body. The renderer verifies it and folds the

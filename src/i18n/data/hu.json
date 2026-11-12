@@ -171,6 +171,7 @@
   "properties.liveUpdated": "Frissítve: {time}",
   "properties.atPublish": "Közzétételkori mért érték",
   "downloads.heading": "Letöltések",
+  "downloads.jump": "{name}: megjelenítés a Letöltések között",
   "document.issuer": "Kiállító",
   "document.number": "Szám",
   "document.validUntil": "Érvényesség vége",

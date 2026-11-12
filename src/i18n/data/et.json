@@ -171,6 +171,7 @@
   "properties.liveUpdated": "Uuendatud {time}",
   "properties.atPublish": "Näit avaldamise ajal",
   "downloads.heading": "Allalaadimised",
+  "downloads.jump": "{name}: näita jaotises Allalaadimised",
   "document.issuer": "Väljastaja",
   "document.number": "Number",
   "document.validUntil": "Kehtib kuni",

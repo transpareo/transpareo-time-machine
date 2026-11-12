@@ -12,6 +12,18 @@ and this project adheres to
 
 ### Changed
 
+- Every file a passport pins is listed under Downloads,
+  including those a property points at. Such a property keeps
+  its place on the card, as a tile naming the file's type, or
+  as a row when it carries a namespace or comes with the
+  login-gated rows, with a small download icon before its name
+  that scrolls to the file.
+- Each file under Downloads leads with a page showing its
+  extension, such as PDF or XLSX. The download arrow moves to
+  the section's heading.
+- A document's type shows as a filled tag opposite its link,
+  and the issuer, number and validity sit close beneath the
+  link.
 - The component drawer turns a small spinner beside its
   loading message while the component's library data is on
   its way.

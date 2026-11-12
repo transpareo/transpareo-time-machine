@@ -171,6 +171,7 @@
   "properties.liveUpdated": "Aktualizované {time}",
   "properties.atPublish": "Hodnota pri zverejnení",
   "downloads.heading": "Na stiahnutie",
+  "downloads.jump": "{name}: zobraziť v sekcii Na stiahnutie",
   "document.issuer": "Vydal",
   "document.number": "Číslo",
   "document.validUntil": "Platnosť do",

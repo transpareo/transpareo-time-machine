@@ -171,6 +171,7 @@
   "properties.liveUpdated": "হালনাগাদ {time}",
   "properties.atPublish": "প্রকাশের সময়ের পাঠ",
   "downloads.heading": "ডাউনলোড",
+  "downloads.jump": "{name}: ডাউনলোড বিভাগে দেখুন",
   "document.issuer": "প্রদানকারী",
   "document.number": "নম্বর",
   "document.validUntil": "বৈধ পর্যন্ত",

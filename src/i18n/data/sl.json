@@ -171,6 +171,7 @@
   "properties.liveUpdated": "Posodobljeno {time}",
   "properties.atPublish": "Odčitek ob objavi",
   "downloads.heading": "Prenosi",
+  "downloads.jump": "{name}: prikaži v razdelku Prenosi",
   "document.issuer": "Izdal",
   "document.number": "Številka",
   "document.validUntil": "Velja do",

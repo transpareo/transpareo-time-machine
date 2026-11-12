@@ -324,9 +324,7 @@ button.dpp-comp-name-trigger {
       padding: 4px 12px;
       border: 1px solid $dpp-border;
       border-radius: var(--radius-sm, 6px);
-      background: color-mix(
-        in oklab, var(--font-color, #3D3C3B) 4%,
-        var(--background-color, #fff));
+      background: $dpp-badge-bg;
     }
   }
 }

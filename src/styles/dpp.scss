@@ -24,6 +24,10 @@ $dpp-bg: var(--background-color, #f8f8f7);
 $dpp-card-radius: var(--content-radius, 10px);
 $dpp-card-shadow: 0 1px 4px color-mix(in oklab, var(--font-color, #3D3C3B) 8%, transparent);
 
+// The fill of a short value boxed on the content surface:
+// a compact list entry, a document's type.
+$dpp-badge-bg: color-mix(in oklab, var(--font-color, #3D3C3B) 4%, var(--background-color, #fff));
+
 // ─── Typography mixins ──────────────────────────────
 // Size mixins read from the CSS scale tokens in app.css
 // (--font-xs … --font-xl) so a global scale tweak

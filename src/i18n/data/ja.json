@@ -171,6 +171,7 @@
   "properties.liveUpdated": "更新: {time}",
   "properties.atPublish": "公開時の測定値",
   "downloads.heading": "ダウンロード",
+  "downloads.jump": "{name}をダウンロード欄で表示",
   "document.issuer": "発行者",
   "document.number": "番号",
   "document.validUntil": "有効期限",

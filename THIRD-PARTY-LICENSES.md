@@ -125,9 +125,10 @@ the project license: the rating smileys
 `icon-locked`, `icon-looking-glass`,
 `icon-exclamation-mark`, `icon-question-mark`,
 `icon-move`, `icon-down`, `icon-up`, `chevron-down`,
-`spinner`, and `icon-download`. The last three are the
-stroke-drawn symbols in the sprite's custom block, and
-`icon-download` takes nothing from Entypo's download glyph.
+`spinner`, `icon-download`, and `icon-file`. The last four
+are the stroke-drawn symbols in the sprite's custom block,
+and `icon-download` takes nothing from Entypo's download
+glyph.
 
 ### SIL Open Font License 1.1
 

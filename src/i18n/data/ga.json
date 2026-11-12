@@ -171,6 +171,7 @@
   "properties.liveUpdated": "Nuashonraithe {time}",
   "properties.atPublish": "Léamh tráth an fhoilsithe",
   "downloads.heading": "Íoslódálacha",
+  "downloads.jump": "Taispeáin {name} faoi Íoslódálacha",
   "document.issuer": "Eisithe ag",
   "document.number": "Uimhir",
   "document.validUntil": "Bailí go dtí",

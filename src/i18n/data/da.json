@@ -171,6 +171,7 @@
   "properties.liveUpdated": "Opdateret {time}",
   "properties.atPublish": "Måling ved offentliggørelse",
   "downloads.heading": "Downloads",
+  "downloads.jump": "Vis {name} under Downloads",
   "document.issuer": "Udstedt af",
   "document.number": "Nummer",
   "document.validUntil": "Gyldig til",
