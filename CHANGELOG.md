@@ -10,6 +10,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.26.0] - 2026-11-12
+
 ### Changed
 
 - A passport's files sit at its end in one card, titled
