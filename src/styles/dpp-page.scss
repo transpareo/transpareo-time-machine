@@ -496,14 +496,14 @@ button.dpp-comp-name-trigger {
 
 // ─── Waiting ring ────────────────────────────────────
 // The `#spinner` symbol turns while a component waits on
-// bytes it has asked for. The gallery and the lightbox
-// both ring, in their own size, colour and place, off
-// the `loading` class their shared markPending sets; what
-// they have in common is the motion, so that lives here.
+// bytes it has asked for. The gallery, the lightbox and the
+// component drawer each ring in their own size, colour and
+// place; what they share is the motion, so that lives here.
 //
-// The fade is what keeps a short wait quiet: it holds the
-// ring at nothing for its delay, so a picture that lands
-// quickly never paints one.
+// The gallery and the lightbox add the fade, off the
+// `loading` class their shared markPending sets. It holds
+// the ring at nothing for its delay, so a picture that
+// lands quickly never paints one.
 @keyframes dpp-spinner-spin {
   to { transform: rotate(360deg); }
 }

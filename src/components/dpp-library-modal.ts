@@ -40,6 +40,7 @@ import {
 import { i18n, formatNumber } from '@/i18n'
 import { regionName } from '@/i18n/display-names'
 import { t, type LabelKey } from '@/i18n/labels'
+import { icon } from '@/icons'
 import { lookupLibrary } from '@/library-lookup'
 import { buildRatingRow, buildKvRow, ratingIcon } from '@/rating'
 
@@ -165,9 +166,9 @@ function buildLibrary(data: ComponentLookup): HTMLElement {
 
 function buildLibraryLoading(): HTMLElement {
   const wrap = el('div', 'dpp-library-panel loading')
-  wrap.appendChild(
-    el('div', 'dpp-library-loading', tr('component.libraryLoading')),
-  )
+  const line = el('div', 'dpp-library-loading', tr('component.libraryLoading'))
+  line.prepend(icon('spinner'))
+  wrap.appendChild(line)
   return wrap
 }
 

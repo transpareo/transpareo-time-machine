@@ -10,6 +10,12 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Changed
+
+- The component drawer turns a small spinner beside its
+  loading message while the component's library data is on
+  its way.
+
 ### Fixed
 
 - A link in a signed-in reader's login-gated rows whose

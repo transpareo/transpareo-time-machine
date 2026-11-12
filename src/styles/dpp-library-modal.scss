@@ -56,6 +56,17 @@
     @include dpp.sm;
     color: var(--color-muted);
     padding: 6px 0;
+
+    // The shared ring motion from dpp-page, at text size;
+    // the words already explain the wait, so a still ring
+    // serves reduced motion.
+    .icon-spinner {
+      animation: dpp-spinner-spin 0.9s linear infinite;
+
+      @media (prefers-reduced-motion: reduce) {
+        animation: none;
+      }
+    }
   }
 }
 
