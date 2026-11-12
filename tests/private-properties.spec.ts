@@ -605,7 +605,7 @@ describe('fetchPrivateRows: what a reader\'s view serves', () => {
     expect(await read(view, url)).toBe('ok')
     const served = okState().rows.find((r) => r.key === 'testReport')
     expect(served?.value).
-      toMatchObject({ type: 'link', href: `${origin}${file}` })
+      toMatchObject({ type: 'link', entries: [{ href: `${origin}${file}` }] })
   })
 })
 

@@ -4,13 +4,12 @@
  * Copyright (C) 2026 Transpareo AG
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
- * The files a passport pinned, all under the Downloads section
- * after the accordions: its own, and those a property points
- * at. Such a property keeps its place on the card and jumps
- * to its file.
+ * The files a passport pinned, after the accordions: a section
+ * for each property naming files, in the order of the
+ * passport's properties, then the passport's own documents.
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vitest'
 import * as host from '@/host'
 import { locale } from '@/i18n'
 import { fetchStateByVersion } from '@/private-properties'
@@ -77,7 +76,7 @@ describe('the Downloads section', () => {
     const section = mount('dpp-downloads')
 
     const heading = section.querySelector('h2')
-    expect(heading?.textContent?.trim()).toBe('Downloads')
+    expect(heading?.textContent?.trim()).toBe('Documents')
     expect(heading?.firstElementChild?.matches('svg.icon-download')).
       toBe(true)
     const links = section.querySelectorAll('.dpp-document a.dpp-ext-link')
@@ -100,20 +99,51 @@ describe('the Downloads section', () => {
   })
 
   it('reads the extension off the address, query and all', () => {
-    const sheet = 'https://cdn.example.com/files/a1b2.xlsx?v=3#top'
+    const data = 'https://cdn.example.com/files/a1b2.csv?v=3#top'
     const bare = 'https://cdn.example.com/files/a1b2'
     show([
-      { ...guide, files: [{ href: sheet }] },
+      { ...guide, files: [{ href: data }] },
       { ...certificate, files: [{ href: bare }] }
     ])
     const section = mount('dpp-downloads')
 
     const ext = (href: string): string | null | undefined => rowFor(
       section, href)?.querySelector('.dpp-file-icon')?.getAttribute('data-ext')
-    expect(ext(sheet)).toBe('XLSX')
+    expect(ext(data)).toBe('CSV')
     expect(ext(bare)).toBeNull()
   })
 
+  // The common four-letter types read in their three-letter form,
+  // at the size a PDF's does.
+  it('names a common four-letter type in three letters', () => {
+    const files = ['docx', 'xlsx', 'pptx', 'jpeg', 'tiff'].map((ext) => ({
+      ...guide, files: [{ href: `https://cdn.example.com/f/a.${ext}` }]
+    }))
+    show(files)
+    const section = mount('dpp-downloads')
+
+    const icons = [...section.querySelectorAll('.dpp-file-icon')]
+    expect(icons.map((i) => i.getAttribute('data-ext'))).
+      toEqual(['DOC', 'XLS', 'PPT', 'JPG', 'TIF'])
+    expect(icons.some((i) => i.classList.contains('long'))).toBe(false)
+  })
+
+  // Any other longer one stacks in two rows inside the page.
+  it('splits a longer extension into two rows', () => {
+    const data = 'https://cdn.example.com/files/a1b2.json'
+    show([guide, { ...certificate, files: [{ href: data }] }])
+    const section = mount('dpp-downloads')
+
+    const icon = rowFor(section, data)!.querySelector('.dpp-file-icon')!
+    expect(icon.classList.contains('long')).toBe(true)
+    expect(icon.getAttribute('data-ext')).toBe('JSON')
+    expect([icon.getAttribute('data-ext-head'),
+      icon.getAttribute('data-ext-tail')]).toEqual(['JS', 'ON'])
+    const pdf = rowFor(section, GUIDE)!.querySelector('.dpp-file-icon')!
+    expect(pdf.classList.contains('long')).toBe(false)
+  })
+
+  // A date long past reads as the date alone.
   it('names the type and the details the publisher recorded', () => {
     show([certificate])
     const row = rowFor(mount('dpp-downloads'), CERT)!
@@ -126,19 +156,8 @@ describe('the Downloads section', () => {
     expect(details).toEqual([
       ['Issued by', 'Atlantic Textile Testing'],
       ['Number', 'ATT-2023-41877'],
-      ['Valid until', 'June 30, 2000 Expired']
+      ['Valid until', 'June 30, 2000']
     ])
-  })
-
-  it('marks a document whose validity has run out', () => {
-    const current = { ...certificate, validUntil: '2999-12-31' }
-    show([certificate, current])
-    const section = mount('dpp-downloads')
-
-    const badges = section.querySelectorAll('.dpp-document-expired')
-    expect(badges).toHaveLength(1)
-    expect(badges[0].textContent).toBe('Expired')
-    expect(badges[0].closest('.dpp-document')).toBe(rowFor(section, CERT))
   })
 
   it('offers the language version in the reader language', () => {
@@ -167,11 +186,17 @@ describe('the Downloads section', () => {
   })
 })
 
-describe('a property pointing at a file', () => {
+describe('a property naming files', () => {
   const declaration: PropertyValue = {
     key: 'declarationOfConformity',
     name: { en: 'Declaration of conformity' },
-    value: { type: 'link', href: CERT, document: certificate }
+    value: { type: 'link', entries: [{ href: CERT, document: certificate }] }
+  }
+
+  const manual: PropertyValue = {
+    key: 'manual',
+    name: { en: 'Manual' },
+    value: { type: 'link', entries: [{ href: GUIDE, document: guide }] }
   }
 
   const colour: PropertyValue = {
@@ -182,90 +207,107 @@ describe('a property pointing at a file', () => {
 
   const restricted = { ...declaration, namespace: 'transpareo:doc' }
 
-  it('lists the file under Downloads, after the pinned ones', () => {
+  // The card's own title, then one heading per property.
+  const titles = (root: Element): Array<string | undefined> =>
+    [...root.querySelectorAll('h2, h3')].map((h) => h.textContent?.trim())
+
+  it('gets a group of its own, before the general documents', () => {
     show([guide], [declaration])
     const section = mount('dpp-downloads')
 
-    const links = section.querySelectorAll('.dpp-document a.dpp-ext-link')
-    expect([...links].map((a) => a.textContent)).
-      toEqual(['Care guide', 'Declaration of conformity'])
+    expect(titles(section)).
+      toEqual(['Documents', 'Declaration of conformity'])
     const row = rowFor(section, CERT)!
-    expect(row.querySelector('.dpp-document-expired')).not.toBeNull()
+    const group = row.closest('section')!
+    expect(group.querySelector('h3')?.textContent?.trim()).
+      toBe('Declaration of conformity')
+    expect(row.querySelector('a')?.textContent).toBe('Textile certificate')
+
+    const own = rowFor(section, GUIDE)!.closest('section')!
+    expect(own.querySelector('h3')).toBeNull()
+    expect(own.previousElementSibling).toBe(group)
   })
 
-  it('stands as a tile naming its type among the others', () => {
+  it('follows the order the passport lists its properties in', () => {
+    show(undefined, [manual, colour, declaration])
+    const section = mount('dpp-downloads')
+    expect(titles(section)).
+      toEqual(['Documents', 'Manual', 'Declaration of conformity'])
+  })
+
+  it('lists its entries in order, a web address as a plain link', () => {
+    const portal = { href: 'https://acme.example/reach', name: 'REACH portal' }
+    const value = {
+      type: 'link',
+      entries: [{ href: CERT, document: certificate }, portal,
+        { href: GUIDE, document: guide }]
+    } as const
+    show(undefined, [{ ...declaration, value }])
+    const section = mount('dpp-downloads')
+
+    const links = [...section.querySelectorAll('a')]
+    expect(links.map((a) => a.textContent)).
+      toEqual(['Textile certificate', 'REACH portal', 'Care guide'])
+    expect(links[1].closest('.dpp-document')).toBeNull()
+    expect(links[1].querySelector('.dpp-file-icon')).toBeNull()
+    expect(links[1].target).toBe('_blank')
+  })
+
+  it('shows neither as a tile nor in the property list', () => {
     show(undefined, [colour, declaration])
     const cards = mount('dpp-property-cards')
+    const list = mount('dpp-properties')
 
     const labels = [...cards.querySelectorAll('.dpp-metric-label')]
-    expect(labels.map((l) => l.textContent?.trim())).
-      toEqual(['Colour', 'Declaration of conformity'])
-    const value = cards.querySelectorAll('.dpp-metric-value')[1]
-    expect(value.textContent).toBe('Certificate')
-    const jump = labels[1].firstElementChild!
-    expect(jump.matches('button.dpp-download-jump')).toBe(true)
-    expect(jump.getAttribute('aria-label')).
-      toBe('Show Declaration of conformity under Downloads')
-    expect(jump.querySelector('svg.icon-download')).not.toBeNull()
-  })
-
-  it('leaves the property list without a row of its own', () => {
-    show(undefined, [declaration])
-    const list = mount('dpp-properties')
+    expect(labels.map((l) => l.textContent?.trim())).toEqual(['Colour'])
     expect(list.querySelector('.dpp-property-row')).toBeNull()
   })
 
-  it('scrolls to the file and puts focus on its link', () => {
+  it('shows a restricted one once the reader is served it', () => {
+    const lab = { ...restricted, key: 'lab', name: { en: 'Lab report' } }
     show(undefined, [declaration])
-    const cards = mount('dpp-property-cards')
+    fetchStateByVersion.set({ 1: { status: 'ok', rows: [lab] } })
     const section = mount('dpp-downloads')
-    const scroll = vi.spyOn(Element.prototype, 'scrollIntoView')
-      .mockImplementation(() => {})
-
-    cards.querySelector<HTMLElement>('.dpp-download-jump')!.click()
-
-    expect(scroll).toHaveBeenCalledOnce()
-    expect(scroll.mock.contexts[0]).toBe(rowFor(section, CERT))
-    expect(document.activeElement).toBe(section.querySelector('a'))
-    scroll.mockRestore()
-  })
-
-  it('names a namespaced one in the list, beside its jump', () => {
-    show(undefined, [restricted])
     const list = mount('dpp-properties')
 
-    const row = list.querySelector('.dpp-property-row')!
-    const label = row.querySelector('.dpp-property-label')!
-    expect(label.textContent?.trim()).toBe('Declaration of conformity')
-    expect(label.firstElementChild?.matches('.dpp-download-jump')).
-      toBe(true)
-    expect(row.querySelector('.dpp-property-value')?.textContent).
-      toBe('Certificate')
-    expect(row.querySelector('a')).toBeNull()
+    expect(titles(section)).
+      toEqual(['Documents', 'Declaration of conformity', 'Lab report'])
+    expect(list.querySelector('.dpp-property-row')).toBeNull()
   })
 
-  it('lists a restricted file once the reader is served it', () => {
-    show()
-    fetchStateByVersion.set({ 1: { status: 'ok', rows: [restricted] } })
-    const list = mount('dpp-properties')
-    const section = mount('dpp-downloads')
-
-    expect(list.querySelector('.dpp-download-jump')).not.toBeNull()
-    expect(rowFor(section, CERT)?.querySelector('a')?.textContent).
-      toBe('Declaration of conformity')
-  })
-
-  it('keeps the file of a property still on demand out', () => {
+  it('keeps the files of a property still on demand out', () => {
     show(undefined, [{ ...restricted, onDemand: true }])
     const section = mount('dpp-downloads')
     expect(section.children).toHaveLength(0)
   })
 
-  it('keeps a link that pins no file a plain link', () => {
-    const plain = { ...declaration, value: { type: 'link', href: CERT } }
-    show(undefined, [plain as PropertyValue])
+  it('keeps a lone web address a plain link in the list', () => {
+    const value = { type: 'link', entries: [{ href: CERT }] } as const
+    show(undefined, [{ ...declaration, value }])
     const list = mount('dpp-properties')
-    expect(list.querySelector('.dpp-document')).toBeNull()
-    expect(list.querySelector('a svg')).toBeNull()
+
+    const link = list.querySelector('a.dpp-ext-link')!
+    expect(link.textContent).toBe('Declaration of conformity')
+    expect(link.getAttribute('href')).toBe(CERT)
+    expect(mount('dpp-downloads').children).toHaveLength(0)
+  })
+
+  // A link field naming several web addresses and no file
+  // keeps its place, its addresses beside its name.
+  it('lists several web addresses beside the name', () => {
+    const value = {
+      type: 'link',
+      entries: [{ href: 'https://a.example/', name: 'Shop' },
+        { href: 'https://b.example/care' }]
+    } as const
+    show(undefined, [{ ...colour, key: 'sites', name: { en: 'Sites' }, value }])
+    const row = mount('dpp-properties').querySelector('.dpp-property-row')!
+
+    expect(row.querySelector('.dpp-property-label')?.textContent).
+      toBe('Sites')
+    const links = [...row.querySelectorAll('.dpp-property-value a')]
+    expect(links.map((a) => [a.textContent, a.getAttribute('href')])).
+      toEqual([['Shop', 'https://a.example/'],
+        ['https://b.example/care', 'https://b.example/care']])
   })
 })

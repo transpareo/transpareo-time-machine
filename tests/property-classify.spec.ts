@@ -282,20 +282,22 @@ describe('classifyWireValue: composition', () => {
 describe('classifyWireValue: document links', () => {
   const href = 'https://cdn.example.com/media/demo/test_report.pdf';
 
-  it('reads a Link object as a link to its href', () => {
+  it('reads a Link object as a link with one entry', () => {
     const raw = {
       '@id': 'https://acme.example/dpp/x#property/testreport/value',
       '@type': 'Link',
       href,
       mediaType: 'application/pdf',
     };
-    expect(classifyWireValue(raw, undefined)).toEqual({ type: 'link', href });
+    expect(classifyWireValue(raw, undefined))
+      .toEqual({ type: 'link', entries: [{ href }] });
   });
 
   it('reads a short Link without @id or mediaType the same way', () => {
-    const raw = { '@type': 'Link', href: 'https://a.example/d.pdf' };
+    const href = 'https://a.example/d.pdf';
+    const raw = { '@type': 'Link', href };
     expect(classifyWireValue(raw, undefined))
-      .toEqual({ type: 'link', href: 'https://a.example/d.pdf' });
+      .toEqual({ type: 'link', entries: [{ href }] });
   });
 
   it('leaves a Link without an href to the blank fallback', () => {
@@ -307,8 +309,31 @@ describe('classifyWireValue: document links', () => {
     const raw = { '@type': 'Link', href: '/media/acme/files/a.pdf' };
     const absolute = (ref: string): string => `https://cdn.example.com${ref}`;
     expect(classifyWireValue(raw, undefined, absolute)).toEqual({
-      type: 'link', href: 'https://cdn.example.com/media/acme/files/a.pdf',
+      type: 'link',
+      entries: [{ href: 'https://cdn.example.com/media/acme/files/a.pdf' }],
     });
+  });
+
+  // A link field holds an ordered list of entries, each a file
+  // or a web address; the publisher's order is the order shown.
+  it('reads a list of Links as entries in their order', () => {
+    const raw = [
+      { '@type': 'Link', href: 'https://a.example/one.pdf' },
+      { '@type': 'Link', href: 'https://a.example/', name: 'Our site' },
+      { '@type': 'Link' },
+    ];
+    expect(classifyWireValue(raw, undefined)).toEqual({
+      type: 'link',
+      entries: [
+        { href: 'https://a.example/one.pdf' },
+        { href: 'https://a.example/', name: 'Our site' },
+      ],
+    });
+  });
+
+  it('leaves a list naming no address to the blank fallback', () => {
+    expect(classifyWireValue([{ '@type': 'Link' }], undefined))
+      .toEqual({ type: 'scalar', value: '' });
   });
 });
 
@@ -342,31 +367,45 @@ describe('classifyWireValue: file-backed links', () => {
     }],
   };
 
+  // The entry's document names the file, so the entry takes no
+  // name of its own.
   it('keeps the document details beside the href', () => {
     expect(classifyWireValue(file, undefined)).toEqual({
       type: 'link',
-      href: '/media/acme/files/9f86.pdf',
-      document: {
-        name: {
-          en: 'EU declaration of conformity',
-          de: 'EU-Konformitätserklärung',
+      entries: [{
+        href: '/media/acme/files/9f86.pdf',
+        document: {
+          name: {
+            en: 'EU declaration of conformity',
+            de: 'EU-Konformitätserklärung',
+          },
+          type: 'declaration_of_conformity',
+          issuer: 'Nordic Wear Lda.',
+          number: 'DoC-NW-2024-001',
+          validUntil: '2029-12-31',
+          files: [
+            { href: '/media/acme/files/9f86.pdf' },
+            { href: '/media/acme/files/4e07.pdf', languages: ['de'] },
+          ],
         },
-        type: 'declaration_of_conformity',
-        issuer: 'Nordic Wear Lda.',
-        number: 'DoC-NW-2024-001',
-        validUntil: '2029-12-31',
-        files: [
-          { href: '/media/acme/files/9f86.pdf' },
-          { href: '/media/acme/files/4e07.pdf', languages: ['de'] },
-        ],
-      },
+      }],
     });
+  });
+
+  it('reads a file and a web address in one list', () => {
+    const site = { '@type': 'Link', href: 'https://nordic.example/' };
+    const k = classifyWireValue([site, file], undefined);
+    const entries = k.type === 'link' ? k.entries : [];
+    expect(entries.map((e) => [e.href, e.document?.type])).toEqual([
+      ['https://nordic.example/', undefined],
+      ['/media/acme/files/9f86.pdf', 'declaration_of_conformity'],
+    ]);
   });
 
   it('resolves every file of the document', () => {
     const absolute = (ref: string): string => `https://cdn.example.com${ref}`;
     const k = classifyWireValue(file, undefined, absolute);
-    const files = k.type === 'link' ? k.document?.files : undefined;
+    const files = k.type === 'link' ? k.entries[0].document?.files : undefined;
     expect(files?.map((f) => f.href)).toEqual([
       'https://cdn.example.com/media/acme/files/9f86.pdf',
       'https://cdn.example.com/media/acme/files/4e07.pdf',
@@ -381,7 +420,7 @@ describe('classifyWireValue: file-backed links', () => {
     });
     const typeOf = (raw: unknown): unknown => {
       const k = classifyWireValue(raw, undefined);
-      return k.type === 'link' ? k.document?.type : k.type;
+      return k.type === 'link' ? k.entries[0].document?.type : k.type;
     };
     expect(typeOf(typed('expert_opinion', DOCUMENT_TYPE_DATATYPE)))
       .toBe('other');
@@ -392,14 +431,24 @@ describe('classifyWireValue: file-backed links', () => {
   it('drops a language version that names no file', () => {
     const raw = { ...file, fileVersions: [{ '@type': 'Link' }, 'x'] };
     const k = classifyWireValue(raw, undefined);
-    const files = k.type === 'link' ? k.document?.files : undefined;
+    const files = k.type === 'link' ? k.entries[0].document?.files : undefined;
     expect(files).toEqual([{ href: '/media/acme/files/9f86.pdf' }]);
   });
 
-  it('keeps a Link without a digest a plain link', () => {
+  // Without a digest the Link is a web address; the name it
+  // carries is what the entry shows.
+  it('keeps a Link without a digest a plain web address', () => {
     const { fileDigest: _, ...unpinned } = file;
-    expect(classifyWireValue(unpinned, undefined))
-      .toEqual({ type: 'link', href: '/media/acme/files/9f86.pdf' });
+    expect(classifyWireValue(unpinned, undefined)).toEqual({
+      type: 'link',
+      entries: [{
+        href: '/media/acme/files/9f86.pdf',
+        name: {
+          en: 'EU declaration of conformity',
+          de: 'EU-Konformitätserklärung',
+        },
+      }],
+    });
   });
 });
 

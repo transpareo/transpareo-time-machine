@@ -431,14 +431,22 @@ export type PropertyValueKind =
       readonly unit?: string
     }
 
-  // A document reference (EN 18223 Link). The row's label
-  // names the document; `href` is where it lives. A file the
-  // passport pinned by its digest carries its details too.
+  // A link field (EN 18223 Link): its entries in the
+  // publisher's order, each a web address or a file the
+  // passport pinned. A lone Link is a field of one entry.
   | {
       readonly type: 'link'
-      readonly href: string
-      readonly document?: DppDocument
+      readonly entries: ReadonlyArray<LinkEntry>
     }
+
+// One entry of a link field. A file the passport pinned by its
+// digest carries its details as `document`, which names it; a
+// web address carries the name it shows, when it has one.
+export interface LinkEntry {
+  readonly href: string
+  readonly name?: SnapshotLocalizedText
+  readonly document?: DppDocument
+}
 
 // The flat data row the snapshot ships. Each row
 // carries its data (`value`), its label (`name`), and

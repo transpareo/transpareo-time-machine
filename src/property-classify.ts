@@ -43,7 +43,7 @@
 
 import type {
   PropertyValueKind, CompositionEntry, SnapshotLocalizedText,
-  WireLangValue, DocumentFile, DppDocument,
+  WireLangValue, DocumentFile, DppDocument, LinkEntry,
 } from '@/types'
 import {
   canonicalRating, isLanguageArray, foldLocale, isRegionLiteral,
@@ -121,6 +121,31 @@ export function documentOf(
     validUntil: literalString(link.documentValidUntil),
     files: [file, ...others.filter((f): f is DocumentFile => !!f)],
   }
+}
+
+// A link field: its entries in the publisher's order, or the
+// blank fallback when none names an address.
+function linkKind(
+  raws: ReadonlyArray<unknown>, absolute: typeof asWritten,
+): PropertyValueKind {
+  const entries = raws
+    .map((raw) => linkEntry(raw, absolute))
+    .filter((e): e is LinkEntry => !!e)
+  if (!entries.length) return { type: 'scalar', value: '' }
+  return { type: 'link', entries }
+}
+
+// A digest marks a file the passport pinned, which shows with
+// its details; anything else is a web address.
+function linkEntry(
+  raw: unknown, absolute: typeof asWritten,
+): LinkEntry | undefined {
+  const href = fileOf(raw, absolute)?.href
+  if (!href) return undefined
+  const link = raw as Readonly<Record<string, unknown>>
+  const document = link.fileDigest ? documentOf(raw, absolute) : undefined
+  if (document) return { href, document }
+  return link.name == null ? { href } : { href, name: foldLocale(link.name) }
 }
 
 function fileOf(
@@ -303,16 +328,9 @@ export function classifyWireValue(
     return { type: 'scalar', value: raw, ...(unit ? { unit } : {}) }
   }
 
-  // A document reference. Every key of the object is a
-  // string, so it must be caught before isLocaleHash reads
-  // it as a translation. A digest marks a file the passport
-  // pinned, which shows with its details.
-  if (isLinkObject(raw)) {
-    const href = fileOf(raw, absolute)?.href
-    if (!href) return { type: 'scalar', value: '' }
-    const document = raw.fileDigest ? documentOf(raw, absolute) : undefined
-    return { type: 'link', href, ...(document ? { document } : {}) }
-  }
+  // A link field. Every key of a Link is a string, so it must
+  // be caught before isLocaleHash reads it as a translation.
+  if (isLinkObject(raw)) return linkKind([raw], absolute)
   if (isTypedLiteral(raw)) {
     return scalarOrLongText(raw['@value'], unit)
   }
@@ -320,6 +338,9 @@ export function classifyWireValue(
     return scalarOrLongText(raw, unit)
   }
   if (Array.isArray(raw)) {
+    if (raw.length > 0 && raw.every(isLinkObject)) {
+      return linkKind(raw, absolute)
+    }
     if (isLanguageArray(raw)) {
       const entries = languageEntries(raw)
       if (entries.length > 1) return listKind(entries)

@@ -10,6 +10,37 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Changed
+
+- A passport's files sit at its end in one card, titled
+  Documents in every language (Dokumente in German), since its
+  rows are documents that open in a new tab. Each property
+  naming files gets a group there, headed by its name, in the
+  order of the passport's properties, listing its files and
+  web addresses in the publisher's order; the passport's own
+  documents follow last. Such a property leaves the tiles and
+  the property list, and the download icon that scrolled to
+  its file is gone.
+- A file's row sets its title a size smaller, keeps a title
+  running over several lines and its details clear of the page
+  beside it, and labels the details in italic. On a narrow
+  card the type tag moves under the title.
+- The page beside a file names its extension in the link
+  colour, centred on the page. The common four-letter types
+  read in their three-letter form (XLSX as XLS, JPEG as JPG);
+  any other longer one stacks in two rows.
+
+### Added
+
+- A property's value may list several Links. One naming web
+  addresses alone keeps its place in the property list, its
+  addresses beside its name.
+
+### Removed
+
+- The Expired tag beside a document's validity date; the date
+  shows alone.
+
 ## [2.25.1] - 2026-11-12
 
 ### Fixed

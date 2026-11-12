@@ -14,9 +14,7 @@
  *      .properties. An on-demand row the public bytes
  *      carry renders only when the URL's `?show=` token
  *      list unlocks its namespace, and only while the
- *      reader's view serves no row of its key. A file
- *      property without a namespace stands among the
- *      tiles instead (dpp-property-cards).
+ *      reader's view serves no row of its key.
  *   2. "Current state" - the rows the snapshot marks
  *      dynamic, each with its reading from the dynamic-data
  *      document and the time that was written. They belong
@@ -38,9 +36,8 @@
  *      side may sort one short value as a long text
  *      (bridgeLongTextGroups).
  *
- * A property pointing at a file names its type and jumps to
- * the file, which the Downloads section lists with every
- * other file the passport pinned.
+ * A property naming a file shows in none of them: it gets a
+ * section of its own at the end of the card (dpp-downloads).
  *
  * The sign-in and retry prompts for private rows live in
  * <dpp-private-signin>. The element is hidden entirely
@@ -59,14 +56,11 @@ import { i18n, formatNumber, formatDateTime } from '@/i18n'
 import { t, type LabelKey } from '@/i18n/labels'
 import { txLang, propertyIsKind, type LangText, type LiveRow } from '@/types'
 import { isShown } from '@/show-filter'
-import { safeLinkHref } from '@/safe-url'
-import {
-  buildDownloadJump, documentTypeLabel, jumpToDownload
-} from '@/components/dpp-downloads'
+import { buildWebEntry, buildWebLink } from '@/components/dpp-downloads'
 import { servedRows } from '@/private-properties'
 import {
-  visiblePublicRows, visiblePrivateRows, isDocumentRow, isDocumentTile,
-  type DetailRow, type DocumentRow, type LinkRow, type ScalarRow
+  visiblePublicRows, visiblePrivateRows, namesFile,
+  type DetailRow, type LinkRow, type ScalarRow
 } from '@/visible-properties'
 
 // Short alias for the active-locale label lookup, used by
@@ -76,15 +70,15 @@ const tr = (key: LabelKey): string => t(i18n.labels, key)
 class DppProperties extends LightElement {
   protected setup(): void {
     const wrap = el('div', 'dpp-properties')
-    wrap.addEventListener('click', jumpToDownload)
     this.appendChild(wrap)
 
     this.effect(() => {
       const served = servedRows()
       const servedKeys = new Set(served.map((r) => r.key))
       const privateRows = visiblePrivateRows(served)
+        .filter((r) => !namesFile(r))
       const publicRows = visiblePublicRows(servedKeys)
-        .filter((r) => !isDocumentTile(r))
+        .filter((r) => !namesFile(r))
 
       const children: HTMLElement[] = publicRows.map(buildRow)
       children.push(...buildLiveSection(servedKeys))
@@ -146,42 +140,27 @@ function buildLiveRow(row: LiveRow): HTMLElement {
 // A row marked dynamic outside the live block is a past
 // version's: its value is the reading sealed at publish.
 function buildRow(row: DetailRow): HTMLElement {
-  if (isDocumentRow(row)) return buildDocumentPair(row)
   if (propertyIsKind('link')(row)) return buildLinkRow(row)
   const label = txLang(row.name, i18n.locale)
   return buildPair(label, formatValue(row.value), row.dynamic === true)
 }
 
-// A property pointing at a file names the file's type here,
-// its name led by the control that jumps to the file, which
-// Downloads lists.
-function buildDocumentPair(row: DocumentRow): HTMLElement {
-  const [label, lang] = txLang(row.name, i18n.locale)
-  const wrap = el('div', 'dpp-property-row')
-  const head = el('div', 'dpp-property-label', label, lang)
-  head.prepend(buildDownloadJump(row.key, label), ' ')
-  const type = documentTypeLabel(row.value.document)
-  wrap.append(head, el('div', 'dpp-property-value', type))
-  return wrap
-}
-
-// A web link: its name opens it in a new tab, at the row's
-// own size. A URL with a scheme that could run script stays
-// inert text.
+// A link field naming web addresses alone. One address: the
+// property's name opens it in a new tab, at the row's own
+// size. Several: the name as label, the addresses opposite,
+// each under the name it carries.
 function buildLinkRow(row: LinkRow): HTMLElement {
-  const [label, lang] = txLang(row.name, i18n.locale)
-  const href = safeLinkHref(row.value.href)
-  const wrap = el('div', 'dpp-property-row', undefined, lang)
-  if (!href) {
-    wrap.append(label)
+  const name = txLang(row.name, i18n.locale)
+  const { entries } = row.value
+  const wrap = el('div', 'dpp-property-row')
+  if (entries.length === 1) {
+    wrap.append(buildWebLink(entries[0].href, name))
     return wrap
   }
 
-  const a = el('a', 'dpp-ext-link', label)
-  a.href = href
-  a.target = '_blank'
-  a.rel = 'noopener noreferrer'
-  wrap.append(a)
+  const cell = el('div', 'dpp-property-value dpp-property-links')
+  cell.append(...entries.map(buildWebEntry))
+  wrap.append(el('div', 'dpp-property-label', ...name), cell)
   return wrap
 }
 

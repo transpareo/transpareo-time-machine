@@ -244,33 +244,30 @@ test.describe('every opened surface passes WCAG 2.2 AA (axe-core)', () => {
   }
 })
 
-// The demo pins three files, all listed under Downloads: a
-// test report its REACH property points at (the property's
-// tile jumps to it), a care guide with a version per
-// language, and a certificate whose validity ran out in
-// 2025. The page scans above cover them only while they
-// render, so that is checked here first.
+// The demo pins three files in the Documents card at the end:
+// a test report its REACH property names, in that property's
+// own group, then a care guide with a version per language and
+// a certificate valid until 2025. The page scans above cover
+// them only while they render, so that is checked here first.
 test('the files a passport pinned pass WCAG 2.2 AA (axe-core)', async ({
   page
 }) => {
   await mount(page)
 
   const downloads = page.locator('dpp-downloads')
-  const heading = downloads.getByRole('heading', { name: 'Downloads' })
+  const heading = downloads.getByRole('heading', { name: 'Documents' })
   await expect(heading).toBeVisible()
   const guide = downloads.getByRole('link', { name: 'Care and repair guide' })
   await expect(guide).toHaveAttribute('href', /\/files\/[0-9a-f]{64}\.pdf$/)
-  await expect(downloads.locator('.dpp-document-expired')).
-    toHaveText('Expired')
 
-  const report = downloads.locator('.dpp-document', {
-    hasText: 'REACH test report'
+  const reach = downloads.locator('section', {
+    has: page.getByRole('heading', { name: 'REACH test report' })
   })
+  const report = reach.locator('.dpp-document')
   await expect(report.getByRole('link')).toHaveText('REACH test report')
   await expect(report.locator('dl')).toContainText('ATT-2024-0315')
-  const jump = page.locator('dpp-property-cards .dpp-download-jump')
-  await expect(jump).toHaveAccessibleName(
-    'Show REACH test report under Downloads')
+  const titles = downloads.getByRole('heading')
+  await expect(titles).toHaveText(['Documents', 'REACH test report'])
 
   expect(await violations(page)).toEqual([])
 })

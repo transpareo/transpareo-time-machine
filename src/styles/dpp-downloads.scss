@@ -3,31 +3,104 @@
  * Copyright (C) 2026 Transpareo AG
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
- * The Downloads section (dpp-downloads) and the document row
- * it shares with the property list: a property row whose
- * label is the file's link, its type opposite as a tag, and
- * the details the publisher recorded on a line beneath.
+ * The file sections at the end of the card (dpp-downloads):
+ * one per property naming files, then the passport's own
+ * documents. A document row is a property row whose label is
+ * the file's link, its type opposite as a tag, and the details
+ * the publisher recorded on a line beneath.
  */
 
 @use 'dpp';
 
+// The files sit apart from the accordions in a card framed
+// like the list cards; a passport without files shows none.
+// The card's own width decides where a type tag goes, whatever
+// page the passport is embedded in.
 dpp-downloads {
   display: block;
+  container-type: inline-size;
+  padding: 20px;
+  border: 1px solid dpp.$dpp-border;
+  border-radius: dpp.$dpp-card-radius;
+  background: dpp.$dpp-bg;
+
+  &:empty {
+    display: none;
+  }
 }
 
-// The details read as the link's caption, so they sit close
-// beneath it; the column gap keeps the row's width. Both
-// classes, since dpp-properties sets the row's gap later in
-// the cascade.
+// The groups keep the gap the list cards keep, which also sets
+// the passport's own documents, headed by none, apart from the
+// group before them. A file's title takes a property label's
+// size.
+.dpp-file-section {
+  & + & {
+    margin-top: 20px;
+  }
+
+  .dpp-property-row > :first-child {
+    @include dpp.sm;
+  }
+}
+
+// A property's name over its files, set like a tile's label.
+.dpp-file-heading {
+  @include dpp.sm;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0 0 2px;
+  font-weight: 400;
+  color: dpp.$dpp-muted;
+
+  .icon {
+    margin: 0;
+  }
+}
+
+// A wrapping row: the title takes the room it needs first, and
+// a type tag too wide to sit beside it moves to a line of its
+// own, at the row's end. The details read as the title's
+// caption, close beneath it. Both classes, since
+// dpp-properties lays the row out later in the cascade. The
+// page glyph's width and gap are named here, since the title's
+// further lines and the details line indent by them.
 .dpp-property-row.dpp-document {
+  --dpp-glyph-width: calc(1.25 * var(--font-base, var(--font-size, 16px)));
+  --dpp-glyph-gap: 8px;
+  --dpp-glyph-indent: calc(var(--dpp-glyph-width) + var(--dpp-glyph-gap));
+  display: flex;
+  flex-wrap: wrap;
   row-gap: 4px;
+
+  // Centred on the title line, whatever the font's metrics put
+  // between a small tag's baseline and its box.
+  align-items: center;
+
+  > :first-child {
+    flex: 1 1 12em;
+    min-width: 0;
+  }
 }
 
-// Filled like a compact list entry. A one-word type name as
-// long as the Finnish one for a declaration of conformity
-// (28 letters) would otherwise hold the column open past a
-// phone's width.
+// The glyph hangs before the title's first line, so a title
+// running over several lines keeps clear of it.
+.dpp-document > .dpp-ext-link {
+  padding-inline-start: var(--dpp-glyph-indent);
+  text-indent: calc(-1 * var(--dpp-glyph-indent));
+}
+
+// Under the title, clear of the page glyph, so the glyph
+// stands alone at the row's start.
+.dpp-document:has(.dpp-file-icon) .dpp-document-details {
+  padding-inline-start: var(--dpp-glyph-indent);
+}
+
+// Filled like a compact list entry. A word wider than the
+// whole row (the Finnish name for a declaration of conformity
+// runs 28 letters) breaks where it must.
 .dpp-document-type {
+  margin-inline-start: auto;
   padding: 2px 8px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
@@ -39,8 +112,25 @@ dpp-downloads {
   overflow-wrap: anywhere;
 }
 
+// In a narrow card the tag goes under the title, flush with
+// its text, and the title keeps the whole width.
+@container (max-width: 30em) {
+  .dpp-property-row.dpp-document > :first-child {
+    flex-basis: 100%;
+  }
+
+  .dpp-document-type {
+    margin-inline-start: 0;
+    text-align: start;
+  }
+
+  .dpp-document:has(.dpp-file-icon) > .dpp-document-type {
+    margin-inline-start: var(--dpp-glyph-indent);
+  }
+}
+
 .dpp-document-details {
-  grid-column: 1 / -1;
+  flex-basis: 100%;
   display: flex;
   flex-wrap: wrap;
   gap: 2px 16px;
@@ -48,89 +138,68 @@ dpp-downloads {
   font-size: var(--font-sm);
   overflow-wrap: anywhere;
 
-  div {
-    display: flex;
-    gap: 4px;
+  // A label and its value run as one line of text, so a long
+  // value wraps after the label without breaking it.
+  dt,
+  dd {
+    display: inline;
   }
 
   dt {
     color: var(--color-muted);
+    font-style: italic;
   }
 
   dd {
-    margin: 0;
+    margin: 0 0 0 4px;
   }
 }
 
-// Before the name of a property pointing at a file: jumps to
-// the file's row. The button reset follows
-// .dpp-comp-name-trigger. The box reaches a 24px target and
-// reaches past the text-size glyph by as much on every side,
-// so the glyph sits where another tile's icon does.
-button.dpp-download-jump {
-  appearance: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 24px;
-  min-height: 24px;
-  margin: calc((1em - 24px) / 2);
-  padding: 0;
-  border: 0;
-  border-radius: var(--radius-sm);
-  background: none;
-  color: var(--link-color, #{dpp.$dpp-accent});
-  font: inherit;
-  vertical-align: middle;
-  cursor: pointer;
-
-  &:hover {
-    background: dpp.$dpp-badge-bg;
-  }
-
-  .icon {
-    margin: 0;
-  }
-}
-
-// A page with the file's extension on a band across its
-// lower half, in the link's colour. The extension comes from
-// `data-ext`, so the link's text stays the file's title.
+// A page outline with the file's extension centred on it, both
+// in the link's colour. The extension comes from `data-ext`,
+// so the link's text stays the file's title.
 .dpp-file-icon {
+  // Sized off the body text, so the extension stays legible
+  // beside a title set smaller.
+  @include dpp.regular;
   position: relative;
   display: inline-block;
-  margin-right: 8px;
+  margin-inline-end: var(--dpp-glyph-gap);
   vertical-align: -0.4em;
+
+  // The title's hanging indent would shift the extension.
+  text-indent: 0;
 
   .icon {
     display: block;
-    width: 1.25em;
-    height: 1.5em;
+    width: var(--dpp-glyph-width);
+    height: calc(var(--dpp-glyph-width) * 1.2);
     margin: 0;
   }
 
+  // Centred on the page, a little below its middle to clear
+  // the folded corner.
   &[data-ext]::after {
     content: attr(data-ext);
     position: absolute;
+    top: 58%;
     left: 50%;
-    bottom: 0.3em;
-    transform: translateX(-50%);
-    padding: 1px 2px;
-    border-radius: 2px;
-    background: var(--link-color, #{dpp.$dpp-accent});
-    color: var(--background-color, #fff);
+    transform: translate(-50%, -50%);
+    color: var(--link-color, #{dpp.$dpp-accent});
     font-size: 0.42em;
     font-weight: 700;
     line-height: 1;
     letter-spacing: 0.02em;
   }
-}
 
-.dpp-document-expired {
-  padding: 0 6px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  color: var(--color-text);
-  font-size: var(--font-xs);
-  font-weight: 600;
+  // A longer extension without a common three-letter form
+  // stacks in two rows to fit between the page's sides at the
+  // same size.
+  &.long[data-ext]::after {
+    content: attr(data-ext-head) '\A' attr(data-ext-tail);
+    top: 60%;
+    white-space: pre;
+    text-align: center;
+    line-height: 1.05;
+  }
 }

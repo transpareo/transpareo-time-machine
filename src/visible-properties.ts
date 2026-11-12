@@ -5,22 +5,20 @@
  *
  * Which scalar and link rows the page shows, from the public
  * bytes and from the rows a signed-in reader's view serves.
- * The property list draws them; the Downloads section lists
- * the files among them, so a file shows exactly while its
- * property does.
+ * The property list draws them, except those naming a file,
+ * which <dpp-downloads> draws at the end of the card; both
+ * read this one visibility, so a file shows exactly while its
+ * property would.
  */
 
 import { renderedPresentation } from '@/state'
 import { isShown } from '@/show-filter'
-import { panelRows } from '@/private-properties'
-import type { DppDocument, PropertyValue, PropertyValueOf } from '@/types'
+import { panelRows, servedRows } from '@/private-properties'
+import type { PropertyValue, PropertyValueOf } from '@/types'
 
 export type ScalarRow = PropertyValueOf<'scalar'>
 export type LinkRow = PropertyValueOf<'link'>
 export type DetailRow = ScalarRow | LinkRow
-export type DocumentRow = LinkRow & {
-  value: LinkRow['value'] & { document: DppDocument }
-}
 
 // Namespaced scalar rows and every link. Tiles, badges,
 // accordions, and donuts have their own renderers and pull
@@ -57,15 +55,18 @@ export function visiblePrivateRows(
   return detailRows(served).filter((r) => !panels.has(r.key))
 }
 
-// A link that pins a file by its digest, with the file's
-// details.
-export function isDocumentRow(row: PropertyValue): row is DocumentRow {
-  return row.value.type === 'link' && row.value.document != null
+// A link field with at least one file the passport pinned
+// among its entries.
+export function namesFile(row: PropertyValue): row is LinkRow {
+  return row.value.type === 'link'
+    && row.value.entries.some((e) => e.document != null)
 }
 
-// A public file property without a namespace stands as a tile
-// among the scalar ones, so it sits beside the properties the
-// publisher listed it with.
-export function isDocumentTile(row: PropertyValue): row is DocumentRow {
-  return isDocumentRow(row) && row.namespace == null
+// The rows naming a file the page shows: the public ones, then
+// those the reader's view serves, each in its source's order.
+export function visibleFileRows(): ReadonlyArray<LinkRow> {
+  const served = servedRows()
+  const keys = new Set(served.map((r) => r.key))
+  return [...visiblePublicRows(keys), ...visiblePrivateRows(served)]
+    .filter(namesFile)
 }

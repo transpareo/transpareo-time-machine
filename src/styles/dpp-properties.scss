@@ -45,6 +45,16 @@
   white-space: nowrap;
 }
 
+// A link field's several web addresses, one beneath another.
+// An address runs longer than a value, so it may break.
+.dpp-property-links {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
 // Beneath a value that is the reading sealed at publish.
 .dpp-property-note {
   display: block;

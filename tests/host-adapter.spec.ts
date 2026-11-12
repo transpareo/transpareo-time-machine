@@ -319,8 +319,10 @@ describe('toRenderModel: downloads', () => {
     const value = toRenderModel(wire([doc]), SNAPSHOT).properties[0].value;
     expect(value).toMatchObject({
       type: 'link',
-      href: 'https://cdn.example.com/media/acme/files/9f86.pdf',
-      document: { type: 'manual' },
+      entries: [{
+        href: 'https://cdn.example.com/media/acme/files/9f86.pdf',
+        document: { type: 'manual' },
+      }],
     });
   });
 });
@@ -383,25 +385,28 @@ describe('adaptPrivateRows: links resolve against the read URL', () => {
   it('opens a restricted document on the host that served it', () => {
     expect(served(report)).toMatchObject({
       type: 'link',
-      href: `${FILES}/9f86d081.pdf`,
-      document: {
-        files: [
-          { href: `${FILES}/9f86d081.pdf` },
-          { href: `${FILES}/60303ae2.pdf`, languages: ['en'] },
-        ],
-      },
+      entries: [{
+        href: `${FILES}/9f86d081.pdf`,
+        document: {
+          files: [
+            { href: `${FILES}/9f86d081.pdf` },
+            { href: `${FILES}/60303ae2.pdf`, languages: ['en'] },
+          ],
+        },
+      }],
     });
   });
 
   it('leaves the asset host to the public copies', () => {
     Object.assign(config, { assetHost: 'https://cdn.example.com' });
-    expect(served(report)).toMatchObject({ href: `${FILES}/9f86d081.pdf` });
+    expect(served(report)).
+      toMatchObject({ entries: [{ href: `${FILES}/9f86d081.pdf` }] });
   });
 
   it('keeps an absolute address', () => {
     const href = 'https://files.example.org/report.pdf';
     expect(served({ '@type': 'Link', href })).
-      toEqual({ type: 'link', href });
+      toEqual({ type: 'link', entries: [{ href }] });
   });
 });
 

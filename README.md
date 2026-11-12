@@ -390,20 +390,27 @@ Field notes:
   `documentIssuer`, `documentNumber`, `documentValidFrom` and
   `documentValidUntil`, and `fileVersions`, the language
   versions, each naming its `fileLanguages`. The card lists
-  them under "Downloads" after the accordions, opening the
-  version in the reader's language where there is one, naming
-  the type in that language and marking a document whose
-  `documentValidUntil` has passed. Each row leads with a page
-  showing the file's extension (`PDF`, `XLSX`), read off the
-  end of its `href`. A property whose value is such a Link
-  (one carrying `fileDigest`) adds its file to the same list,
-  titled with the property's name, and keeps its own place on
-  the card: a tile among the others, or a row in the property
-  list when it carries a namespace or comes with the
-  login-gated rows. There it names the file's type, and a
-  small download icon before its name scrolls to the file. A
-  Link without a digest stays a plain link. The terms are
-  defined in `transpareo/v2`.
+  them last in its "Documents" card after the accordions,
+  opening the version in the reader's language where there is
+  one and naming the type in that language. Each row leads
+  with a page showing the file's extension, read off the end
+  of its `href`: `PDF`, the common four-letter types in their
+  three-letter form (`XLSX` as `XLS`, `JPEG` as `JPG`), and
+  any other longer one in two rows.
+- A property's value may be a `Link`, or an array of them in
+  the publisher's order; a Link carrying `fileDigest` names a
+  file, shaped like a download, and one without names a web
+  address, titled with its `name` when it has one. A property
+  naming at least one file shows only in the "Documents"
+  card: a group of its own headed by its name, listing its
+  entries in order, the files with their details and the web
+  addresses as links. Those groups come before the passport's
+  own documents, in the order of the passport's properties,
+  and a login-gated one joins them once the reader is signed
+  in. A property naming web addresses alone keeps its place
+  in the property list: its name opens a single address, or
+  names several listed beside it. The terms are defined in
+  `transpareo/v2`.
 - `signature` - a W3C Data Integrity proof
   (`eddsa-jcs-2022`, platform key) over the manifest
   body. The renderer verifies it and folds the

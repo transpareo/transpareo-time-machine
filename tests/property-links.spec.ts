@@ -21,7 +21,7 @@ const REPORT = 'https://cdn.example.com/media/demo/test_report.pdf'
 const testReport: PropertyValue = {
   key: 'transpareo:testReport',
   name: { en: 'Test report', de: 'Prüfbericht' },
-  value: { type: 'link', href: REPORT },
+  value: { type: 'link', entries: [{ href: REPORT }] },
   namespace: 'transpareo:testReport'
 }
 
@@ -74,11 +74,12 @@ describe('a restricted document row', () => {
 
   // The publisher's host answers the file to a reader it admits,
   // by the session cookie the new tab's request carries. Like
-  // every file, it is listed under Downloads.
+  // every file, it shows in its property's section at the end.
   it('opens a restricted document in a new tab', () => {
     const file = 'https://dpp.acme.com/api/dpps/abc12345/files/9f86d081.pdf'
     const doc = { name: { en: 'Test report' }, files: [{ href: file }] }
-    const value = { type: 'link', href: file, document: doc } as const
+    const entries = [{ href: file, document: doc }]
+    const value = { type: 'link', entries } as const
     const row = { ...testReport, value }
     fetchStateByVersion.set({ 1: { status: 'ok', rows: [row] } })
 
@@ -92,7 +93,9 @@ describe('a restricted document row', () => {
   })
 
   it('leaves a script URL as plain text', () => {
-    const value = { type: 'link', href: 'javascript:alert(1)' } as const
+    const value = {
+      type: 'link', entries: [{ href: 'javascript:alert(1)' }]
+    } as const
     const row = { ...testReport, value }
     fetchStateByVersion.set({ 1: { status: 'ok', rows: [row] } })
     const list = mount()
