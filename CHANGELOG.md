@@ -10,6 +10,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.25.0] - 2026-11-12
+
 ### Changed
 
 - Every file a passport pins is listed under Downloads,
