@@ -22,7 +22,7 @@ import { sortedEvents, epcisByEventId, snapshotForVersion } from '@/state'
 import { manifest as manifestSignal, epcisDocument } from '@/host'
 import { i18n, formatShortDate } from '@/i18n'
 import { t, type LabelKey } from '@/i18n/labels'
-import { colorForEventType } from '@/event-colors'
+import { paintEvent } from '@/event-colors'
 import { icon } from '@/icons'
 import {
   txLang, type DppEvent, type LangText, type PropertyValue,
@@ -68,7 +68,6 @@ class DppEventModal extends LightElement {
     const dialog = buildModal({
       title: tr('event.title'),
       titleId: 'event-modal-title',
-      accent: colorForEventType(evt.eventType),
       body,
       onClose: close,
     })
@@ -93,7 +92,7 @@ function buildEventSection(evt: DppEvent): HTMLElement {
 
 function buildEventGrid(evt: DppEvent): HTMLElement {
   const dl = el('dl', 'event-modal-grid')
-  dl.style.setProperty('--event-color', colorForEventType(evt.eventType))
+  paintEvent(dl, evt.eventType)
 
   const add = (label: LabelKey, value: Node | string): void => {
     const dt = el('dt', undefined, tr(label))

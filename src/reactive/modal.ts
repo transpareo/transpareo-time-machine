@@ -357,9 +357,6 @@ interface ModalOptions {
    *  children directly into the body. A string is set as
    *  textContent (escaped), never parsed as HTML. */
   body: string | HTMLElement | DocumentFragment
-  /** Optional accent colour exposed to the dialog as
-   *  `--accent` so the header gradient can pick it up. */
-  accent?: string
   /** Click handler for the `.modal-close` button. */
   onClose: () => void
 }
@@ -374,7 +371,6 @@ interface ModalOptions {
 export function buildModal(opts: ModalOptions): HTMLElement {
   const dialog = document.createElement('div')
   dialog.className = 'modal'
-  if (opts.accent) dialog.style.setProperty('--accent', opts.accent)
 
   dialog.appendChild(buildHeader(opts))
 

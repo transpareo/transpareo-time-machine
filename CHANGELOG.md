@@ -10,6 +10,16 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Changed
+
+- A voided or superseded passport marks that event on the
+  timeline in the withdrawal band's ink: the dot and the
+  event pill take the timeline's text colour (the card's
+  `--font-color` unless `--timeline-card-text` is set), and
+  the pill text takes its ground. Voided events used the
+  verification red, which reads as a failed proof beside a
+  passport that verifies.
+
 ## [2.27.1] - 2026-11-14
 
 ### Fixed

@@ -33,7 +33,7 @@ import {
 import {
   deckWheel, deckTouchStart, deckTouchMove, deckTouchEnd,
 } from '@/gestures'
-import { colorForEventType } from '@/event-colors'
+import { colorForEventType, paintEvent } from '@/event-colors'
 import { eventTime } from '@/epcis'
 import { icon } from '@/icons'
 import { i18n, formatShortDate } from '@/i18n'
@@ -789,7 +789,7 @@ function buildEvent(
   // lifecycle steps apart.
   btn.setAttribute('aria-label', eventName(evt))
   btn.style.left = `${x}px`
-  btn.style.setProperty('--event-color', colorForEventType(evt.eventType))
+  paintEvent(btn, evt.eventType)
   return btn
 }
 
@@ -845,7 +845,7 @@ function eventBodyText(evt: DppEvent): LangText {
 
 function buildDetails(evt: DppEvent): HTMLDivElement {
   const wrap = el('div', 'event-card event-details-card')
-  wrap.style.setProperty('--event-color', colorForEventType(evt.eventType))
+  paintEvent(wrap, evt.eventType)
   wrap.setAttribute('role', 'button')
   wrap.setAttribute('tabindex', '0')
 
@@ -911,12 +911,9 @@ function buildPanelCard(
   card.style.width = `${it.width}px`
   card.style.height = `${CARD_H}px`
 
-  // --accent drove the (now-removed) card border/stripe.
-  // --event-color is what `.event-tag` reads so the pill
-  // inside the card renders in the event's own colour.
-  const evtColor = colorForEventType(evt.eventType)
-  card.style.setProperty('--accent', evtColor)
-  card.style.setProperty('--event-color', evtColor)
+  // The pill inside the card and the focused border read
+  // the event's colours off the card.
+  paintEvent(card, evt.eventType)
   card.style.setProperty('--enter-delay', `${30 + idx * 36}ms`)
 
   card.addEventListener('click', onClick)

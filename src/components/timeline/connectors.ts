@@ -11,7 +11,7 @@
  */
 
 import { SVG_NS } from '@/reactive/dom'
-import { colorForEventType } from '@/event-colors'
+import { paintEvent } from '@/event-colors'
 import {
   type LayoutItem, PAD_X, DOT_Y_REL, topYForLevel,
 } from './layout'
@@ -255,10 +255,7 @@ function buildConnectorPath(
   const path = document.createElementNS(SVG_NS, 'path')
   path.setAttribute('d', d)
   path.dataset.eventId = it.evt.id
-  path.style.setProperty(
-    '--event-color',
-    colorForEventType(it.evt.eventType),
-  )
+  paintEvent(path, it.evt.eventType)
   if (isActive) path.classList.add('active')
   return path
 }
