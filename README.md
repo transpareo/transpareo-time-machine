@@ -1736,10 +1736,10 @@ against the set of shipped label bundles instead.
 
 ## Releasing
 
-`npm run release` cuts a release. It bumps the version,
-stamps the `CHANGELOG.md` `[Unreleased]` block into a dated
-section, commits `Release <version>`, tags `v<version>`, and
-pushes. The pushed tag is the release: it triggers
+Cut a release with `scripts/release.sh`, passing the bump
+as a flag. It bumps the version, stamps the `CHANGELOG.md`
+`[Unreleased]` block into a dated section, commits
+`Release <version>`, tags `v<version>`, and pushes. The pushed tag is the release: it triggers
 `.github/workflows/release.yml`, which type-checks, tests,
 builds, runs the browser suite on Chromium, Firefox and
 WebKit against a fresh seed, and publishes to npm with
@@ -1749,10 +1749,10 @@ browser suite on Chromium, so a release those catch never
 becomes a dangling tag. Firefox and WebKit run in CI only.
 
 ```bash
-npm run release -- -m   # minor (0.x.0)
-npm run release -- -M   # major (x.0.0)
-npm run release         # patch (0.0.x), the default
-npm run release -- -n   # dry run: print the steps only
+scripts/release.sh -p   # patch (0.0.x), the default
+scripts/release.sh -m   # minor (0.x.0)
+scripts/release.sh -M   # major (x.0.0)
+scripts/release.sh -n   # dry run: print the steps only
 ```
 
 Releases go out from a clean `main`. The git tag and

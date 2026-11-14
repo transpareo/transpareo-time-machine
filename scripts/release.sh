@@ -26,7 +26,7 @@
 # tests, and publishes. With `gh` installed it then streams
 # the run.
 #
-# Usage: bash scripts/release.sh [-M|-m|-p] [-k] [-n]
+# Usage: scripts/release.sh [-M|-m|-p] [-k] [-n]
 #   -M, --major        bump major (x.0.0), breaking changes
 #   -m, --minor        bump minor (0.x.0), new features
 #   -p, --patch        bump patch (0.0.x) [default]
@@ -45,8 +45,7 @@ Release helper: bump version, stamp CHANGELOG, commit, tag,
 push. The pushed tag triggers .github/workflows/release.yml,
 which builds, tests, and publishes to npm.
 
-Usage: npm run release -- [-M|-m|-p] [-k] [-n]
-       bash scripts/release.sh [-M|-m|-p] [-k] [-n]
+Usage: scripts/release.sh [-M|-m|-p] [-k] [-n]
 
   -M, --major        bump major (x.0.0), breaking changes
   -m, --minor        bump minor (0.x.0), new features
