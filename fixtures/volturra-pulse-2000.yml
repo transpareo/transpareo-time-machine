@@ -24,6 +24,16 @@ branding:
     file: fixtures/volturra-pulse-2000/branding/logo.svg
   favicon:
     file: fixtures/volturra-pulse-2000/branding/favicon.ico
+library_icons:
+  carbonFootprint: leaf
+  certifications: certificate
+  endOfLife: recycle
+  function: cog
+  hazardLevel: attention
+  notes: pencil
+  origin: globe
+  recycledContent: recycle
+  sourcing: truck
 images:
   hero:
     thumbnail: https://images.unsplash.com/photo-1732030373864-d37573915751?w=800&q=80&fm=jpg&fit=crop&auto=format

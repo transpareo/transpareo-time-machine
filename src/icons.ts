@@ -108,11 +108,12 @@ export function contentSpriteUrl(): string | null {
 
 // Property-key -> content-sprite symbol id, supplied
 // externally like the sprite itself so this repo ships no
-// type-to-icon vocabulary. Snapshot rows carry no icon; the
-// renderer looks each row up by its `key` (the wire
-// `propertyID` / namespace). Held in a signal so rows that
-// render before the fetch resolves pick the icon up on the
-// next reactive pass. Empty until loadContentIconMap runs.
+// type-to-icon vocabulary. Snapshot rows and library-entry
+// properties carry no icon; the renderer looks each up by
+// its `key` (a snapshot row's wire `propertyID`, a library
+// property's `key`). Held in a signal so rows that render
+// before the fetch resolves pick the icon up on the next
+// reactive pass. Empty until loadContentIconMap runs.
 const contentIconMap = signal<Readonly<Record<string, string>>>({})
 
 // The content-sprite symbol id for a property key, or null

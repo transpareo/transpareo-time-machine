@@ -1584,6 +1584,15 @@ in the sprite. Like the sprite, the map is a publisher
 resource served by URL, so one map can drive every
 passport. The snapshot itself never carries an icon.
 
+The component drawer reads the same map for the rows of a
+component-library entry, keyed by each property's `key`.
+The entry carries no icon either, so a publisher adds
+those keys to the one map; product rows and library
+properties share it, one icon per key. In the fixtures,
+a fixture's `library_icons` table supplies them, and the
+seed refuses one that names a different icon than a
+product row with the same key.
+
 ### Referencing an icon
 
 Every icon is a `<symbol>` addressed by its id. In code,

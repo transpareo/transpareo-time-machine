@@ -10,6 +10,13 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Added
+
+- The component drawer shows a property's icon before its
+  label, looked up by the property's `key` in the
+  publisher's `icon-map-src` table like a passport row's.
+  A key the map does not name shows no icon, as before.
+
 ## [2.26.0] - 2026-11-12
 
 ### Changed

@@ -685,7 +685,11 @@ function buildProperties(
 // beside the sprite and the SPA joins on it (see
 // src/icons.ts `iconForProperty`). Authored per fixture, so
 // two publishers can map the same key to different glyphs.
-function buildIconMap(fixture: Fixture): Record<string, string> {
+//
+// The library entries' properties share the one table, so a
+// key a product row and a library property both use has to
+// name the same glyph: the map holds one per key.
+export function buildIconMap(fixture: Fixture): Record<string, string> {
   const p = fixture.product;
   const out: Record<string, string> = {};
   const add = (key: string, icon: string | undefined): void => {
@@ -695,6 +699,15 @@ function buildIconMap(fixture: Fixture): Record<string, string> {
   p.lists.forEach((l) => add(l.key, l.icon));
   p.accordions.forEach((a) => add(a.key, a.icon));
   p.compositions.forEach((b) => add(b.key, b.icon));
+  for (const [key, icon] of Object.entries(fixture.library_icons)) {
+    if (Object.hasOwn(out, key) && out[key] !== icon) {
+      throw new Error(
+        `${fixture.id}: library_icons maps '${key}' to '${icon}', ` +
+        `a product row to '${out[key]}'`
+      );
+    }
+    out[key] = icon;
+  }
   return out;
 }
 

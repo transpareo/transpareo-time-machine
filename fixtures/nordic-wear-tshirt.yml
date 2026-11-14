@@ -23,6 +23,13 @@ branding:
     width: 173
   favicon:
     file: fixtures/nordic-wear-tshirt/branding/favicon.ico
+library_icons:
+  alternativeNames: tag
+  carbonFootprint: leaf
+  characteristics: star
+  function: cog
+  origin: globe
+  originCountry: globe
 images:
   lifestyle-a:
     thumbnail: https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&q=80&fm=jpg&fit=crop&auto=format

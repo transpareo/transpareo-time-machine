@@ -40,7 +40,7 @@ import {
 import { i18n, formatNumber } from '@/i18n'
 import { regionName } from '@/i18n/display-names'
 import { t, type LabelKey } from '@/i18n/labels'
-import { icon } from '@/icons'
+import { icon, iconForProperty } from '@/icons'
 import { lookupLibrary } from '@/library-lookup'
 import { buildRatingRow, buildKvRow, ratingIcon } from '@/rating'
 
@@ -172,13 +172,16 @@ function buildLibraryLoading(): HTMLElement {
   return wrap
 }
 
+// The row's icon comes from the publisher's icon map, joined
+// on the row's `key` like a passport row's; the entry itself
+// names none.
 function buildPropertyRow(prop: ComponentProperty): HTMLElement {
   const row = el('div', 'dpp-library-row')
   const [label, lang] = txLang(prop.label, i18n.locale)
-  row.append(
-    el('div', 'dpp-library-row-label', label, lang),
-    buildPropertyValue(prop.value),
-  )
+  const heading = el('div', 'dpp-library-row-label', label, lang)
+  const iconId = iconForProperty(prop.key)
+  if (iconId) heading.prepend(icon(iconId), ' ')
+  row.append(heading, buildPropertyValue(prop.value))
   return row
 }
 

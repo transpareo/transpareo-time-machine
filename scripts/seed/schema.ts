@@ -388,6 +388,14 @@ export const FixtureSchema = z.object({
   available_locales: z.array(z.string()).min(1),
   product: Product,
   branding: Branding.optional(),
+
+  // Optional. Icons for the properties of the publisher's
+  // component-library entries, by the property's `key`. They
+  // join the product rows' icons in the published icon map,
+  // which the renderer reads for both; the entries name
+  // none.
+  library_icons: z.record(z.string(), z.string()).default({}),
+
   // Image-map keys become on-disk filenames, so constrain
   // them to a safe charset (no path separators, no `..`).
   images: z.record(
