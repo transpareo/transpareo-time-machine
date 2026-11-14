@@ -1740,12 +1740,13 @@ against the set of shipped label bundles instead.
 stamps the `CHANGELOG.md` `[Unreleased]` block into a dated
 section, commits `Release <version>`, tags `v<version>`, and
 pushes. The pushed tag is the release: it triggers
-`.github/workflows/release.yml`, which type-checks, lints,
-tests, builds, runs the browser suite against a fresh seed,
-and
-publishes to npm with provenance. The helper runs the
-check / lint / test gates locally first, so a broken release
-never becomes a dangling tag.
+`.github/workflows/release.yml`, which type-checks, tests,
+builds, runs the browser suite on Chromium, Firefox and
+WebKit against a fresh seed, and publishes to npm with
+provenance. Before it bumps anything, the helper runs
+check, lint and the unit tests, then seeds and runs the
+browser suite on Chromium, so a release those catch never
+becomes a dangling tag. Firefox and WebKit run in CI only.
 
 ```bash
 npm run release -- -m   # minor (0.x.0)

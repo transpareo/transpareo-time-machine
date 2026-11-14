@@ -17,6 +17,10 @@ and this project adheres to
   whose file name ended in a browser spec's name. The
   browser suite now matches whole file names, and this
   release carries the 2.27.0 changes.
+- `npm run release` seeds and runs the browser suite on
+  Chromium before it bumps the version, and stops while a
+  server holds the suite's ports (5173, 5175), since a dev
+  server started before the seed serves stale fixtures.
 
 ## [2.27.0] - 2026-11-14
 

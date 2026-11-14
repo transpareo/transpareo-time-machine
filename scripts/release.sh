@@ -11,11 +11,12 @@
 # here.
 #
 # What release.yml does on the pushed tag:
-#   - npm run check / lint / test
+#   - npm run check / test
 #   - npm run build + build:embed
 #   - npm run emit:sri / check:bundle-size / check:prefixes /
 #     check:reproducible
-#   - npx playwright install + npm run seed + npm run a11y
+#   - npm run seed + the browser suite on Chromium, Firefox
+#     and WebKit
 #   - check the tag matches package.json, then
 #     npm publish --provenance --access public
 #   - attach the dist + dist-embed tarballs to the GitHub
@@ -103,12 +104,38 @@ if ! git diff --quiet || ! git diff --cached --quiet; then
   fi
 fi
 
+# The browser suite below reuses a server already listening
+# on its ports. After the seed, a running dev server keeps
+# serving the file list it started with, so the component
+# drawer finds no library entries and the gate fails on the
+# stale server. Stop before any gate runs.
+busy=""
+for port in 5173 5175; do
+  (exec 3<>"/dev/tcp/localhost/$port") 2>/dev/null && busy="$busy :$port"
+done
+if [ -n "$busy" ]; then
+  if [ "$DRY" = true ]; then
+    echo "Note: a server holds${busy}; a real release stops here."
+  else
+    echo "A server holds${busy}; stop it before releasing." >&2
+    exit 1
+  fi
+fi
+
 # Catch a broken release before it becomes a dangling tag.
 # release.yml gates publish on these too, but failing locally
 # saves a round-trip.
 run npm run check
 run npm run lint
 run npm test
+
+# The browser suite on Chromium, against a fresh seed: it
+# reads the seeded public/ tree and collects its specs by
+# file name, so a spec it should not load fails it here
+# instead of in CI. Firefox and WebKit stay CI-only, since
+# WebKit needs system libraries most hosts lack.
+run npm run seed
+run npm run browser
 
 # Bump package.json + package-lock.json.
 [ "$KEEP" = true ] || run npm version "$BUMP" --no-git-tag-version
