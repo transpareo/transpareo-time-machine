@@ -24,18 +24,22 @@ const localChromium = process.env.PLAYWRIGHT_CHROMIUM_PATH
 
 export default defineConfig({
   testDir: './tests',
+  // Each pattern matches a whole file name: anchored on the
+  // directory separator, so a vitest spec whose name merely
+  // ends in one of these (library-modal-icons.spec.ts) stays
+  // out of the browser run.
   testMatch: [
-    /(a11y|card-render|embed-smoke|icons)\.spec\.ts/,
-    /(integration-hook|locale-picker|snapshot|verifier-theme)\.spec\.ts/,
-    /(logo-link|timeline-axis|verifier-measure)\.spec\.ts/,
-    /(first-paint-locale|boot-shell-passthrough)\.spec\.ts/,
-    /withdrawal-band\.spec\.ts/,
-    /events-off-critical-path\.spec\.ts/,
-    /(gallery-turn|lightbox-turn)\.spec\.ts/,
-    /(live-data|passport-level-card)\.spec\.ts/,
-    /(revocation-gate|show-history)\.spec\.ts/,
-    /(background-pattern|staff-bar)\.spec\.ts/,
-    /(open-modal|modal-sections)\.spec\.ts/
+    /\/(a11y|card-render|embed-smoke|icons)\.spec\.ts$/,
+    /\/(integration-hook|locale-picker|snapshot|verifier-theme)\.spec\.ts$/,
+    /\/(logo-link|timeline-axis|verifier-measure)\.spec\.ts$/,
+    /\/(first-paint-locale|boot-shell-passthrough)\.spec\.ts$/,
+    /\/withdrawal-band\.spec\.ts$/,
+    /\/events-off-critical-path\.spec\.ts$/,
+    /\/(gallery-turn|lightbox-turn)\.spec\.ts$/,
+    /\/(live-data|passport-level-card)\.spec\.ts$/,
+    /\/(revocation-gate|show-history)\.spec\.ts$/,
+    /\/(background-pattern|staff-bar)\.spec\.ts$/,
+    /\/(open-modal|modal-sections)\.spec\.ts$/
   ],
   fullyParallel: false,
   retries: 0,

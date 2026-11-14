@@ -10,6 +10,14 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Fixed
+
+- 2.27.0 was tagged and never published: its release run
+  stopped because the browser suite collected a unit spec
+  whose file name ended in a browser spec's name. The
+  browser suite now matches whole file names, and this
+  release carries the 2.27.0 changes.
+
 ## [2.27.0] - 2026-11-14
 
 ### Added
