@@ -10,6 +10,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.27.1] - 2026-11-14
+
 ### Fixed
 
 - 2.27.0 was tagged and never published: its release run
