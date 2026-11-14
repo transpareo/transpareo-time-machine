@@ -10,6 +10,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.28.0] - 2026-11-14
+
 ### Changed
 
 - A voided or superseded passport marks that event on the
