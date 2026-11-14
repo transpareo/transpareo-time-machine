@@ -10,6 +10,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.27.0] - 2026-11-14
+
 ### Added
 
 - The component drawer shows a property's icon before its
