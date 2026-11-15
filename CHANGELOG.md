@@ -10,6 +10,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.29.0] - 2026-11-15
+
 ### Added
 
 - The timeline shows the brand's note on an event. The
