@@ -10,6 +10,27 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Added
+
+- The timeline shows the brand's note on an event. The
+  events file carries it under `schema:description` as a
+  JSON-LD language array, and the renderer picks the
+  reader's language with the same fallback as product
+  texts. The card keeps the event's summary line, so a
+  lifecycle event still names its new stage, and the note
+  follows it on its own line in italics; where the card
+  has no actor line, the text takes that line too. The event dialog shows the note
+  under its own heading.
+- `npm run seed` writes each fixture event's note into the
+  events file the same way.
+
+### Removed
+
+- The renderer reads no event note from
+  `transpareo:description`. That v1 term names a
+  passport's own text, and the platform writes no event
+  note under it.
+
 ## [2.28.1] - 2026-11-15
 
 ### Changed

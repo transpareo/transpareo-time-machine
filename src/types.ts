@@ -708,14 +708,15 @@ export interface DppEvent {
   readonly eventType: EventType
   readonly occurredAt: string
 
-  // PII fields the production EPCIS sidecar omits from
-  // the public artefact (`actorLabel`, `description`).
-  // The SPA renders them when present; in production
-  // they only appear when the authority-tool embed
-  // overlays them from a separate authenticated fetch.
+  // Who recorded the event. The public events file names
+  // no actor, so the field is absent there; the SPA
+  // renders it when a feed carries one.
   readonly actorLabel?: string
   readonly statusFrom?: LifecycleStatus
   readonly statusTo?: LifecycleStatus
+
+  // The brand's note on the event, in each language it was
+  // written or translated in (`schema:description`).
   readonly description?: SnapshotLocalizedText
   readonly versionNumber?: number
   readonly snapshot?: DppSnapshot

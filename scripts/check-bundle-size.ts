@@ -64,9 +64,11 @@ const BUDGETS: ReadonlyArray<Budget> = [
   // the Transpareo context ride every entry whole), 31 KB
   // with the withdrawal sentences.
   { file: 'dpp-verifier.js', maxGzipBytes: 35 * 1024, dir: 'dist' },
-  // 73 KB with the same Downloads rework, whose stylesheet
-  // the embed entry inlines as well.
-  { file: 'embed.js', maxGzipBytes: 73 * 1024, dir: 'dist-embed' },
+  // 74 KB since the timeline shows the brand's event note:
+  // its read and the card body clamping summary and note
+  // together. 73 KB came with the same Downloads rework,
+  // whose stylesheet the embed entry inlines as well.
+  { file: 'embed.js', maxGzipBytes: 74 * 1024, dir: 'dist-embed' },
 ]
 
 // Vite's lib mode emits entry + chunks; when two entry

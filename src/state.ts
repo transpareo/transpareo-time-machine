@@ -19,7 +19,7 @@
  */
 import { signal, computed } from '@/reactive/signals'
 import { config } from '@/config'
-import { canonicalStatus } from '@/types'
+import { canonicalStatus, foldLocale, isLanguageArray } from '@/types'
 import type {
   DppEvent, DppProduct, DppSnapshot, EventType, PropertyValue,
 } from '@/types'
@@ -100,10 +100,10 @@ export const epcisByEventId = computed<
 // A publisher serves a single events sidecar (the
 // EPCIS file, served at `manifest.epcisUrl`), with the
 // renderer-specific fields carried as `transpareo:*`
-// extensions on each ObjectEvent. The public artefact
-// is PII-clean: actorLabel and description are absent
-// in production and overlaid only in the authority-
-// tool embed via a separate authenticated fetch.
+// extensions on each ObjectEvent. The brand's note on an
+// event rides `schema:description` as a JSON-LD language
+// array. The file names no actor, so `actorLabel` stays
+// absent.
 //
 // Filter on `private` is defensive against an issuer
 // mis-publishing a regulator-only event into the
@@ -129,7 +129,7 @@ function epcisToDppEvent(ev: EpcisObjectEvent): DppEvent | null {
   const statusFrom = ev['transpareo:statusFrom']
   const statusTo = ev['transpareo:statusTo']
   const actorLabel = ev['transpareo:actorLabel']
-  const description = ev['transpareo:description']
+  const note = ev['schema:description']
   return {
     id,
     eventType: eventType as EventType,
@@ -139,20 +139,14 @@ function epcisToDppEvent(ev: EpcisObjectEvent): DppEvent | null {
       ? { statusFrom: canonicalStatus(statusFrom) } : {}),
     ...(typeof statusTo === 'string'
       ? { statusTo: canonicalStatus(statusTo) } : {}),
-    ...(isLocalizedText(description) ? { description } : {}),
+    ...(isNote(note) ? { description: foldLocale(note) } : {}),
     ...(typeof versionNumber === 'number' ? { versionNumber } : {}),
   }
 }
 
-function isLocalizedText(
-  value: unknown,
-): value is string | Readonly<Record<string, string>> {
-  if (typeof value === 'string') return true
-  if (value && typeof value === 'object' && !Array.isArray(value)) {
-    return Object.values(value as Record<string, unknown>)
-      .every((v) => typeof v === 'string')
-  }
-  return false
+// A note in its languages, or one written in none.
+function isNote(value: unknown): boolean {
+  return (typeof value === 'string' && value !== '') || isLanguageArray(value)
 }
 
 export const sortedEvents = computed<ReadonlyArray<DppEvent>>(

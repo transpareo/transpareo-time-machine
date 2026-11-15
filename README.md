@@ -274,7 +274,14 @@ Field notes:
   check, renders the passport without its events, and
   the proof dialog reports the document's verdict. A
   link into one event waits for the document and its
-  verdict, so the page opens on that event.
+  verdict, so the page opens on that event. An event's
+  note rides `schema:description` as a JSON-LD language
+  array (`[{ "@value": "...", "@language": "de" }]`, with
+  `schema` bound to `https://schema.org/` in the
+  document's `@context`). The timeline card shows it in
+  italics below the event's summary line and the event
+  dialog under its own heading, each in the reader's
+  language with the usual fallback.
 - `dynamicDataUrl` (optional) - the passport's live
   values (state of charge, remaining capacity), which
   change without a new version. The document names its

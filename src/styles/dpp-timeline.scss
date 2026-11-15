@@ -824,6 +824,31 @@ dpp-timeline[data-state='full'] .open-full-btn {
     -webkit-line-clamp: 3;
     line-clamp: 3;
   }
+
+  // A card without an actor line (the public events file
+  // names none) gives that line to the body, so a note
+  // still shows below a summary that wraps.
+  .event-details-card:not(:has(.event-details-actor)) > & {
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+
+    @media (max-width: 480px) {
+      -webkit-line-clamp: 4;
+      line-clamp: 4;
+    }
+  }
+}
+
+// The summary and the brand's note, one paragraph each,
+// clamped as one block by the card body around them.
+.event-summary {
+  margin: 0;
+}
+
+// Italics set the note apart from the summary line above.
+.event-note {
+  margin: 0;
+  font-style: italic;
 }
 
 .event-details-actor {
@@ -963,6 +988,13 @@ dpp-timeline[data-state='hidden'] .event-details {
   line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+
+  // As in the details card: with no actor line, the body
+  // takes the card's last line.
+  .panel-card:not(:has(.panel-card-actor)) > & {
+    -webkit-line-clamp: 4;
+    line-clamp: 4;
+  }
 }
 
 .panel-card-actor {

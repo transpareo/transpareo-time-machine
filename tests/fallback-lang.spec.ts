@@ -137,7 +137,10 @@ describe('a value in another language', () => {
           'transpareo:dppEventId': 'e1',
           'transpareo:eventType': 'published',
           'transpareo:versionNumber': 2,
-          'transpareo:description': { en: 'en:Published', de: 'de:Neu' }
+          'schema:description': [
+            { '@value': 'de:Neu', '@language': 'de' },
+            { '@value': 'en:Published', '@language': 'en' }
+          ]
         }]
       }
     } as unknown as EpcisDocument)

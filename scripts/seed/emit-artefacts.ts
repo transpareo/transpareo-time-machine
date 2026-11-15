@@ -1031,20 +1031,12 @@ function buildDynamicData(
 //
 // Production emits this as the only events feed; the
 // renderer-specific fields ride along as `transpareo:*`
-// extensions on each ObjectEvent. In production the
-// public artefact is PII-clean: actorLabel and
-// description are omitted, the renderer-specific fields
-// that ride the EPCIS event are limited to eventType,
-// versionNumber, statusFrom/To (the non-PII fields
-// agreed under decision γ). The fixtures emit the same
-// shape so dev mirrors production exactly; the SPA's
-// timeline already degrades gracefully when actorLabel
-// or description are absent.
-//
-// An authority-tool embed (not yet implemented) will
-// overlay actorLabel + description from an
-// authenticated `/api/authority/...` fetch when the
-// renderer runs in that mode.
+// extensions on each ObjectEvent (eventType,
+// versionNumber, statusFrom/To), and the brand's note
+// rides `schema:description` as a language array. The
+// file names no actor, so actorLabel stays out. The
+// fixtures emit the same shape so dev mirrors
+// production.
 
 export function buildEpcis(
   fixture: Fixture, signer: SnapshotSigner,
@@ -1053,9 +1045,9 @@ export function buildEpcis(
   // context (which defines ObjectEvent, eventTime, and the
   // `@type: @vocab` bizStep/disposition terms whose scoped map
   // turns a bare token like `shipping` into its CBV IRI) plus
-  // an inline prefix for the `transpareo:` event extensions.
-  // The prefix is inline rather than the remote vocab URL so an
-  // EPCIS JSON-to-XML converter can read the namespace and emit
+  // inline prefixes for the `transpareo:` event extensions and
+  // the `schema:` note. The prefixes are inline so an EPCIS
+  // JSON-to-XML converter can read the namespace and emit
   // `xmlns:transpareo` per event; from a remote context the
   // prefix stays unresolved and the conversion drops the
   // extension fields. The DPP-core and regulation contexts
@@ -1064,7 +1056,10 @@ export function buildEpcis(
   // one makes JSON-LD expansion throw and empties the eventList.
   const context: Array<string | Record<string, string>> = [
     'https://ref.gs1.org/standards/epcis/2.0.0/epcis-context.jsonld',
-    { transpareo: 'https://transpareo.com/vocab/transpareo/v1#' },
+    {
+      schema: 'https://schema.org/',
+      transpareo: 'https://transpareo.com/vocab/transpareo/v1#',
+    },
   ];
 
   const eventsById = new Map(
@@ -1113,7 +1108,7 @@ export function buildEpcis(
             bizLocation: e.biz_location,
             ...(e.extensions ?? {}),
             'transpareo:dppEventId': e.dpp_event_id,
-            ...transpareoExtensionsFor(rendererEvent),
+            ...rendererExtensionsFor(rendererEvent),
           };
         }),
     },
@@ -1121,14 +1116,11 @@ export function buildEpcis(
   return { ...body, 'transpareo:signature': signer.signManifest(body) };
 }
 
-// Build the `transpareo:*` extensions the SPA reads off
-// each ObjectEvent. Mirrors the published projection
-// shape exactly: eventType,
-// versionNumber, statusFrom/To are emitted in
-// production (decision γ); actorLabel and description
-// are PII and stay behind the authority-tool fetch, so
-// the fixtures omit them too.
-function transpareoExtensionsFor(
+// Build the extensions the SPA reads off each ObjectEvent,
+// in the published projection's shape: the `transpareo:*`
+// fields and the note under `schema:description`. The
+// actor stays out, as in production.
+function rendererExtensionsFor(
   rendererEvent: Fixture['events'][number] | undefined,
 ): Record<string, unknown> {
   if (!rendererEvent) return {};
@@ -1143,6 +1135,9 @@ function transpareoExtensionsFor(
   }
   if (rendererEvent.status_to) {
     out['transpareo:statusTo'] = rendererEvent.status_to;
+  }
+  if (rendererEvent.description) {
+    out['schema:description'] = toWireLocalized(rendererEvent.description);
   }
   return out;
 }

@@ -37,7 +37,7 @@ import { colorForEventType, paintEvent } from '@/event-colors'
 import { eventTime } from '@/epcis'
 import { icon } from '@/icons'
 import { i18n, formatShortDate } from '@/i18n'
-import { txLang, type DppEvent, type LangText } from '@/types'
+import { txLang, type DppEvent } from '@/types'
 import { t, type LabelKey } from '@/i18n/labels'
 import {
   type Projection, PAD_X, CARD_W, CARD_GAP, CARD_H,
@@ -823,24 +823,33 @@ function eventName(evt: DppEvent): string {
   return `${tag}, ${formatShortDate(evt.occurredAt, i18n.locale)}`
 }
 
-// The prose line shared by the expanded details panel and
-// the full-state panel cards. The public EPCIS feed is
-// PII-clean, so `description` is absent in production; fall
-// back to a per-type summary so the body reads as a
-// sentence rather than a bare tag + date. The summary takes
-// a `{status}` placeholder (the lifecycle-transition copy
-// names the new stage), filled from the event's statusTo.
-// A transition to no stage this build knows gets no
-// summary, and the card keeps its tag and date.
-function eventBodyText(evt: DppEvent): LangText {
-  if (evt.description) return txLang(evt.description, i18n.locale)
-  if (evt.eventType === 'lifecycle_transition' && !evt.statusTo) {
-    return ['']
-  }
+// The prose under an event's tag, shared by the expanded
+// details card and the full-state panel cards: the per-type
+// summary, then the brand's note when the event carries one.
+// The card clamps the two as one block, so the stage the
+// summary names stays in view and the note takes the lines
+// left.
+function buildEventBody(evt: DppEvent, cls: string): HTMLDivElement | null {
+  const summary = eventSummary(evt)
+  const [note, lang] = txLang(evt.description, i18n.locale)
+  if (!summary && !note) return null
+  const body = el('div', cls)
+  if (summary) body.appendChild(el('p', 'event-summary', summary))
+  if (note) body.appendChild(el('p', 'event-note', note, lang))
+  return body
+}
+
+// The summary takes a `{status}` placeholder (the
+// lifecycle-transition copy names the new stage), filled
+// from the event's statusTo. A transition to no stage this
+// build knows gets no summary, and the card keeps its tag,
+// its date and any note.
+function eventSummary(evt: DppEvent): string {
+  if (evt.eventType === 'lifecycle_transition' && !evt.statusTo) return ''
   const vars = evt.statusTo
     ? { status: t(i18n.labels, `status.${evt.statusTo}` as LabelKey) }
     : undefined
-  return [t(i18n.labels, `eventSummary.${evt.eventType}` as LabelKey, vars)]
+  return t(i18n.labels, `eventSummary.${evt.eventType}` as LabelKey, vars)
 }
 
 function buildDetails(evt: DppEvent): HTMLDivElement {
@@ -879,12 +888,9 @@ function buildDetails(evt: DppEvent): HTMLDivElement {
   wrap.appendChild(head)
 
   // The modal keeps the structured status/version grid, so
-  // this prose body and the modal complement rather than
-  // repeat.
-  const [desc, lang] = eventBodyText(evt)
-  if (desc) {
-    wrap.appendChild(el('p', 'event-details-desc', desc, lang))
-  }
+  // this prose body and the modal complement each other.
+  const body = buildEventBody(evt, 'event-details-desc')
+  if (body) wrap.appendChild(body)
 
   if (evt.actorLabel) {
     wrap.appendChild(el('p', 'event-details-actor', evt.actorLabel))
@@ -922,10 +928,8 @@ function buildPanelCard(
 
   card.appendChild(buildPanelCardHead(evt))
 
-  const [desc, lang] = eventBodyText(evt)
-  if (desc) {
-    card.appendChild(el('p', 'panel-card-desc', desc, lang))
-  }
+  const body = buildEventBody(evt, 'panel-card-desc')
+  if (body) card.appendChild(body)
   if (evt.actorLabel) {
     card.appendChild(el('p', 'panel-card-actor', evt.actorLabel))
   }

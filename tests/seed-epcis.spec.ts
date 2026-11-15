@@ -106,6 +106,31 @@ describe.each(fixtures)('the seeded feed of $id', (fixture) => {
     ])
   })
 
+  // Each event's note rides `schema:description` as a
+  // language array sorted by language, as the publisher
+  // writes it, under a prefix declared beside `transpareo`.
+  it('carries each note as a language array', async () => {
+    const feed = await seededFeed(fixture)
+    expect(feed['@context'][1]).toEqual({
+      schema: 'https://schema.org/',
+      transpareo: 'https://transpareo.com/vocab/transpareo/v1#'
+    })
+    const notes = new Map(fixture.events.map((e) => [e.id, e.description]))
+    for (const ev of feed.epcisBody.eventList) {
+      const note = notes.get(String(ev['transpareo:dppEventId']))
+      const wire = ev['schema:description'] as
+        Array<{ '@value': string, '@language': string }> | undefined
+      if (!note) {
+        expect(wire).toBeUndefined()
+        continue
+      }
+      const langs = wire!.map((e) => e['@language'])
+      const texts = wire!.map((e) => [e['@language'], e['@value']])
+      expect(langs).toEqual([...langs].sort())
+      expect(Object.fromEntries(texts)).toEqual(note)
+    }
+  })
+
   it('passes the SPA check for its own passport', async () => {
     const feed = await seededFeed(fixture)
     expect(await judge(feed, fixture.code))

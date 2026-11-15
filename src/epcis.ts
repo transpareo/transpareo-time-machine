@@ -57,6 +57,8 @@ export interface EpcisObjectEvent {
   //   transpareo:dppEventId, join key back to DppEvent.id
   //   transpareo:scope     , sub-categorisation of
   //                           coarse bizStep (e.g. repair)
+  //   schema:description   , the brand's note, a JSON-LD
+  //                           language array
   readonly [extension: string]: unknown
 }
 
