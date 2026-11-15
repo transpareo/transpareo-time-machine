@@ -66,7 +66,7 @@
   "epcis.readPoint": "Điểm đọc",
   "epcis.bizLocation": "Địa điểm nghiệp vụ",
   "epcis.scope": "Phạm vi",
-  "epcis.rawJson": "Dữ liệu thô",
+  "epcis.rawJson": "Tài liệu EPCIS",
   "epcis.copy": "Sao chép",
   "epcis.copied": "Đã sao chép",
   "epcis.download": "Tải xuống",

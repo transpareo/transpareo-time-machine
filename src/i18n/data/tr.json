@@ -55,7 +55,7 @@
   "epcis.readPoint": "Okuma noktası",
   "epcis.bizLocation": "İş konumu",
   "epcis.scope": "Kapsam",
-  "epcis.rawJson": "Ham veri",
+  "epcis.rawJson": "EPCIS belgesi",
   "epcis.copy": "Kopyala",
   "epcis.copied": "Kopyalandı",
   "epcis.download": "İndir",

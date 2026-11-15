@@ -55,7 +55,7 @@
   "epcis.readPoint": "Titik baca",
   "epcis.bizLocation": "Lokasi bisnis",
   "epcis.scope": "Cakupan",
-  "epcis.rawJson": "Data mentah",
+  "epcis.rawJson": "Dokumen EPCIS",
   "epcis.copy": "Salin",
   "epcis.copied": "Disalin",
   "epcis.download": "Unduh",

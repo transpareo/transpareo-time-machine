@@ -55,7 +55,7 @@
   "epcis.readPoint": "판독 지점",
   "epcis.bizLocation": "비즈니스 위치",
   "epcis.scope": "범위",
-  "epcis.rawJson": "원시 데이터",
+  "epcis.rawJson": "EPCIS 문서",
   "epcis.copy": "복사",
   "epcis.copied": "복사됨",
   "epcis.download": "다운로드",

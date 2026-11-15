@@ -55,7 +55,7 @@
   "epcis.readPoint": "Punct de citire",
   "epcis.bizLocation": "Locație de afaceri",
   "epcis.scope": "Domeniu",
-  "epcis.rawJson": "Date brute",
+  "epcis.rawJson": "Document EPCIS",
   "epcis.copy": "Copiază",
   "epcis.copied": "Copiat",
   "epcis.download": "Descarcă",

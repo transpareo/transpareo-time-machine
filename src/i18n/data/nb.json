@@ -55,7 +55,7 @@
   "epcis.readPoint": "Avlesningspunkt",
   "epcis.bizLocation": "Forretningssted",
   "epcis.scope": "Omfang",
-  "epcis.rawJson": "Rådata",
+  "epcis.rawJson": "EPCIS-dokument",
   "epcis.copy": "Kopier",
   "epcis.copied": "Kopiert",
   "epcis.download": "Last ned",

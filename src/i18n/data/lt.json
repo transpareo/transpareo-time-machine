@@ -55,7 +55,7 @@
   "epcis.readPoint": "Nuskaitymo taškas",
   "epcis.bizLocation": "Verslo vieta",
   "epcis.scope": "Apimtis",
-  "epcis.rawJson": "Žali duomenys",
+  "epcis.rawJson": "EPCIS dokumentas",
   "epcis.copy": "Kopijuoti",
   "epcis.copied": "Nukopijuota",
   "epcis.download": "Atsisiųsti",

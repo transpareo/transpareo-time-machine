@@ -55,7 +55,7 @@
   "epcis.readPoint": "Точка считывания",
   "epcis.bizLocation": "Бизнес-локация",
   "epcis.scope": "Область",
-  "epcis.rawJson": "Сырые данные",
+  "epcis.rawJson": "Документ EPCIS",
   "epcis.copy": "Копировать",
   "epcis.copied": "Скопировано",
   "epcis.download": "Скачать",

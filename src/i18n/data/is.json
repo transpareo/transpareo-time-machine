@@ -66,7 +66,7 @@
   "epcis.readPoint": "Lesið punktinn",
   "epcis.bizLocation": "Viðskiptastaður",
   "epcis.scope": "Viðmið",
-  "epcis.rawJson": "Hrá gögn",
+  "epcis.rawJson": "EPCIS-skjal",
   "epcis.copy": "Afrita",
   "epcis.copied": "Afritað",
   "epcis.download": "Sækja",

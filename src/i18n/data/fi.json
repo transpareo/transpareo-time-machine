@@ -55,7 +55,7 @@
   "epcis.readPoint": "Lukupiste",
   "epcis.bizLocation": "Toimipaikka",
   "epcis.scope": "Laajuus",
-  "epcis.rawJson": "Raakadata",
+  "epcis.rawJson": "EPCIS-asiakirja",
   "epcis.copy": "Kopioi",
   "epcis.copied": "Kopioitu",
   "epcis.download": "Lataa",

@@ -55,7 +55,7 @@
   "epcis.readPoint": "Bod čítania",
   "epcis.bizLocation": "Obchodné miesto",
   "epcis.scope": "Rozsah",
-  "epcis.rawJson": "Surové dáta",
+  "epcis.rawJson": "Dokument EPCIS",
   "epcis.copy": "Kopírovať",
   "epcis.copied": "Skopírované",
   "epcis.download": "Stiahnuť",

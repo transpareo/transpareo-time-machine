@@ -55,7 +55,7 @@
   "epcis.readPoint": "読み取り地点",
   "epcis.bizLocation": "ビジネス拠点",
   "epcis.scope": "スコープ",
-  "epcis.rawJson": "生データ",
+  "epcis.rawJson": "EPCISドキュメント",
   "epcis.copy": "コピー",
   "epcis.copied": "コピーしました",
   "epcis.download": "ダウンロード",

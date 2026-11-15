@@ -55,7 +55,7 @@
   "epcis.readPoint": "Pointe léite",
   "epcis.bizLocation": "Suíomh gnó",
   "epcis.scope": "Scóip",
-  "epcis.rawJson": "Sonraí amha",
+  "epcis.rawJson": "Doiciméad EPCIS",
   "epcis.copy": "Cóipeáil",
   "epcis.copied": "Cóipeáilte",
   "epcis.download": "Íoslódáil",

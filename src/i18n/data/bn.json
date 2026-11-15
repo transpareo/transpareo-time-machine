@@ -55,7 +55,7 @@
   "epcis.readPoint": "পাঠ বিন্দু",
   "epcis.bizLocation": "ব্যবসায়িক অবস্থান",
   "epcis.scope": "পরিসর",
-  "epcis.rawJson": "কাঁচা ডেটা",
+  "epcis.rawJson": "EPCIS নথি",
   "epcis.copy": "অনুলিপি",
   "epcis.copied": "অনুলিপি হয়েছে",
   "epcis.download": "ডাউনলোড করুন",

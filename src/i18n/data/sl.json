@@ -55,7 +55,7 @@
   "epcis.readPoint": "Točka branja",
   "epcis.bizLocation": "Poslovna lokacija",
   "epcis.scope": "Obseg",
-  "epcis.rawJson": "Surovi podatki",
+  "epcis.rawJson": "Dokument EPCIS",
   "epcis.copy": "Kopiraj",
   "epcis.copied": "Kopirano",
   "epcis.download": "Prenesi",

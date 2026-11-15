@@ -55,7 +55,7 @@
   "epcis.readPoint": "Σημείο ανάγνωσης",
   "epcis.bizLocation": "Επιχειρηματική τοποθεσία",
   "epcis.scope": "Εμβέλεια",
-  "epcis.rawJson": "Ακατέργαστα δεδομένα",
+  "epcis.rawJson": "Έγγραφο EPCIS",
   "epcis.copy": "Αντιγραφή",
   "epcis.copied": "Αντιγράφηκε",
   "epcis.download": "Λήψη",

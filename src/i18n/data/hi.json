@@ -55,7 +55,7 @@
   "epcis.readPoint": "रीड पॉइंट",
   "epcis.bizLocation": "व्यापारिक स्थान",
   "epcis.scope": "दायरा",
-  "epcis.rawJson": "कच्चा डेटा",
+  "epcis.rawJson": "EPCIS दस्तावेज़",
   "epcis.copy": "कॉपी करें",
   "epcis.copied": "कॉपी हो गया",
   "epcis.download": "डाउनलोड करें",

@@ -55,7 +55,7 @@
   "epcis.readPoint": "Leespunt",
   "epcis.bizLocation": "Bedrijfslocatie",
   "epcis.scope": "Bereik",
-  "epcis.rawJson": "Ruwe gegevens",
+  "epcis.rawJson": "EPCIS-document",
   "epcis.copy": "Kopiëren",
   "epcis.copied": "Gekopieerd",
   "epcis.download": "Downloaden",

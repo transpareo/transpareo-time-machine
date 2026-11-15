@@ -66,7 +66,7 @@
   "epcis.readPoint": "Прочитај тачку",
   "epcis.bizLocation": "Пословна локација",
   "epcis.scope": "Опсег",
-  "epcis.rawJson": "Сирови подаци",
+  "epcis.rawJson": "EPCIS документ",
   "epcis.copy": "Копирај",
   "epcis.copied": "Копирано",
   "epcis.download": "Преузми",

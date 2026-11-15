@@ -55,7 +55,7 @@
   "epcis.readPoint": "Olvasási pont",
   "epcis.bizLocation": "Üzleti hely",
   "epcis.scope": "Hatókör",
-  "epcis.rawJson": "Nyers adatok",
+  "epcis.rawJson": "EPCIS-dokumentum",
   "epcis.copy": "Másolás",
   "epcis.copied": "Másolva",
   "epcis.download": "Letöltés",

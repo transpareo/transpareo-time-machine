@@ -55,7 +55,7 @@
   "epcis.readPoint": "Точка зчитування",
   "epcis.bizLocation": "Бізнес-локація",
   "epcis.scope": "Обсяг",
-  "epcis.rawJson": "Сирі дані",
+  "epcis.rawJson": "Документ EPCIS",
   "epcis.copy": "Копіювати",
   "epcis.copied": "Скопійовано",
   "epcis.download": "Завантажити",

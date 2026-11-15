@@ -55,7 +55,7 @@
   "epcis.readPoint": "Nolasīšanas punkts",
   "epcis.bizLocation": "Biznesa atrašanās vieta",
   "epcis.scope": "Tvērums",
-  "epcis.rawJson": "Jēldati",
+  "epcis.rawJson": "EPCIS dokuments",
   "epcis.copy": "Kopēt",
   "epcis.copied": "Nokopēts",
   "epcis.download": "Lejupielādēt",

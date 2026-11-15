@@ -10,6 +10,13 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Changed
+
+- The heading over an event's JSON in the event modal is
+  now "EPCIS document" (was "Raw data"), in every locale.
+  It names what the block, copy and download hold: a
+  standalone EPCIS 2.0 document.
+
 ## [2.28.0] - 2026-11-14
 
 ### Changed

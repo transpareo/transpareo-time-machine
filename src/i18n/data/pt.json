@@ -55,7 +55,7 @@
   "epcis.readPoint": "Ponto de leitura",
   "epcis.bizLocation": "Local de negócio",
   "epcis.scope": "Âmbito",
-  "epcis.rawJson": "Dados brutos",
+  "epcis.rawJson": "Documento EPCIS",
   "epcis.copy": "Copiar",
   "epcis.copied": "Copiado",
   "epcis.download": "Transferir",

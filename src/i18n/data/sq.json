@@ -66,7 +66,7 @@
   "epcis.readPoint": "Lexo pikën",
   "epcis.bizLocation": "Vendndodhja e biznesit",
   "epcis.scope": "Fusha e zbatimit",
-  "epcis.rawJson": "Të dhëna të papërpunuara",
+  "epcis.rawJson": "Dokumenti EPCIS",
   "epcis.copy": "Kopjo",
   "epcis.copied": "Kopjuar",
   "epcis.download": "Shkarko",

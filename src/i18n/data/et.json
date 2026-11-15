@@ -55,7 +55,7 @@
   "epcis.readPoint": "Lugemispunkt",
   "epcis.bizLocation": "Ettevõtte asukoht",
   "epcis.scope": "Ulatus",
-  "epcis.rawJson": "Toorandmed",
+  "epcis.rawJson": "EPCIS-dokument",
   "epcis.copy": "Kopeeri",
   "epcis.copied": "Kopeeritud",
   "epcis.download": "Laadi alla",

@@ -55,7 +55,7 @@
   "epcis.readPoint": "读取点",
   "epcis.bizLocation": "业务地点",
   "epcis.scope": "范围",
-  "epcis.rawJson": "原始数据",
+  "epcis.rawJson": "EPCIS 文档",
   "epcis.copy": "复制",
   "epcis.copied": "已复制",
   "epcis.download": "下载",
