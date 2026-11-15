@@ -18,11 +18,19 @@ and this project adheres to
   reader's language with the same fallback as product
   texts. The card keeps the event's summary line, so a
   lifecycle event still names its new stage, and the note
-  follows it on its own line in italics; where the card
-  has no actor line, the text takes that line too. The event dialog shows the note
-  under its own heading.
+  follows it on its own line, a little apart, in the
+  smaller muted type of the product's meta line; where the
+  card has no actor line, the text takes that line too,
+  and a longer note ends in an ellipsis. The event dialog
+  shows the note whole under its own heading.
 - `npm run seed` writes each fixture event's note into the
   events file the same way.
+
+### Changed
+
+- A lifecycle event's summary line sets the new stage in
+  bold: "The product moved to a new lifecycle stage:
+  **in use**".
 
 ### Removed
 

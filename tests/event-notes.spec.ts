@@ -112,6 +112,13 @@ describe.each(['expanded', 'full'] as const)('the %s card', (state) => {
     expect(lines[1]).toMatch(/event-note: First customer activation/)
   })
 
+  it('sets the new stage in bold', () => {
+    const summary = mount(state, {}).querySelector('.event-summary')
+    expect(summary?.querySelector('strong')?.textContent).toBe('in use')
+    expect(summary?.textContent)
+      .toBe('The product moved to a new lifecycle stage: in use')
+  })
+
   it('names the language of a note it fell back to', () => {
     const de = [NOTE[0]]
     const note = mount(state, { 'schema:description': de })

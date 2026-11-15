@@ -830,26 +830,30 @@ function eventName(evt: DppEvent): string {
 // summary names stays in view and the note takes the lines
 // left.
 function buildEventBody(evt: DppEvent, cls: string): HTMLDivElement | null {
-  const summary = eventSummary(evt)
+  const summary = buildSummary(evt)
   const [note, lang] = txLang(evt.description, i18n.locale)
   if (!summary && !note) return null
   const body = el('div', cls)
-  if (summary) body.appendChild(el('p', 'event-summary', summary))
+  if (summary) body.appendChild(summary)
   if (note) body.appendChild(el('p', 'event-note', note, lang))
   return body
 }
 
-// The summary takes a `{status}` placeholder (the
-// lifecycle-transition copy names the new stage), filled
-// from the event's statusTo. A transition to no stage this
+// The lifecycle-transition copy names the new stage through
+// a `{status}` placeholder, set in bold wherever the
+// locale's sentence puts it. A transition to no stage this
 // build knows gets no summary, and the card keeps its tag,
 // its date and any note.
-function eventSummary(evt: DppEvent): string {
-  if (evt.eventType === 'lifecycle_transition' && !evt.statusTo) return ''
-  const vars = evt.statusTo
-    ? { status: t(i18n.labels, `status.${evt.statusTo}` as LabelKey) }
-    : undefined
-  return t(i18n.labels, `eventSummary.${evt.eventType}` as LabelKey, vars)
+function buildSummary(evt: DppEvent): HTMLParagraphElement | null {
+  const { eventType, statusTo } = evt
+  if (eventType === 'lifecycle_transition' && !statusTo) return null
+  const text = t(i18n.labels, `eventSummary.${eventType}` as LabelKey)
+  const [first, ...rest] = text.split('{status}')
+  const summary = el('p', 'event-summary', first)
+  if (!statusTo) return summary
+  const stage = t(i18n.labels, `status.${statusTo}` as LabelKey)
+  for (const part of rest) summary.append(el('strong', undefined, stage), part)
+  return summary
 }
 
 function buildDetails(evt: DppEvent): HTMLDivElement {

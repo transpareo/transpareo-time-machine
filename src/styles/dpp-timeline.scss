@@ -768,6 +768,14 @@ dpp-timeline[data-state='full'] .open-full-btn {
   @media (max-width: 480px) {
     height: 138px;
   }
+
+  // Without an actor line (the public events file names
+  // none) the card drops that row, and the tag line,
+  // summary and note share its height in even 8px steps.
+  &:not(:has(.event-details-actor)) {
+    grid-template-rows: auto 1fr;
+    row-gap: 8px;
+  }
 }
 
 // "i" pip in the top-right corner, a subtle hint that
@@ -845,10 +853,19 @@ dpp-timeline[data-state='full'] .open-full-btn {
   margin: 0;
 }
 
-// Italics set the note apart from the summary line above.
+// The note takes the size and muted colour of the product's
+// meta line, 8px below the summary line: the step between
+// the tag line and the summary in both cards.
 .event-note {
   margin: 0;
-  font-style: italic;
+  @include dpp.sm;
+  color: color-mix(
+    in oklab, var(--timeline-card-text, var(--font-color)) 75%,
+    transparent);
+
+  .event-summary + & {
+    margin-top: 8px;
+  }
 }
 
 .event-details-actor {
