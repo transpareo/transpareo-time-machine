@@ -10,6 +10,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.28.1] - 2026-11-15
+
 ### Changed
 
 - The heading over an event's JSON in the event modal is
