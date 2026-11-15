@@ -575,10 +575,13 @@ events:
     actor_label: Anna Schmidt
     status_from: suspended
     status_to: in_use
+
+    # A long note: the timeline cards cut it off, the event
+    # dialog shows it whole.
     description:
-      en: Limited resumption of distribution for the corrected batch only; full lift pending wider audit.
-      de: Teilweise Wiederaufnahme des Vertriebs nur für die korrigierte Charge; vollständige Aufhebung nach erweitertem Audit.
-      fr: Reprise limitée de la distribution pour le lot corrigé uniquement ; levée complète après audit élargi.
+      en: Limited resumption of distribution for the corrected batch only; full lift pending wider audit. Retail partners received updated shelf labels and a revised care sheet. Units from the earlier batch stay quarantined at the Hamburg warehouse until the audit closes, and customers who returned an affected garment receive a replacement from the corrected batch.
+      de: Teilweise Wiederaufnahme des Vertriebs nur für die korrigierte Charge; vollständige Aufhebung nach erweitertem Audit. Die Handelspartner haben neue Regaletiketten und ein überarbeitetes Pflegeblatt erhalten. Ware aus der früheren Charge bleibt bis zum Abschluss des Audits im Hamburger Lager gesperrt, und wer ein betroffenes Kleidungsstück zurückgegeben hat, erhält Ersatz aus der korrigierten Charge.
+      fr: Reprise limitée de la distribution pour le lot corrigé uniquement ; levée complète après audit élargi. Les partenaires de vente ont reçu de nouvelles étiquettes de rayon et une fiche d'entretien révisée. Les articles du lot précédent restent bloqués à l'entrepôt de Hambourg jusqu'à la clôture de l'audit, et les clients ayant retourné un vêtement concerné reçoivent un article de remplacement issu du lot corrigé.
   - id: evt-8
     event_type: lifecycle_transition
     occurred_at: 2025-09-12T11:00:00Z
