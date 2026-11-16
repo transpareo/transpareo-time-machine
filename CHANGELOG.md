@@ -10,6 +10,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.30.0] - 2026-11-15
+
 ### Changed
 
 - The staff bar takes its wording from the back office. The
