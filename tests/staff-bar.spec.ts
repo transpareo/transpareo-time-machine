@@ -4,10 +4,10 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * The staff bar in a real browser. The publisher's back office
- * stores the address of its lookup by code for the passport's
- * origin while one of its staff is signed in; the passport then
- * draws a band under its header linking there, and nothing for
- * anyone else. Its geometry is checked here because only here
+ * stores the address of its lookup by code and the wording of
+ * the link for the passport's origin while one of its staff is
+ * signed in; the passport then draws a band under its header
+ * linking there, and nothing for anyone else. Its geometry is checked here because only here
  * does the stylesheet apply: the band must leave the header and
  * the verification chip uncovered on a desktop and on a phone.
  */
@@ -16,6 +16,10 @@ import { test, expect } from '@playwright/test'
 type Page = import('@playwright/test').Page
 
 const KEY = 'transpareo:passport-admin'
+const LINK = JSON.stringify({
+  url: '/admin/dpps/resolve?code={code}',
+  label: 'Edit in back office'
+})
 
 async function boot(page: Page, stored?: string): Promise<void> {
   if (stored !== undefined) {
@@ -69,10 +73,10 @@ test('draws nothing for a reader without the store', async ({ page }) => {
 })
 
 test('links staff to the passport in the back office', async ({ page }) => {
-  await boot(page, '/admin/dpps/resolve')
+  await boot(page, LINK)
   const bar = shadow(page, '.staff-bar')
 
-  await expect(bar).toHaveText('Open in application manager')
+  await expect(bar).toHaveText('Edit in back office')
   const href = await bar.getAttribute('href')
   const lookup = 'http://localhost:5173/admin/dpps/resolve'
   expect(href).toBe(`${lookup}?code=${await code(page)}`)
@@ -83,7 +87,7 @@ test('links staff to the passport in the back office', async ({ page }) => {
 // functional sprite can draw.
 test('opens with an icon that needs no content sprite', async ({ page }) => {
   await page.route('**/icons.svg', (route) => route.fulfill({ status: 404 }))
-  await boot(page, '/admin/dpps/resolve')
+  await boot(page, LINK)
   await expect(shadow(page, '.staff-bar')).toBeVisible()
 
   const glyph = await page.evaluate(() => {
@@ -109,24 +113,31 @@ test('opens with an icon that needs no content sprite', async ({ page }) => {
 })
 
 test('never links away from the passport origin', async ({ page }) => {
-  await boot(page, 'https://elsewhere.example/admin')
+  const url = 'https://elsewhere.example/admin?code={code}'
+  await boot(page, JSON.stringify({ url, label: 'Edit' }))
   await expect(shadow(page, '.staff-bar')).toHaveCount(0)
 })
 
-test('speaks the language the passport is read in', async ({ page }) => {
+// The wording is the back office's, in its operator's language,
+// whatever language the passport is read in.
+test('keeps the stored wording in any locale', async ({ page }) => {
   await page.addInitScript(() => {
     window.localStorage.setItem('tm.locale', 'de')
   })
-  await boot(page, '/admin/dpps/resolve')
+  await boot(page, LINK)
 
-  await expect(shadow(page, '.staff-bar'))
-    .toHaveText('Im Applikations-Manager öffnen')
+  await expect(shadow(page, '.staff-bar')).toHaveText('Edit in back office')
+})
+
+test('draws nothing from a bare address', async ({ page }) => {
+  await boot(page, '/admin/dpps/resolve')
+  await expect(shadow(page, '.staff-bar')).toHaveCount(0)
 })
 
 for (const width of [1280, 390]) {
   test(`leaves header and chip uncovered at ${width}`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 })
-    await boot(page, '/admin/dpps/resolve')
+    await boot(page, LINK)
     await expect(shadow(page, '.staff-bar')).toBeVisible()
     const b = await boxes(page)
 

@@ -10,6 +10,17 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Changed
+
+- The staff bar takes its wording from the back office. The
+  record under `transpareo:passport-admin` is now JSON:
+  `url`, the back office page with `{code}` where the
+  passport's code goes, and `label`, the link text in the
+  operator's language. The renderer ships no wording for
+  the bar. A back office that still stores a bare address
+  draws no bar until it writes the record; see "The staff
+  bar" in the README.
+
 ## [2.29.0] - 2026-11-15
 
 ### Added

@@ -185,7 +185,6 @@
   "passportLevel.item": "паспорт екземпляра",
   "walkUp.body": "Для {id} немає окремого документа ({asked}). Цей {served} його охоплює.",
   "unitPassports.note": "Кожна одиниця має власний {level}.",
-  "staffBar.open": "Відкрити в менеджері застосунку",
   "lot.manufacturedOn": "Виготовлено",
   "properties.loadError": "Додаткові дані про продукт тимчасово недоступні",
   "properties.retry": "Повторити",

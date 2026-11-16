@@ -7,17 +7,16 @@
  * publisher's own staff: a link that opens this passport in
  * their back office. While one of them is signed in, the back
  * office on the passport's own origin keeps the address of its
- * lookup by code in localStorage (session-hints.ts); the band
- * shows only while it is there, so every other reader sees the
- * page unchanged. No server is asked, and the back office still
- * decides who opens what.
+ * lookup by code and the wording of the link in localStorage
+ * (session-hints.ts); the band shows only while both are
+ * there, so every other reader sees the page unchanged. No
+ * server is asked, and the back office still decides who opens
+ * what.
  */
 
 import { LightElement } from '@/reactive/element'
 import { el } from '@/reactive/dom'
 import * as host from '@/host'
-import { i18n } from '@/i18n'
-import { t } from '@/i18n/labels'
 import { icon } from '@/icons'
 import { storedStaffLink } from '@/session-hints'
 
@@ -31,12 +30,12 @@ class DppStaffBar extends LightElement {
 
     this.effect(() => {
       const code = host.manifest()?.code ?? ''
-      const href = staffBarHref(stored, code, window.location.href)
+      const href = staffBarHref(stored.url, code, window.location.href)
       if (!href) {
         this.replaceChildren()
         return
       }
-      const link = el('a', 'staff-bar', t(i18n.labels, 'staffBar.open'))
+      const link = el('a', 'staff-bar', stored.label)
       link.prepend(icon('key'), ' ')
       link.href = href
       this.replaceChildren(link)
@@ -44,21 +43,21 @@ class DppStaffBar extends LightElement {
   }
 }
 
-// The stored address with the passport's code added, or null.
-// Any script on the origin can write the store, so the link is
-// held to the page's own origin and never leads away from it.
+// The stored address with the passport's code in place of its
+// `{code}`, or null. Any script on the origin can write the
+// store, so the link is held to the page's own origin and
+// never leads away from it.
 export function staffBarHref(
-  stored: string | null, code: string, page: string
+  stored: string, code: string, page: string
 ): string | null {
-  if (!stored || !code) return null
+  if (!code) return null
   let url: URL
   try {
-    url = new URL(stored, page)
+    url = new URL(stored.replaceAll('{code}', encodeURIComponent(code)), page)
   } catch {
     return null
   }
   if (url.origin !== new URL(page).origin) return null
-  url.searchParams.set('code', code)
   return url.href
 }
 

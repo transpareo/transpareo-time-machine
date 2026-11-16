@@ -185,7 +185,6 @@
   "passportLevel.item": "yksikköpassi",
   "walkUp.body": "Kohteelle {id} ei ole omaa passia ({asked}). Tämä {served} kattaa sen.",
   "unitPassports.note": "Jokaisella yksiköllä on oma {level}.",
-  "staffBar.open": "Avaa sovellushallinnassa",
   "lot.manufacturedOn": "Valmistettu",
   "properties.loadError": "Lisätuotetiedot eivät ole tilapäisesti saatavilla",
   "properties.retry": "Yritä uudelleen",

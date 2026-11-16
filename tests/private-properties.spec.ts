@@ -256,15 +256,23 @@ describe('fetchPrivateRows: status branching', () => {
       expect(fetchSpy).toHaveBeenCalledTimes(1)
     }))
 
-    it('asks while an operator staff link is stored', withSignIn(LOGIN, async () => {
-      onPage('', '/admin/dpps/resolve')
-      const fetchSpy = vi.fn().mockResolvedValue(res(204, {}))
-      vi.stubGlobal('fetch', fetchSpy)
+    // Any stored shape marks the session, the record the bar
+    // draws from and a bare address alike.
+    const staffLinks = [
+      '{"url":"/admin/dpps/resolve?code={code}","label":"Edit"}',
+      '/admin/dpps/resolve'
+    ]
+    for (const staffLink of staffLinks) {
+      it(`asks while a staff link is stored: ${staffLink}`, withSignIn(LOGIN, async () => {
+        onPage('', staffLink)
+        const fetchSpy = vi.fn().mockResolvedValue(res(204, {}))
+        vi.stubGlobal('fetch', fetchSpy)
 
-      await fetchPrivateRows(3, '/api/private/3')
+        await fetchPrivateRows(3, '/api/private/3')
 
-      expect(fetchSpy).toHaveBeenCalledTimes(1)
-    }))
+        expect(fetchSpy).toHaveBeenCalledTimes(1)
+      }))
+    }
 
     it('drops a cross-site sign-in address, showing no button', withSignIn('https://evil.example/login', async () => {
       onPage('', null)

@@ -947,6 +947,37 @@ internals or forking the bundle.
   })
   ```
 
+#### The staff bar
+
+A publisher's back office on the passport's own origin can
+give its signed-in staff a link from the passport to the
+same passport in the back office. While an operator is
+signed in, it stores a JSON record in `localStorage` under
+`transpareo:passport-admin`:
+
+```json
+{
+  "url": "/admin/dpps/resolve?code={code}",
+  "label": "Edit in back office"
+}
+```
+
+- `url` - the back office page for one passport, with
+  `{code}` where the passport's code goes. The renderer
+  puts in the manifest's `code`, URL-encoded. The address
+  must resolve to the page's own origin.
+- `label` - the wording of the link, in the operator's
+  language. The renderer ships no wording of its own.
+
+The renderer draws a band under the brand bar with a key
+glyph and the label, linking to the address. It draws none
+while the record is missing, lacks either part, has no
+`{code}`, points to another origin, or the passport sits in
+a frame. Remove the record when the operator signs out.
+No server is asked, and the back office
+still decides who opens what. A stored value of any shape
+also marks a session for `sign-in-url`.
+
 ### `<dpp-verifier>`
 
 Standalone verification widget (no full passport

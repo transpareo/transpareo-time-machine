@@ -185,7 +185,6 @@
   "passportLevel.item": "enhetspass",
   "walkUp.body": "Det finns inget {asked} för {id}. Detta {served} täcker det.",
   "unitPassports.note": "Varje enhet har sitt eget {level}.",
-  "staffBar.open": "Öppna i applikationshanteraren",
   "lot.manufacturedOn": "Tillverkad den",
   "properties.loadError": "Ytterligare produktdata tillfälligt otillgängliga",
   "properties.retry": "Försök igen",
